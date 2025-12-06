@@ -702,32 +702,34 @@
     return dp[m][n];
   }
 
-// Detect labels that look like misspelled famous brands
-    function detectBrandSpoof(labels) {
-      const matches = [];
-    
-      for (const rawLabel of labels) {
-        // strip dots/hyphens/underscores etc.
-        const label = rawLabel.replace(/[^a-z0-9]/gi, '').toLowerCase();
-        if (!label || label.length < 4) continue;
-    
-        for (const brand of brandTargets) {
-          const d = levenshtein(label, brand);
-          if (
-            d > 0 && d <= 2 &&                      // 1–2 edits away
-            Math.abs(label.length - brand.length) <= 2
-          ) {
-            matches.push({ brand, label: rawLabel });
+// Detect host parts that look like misspelled famous brands (g00gle, paypa1, faceb00k)
+      function detectBrandSpoofFromHost(host) {
+        const matches = [];
+      
+        // drop final TLD (.com, .net, etc.)
+        const hostWithoutTld = host.split('.').slice(0, -1).join('.');
+        if (!hostWithoutTld) return matches;
+      
+        // split into tokens like ["paypa1", "security"], ["faceb00k", "support"]
+        const tokens = hostWithoutTld.split(/[^a-z0-9]+/i).filter(Boolean);
+      
+        for (const rawToken of tokens) {
+          const token = rawToken.toLowerCase();
+          if (token.length < 4) continue;
+      
+          for (const brand of brandTargets) {
+            const d = levenshtein(token, brand);
+            if (
+              d > 0 && d <= 2 &&                      // 1–2 edits away
+              Math.abs(token.length - brand.length) <= 2
+            ) {
+              matches.push({ brand, label: rawToken });
+            }
           }
         }
+      
+        return matches;
       }
-  
-    return matches;
-  }
-
-
-
-
 
     
       function analyzeUrl(rawUrl) {
@@ -785,12 +787,11 @@
       issues.push('Unusually many subdomains: ' + host);
     }
   
-    // NEW: fuzzy brand lookalike detection (e.g. g00gle-login, paypa1-secure)
-    const labelsWithoutTld = parts.slice(0, -1); // ignore final TLD label
-    const brandSpoofs = detectBrandSpoof(labelsWithoutTld);
+    // NEW: fuzzy brand lookalike detection (e.g. g00gle-login, paypa1-secure, faceb00k-support)
+    const brandSpoofs = detectBrandSpoofFromHost(host);
     if (brandSpoofs.length) {
       const uniqueBrands = [...new Set(brandSpoofs.map(m => m.brand))].slice(0, 4);
-      const penalty = Math.min(35, 15 + uniqueBrands.length * 5);
+      const penalty = Math.min(35, 20 + uniqueBrands.length * 5);
       score -= penalty;
       issues.push(
         'Domain looks similar to popular brands: ' +
@@ -798,6 +799,7 @@
         '. This may be a lookalike phishing domain.'
       );
     }
+
   
     // Phishing keywords in full URL
     const keywordHits = phishingKeywords.filter(kw => full.includes(kw));
