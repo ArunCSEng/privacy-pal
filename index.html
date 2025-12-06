@@ -6,15 +6,12 @@
   <meta name="description" 
     content="BitDark is a free Safe-Link Analyzer that checks if a link is safe. Scan suspicious URLs for scams, phishing, malware, and fake websites. Fast, private, and no data sent to servers.">
 
-  
   <meta property="og:title" content="BitDark | Safe Link Checker & Phishing URL Scanner">
   <meta property="og:description" content="Check if a link is safe. Scan suspicious URLs for scams, phishing, malware, and fake websites. Fast and privacy-first.">
   <meta property="og:url" content="https://bitdark.net/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://bitdark.net/bitdark-og.png">
 
-
-  
   <style>
     /* ========== Base Reset ========== */
     * {
@@ -576,7 +573,7 @@
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    const matrixChars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノΛΞΠΩ<>#$%&';
+    const matrixChars = '01Δδεζη2θιΛλ3μΞξシスセ5ソタチツ6テトナ7ニヌネ8ノΛΞ9ΠΩטצ<>#$%&';
     const fontSize = 16;
     let columns = Math.floor(width / fontSize);
     let drops = new Array(columns).fill(1);
@@ -642,6 +639,12 @@
       'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'is.gd',
       'buff.ly', 'cutt.ly', 'shorturl.at', 'bit.do', 'rebrand.ly'
     ];
+// Popular brands often targeted by phishing (for fuzzy lookalike detection)
+    const brandTargets = [
+      'google', 'facebook', 'whatsapp', 'instagram', 'amazon',
+      'apple', 'paypal', 'microsoft', 'netflix', 'telegram',
+      'binance', 'metamask', 'flipkart', 'phonepe', 'paytm'
+    ];
 
     function safelyParseUrl(raw) {
       try {
@@ -665,119 +668,216 @@
       return matches.length / Math.max(str.length, 1);
     }
 
-    function analyzeUrl(rawUrl) {
-      const MAX_URL_LENGTH = 2048;
+    
 
-      if (rawUrl.length > MAX_URL_LENGTH) {
-        return {
-          valid: false,
-          score: 0,
-          level: 'high',
-          issues: ['URL is extremely long (' + rawUrl.length + ' characters).'],
-          status: 'Suspicious oversized URL.',
-          note: 'Extremely long links are often used to hide malicious parameters. Treat this as dangerous.'
-        };
+    function percentEncodedRatio(str) {
+      const matches = str.match(/%[0-9a-fA-F]{2}/g);
+      if (!matches) return 0;
+      return matches.length / Math.max(str.length, 1);
+    }
+
+// Simple Levenshtein distance for fuzzy matching (small strings only)
+    function levenshtein(a, b) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    const m = a.length;
+    const n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,      // deletion
+          dp[i][j - 1] + 1,      // insertion
+          dp[i - 1][j - 1] + cost // substitution
+        );
       }
+    }
+    return dp[m][n];
+  }
 
-      const issues = [];
-      let score = 100;
-
-      const url = safelyParseUrl(rawUrl);
-      if (!url) {
-        return {
-          valid: false,
-          score: 0,
-          level: 'high',
-          issues: ['Not a valid URL format.'],
-          status: 'Invalid URL.',
-          note: 'Make sure you pasted the full link, e.g. https://example.com/path'
-        };
+// Detect labels that look like misspelled famous brands
+    function detectBrandSpoof(labels) {
+      const matches = [];
+    
+      for (const rawLabel of labels) {
+        // strip dots/hyphens/underscores etc.
+        const label = rawLabel.replace(/[^a-z0-9]/gi, '').toLowerCase();
+        if (!label || label.length < 4) continue;
+    
+        for (const brand of brandTargets) {
+          const d = levenshtein(label, brand);
+          if (
+            d > 0 && d <= 2 &&                      // 1–2 edits away
+            Math.abs(label.length - brand.length) <= 2
+          ) {
+            matches.push({ brand, label: rawLabel });
+          }
+        }
       }
+  
+    return matches;
+  }
 
-      const href = url.href;
-      const host = url.hostname.toLowerCase();
-      const full = href.toLowerCase();
 
-      const parts = host.split('.');
-      const tld = parts.length > 1 ? '.' + parts[parts.length - 1] : '';
-      if (suspiciousTlds.includes(tld)) {
-        score -= 25;
-        issues.push('Suspicious top-level domain: ' + tld);
-      }
 
-      if (parts.length >= 4) {
-        score -= 15;
-        issues.push('Unusually many subdomains: ' + host);
-      }
 
-      const keywordHits = phishingKeywords.filter(kw => full.includes(kw));
-      if (keywordHits.length) {
-        const penalty = Math.min(30, keywordHits.length * 6);
-        score -= penalty;
-        issues.push('Contains phishing keywords: ' + keywordHits.slice(0, 5).join(', '));
-      }
 
-      if (href.includes('@')) {
-        score -= 15;
-        issues.push('Contains "@" which can hide the real destination.');
-      }
-
-      if (href.length > 160) {
-        score -= 10;
-        issues.push('Very long URL, often used to hide malicious parameters.');
-      }
-
-      if (percentEncodedRatio(href) > 0.12) {
-        score -= 12;
-        issues.push('Heavy use of % encoding in the link.');
-      }
-
-      if (isIpHost(host)) {
-        score -= 18;
-        issues.push('Uses an IP address instead of a domain name.');
-      }
-
-      if (shortenerHosts.includes(host)) {
-        score -= 18;
-        issues.push('Shortened URL hiding the final destination: ' + host);
-      }
-
-      if (url.protocol === 'http:') {
-        score -= 12;
-        issues.push('Not using HTTPS encryption.');
-      }
-
-      score = Math.max(0, Math.min(100, score));
-
-      let level, status, note;
-      if (score >= 80) {
-        level = 'low';
-        status = 'Low-risk patterns detected.';
-        note = 'We did not see strong scam indicators, but always double-check the sender and context.';
-      } else if (score >= 50) {
-        level = 'medium';
-        status = 'Some suspicious patterns detected.';
-        note = 'Be cautious. Avoid entering passwords, OTPs or card details.';
-      } else {
-        level = 'high';
-        status = 'High-risk link. Likely scam.';
-        note = 'Avoid opening this on your main device. It matches common scam patterns.';
-      }
-
-      if (!issues.length) {
-        issues.push('No strong heuristic red flags found. This is not a guarantee of safety.');
-      }
-
+    
+      function analyzeUrl(rawUrl) {
+    const MAX_URL_LENGTH = 2048;
+  
+    if (rawUrl.length > MAX_URL_LENGTH) {
       return {
-        valid: true,
-        score,
-        level,
-        issues,
-        status,
-        note,
-        normalizedUrl: url.href
+        valid: false,
+        score: 0,
+        level: 'high',
+        issues: ['URL is extremely long (' + rawUrl.length + ' characters).'],
+        status: 'Suspicious oversized URL.',
+        note: 'Extremely long links are often used to hide malicious parameters. Treat this as dangerous.'
       };
     }
+  
+    const issues = [];
+    let score = 100;
+  
+    const url = safelyParseUrl(rawUrl);
+    if (!url) {
+      return {
+        valid: false,
+        score: 0,
+        level: 'high',
+        issues: ['Not a valid URL format.'],
+        status: 'Invalid URL.',
+        note: 'Make sure you pasted the full link, e.g. https://example.com/path'
+      };
+    }
+  
+    const href = url.href;
+    const host = url.hostname.toLowerCase();
+    const full = href.toLowerCase();
+  
+    const parts = host.split('.');
+    const tld = parts.length > 1 ? '.' + parts[parts.length - 1] : '';
+  
+    // NEW: detect punycode / IDN (xn--) labels
+    const hasPunycodeLabel = parts.some(label => label.startsWith('xn--'));
+    if (hasPunycodeLabel) {
+      score -= 25;
+      issues.push('Uses punycode (xn--) domain, often used for lookalike attacks.');
+    }
+  
+    // Suspicious TLDs
+    if (suspiciousTlds.includes(tld)) {
+      score -= 25;
+      issues.push('Suspicious top-level domain: ' + tld);
+    }
+  
+    // Too many subdomains
+    if (parts.length >= 4) {
+      score -= 15;
+      issues.push('Unusually many subdomains: ' + host);
+    }
+  
+    // NEW: fuzzy brand lookalike detection (e.g. g00gle-login, paypa1-secure)
+    const labelsWithoutTld = parts.slice(0, -1); // ignore final TLD label
+    const brandSpoofs = detectBrandSpoof(labelsWithoutTld);
+    if (brandSpoofs.length) {
+      const uniqueBrands = [...new Set(brandSpoofs.map(m => m.brand))].slice(0, 4);
+      const penalty = Math.min(35, 15 + uniqueBrands.length * 5);
+      score -= penalty;
+      issues.push(
+        'Domain looks similar to popular brands: ' +
+        uniqueBrands.join(', ') +
+        '. This may be a lookalike phishing domain.'
+      );
+    }
+  
+    // Phishing keywords in full URL
+    const keywordHits = phishingKeywords.filter(kw => full.includes(kw));
+    if (keywordHits.length) {
+      const penalty = Math.min(30, keywordHits.length * 6);
+      score -= penalty;
+      issues.push('Contains phishing keywords: ' + keywordHits.slice(0, 5).join(', '));
+    }
+  
+    // '@' used to hide real destination
+    if (href.includes('@')) {
+      score -= 15;
+      issues.push('Contains "@" which can hide the real destination.');
+    }
+  
+    // Very long URL
+    if (href.length > 160) {
+      score -= 10;
+      issues.push('Very long URL, often used to hide malicious parameters.');
+    }
+  
+    // Heavy % encoding
+    if (percentEncodedRatio(href) > 0.12) {
+      score -= 12;
+      issues.push('Heavy use of % encoding in the link.');
+    }
+  
+    // Raw IP address
+    if (isIpHost(host)) {
+      score -= 18;
+      issues.push('Uses an IP address instead of a domain name.');
+    }
+  
+    // URL shortener
+    if (shortenerHosts.includes(host)) {
+      score -= 18;
+      issues.push('Shortened URL hiding the final destination: ' + host);
+    }
+  
+    // HTTP (no TLS)
+    if (url.protocol === 'http:') {
+      score -= 12;
+      issues.push('Not using HTTPS encryption.');
+    }
+  
+    // Clamp score
+    score = Math.max(0, Math.min(100, score));
+  
+    let level, status, note;
+    if (score >= 80) {
+      level = 'low';
+      status = 'Low-risk patterns detected.';
+      note = 'We did not see strong scam indicators, but always double-check the sender and context.';
+    } else if (score >= 50) {
+      level = 'medium';
+      status = 'Some suspicious patterns detected.';
+      note = 'Be cautious. Avoid entering passwords, OTPs or card details.';
+    } else {
+      level = 'high';
+      status = 'High-risk link. Likely scam.';
+      note = 'Avoid opening this on your main device. It matches common scam patterns.';
+    }
+  
+    if (!issues.length) {
+      issues.push('No strong heuristic red flags found. This is not a guarantee of safety.');
+    }
+  
+    return {
+      valid: true,
+      score,
+      level,
+      issues,
+      status,
+      note,
+      normalizedUrl: url.href
+    };
+  }
+
+
+    
 
     function updateUiWithResult(result) {
       issueList.innerHTML = '';
