@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- ✅ REQUIRED: Update these 3 per post -->
+  <title>POST TITLE — BitDark Blog</title>
+  <meta name="description" content="One-sentence description for Google (max ~155 chars)." />
+  <link rel="canonical" href="https://bitdark.net/blog/POST-SLUG/" />
+
+  <!-- ✅ REQUIRED: bd:* meta tags (auto-read by /blog index) -->
+  <meta name="bd:category" content="Privacy Workflow" />
+  <meta name="bd:tags" content="privacy,email,cloud,yubikey,kleopatra" />
+  <meta name="bd:updated" content="2025-12-14" />
+
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --card:#ffffff; --shadow: 0 1px 2px rgba(0,0,0,.06);
+      --link:#1a73e8; --chip:#f3f4f6; --chipfg:#374151; --chipon:#111827;
+      --code:#0b1020; --codefg:#e5e7eb;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --card:#0f1626; --shadow: 0 1px 2px rgba(0,0,0,.35);
+      --link:#8ab4f8; --chip:#111827; --chipfg:#9ca3af; --chipon:#e5e7eb;
+      --code:#050814; --codefg:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font: 16px/1.75 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:980px; margin:0 auto; padding:18px 16px 70px}
+
+    /* Top docs-like bar */
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter:saturate(180%) blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar .inner{max-width:980px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:12px}
+    .brand{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; min-width:190px}
+    .brand b{font-size:16px}
+    .brand span{color:var(--muted); font-size:12px}
+    .navlinks{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+    .navlinks a{font-size:13px; color:var(--muted)}
+    .navlinks a:hover{color:var(--fg); text-decoration:none}
+    .searchbar{flex:1; display:flex; justify-content:flex-end}
+    .searchWrap{position:relative; width:min(520px, 100%)}
+    .searchWrap input{
+      width:100%;
+      padding:10px 12px 10px 36px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--bg);
+      color:var(--fg);
+      outline:none;
+    }
+    .searchWrap svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.55}
+    .btn{
+      border:1px solid var(--line); background:var(--card); color:var(--fg);
+      padding:8px 10px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow);
+      font-size:13px;
+    }
+
+    /* Breadcrumbs */
+    .crumbs{
+      margin-top:16px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+    .crumbs a{color:var(--muted)}
+    .crumbs a:hover{color:var(--fg); text-decoration:none}
+
+    /* Layout */
+    .grid{display:grid; gap:12px; margin-top:12px}
+    @media(min-width:980px){ .grid{grid-template-columns: 1.15fr .85fr} }
+    .card{
+      border:1px solid var(--line); background:var(--card);
+      border-radius:18px; padding:14px 16px; box-shadow:var(--shadow);
+    }
+
+    h1{font-size:30px; line-height:1.2; margin:10px 0 6px}
+    .meta{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px}
+    h2{font-size:22px; margin:26px 0 10px}
+    h3{font-size:18px; margin:18px 0 8px}
+    p{margin:10px 0}
+    ul{margin:10px 0 10px 18px}
+    code, pre{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+    pre{
+      background:var(--code); color:var(--codefg);
+      padding:14px; border-radius:14px; overflow:auto; border:1px solid rgba(255,255,255,.06);
+    }
+    .note{
+      border-left:4px solid var(--link);
+      padding:10px 12px; background:var(--chip); border-radius:12px;
+      color:var(--fg);
+    }
+
+    /* Tags */
+    .tagsInline{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap}
+    .tag{
+      border:1px solid var(--line); background:var(--chip);
+      padding:4px 8px; border-radius:999px; font-size:12px; color:var(--muted);
+    }
+
+    /* Sidebar */
+    .toc a{display:block; padding:6px 0}
+    .muted{color:var(--muted)}
+
+    /* Related block */
+    .relatedList{display:grid; gap:10px; margin-top:10px}
+    .relatedItem{
+      border:1px solid var(--line); border-radius:14px; padding:10px 12px;
+      background:var(--card);
+    }
+    .relatedItem b{display:block; margin-bottom:4px}
+    .relatedItem span{color:var(--muted); font-size:12px}
+
+    /* Footer bottom-right links */
+    footer{
+      margin-top:26px;
+      border-top:1px solid var(--line);
+      padding-top:12px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .footRight{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .footRight a{color:var(--muted)}
+    .footRight a:hover{color:var(--fg); text-decoration:none}
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <b><a href="/" aria-label="BitDark Home">BitDark</a></b>
+        <span>Blog</span>
+      </div>
+
+      <nav class="navlinks" aria-label="Primary">
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+        <a href="/faq/">FAQ</a>
+      </nav>
+
+      <div class="searchbar" role="search">
+        <form class="searchWrap" action="/blog/" method="GET">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input name="q" id="qTop" type="search" placeholder="Search blog…" autocomplete="off">
+        </form>
+      </div>
+
+      <button class="btn" id="themeBtn" type="button">Theme</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="crumbs" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span id="crumbTitle" class="muted">POST TITLE</span>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <!-- ✅ Update -->
+        <h1 id="postTitle">POST TITLE GOES HERE</h1>
+        <div class="meta">
+          <span>Updated: <time datetime="2025-12-14" id="updatedTime">Dec 14, 2025</time></span>
+          <span>•</span>
+          <span>Category: <b id="postCategory">Privacy Workflow</b></span>
+          <span>•</span>
+          <span class="muted">Read time: ~10–14 min</span>
+        </div>
+
+        <div class="tagsInline" aria-label="Tags">
+          <span class="tag">Email</span>
+          <span class="tag">Cloud</span>
+          <span class="tag">YubiKey</span>
+          <span class="tag">Kleopatra</span>
+        </div>
+
+        <!-- ✅ Your post content -->
+        <h2 id="summary">Quick Summary</h2>
+        <ul>
+          <li>Encrypt files <b>before</b> email/cloud upload (Gmail/Outlook can’t read what they don’t get).</li>
+          <li>Keep private keys off disk using hardware-backed storage (YubiKey).</li>
+          <li>Assume metadata leaks; keep subject lines and filenames boring.</li>
+        </ul>
+
+        <h2 id="section-1">Section heading</h2>
+        <p>Paste your article body here…</p>
+
+        <div class="note"><b>Note:</b> Use these callouts for “most people get this wrong” points.</div>
+
+        <h2 id="faq">FAQ</h2>
+        <h3>Question?</h3>
+        <p>Answer.</p>
+
+        <h2 id="related">Related articles</h2>
+        <div class="relatedList">
+          <div class="relatedItem">
+            <b><a href="/blog/digitally-sign-pdf-yubikey-okular/">Digitally Sign PDFs with YubiKey + Okular</a></b>
+            <span>PDF Signing • Fixes “certificate not found” issues</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/yubikey-not-detected-windows-11-kleopatra/">Fix: YubiKey Not Detected on Windows 11</a></b>
+            <span>Error Fix • Smartcard/Kleopatra troubleshooting</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/">Browse all posts</a></b>
+            <span>Blog • Search by keyword/tag</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card toc">
+        <b>On this page</b>
+        <a href="#summary">Quick Summary</a>
+        <a href="#section-1">Section heading</a>
+        <a href="#faq">FAQ</a>
+        <a href="#related">Related articles</a>
+
+        <hr style="border:none;border-top:1px solid var(--line); margin:14px 0">
+
+        <b>Tip</b>
+        <p class="muted" style="margin-top:8px">
+          Keep posts documentation-clean: short paragraphs, real steps, copyable commands, and clear fixes.
+        </p>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> BitDark.NET</div>
+      <div class="footRight">
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+        <a href="/faq/">FAQ</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Breadcrumb title sync
+      const t = document.getElementById("postTitle")?.textContent?.trim() || "Post";
+      document.getElementById("crumbTitle").textContent = t;
+
+      // If user searched from top bar and came here with ?q=...
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q");
+      if (q) document.getElementById("qTop").value = q;
+    })();
+  </script>
+</body>
+</html>
