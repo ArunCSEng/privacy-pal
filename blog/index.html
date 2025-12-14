@@ -13,13 +13,11 @@
       --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
       --card:#ffffff; --shadow: 0 1px 2px rgba(0,0,0,.06);
       --link:#1a73e8; --chip:#f3f4f6; --chipfg:#374151; --chipon:#111827;
-      --code:#0b1020; --codefg:#e5e7eb;
     }
     html[data-theme="dark"]{
       --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
       --card:#0f1626; --shadow: 0 1px 2px rgba(0,0,0,.35);
       --link:#8ab4f8; --chip:#111827; --chipfg:#9ca3af; --chipon:#e5e7eb;
-      --code:#050814; --codefg:#e5e7eb;
     }
     *{box-sizing:border-box}
     body{
@@ -30,22 +28,23 @@
     a:hover{text-decoration:underline}
     .wrap{max-width:980px; margin:0 auto; padding:18px 16px 70px}
 
-    /* Top docs-like bar */
     .topbar{
       position:sticky; top:0; z-index:10;
       background:color-mix(in srgb, var(--bg) 92%, transparent);
       backdrop-filter:saturate(180%) blur(10px);
       border-bottom:1px solid var(--line);
     }
-    .topbar .inner{max-width:980px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:12px}
+    .topbar .inner{
+      max-width:980px; margin:0 auto;
+      padding:10px 16px;
+      display:flex; align-items:center; gap:12px;
+    }
     .brand{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; min-width:190px}
     .brand b{font-size:16px}
     .brand span{color:var(--muted); font-size:12px}
     .navlinks{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
     .navlinks a{font-size:13px; color:var(--muted)}
     .navlinks a:hover{color:var(--fg); text-decoration:none}
-
-    /* Search at top mid-right */
     .searchbar{flex:1; display:flex; justify-content:flex-end}
     .searchWrap{position:relative; width:min(520px, 100%)}
     .searchWrap input{
@@ -58,7 +57,6 @@
       outline:none;
     }
     .searchWrap svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.55}
-    .actions{display:flex; gap:10px; align-items:center}
     .btn{
       border:1px solid var(--line); background:var(--card); color:var(--fg);
       padding:8px 10px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow);
@@ -76,7 +74,6 @@
     .hero h1{margin:0 0 6px; font-size:22px}
     .hero p{margin:0; color:var(--muted)}
 
-    /* Tag chips */
     .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
     .chip{
       border:1px solid var(--line);
@@ -94,7 +91,6 @@
       box-shadow:0 1px 0 rgba(0,0,0,.03);
     }
 
-    /* Post list */
     .list{margin-top:14px; display:grid; gap:12px}
     .post{
       border:1px solid var(--line);
@@ -117,7 +113,6 @@
       border:1px dashed var(--line); border-radius:14px; padding:12px;
     }
 
-    /* Footer: bottom-right links like main site */
     footer{
       margin-top:26px;
       border-top:1px solid var(--line);
@@ -134,17 +129,25 @@
     .footRight a{color:var(--muted)}
     .footRight a:hover{color:var(--fg); text-decoration:none}
 
-    /* Small kbd */
     .kbd{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size:12px; padding:2px 6px; border-radius:6px; border:1px solid var(--line);
       background:var(--chip); color:var(--muted);
     }
+
+    .loading{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:var(--card);
+      color:var(--muted);
+      box-shadow:var(--shadow);
+    }
   </style>
 </head>
 
 <body>
-  <!-- Top docs-like bar -->
   <div class="topbar">
     <div class="inner">
       <div class="brand">
@@ -153,11 +156,11 @@
       </div>
 
       <nav class="navlinks" aria-label="Primary">
-        <a href="/blog/">Blog</a>
-        <a href="/about/">About</a>
-        <a href="/privacy/">Privacy</a>
-        <a href="/terms/">Terms</a>
-        <a href="/faq/">FAQ</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/about.html">About</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/faq.html">FAQ</a>
       </nav>
 
       <div class="searchbar" role="search">
@@ -169,26 +172,17 @@
         </div>
       </div>
 
-      <div class="actions">
-        <button class="btn" id="themeBtn" type="button" title="Toggle light/dark">Theme</button>
-      </div>
+      <button class="btn" id="themeBtn" type="button" title="Toggle light/dark">Theme</button>
     </div>
   </div>
 
   <div class="wrap">
     <section class="hero">
       <h1>Searchable guides people link to when stuck</h1>
-      <p>Clean docs-style pages. Fast to skim. Easy to reference. Built for real fixes, not SEO fluff.</p>
+      <p>Auto-updating blog index. New post folder = automatically listed here.</p>
 
       <div class="chips" id="tagChips" aria-label="Filter by tag">
-        <!-- Add or remove chips freely -->
-        <span class="chip" data-tag="privacy" aria-pressed="false">Privacy</span>
-        <span class="chip" data-tag="email" aria-pressed="false">Email</span>
-        <span class="chip" data-tag="cloud" aria-pressed="false">Cloud</span>
-        <span class="chip" data-tag="yubikey" aria-pressed="false">YubiKey</span>
-        <span class="chip" data-tag="kleopatra" aria-pressed="false">Kleopatra</span>
-        <span class="chip" data-tag="pdf" aria-pressed="false">PDF</span>
-        <span class="chip" data-tag="error-fix" aria-pressed="false">Error Fix</span>
+        <!-- chips get auto-generated from your posts -->
       </div>
 
       <div style="margin-top:10px; color:var(--muted); font-size:12px">
@@ -196,75 +190,9 @@
       </div>
     </section>
 
-    <main class="list" id="postList">
-      <!-- ✅ Add your posts here.
-           Improve SEO matching via:
-           - data-category: category label
-           - data-tags: comma-separated tags
-           - data-keywords: include category keywords + synonyms
-      -->
+    <div class="loading" id="loadingBox">Loading posts…</div>
 
-      <article class="post"
-        data-category="privacy workflow"
-        data-tags="privacy,email,cloud,yubikey,kleopatra"
-        data-keywords="
-          hide sensitive files online, file privacy, secure file sharing, encrypt files before sharing,
-          email privacy, encrypted email, email encryption, mail privacy, gmail privacy, outlook privacy,
-          cloud encryption, google drive encryption, onedrive encryption, dropbox encryption,
-          openpgp, pgp, gpg, gpg4win, kleopatra, thunderbird,
-          yubikey, security key, hardware key, hardware-backed keys
-        ">
-        <h2><a href="/blog/hide-sensitive-files-online/">How to Hide Sensitive Files Online (Email, Cloud & Sharing) — 2025</a></h2>
-        <div class="meta">
-          <span>Updated: <time datetime="2025-12-14">Dec 14, 2025</time></span>
-          <span>•</span>
-          <span>Category: Privacy Workflow</span>
-        </div>
-        <p class="excerpt">
-          Practical steps to protect sensitive documents across Gmail, Outlook, cloud storage and messaging apps using OpenPGP + hardware-backed keys.
-        </p>
-        <div class="tagsInline">
-          <span class="tag">Privacy</span>
-          <span class="tag">Email</span>
-          <span class="tag">Cloud</span>
-          <span class="tag">YubiKey</span>
-          <span class="tag">Kleopatra</span>
-        </div>
-      </article>
-
-      <article class="post"
-        data-category="pdf signing"
-        data-tags="pdf,yubikey,kleopatra,privacy"
-        data-keywords="
-          digitally sign pdf, pdf signature, sign pdf with yubikey, okular sign pdf,
-          windows pdf signing, linux pdf signing, openpgp signature, gpg signature,
-          yubikey, kleopatra, gpg4win, certificate not found, no signing certificates found
-        ">
-        <h2><a href="/blog/digitally-sign-pdf-yubikey-okular/">Digitally Sign PDFs with YubiKey + Okular (Windows/Linux/macOS)</a></h2>
-        <div class="meta">
-          <span>Coming soon</span><span>•</span><span>Category: PDF Signing</span>
-        </div>
-        <p class="excerpt">The missing guide people search for — signing, verification, and fixes when your certificate doesn’t show up.</p>
-        <div class="tagsInline"><span class="tag">PDF</span><span class="tag">YubiKey</span><span class="tag">Kleopatra</span></div>
-      </article>
-
-      <article class="post"
-        data-category="error fix"
-        data-tags="error-fix,yubikey,kleopatra,windows"
-        data-keywords="
-          yubikey not detected, yubikey not working windows 11, smartcard not found,
-          kleopatra smartcard not showing, gpg4win smartcard, scdaemon,
-          hardware key not detected, gpg card status, pgp smartcard
-        ">
-        <h2><a href="/blog/yubikey-not-detected-windows-11-kleopatra/">Fix: YubiKey Not Detected on Windows 11 (Kleopatra / Gpg4win)</a></h2>
-        <div class="meta">
-          <span>Coming soon</span><span>•</span><span>Category: Error Fix</span>
-        </div>
-        <p class="excerpt">Troubleshooting checklist for smartcard detection, agent issues, and common Windows breakages.</p>
-        <div class="tagsInline"><span class="tag">Error Fix</span><span class="tag">Windows</span><span class="tag">YubiKey</span></div>
-      </article>
-
-    </main>
+    <main class="list" id="postList"></main>
 
     <div class="empty" id="emptyState">
       No matches. Try: <b>gmail</b>, <b>outlook</b>, <b>email</b>, <b>yubikey</b>, <b>kleopatra</b>, <b>pdf</b>.
@@ -273,54 +201,40 @@
     <footer>
       <div>© <span id="year"></span> BitDark.NET • docs-style blog</div>
       <div class="footRight">
-        <a href="/blog/">Blog</a>
-        <a href="/about/">About</a>
-        <a href="/privacy/">Privacy</a>
-        <a href="/terms/">Terms</a>
-        <a href="/faq/">FAQ</a>
+        <a href="/blog/index.html">Blog</a>
+        <a href="/about.html">About</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/faq.html">FAQ</a>
       </div>
     </footer>
   </div>
 
   <script>
-    // Theme
-    (function () {
-      const root = document.documentElement;
-      const saved = localStorage.getItem("bd_blog_theme");
-      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
-      document.getElementById("themeBtn").addEventListener("click", () => {
-        const cur = root.getAttribute("data-theme") || "light";
-        const next = cur === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        localStorage.setItem("bd_blog_theme", next);
-      });
-    })();
+    /************************************************************
+     * CONFIG — set these once
+     ************************************************************/
+    const REPO_OWNER = "ArunCSEng";     // e.g. "arunkumar"
+    const REPO_NAME  = "BitDark";           // e.g. "BitDark"
+    const BRANCH     = "main";                     // "main" or "master"
+    const BLOG_PATH  = "blog";                     // folder name in repo
 
-    // Ctrl+K focus search (docs-like)
-    (function () {
-      const input = document.getElementById("q");
-      document.addEventListener("keydown", (e) => {
-        if ((e.ctrlKey || e.metaKey) && (e.key || "").toLowerCase() === "k") {
-          e.preventDefault();
-          input.focus();
-        }
-      });
-    })();
-
-    // Synonyms expansion (adds "gmail/outlook/email/mail" etc.)
+    /************************************************************
+     * Search synonyms (docs-like)
+     ************************************************************/
     const SYN = new Map([
-      ["email", ["mail", "gmail", "outlook", "protonmail", "inbox"]],
-      ["mail", ["email", "gmail", "outlook", "protonmail"]],
-      ["gmail", ["email", "mail", "outlook"]],
-      ["outlook", ["email", "mail", "gmail"]],
-      ["cloud", ["drive", "google drive", "onedrive", "dropbox", "storage"]],
-      ["drive", ["cloud", "google drive", "onedrive", "dropbox"]],
-      ["encrypt", ["encryption", "encrypted", "pgp", "gpg", "openpgp"]],
-      ["pgp", ["openpgp", "gpg", "encryption", "encrypt"]],
-      ["gpg", ["openpgp", "pgp", "kleopatra", "gpg4win"]],
-      ["kleopatra", ["gpg4win", "gpg", "openpgp", "pgp"]],
-      ["yubikey", ["security key", "hardware key", "2fa key", "fido", "webauthn"]],
-      ["pdf", ["document", "sign pdf", "pdf signing", "signature"]],
+      ["email", ["mail","gmail","outlook","protonmail","inbox"]],
+      ["mail", ["email","gmail","outlook","protonmail"]],
+      ["gmail", ["email","mail","outlook"]],
+      ["outlook", ["email","mail","gmail"]],
+      ["cloud", ["drive","google drive","onedrive","dropbox","storage"]],
+      ["drive", ["cloud","google drive","onedrive","dropbox"]],
+      ["encrypt", ["encryption","encrypted","pgp","gpg","openpgp"]],
+      ["pgp", ["openpgp","gpg","encryption","encrypt"]],
+      ["gpg", ["openpgp","pgp","kleopatra","gpg4win"]],
+      ["kleopatra", ["gpg4win","gpg","openpgp","pgp"]],
+      ["yubikey", ["security key","hardware key","2fa key","fido","webauthn"]],
+      ["pdf", ["document","sign pdf","pdf signing","signature"]],
     ]);
 
     function tokenize(s){
@@ -329,7 +243,6 @@
         .replace(/[^\p{L}\p{N}\s-]/gu, " ")
         .split(/\s+/).filter(Boolean);
     }
-
     function expandTerms(terms){
       const out = new Set(terms);
       for (const t of terms){
@@ -339,8 +252,144 @@
       return Array.from(out);
     }
 
-    // Search + tag filter + category boost
+    /************************************************************
+     * Theme toggle + Ctrl+K search focus
+     ************************************************************/
     (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+
+      const input = document.getElementById("q");
+      document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key || "").toLowerCase() === "k") {
+          e.preventDefault();
+          input.focus();
+        }
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+    })();
+
+    /************************************************************
+     * Auto-fetch posts:
+     * 1) List /blog folder directories via GitHub Contents API
+     * 2) For each directory, fetch raw /blog/<slug>/index.html
+     * 3) Read metadata: title, description, category, tags, updated
+     ************************************************************/
+    const CACHE_KEY = "bd_blog_index_cache_v1";
+    const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+    async function fetchJSON(url){
+      const res = await fetch(url, { headers: { "Accept": "application/vnd.github+json" }});
+      if (!res.ok) throw new Error("GitHub API error: " + res.status);
+      return res.json();
+    }
+
+    async function fetchText(url){
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Fetch error: " + res.status);
+      return res.text();
+    }
+
+    function parsePostMeta(html, slug){
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const title = (doc.querySelector("meta[property='og:title']")?.content
+        || doc.querySelector("title")?.textContent
+        || slug).replace(/\s+—\s+BitDark.*$/i, "").trim();
+
+      const description = doc.querySelector("meta[name='description']")?.content?.trim()
+        || "Practical guide from BitDark.NET.";
+
+      const category = doc.querySelector("meta[name='bd:category']")?.content?.trim()
+        || "General";
+
+      const tagsRaw = doc.querySelector("meta[name='bd:tags']")?.content || "";
+      const tags = tagsRaw.split(",").map(s=>s.trim()).filter(Boolean);
+
+      const updated = doc.querySelector("meta[name='bd:updated']")?.content
+        || doc.querySelector("time[datetime]")?.getAttribute("datetime")
+        || "1970-01-01";
+
+      // Keywords for search matching:
+      // (title + category + tags + description + slug tokens + synonyms base)
+      const keywords = [
+        title, description, category, tags.join(" "),
+        slug.replace(/-/g," "),
+        // add default broad keywords to help early search
+        "privacy", "email", "mail", "gmail", "outlook", "cloud", "encryption", "openpgp", "pgp", "gpg", "yubikey", "kleopatra", "gpg4win", "pdf"
+      ].join(" ").toLowerCase();
+
+      return { slug, title, description, category, tags, updated, keywords };
+    }
+
+    function sortByUpdatedDesc(a,b){
+      // compare YYYY-MM-DD safely
+      return (b.updated || "").localeCompare(a.updated || "");
+    }
+
+    function renderPostCard(post){
+      const updatedPretty = post.updated && post.updated !== "1970-01-01"
+        ? new Date(post.updated + "T00:00:00").toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" })
+        : "—";
+
+      const tagHTML = post.tags.slice(0,6).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join("");
+
+      return `
+        <article class="post"
+          data-category="${escapeHTML(post.category)}"
+          data-tags="${escapeHTML(post.tags.join(","))}"
+          data-keywords="${escapeHTML(post.keywords)}">
+          <h2><a href="/blog/${escapeHTML(post.slug)}/" rel="bookmark">${escapeHTML(post.title)}</a></h2>
+          <div class="meta">
+            <span>Updated: <time datetime="${escapeHTML(post.updated)}">${escapeHTML(updatedPretty)}</time></span>
+            <span>•</span>
+            <span>Category: ${escapeHTML(post.category)}</span>
+          </div>
+          <p class="excerpt">${escapeHTML(post.description)}</p>
+          <div class="tagsInline">${tagHTML}</div>
+        </article>
+      `;
+    }
+
+    function escapeHTML(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function buildTagChips(allTags){
+      const container = document.getElementById("tagChips");
+      container.innerHTML = "";
+      const sorted = Array.from(allTags).sort((a,b)=>a.localeCompare(b));
+      // show a few common first if present
+      const prefer = ["privacy","email","cloud","yubikey","kleopatra","pdf","error-fix","windows"];
+      const final = [
+        ...prefer.filter(t => sorted.includes(t)),
+        ...sorted.filter(t => !prefer.includes(t))
+      ].slice(0, 14);
+
+      final.forEach(t => {
+        const el = document.createElement("span");
+        el.className = "chip";
+        el.setAttribute("data-tag", t);
+        el.setAttribute("aria-pressed", "false");
+        el.textContent = t.replace(/-/g," ").replace(/\b\w/g, c => c.toUpperCase());
+        container.appendChild(el);
+      });
+    }
+
+    function applyFilters(){
       const q = document.getElementById("q");
       const posts = Array.from(document.querySelectorAll("#postList .post"));
       const empty = document.getElementById("emptyState");
@@ -354,7 +403,7 @@
         return Array.from(activeTags).every(t => tags.includes(t));
       }
 
-      function filter() {
+      function filter(){
         const raw = q.value.trim();
         const baseTerms = tokenize(raw);
         const terms = expandTerms(baseTerms);
@@ -364,13 +413,13 @@
           const title = (p.querySelector("h2")?.innerText || "").toLowerCase();
           const cat = (p.getAttribute("data-category") || "").toLowerCase();
           const keys = (p.getAttribute("data-keywords") || "").toLowerCase();
-
-          // Match: all typed tokens should appear in some combined text (with synonyms expanded)
           const combined = `${title} ${cat} ${keys}`;
-          const okText = terms.length === 0 || baseTerms.every(t => combined.includes(t)) || terms.some(t => combined.includes(t));
+
+          const okText = terms.length === 0
+            || baseTerms.every(t => combined.includes(t))
+            || terms.some(t => combined.includes(t));
 
           const ok = okText && passesTags(p);
-
           p.style.display = ok ? "" : "none";
           if (ok) shown++;
         });
@@ -378,25 +427,92 @@
         empty.style.display = shown === 0 ? "block" : "none";
       }
 
-      // Tag chip click handling
       chips.forEach(chip => {
         chip.addEventListener("click", () => {
           const tag = (chip.getAttribute("data-tag") || "").toLowerCase();
           const pressed = chip.getAttribute("aria-pressed") === "true";
           chip.setAttribute("aria-pressed", String(!pressed));
-
-          if (!pressed) activeTags.add(tag);
-          else activeTags.delete(tag);
-
+          if (!pressed) activeTags.add(tag); else activeTags.delete(tag);
           filter();
         });
       });
 
       q.addEventListener("input", filter);
-      filter();
-    })();
 
-    document.getElementById("year").textContent = new Date().getFullYear();
+      // Support /blog/?q=...
+      const params = new URLSearchParams(location.search);
+      const pre = params.get("q");
+      if (pre) q.value = pre;
+
+      filter();
+    }
+
+    async function loadPosts(){
+      const loading = document.getElementById("loadingBox");
+      const list = document.getElementById("postList");
+
+      // Try cache
+      try{
+        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+        if (cached && cached.when && (Date.now() - cached.when) < CACHE_TTL_MS && Array.isArray(cached.posts)){
+          renderAll(cached.posts);
+          loading.style.display = "none";
+          return;
+        }
+      }catch{}
+
+      try{
+        // 1) list /blog folder
+        const api = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${BLOG_PATH}?ref=${BRANCH}`;
+        const items = await fetchJSON(api);
+
+        // folders are posts; ignore index.html and any non-dir
+        const dirs = items.filter(x => x.type === "dir" && !x.name.startsWith("_"));
+
+        // 2) fetch each post's raw index.html to read metadata
+        const posts = [];
+        for (const d of dirs){
+          const slug = d.name;
+          const raw = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${BLOG_PATH}/${slug}/index.html`;
+          try{
+            const html = await fetchText(raw);
+            posts.push(parsePostMeta(html, slug));
+          }catch{
+            // if a folder exists without index.html, skip silently
+          }
+        }
+
+        posts.sort(sortByUpdatedDesc);
+
+        // Cache
+        try{
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ when: Date.now(), posts }));
+        }catch{}
+
+        renderAll(posts);
+        loading.style.display = "none";
+      }catch(err){
+        loading.textContent = "Could not load posts (check repo config in blog/index.html).";
+        console.error(err);
+      }
+    }
+
+    function renderAll(posts){
+      const list = document.getElementById("postList");
+      const allTags = new Set();
+
+      list.innerHTML = posts.map(p => {
+        p.tags.forEach(t => allTags.add(t.toLowerCase()));
+        // also treat common categories as tags for filtering
+        allTags.add(p.category.toLowerCase().replace(/\s+/g,"-"));
+        return renderPostCard(p);
+      }).join("");
+
+      buildTagChips(allTags);
+      applyFilters();
+    }
+
+    loadPosts();
   </script>
 </body>
 </html>
