@@ -1,11 +1,402 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en" data-theme="light">
 <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>BitDark Blog</title>
+  <meta name="description" content="BitDark.NET Blog — privacy workflows, security guides, and troubleshooting that people link to when stuck." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://bitdark.net/blog/" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --card:#ffffff; --shadow: 0 1px 2px rgba(0,0,0,.06);
+      --link:#1a73e8; --chip:#f3f4f6; --chipfg:#374151; --chipon:#111827;
+      --code:#0b1020; --codefg:#e5e7eb;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --card:#0f1626; --shadow: 0 1px 2px rgba(0,0,0,.35);
+      --link:#8ab4f8; --chip:#111827; --chipfg:#9ca3af; --chipon:#e5e7eb;
+      --code:#050814; --codefg:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font: 16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:980px; margin:0 auto; padding:18px 16px 70px}
+
+    /* Top docs-like bar */
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter:saturate(180%) blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar .inner{max-width:980px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:12px}
+    .brand{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; min-width:190px}
+    .brand b{font-size:16px}
+    .brand span{color:var(--muted); font-size:12px}
+    .navlinks{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+    .navlinks a{font-size:13px; color:var(--muted)}
+    .navlinks a:hover{color:var(--fg); text-decoration:none}
+
+    /* Search at top mid-right */
+    .searchbar{flex:1; display:flex; justify-content:flex-end}
+    .searchWrap{position:relative; width:min(520px, 100%)}
+    .searchWrap input{
+      width:100%;
+      padding:10px 12px 10px 36px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--bg);
+      color:var(--fg);
+      outline:none;
+    }
+    .searchWrap svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.55}
+    .actions{display:flex; gap:10px; align-items:center}
+    .btn{
+      border:1px solid var(--line); background:var(--card); color:var(--fg);
+      padding:8px 10px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow);
+      font-size:13px;
+    }
+
+    .hero{
+      margin-top:16px;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .hero h1{margin:0 0 6px; font-size:22px}
+    .hero p{margin:0; color:var(--muted)}
+
+    /* Tag chips */
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+    .chip{
+      border:1px solid var(--line);
+      background:var(--chip);
+      color:var(--chipfg);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip[aria-pressed="true"]{
+      color:var(--chipon);
+      border-color:color-mix(in srgb, var(--link) 28%, var(--line));
+      box-shadow:0 1px 0 rgba(0,0,0,.03);
+    }
+
+    /* Post list */
+    .list{margin-top:14px; display:grid; gap:12px}
+    .post{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:14px 16px;
+      box-shadow:var(--shadow);
+    }
+    .post h2{margin:0 0 6px; font-size:18px}
+    .meta{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px}
+    .excerpt{margin:10px 0 0; color:var(--muted)}
+    .tagsInline{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap}
+    .tag{
+      border:1px solid var(--line); background:var(--chip);
+      padding:4px 8px; border-radius:999px; font-size:12px; color:var(--muted);
+    }
+
+    .empty{
+      display:none; margin-top:12px; color:var(--muted);
+      border:1px dashed var(--line); border-radius:14px; padding:12px;
+    }
+
+    /* Footer: bottom-right links like main site */
+    footer{
+      margin-top:26px;
+      border-top:1px solid var(--line);
+      padding-top:12px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .footRight{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .footRight a{color:var(--muted)}
+    .footRight a:hover{color:var(--fg); text-decoration:none}
+
+    /* Small kbd */
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px; padding:2px 6px; border-radius:6px; border:1px solid var(--line);
+      background:var(--chip); color:var(--muted);
+    }
+  </style>
 </head>
+
 <body>
-  <h1>BitDark Blog</h1>
-  <p>Blog</p>
-  <a href="/">Back to Home</a>
+  <!-- Top docs-like bar -->
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <b><a href="/" aria-label="BitDark Home">BitDark</a></b>
+        <span>Blog</span>
+      </div>
+
+      <nav class="navlinks" aria-label="Primary">
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+        <a href="/faq/">FAQ</a>
+      </nav>
+
+      <div class="searchbar" role="search">
+        <div class="searchWrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input id="q" type="search" placeholder="Search: yubikey, gmail, outlook, email encryption, pdf signing…" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="themeBtn" type="button" title="Toggle light/dark">Theme</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <h1>Searchable guides people link to when stuck</h1>
+      <p>Clean docs-style pages. Fast to skim. Easy to reference. Built for real fixes, not SEO fluff.</p>
+
+      <div class="chips" id="tagChips" aria-label="Filter by tag">
+        <!-- Add or remove chips freely -->
+        <span class="chip" data-tag="privacy" aria-pressed="false">Privacy</span>
+        <span class="chip" data-tag="email" aria-pressed="false">Email</span>
+        <span class="chip" data-tag="cloud" aria-pressed="false">Cloud</span>
+        <span class="chip" data-tag="yubikey" aria-pressed="false">YubiKey</span>
+        <span class="chip" data-tag="kleopatra" aria-pressed="false">Kleopatra</span>
+        <span class="chip" data-tag="pdf" aria-pressed="false">PDF</span>
+        <span class="chip" data-tag="error-fix" aria-pressed="false">Error Fix</span>
+      </div>
+
+      <div style="margin-top:10px; color:var(--muted); font-size:12px">
+        Tip: press <span class="kbd">Ctrl</span> <span class="kbd">K</span> to jump to search.
+      </div>
+    </section>
+
+    <main class="list" id="postList">
+      <!-- ✅ Add your posts here.
+           Improve SEO matching via:
+           - data-category: category label
+           - data-tags: comma-separated tags
+           - data-keywords: include category keywords + synonyms
+      -->
+
+      <article class="post"
+        data-category="privacy workflow"
+        data-tags="privacy,email,cloud,yubikey,kleopatra"
+        data-keywords="
+          hide sensitive files online, file privacy, secure file sharing, encrypt files before sharing,
+          email privacy, encrypted email, email encryption, mail privacy, gmail privacy, outlook privacy,
+          cloud encryption, google drive encryption, onedrive encryption, dropbox encryption,
+          openpgp, pgp, gpg, gpg4win, kleopatra, thunderbird,
+          yubikey, security key, hardware key, hardware-backed keys
+        ">
+        <h2><a href="/blog/hide-sensitive-files-online/">How to Hide Sensitive Files Online (Email, Cloud & Sharing) — 2025</a></h2>
+        <div class="meta">
+          <span>Updated: <time datetime="2025-12-14">Dec 14, 2025</time></span>
+          <span>•</span>
+          <span>Category: Privacy Workflow</span>
+        </div>
+        <p class="excerpt">
+          Practical steps to protect sensitive documents across Gmail, Outlook, cloud storage and messaging apps using OpenPGP + hardware-backed keys.
+        </p>
+        <div class="tagsInline">
+          <span class="tag">Privacy</span>
+          <span class="tag">Email</span>
+          <span class="tag">Cloud</span>
+          <span class="tag">YubiKey</span>
+          <span class="tag">Kleopatra</span>
+        </div>
+      </article>
+
+      <article class="post"
+        data-category="pdf signing"
+        data-tags="pdf,yubikey,kleopatra,privacy"
+        data-keywords="
+          digitally sign pdf, pdf signature, sign pdf with yubikey, okular sign pdf,
+          windows pdf signing, linux pdf signing, openpgp signature, gpg signature,
+          yubikey, kleopatra, gpg4win, certificate not found, no signing certificates found
+        ">
+        <h2><a href="/blog/digitally-sign-pdf-yubikey-okular/">Digitally Sign PDFs with YubiKey + Okular (Windows/Linux/macOS)</a></h2>
+        <div class="meta">
+          <span>Coming soon</span><span>•</span><span>Category: PDF Signing</span>
+        </div>
+        <p class="excerpt">The missing guide people search for — signing, verification, and fixes when your certificate doesn’t show up.</p>
+        <div class="tagsInline"><span class="tag">PDF</span><span class="tag">YubiKey</span><span class="tag">Kleopatra</span></div>
+      </article>
+
+      <article class="post"
+        data-category="error fix"
+        data-tags="error-fix,yubikey,kleopatra,windows"
+        data-keywords="
+          yubikey not detected, yubikey not working windows 11, smartcard not found,
+          kleopatra smartcard not showing, gpg4win smartcard, scdaemon,
+          hardware key not detected, gpg card status, pgp smartcard
+        ">
+        <h2><a href="/blog/yubikey-not-detected-windows-11-kleopatra/">Fix: YubiKey Not Detected on Windows 11 (Kleopatra / Gpg4win)</a></h2>
+        <div class="meta">
+          <span>Coming soon</span><span>•</span><span>Category: Error Fix</span>
+        </div>
+        <p class="excerpt">Troubleshooting checklist for smartcard detection, agent issues, and common Windows breakages.</p>
+        <div class="tagsInline"><span class="tag">Error Fix</span><span class="tag">Windows</span><span class="tag">YubiKey</span></div>
+      </article>
+
+    </main>
+
+    <div class="empty" id="emptyState">
+      No matches. Try: <b>gmail</b>, <b>outlook</b>, <b>email</b>, <b>yubikey</b>, <b>kleopatra</b>, <b>pdf</b>.
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> BitDark.NET • docs-style blog</div>
+      <div class="footRight">
+        <a href="/blog/">Blog</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+        <a href="/faq/">FAQ</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Theme
+    (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+    })();
+
+    // Ctrl+K focus search (docs-like)
+    (function () {
+      const input = document.getElementById("q");
+      document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key || "").toLowerCase() === "k") {
+          e.preventDefault();
+          input.focus();
+        }
+      });
+    })();
+
+    // Synonyms expansion (adds "gmail/outlook/email/mail" etc.)
+    const SYN = new Map([
+      ["email", ["mail", "gmail", "outlook", "protonmail", "inbox"]],
+      ["mail", ["email", "gmail", "outlook", "protonmail"]],
+      ["gmail", ["email", "mail", "outlook"]],
+      ["outlook", ["email", "mail", "gmail"]],
+      ["cloud", ["drive", "google drive", "onedrive", "dropbox", "storage"]],
+      ["drive", ["cloud", "google drive", "onedrive", "dropbox"]],
+      ["encrypt", ["encryption", "encrypted", "pgp", "gpg", "openpgp"]],
+      ["pgp", ["openpgp", "gpg", "encryption", "encrypt"]],
+      ["gpg", ["openpgp", "pgp", "kleopatra", "gpg4win"]],
+      ["kleopatra", ["gpg4win", "gpg", "openpgp", "pgp"]],
+      ["yubikey", ["security key", "hardware key", "2fa key", "fido", "webauthn"]],
+      ["pdf", ["document", "sign pdf", "pdf signing", "signature"]],
+    ]);
+
+    function tokenize(s){
+      return (s||"")
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+        .split(/\s+/).filter(Boolean);
+    }
+
+    function expandTerms(terms){
+      const out = new Set(terms);
+      for (const t of terms){
+        const extras = SYN.get(t);
+        if (extras) extras.forEach(x => tokenize(x).forEach(y => out.add(y)));
+      }
+      return Array.from(out);
+    }
+
+    // Search + tag filter + category boost
+    (function () {
+      const q = document.getElementById("q");
+      const posts = Array.from(document.querySelectorAll("#postList .post"));
+      const empty = document.getElementById("emptyState");
+      const chips = Array.from(document.querySelectorAll("#tagChips .chip"));
+
+      let activeTags = new Set();
+
+      function passesTags(post){
+        if (activeTags.size === 0) return true;
+        const tags = (post.getAttribute("data-tags") || "").toLowerCase().split(",").map(s=>s.trim()).filter(Boolean);
+        return Array.from(activeTags).every(t => tags.includes(t));
+      }
+
+      function filter() {
+        const raw = q.value.trim();
+        const baseTerms = tokenize(raw);
+        const terms = expandTerms(baseTerms);
+
+        let shown = 0;
+        posts.forEach(p => {
+          const title = (p.querySelector("h2")?.innerText || "").toLowerCase();
+          const cat = (p.getAttribute("data-category") || "").toLowerCase();
+          const keys = (p.getAttribute("data-keywords") || "").toLowerCase();
+
+          // Match: all typed tokens should appear in some combined text (with synonyms expanded)
+          const combined = `${title} ${cat} ${keys}`;
+          const okText = terms.length === 0 || baseTerms.every(t => combined.includes(t)) || terms.some(t => combined.includes(t));
+
+          const ok = okText && passesTags(p);
+
+          p.style.display = ok ? "" : "none";
+          if (ok) shown++;
+        });
+
+        empty.style.display = shown === 0 ? "block" : "none";
+      }
+
+      // Tag chip click handling
+      chips.forEach(chip => {
+        chip.addEventListener("click", () => {
+          const tag = (chip.getAttribute("data-tag") || "").toLowerCase();
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+
+          if (!pressed) activeTags.add(tag);
+          else activeTags.delete(tag);
+
+          filter();
+        });
+      });
+
+      q.addEventListener("input", filter);
+      filter();
+    })();
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
