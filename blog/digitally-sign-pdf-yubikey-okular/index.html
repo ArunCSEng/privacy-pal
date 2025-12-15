@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- ✅ POST SEO -->
+  <title>Digitally Sign PDFs with YubiKey + Okular (2026) — BitDark Blog</title>
+  <meta name="description" content="Step-by-step: digitally sign PDFs using Okular with a hardware-backed key workflow (YubiKey). Covers Windows + Linux, verification, and common errors." />
+  <link rel="canonical" href="https://bitdark.net/blog/digitally-sign-pdf-yubikey-okular/" />
+
+  <!-- ✅ REQUIRED FOR AUTO BLOG INDEX -->
+  <meta name="bd:category" content="Privacy Workflow" />
+  <meta name="bd:tags" content="pdf,digital-signature,pdf-signing,okular,yubikey,openpgp,smartcard,certificate,kleopatra,gpg4win,windows,linux,privacy,adobe,verify-signature" />
+  <meta name="bd:updated" content="2025-12-15" />
+
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --card:#ffffff; --shadow:0 1px 2px rgba(0,0,0,.06);
+      --link:#1a73e8; --chip:#f3f4f6;
+      --code:#0b1020; --codefg:#e5e7eb;
+      --danger:#ef4444;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --card:#0f1626; --shadow:0 1px 2px rgba(0,0,0,.35);
+      --link:#8ab4f8; --chip:#111827;
+      --code:#050814; --codefg:#e5e7eb;
+      --danger:#ff5a5a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font:16px/1.8 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 16px 70px}
+
+    .topbar{
+      position:sticky;top:0;z-index:10;
+      background:color-mix(in srgb,var(--bg) 92%,transparent);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar .inner{
+      max-width:1200px;margin:0 auto;padding:10px 16px;
+      display:flex;gap:12px;align-items:center;
+    }
+    .brand{min-width:180px}
+    .brand b{font-size:16px}
+    .brand span{font-size:12px;color:var(--muted)}
+    .navlinks{display:flex;gap:14px;flex-wrap:wrap}
+    .navlinks a{font-size:13px;color:var(--muted)}
+    .navlinks a:hover{color:var(--fg); text-decoration:none}
+    .searchbar{flex:1;display:flex;justify-content:flex-end}
+    .searchWrap{position:relative;width:min(560px,100%)}
+    .searchWrap input{
+      width:100%;padding:10px 12px 10px 36px;
+      border:1px solid var(--line);
+      border-radius:14px;background:var(--bg);color:var(--fg);
+      outline:none;
+    }
+    .searchWrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+    .btn{
+      border:1px solid var(--line);background:var(--card);color:var(--fg);
+      padding:8px 10px;border-radius:12px;cursor:pointer; box-shadow:var(--shadow);
+      font-size:13px;
+    }
+
+    .crumbs{
+      margin-top:16px;font-size:13px;color:var(--muted);
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+
+    .grid{display:grid;gap:16px;margin-top:16px}
+    @media(min-width:980px){ .grid{grid-template-columns:2.3fr 0.9fr} }
+    .card{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    h1{font-size:32px;line-height:1.2;margin:10px 0 8px}
+    h2{font-size:22px;margin:30px 0 10px}
+    h3{font-size:18px;margin:20px 0 8px}
+    p{margin:12px 0}
+    ul{margin:12px 0 12px 18px}
+    .subhead{margin:0 0 10px;font-size:15px;color:var(--muted)}
+    pre{
+      background:var(--code);color:var(--codefg);
+      padding:14px;border-radius:14px;overflow:auto;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .note{
+      border-left:4px solid var(--link);
+      padding:12px;background:var(--chip);
+      border-radius:12px;margin:16px 0;
+    }
+    .danger{
+      border-left:4px solid var(--danger);
+      padding:12px;background:color-mix(in srgb, var(--chip) 88%, transparent);
+      border-radius:12px;margin:16px 0;
+    }
+
+    .meta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12px; margin:0 0 6px;
+    }
+    .dot{opacity:.8}
+
+    .tagsInline{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .tag{
+      border:1px solid var(--line);
+      padding:5px 10px;border-radius:999px;
+      font-size:12px;color:var(--muted);
+      background:color-mix(in srgb, var(--chip) 92%, transparent);
+    }
+
+    .tocNav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .tocNav a{
+      font-size:13px;color:var(--muted);
+      padding:6px 8px;border-radius:8px;
+      text-decoration:none; line-height:1.35;
+    }
+    .tocNav a:hover{background:var(--chip);color:var(--fg)}
+    .toc-h3{padding-left:18px;font-size:12px;opacity:.95}
+
+    .adSlot{
+      margin-top:14px;
+      min-height:520px;
+      border:1px dashed var(--line);
+      border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--muted);text-align:center;
+      padding:12px;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+    }
+
+    .relatedGrid{display:grid;gap:12px;margin-top:12px}
+    @media(min-width:720px){ .relatedGrid{grid-template-columns:1fr 1fr} }
+    .relatedItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:color-mix(in srgb, var(--card) 92%, transparent);
+    }
+    .relatedItem b{display:block;margin-bottom:6px;font-size:14px}
+    .relatedItem span{color:var(--muted);font-size:12px}
+
+    .checklist li{margin:6px 0}
+    footer{
+      margin-top:30px;border-top:1px solid var(--line);
+      padding-top:12px;font-size:12px;color:var(--muted);
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .footRight{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .footRight a{color:var(--muted)}
+    .footRight a:hover{color:var(--fg); text-decoration:none}
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <b><a href="/" aria-label="BitDark Home">BitDark</a></b>
+        <span><a href="/blog/">Blog</a></span>
+      </div>
+
+
+      <div class="searchbar" role="search">
+        <form class="searchWrap" action="/blog/" method="GET">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <input name="q" id="qTop" placeholder="Search blog…" autocomplete="off">
+        </form>
+      </div>
+
+      <button class="btn" id="themeBtn" type="button">Theme</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="crumbs" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span id="crumbTitle">Digitally Sign PDFs with YubiKey + Okular</span>
+    </div>
+
+    <div class="grid">
+      <article class="card" id="article">
+        <h1 id="postTitle">Digitally Sign PDFs with YubiKey + Okular (2026)</h1>
+        <p class="subhead"><b>Proof, not vibes: create a signature that survives forwarding, “someone edited one line”, and messy email chains.</b></p>
+        <p class="subhead">This workflow mirrors how digital signatures are used in enterprise, legal, and government environments — minus vendor lock-in.</p>
+
+        <div class="meta" aria-label="Post metadata">
+          <span>Updated: <time id="updatedTime" datetime="2025-12-15">Dec 15, 2025</time></span>
+          <span class="dot">•</span>
+          <span>Category: <b id="postCategory">Privacy Workflow</b></span>
+          <span class="dot">•</span>
+          <span>Read time: <span id="readTime">~10–14 min</span></span>
+        </div>
+
+        <div class="tagsInline" aria-label="Tags">
+          <span class="tag">PDF</span>
+          <span class="tag">Digital Signature</span>
+          <span class="tag">Okular</span>
+          <span class="tag">YubiKey</span>
+          <span class="tag">Smartcard</span>
+          <span class="tag">Windows</span>
+          <span class="tag">Linux</span>
+        </div>
+
+        <h2>Before You Sign: Quick Checklist (Read This Once)</h2>
+        <ul class="checklist">
+          <li>✅ The PDF is final (no edits pending)</li>
+          <li>✅ You know which signing identity/certificate you will use</li>
+          <li>✅ System date/time is correct (clock issues can break validation)</li>
+          <li>✅ If using YubiKey/token: device detected and PIN ready</li>
+          <li>✅ Okular is up-to-date (older builds can hide signature features)</li>
+        </ul>
+
+        <h2>First: What “Digital Signature” Actually Means (So You Don’t Sign the Wrong Way)</h2>
+        <p>A digital signature is <b>not</b> an image of your signature. It’s a cryptographic seal attached to the PDF that proves two things:</p>
+        <ul>
+          <li><b>Authenticity:</b> which certificate signed it (your identity)</li>
+          <li><b>Integrity:</b> the file was not modified after signing (even one pixel change breaks validation)</li>
+        </ul>
+        <div class="note">
+          <b>Quick reality check:</b> If you “sign” by drawing on the PDF or inserting an image, anyone can copy-paste it. That’s decoration, not signature.
+        </div>
+
+        <h2>Where YubiKey Fits In (And Where It Doesn’t)</h2>
+        <p>YubiKey is strongest when used as a <b>hardware key store</b> — the private key stays inside the device and never sits on disk where malware can copy it.</p>
+        <p>Okular PDF signatures usually rely on an <b>X.509 signing certificate</b> (common in corporate signing, legal workflows, and many official systems).</p>
+
+        <h3>Important distinction (don’t mix these)</h3>
+        <ul class="checklist">
+          <li><b>OpenPGP (GPG) keys</b> → great for encrypting files &amp; emails; not universally accepted as PDF signing identity</li>
+          <li><b>X.509 certificate (PKI)</b> → commonly used for PDF signing &amp; verification across viewers</li>
+          <li><b>YubiKey</b> → keeps private keys off disk; integration depends on your platform &amp; certificate method</li>
+        </ul>
+
+        <h2>What You Need (Minimal + Practical)</h2>
+        <ul>
+          <li><b>Okular</b> (PDF viewer with signature support)</li>
+          <li><b>A signing certificate</b> (your identity for PDF signing)</li>
+          <li><b>Optional but recommended:</b> YubiKey/token to store the signing key hardware-backed</li>
+        </ul>
+
+        <div class="note">
+          <b>Verification tip:</b> After signing, open the signed PDF on a second device or different viewer. If it verifies there, it’s truly portable.
+        </div>
+
+        <h2>Step-by-Step: Sign a PDF in Okular</h2>
+
+        <h3>Step 1 — Open the PDF in Okular</h3>
+        <ul>
+          <li>Open Okular</li>
+          <li>Open your PDF</li>
+        </ul>
+
+        <h3>Step 2 — Open the Sign tool</h3>
+        <p>In Okular, look for signature options under tools related to annotations or signatures.</p>
+        <div class="note">
+          <b>If you can’t find it:</b> update Okular. Some older builds or packaging setups hide/disable signature features.
+        </div>
+
+        <h3>Step 3 — Choose the certificate / signing identity</h3>
+        <p>Okular will list available signing identities. Pick the correct one (your signing certificate).</p>
+        <ul>
+          <li>If you have multiple identities, choose the one intended for <b>document signing</b>.</li>
+          <li>If using a hardware token/YubiKey, it may prompt for a PIN.</li>
+        </ul>
+
+        <h3>Step 4 — Place the signature field</h3>
+        <p>Click where the signature should appear. This places a signature field (the cryptographic signature lives behind it).</p>
+
+        <h3>Step 5 — Sign and save</h3>
+        <ul>
+          <li>Confirm signing</li>
+          <li>Save the signed PDF (a new signed copy is normal — and recommended)</li>
+        </ul>
+
+        <h2>How to Verify the Signature (Before You Send It)</h2>
+        <p>Verify in two independent ways:</p>
+        <ul>
+          <li><b>Okular verification panel</b> (should show valid/green)</li>
+          <li><b>Another viewer</b> (different device or PDF reader) to confirm portability</li>
+        </ul>
+        <div class="note">
+          <b>Golden rule:</b> Always verify after signing. It prevents the “I sent it and they said it’s invalid” headache.
+        </div>
+
+        <h2>Windows Reality Check (What Usually Breaks)</h2>
+        <ul>
+          <li><b>Smart Card service not running</b> (token looks “dead”)</li>
+          <li><b>Certificate not visible to Okular</b> (installed in the wrong store/provider)</li>
+          <li><b>Multiple crypto providers</b> causing the wrong identity list</li>
+          <li><b>PIN dialog appears behind the window</b> → Okular looks frozen but it’s waiting</li>
+        </ul>
+        <div class="note">
+          Related fix post: <a href="/blog/yubikey-not-detected-windows-11-kleopatra/">Fix: YubiKey Not Detected on Windows 11 (Kleopatra)</a>.
+        </div>
+
+        <h2>Common Errors and Fixes</h2>
+
+        <h3>Problem: “No certificates found” / “No signing identities available”</h3>
+        <p>This means Okular can’t see a usable signing certificate.</p>
+        <ul>
+          <li>Confirm your certificate is installed and recognized by the OS</li>
+          <li>If using a token: confirm it’s detected and unlocked (PIN ready)</li>
+          <li>Restart Okular after installing certificates</li>
+        </ul>
+
+        <h3>Problem: “Certificate not trusted” (recipient sees warning)</h3>
+        <p>This usually means the recipient’s viewer doesn’t trust your certificate chain.</p>
+        <ul>
+          <li>Use a certificate intended for document signing with a proper trust chain (when required)</li>
+          <li>For organizations: use the approved certificate process</li>
+        </ul>
+
+        <h3>Problem: “Signature invalid” after someone edits the PDF</h3>
+        <p>This is expected behavior. A digital signature is designed to break if anything changes.</p>
+        <div class="note">
+          <b>Workflow:</b> finalize → sign → do not edit. If changes are needed, create a new version and re-sign.
+        </div>
+
+        <h2>Privacy + Safety: What a PDF Signature Does NOT Hide</h2>
+        <p>Signing proves authenticity and integrity. It does <b>not</b> encrypt the contents.</p>
+        <ul>
+          <li>If the PDF is sensitive, you still need <b>encryption</b> before sharing.</li>
+        </ul>
+        <div class="note">
+          Related: <a href="blog/How-to-Hide-Sensitive-Files-Online-in-2026/">How to Hide Sensitive Files Online in 2026</a> (encrypt before uploading/sending).
+        </div>
+
+        <div class="danger">
+          <b>Don’t do this:</b> “Encrypt later” after you already uploaded/sent the file. Once exposed, encryption can’t un-leak it.
+        </div>
+
+        <h2>Best-Practice Workflow (Fast, Clean, Professional)</h2>
+        <ul class="checklist">
+          <li>1) Create final PDF (no changes pending)</li>
+          <li>2) Digitally sign in Okular</li>
+          <li>3) Verify signature (Okular + another viewer/device)</li>
+          <li>4) If sensitive: encrypt the signed PDF before sharing</li>
+          <li>5) Use neutral filenames (avoid “Passport.pdf”)</li>
+        </ul>
+
+        <h2>FAQ</h2>
+
+        <h3>Is a drawn signature image the same as a digital signature?</h3>
+        <p>No. A drawn signature is just a picture. A digital signature is cryptographic proof.</p>
+
+        <h3>Will the signature stay valid if the PDF is forwarded?</h3>
+        <p>Yes — forwarding doesn’t change the file. But editing even one byte will invalidate it.</p>
+
+        <h3>Can Adobe Reader verify Okular-signed PDFs?</h3>
+        <p>Usually yes. If the certificate chain is valid, Adobe Reader will verify it. If Adobe shows a warning, it’s typically a trust-chain issue, not “bad signing”.</p>
+
+        <h3>Does printing and scanning preserve the signature?</h3>
+        <p>No. Printing destroys digital signatures. A scanned copy is a new file with no cryptographic integrity history.</p>
+
+        <h3>Is this legally valid?</h3>
+        <p>Legal validity depends on jurisdiction and certificate type (and sometimes policy), not Okular itself. Okular is the signing tool; the certificate and rules decide acceptance.</p>
+
+        <h3>Does YubiKey automatically make signatures “more trusted”?</h3>
+        <p>YubiKey mainly improves <b>key security</b> (private key stays off disk). Trust depends on the certificate and the recipient’s trust chain.</p>
+
+        <h3>Do I need YubiKey to sign PDFs?</h3>
+        <p>No. But it’s a strong upgrade if you want hardware-backed protection for the signing identity.</p>
+
+        <h2>Related articles</h2>
+        <div class="relatedGrid">
+          <div class="relatedItem">
+            <b><a href="blog/How-to-Hide-Sensitive-Files-Online-in-2026/">How to Hide Sensitive Files Online in 2026</a></b>
+            <span>Email + cloud encryption workflow (Gmail/Outlook-safe)</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/yubikey-not-detected-windows-11-kleopatra/">Fix: YubiKey Not Detected on Windows 11 (Kleopatra)</a></b>
+            <span>Smartcard troubleshooting (when your key “vanishes”)</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/">Browse all posts</a></b>
+            <span>Search by keyword, tags and categories</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/">Back to BitDark home</a></b>
+            <span>Homepage • Matrix experience</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card" aria-label="Sidebar">
+        <b>On this page</b>
+        <nav id="toc" class="tocNav" aria-label="Table of contents"></nav>
+
+        <div class="adSlot">
+          Future AdSense / widgets<br>
+          (Reserved space)
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> BitDark.NET</div>
+      <div class="footRight">
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/faq.html">FAQ</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const title = (document.getElementById("postTitle")?.textContent || "Post").trim();
+      document.getElementById("crumbTitle").textContent = title;
+
+      const cat = document.querySelector("meta[name='bd:category']")?.content?.trim();
+      if (cat) document.getElementById("postCategory").textContent = cat;
+
+      const upd = document.querySelector("meta[name='bd:updated']")?.content?.trim();
+      if (upd) {
+        const t = document.getElementById("updatedTime");
+        t.setAttribute("datetime", upd);
+        const dt = new Date(upd + "T00:00:00");
+        const pretty = dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" });
+        t.textContent = pretty;
+      }
+
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q");
+      if (q) document.getElementById("qTop").value = q;
+
+      // Breadcrumb title sync (in case you change title later)
+      document.getElementById("crumbTitle").textContent = title;
+    })();
+
+    (() => {
+      const article = document.getElementById("article");
+      const out = document.getElementById("readTime");
+      if (!article || !out) return;
+
+      const text = (article.innerText || "").replace(/\s+/g, " ").trim();
+      const words = text ? text.split(" ").length : 0;
+
+      const wpmFast = 260;
+      const wpmSlow = 220;
+      const minFast = Math.max(1, Math.ceil(words / wpmFast));
+      const minSlow = Math.max(1, Math.ceil(words / wpmSlow));
+
+      out.textContent = `~${minFast}–${minSlow} min`;
+    })();
+
+    (() => {
+      const toc = document.getElementById("toc");
+      const article = document.getElementById("article");
+      if (!toc || !article) return;
+
+      const headings = article.querySelectorAll("h2, h3");
+      if (!headings.length) {
+        toc.innerHTML = "<span style='color:var(--muted);font-size:13px'>No sections</span>";
+        return;
+      }
+
+      const slugify = (s) => (s || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .slice(0, 70);
+
+      const used = new Set();
+
+      headings.forEach((h) => {
+        if (!h.id) {
+          let id = slugify(h.textContent);
+          if (!id) id = "section";
+          let n = 2;
+          while (used.has(id) || document.getElementById(id)) id = `${slugify(h.textContent)}-${n++}`;
+          h.id = id;
+          used.add(id);
+        }
+
+        const a = document.createElement("a");
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim();
+        if (h.tagName === "H3") a.classList.add("toc-h3");
+
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById(h.id).scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", `#${h.id}`);
+        });
+
+        toc.appendChild(a);
+      });
+    })();
+  </script>
+</body>
+</html>
