@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>How to Detect Tracking Links in SMS &amp; WhatsApp (UTM, Click IDs, Ref Tags) — BitDark Blog</title>
+  <meta name="description" content="Learn how to spot tracking links shared via SMS & WhatsApp by identifying UTM parameters, click IDs (gclid, fbclid, msclkid, etc.), and ref tags—plus how to safely clean URLs without breaking logins or payments. Privacy-first, client-only mindset." />
+  <link rel="canonical" href="https://bitdark.net/blog/detect-tracking-links-sms-whatsapp/" />
+
+  <meta name="bd:category" content="Safe-Link Tips" />
+  <meta name="bd:tags" content="tracking-links,utm,click-id,gclid,fbclid,msclkid,ttclid,ref-tag,whatsapp,sms,privacy,client-only,url-cleaning,redirects" />
+  <meta name="bd:updated" content="2025-12-25" />
+
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --card:#ffffff; --shadow:0 1px 2px rgba(0,0,0,.06);
+      --link:#1a73e8; --chip:#f3f4f6;
+      --code:#0b1020; --codefg:#e5e7eb;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --card:#0f1626; --shadow:0 1px 2px rgba(0,0,0,.35);
+      --link:#8ab4f8; --chip:#111827;
+      --code:#050814; --codefg:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font:16px/1.8 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 16px 70px}
+
+    .topbar{
+      position:sticky;top:0;z-index:10;
+      background:color-mix(in srgb,var(--bg) 92%,transparent);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar .inner{
+      max-width:1200px;margin:0 auto;padding:10px 16px;
+      display:flex;gap:12px;align-items:center;
+    }
+    .brand{min-width:180px}
+    .brand b{font-size:16px}
+    .brand span{font-size:12px;color:var(--muted)}
+    .navlinks{display:flex;gap:14px;flex-wrap:wrap}
+    .navlinks a{font-size:13px;color:var(--muted)}
+    .navlinks a:hover{color:var(--fg); text-decoration:none}
+    .searchbar{flex:1;display:flex;justify-content:flex-end}
+    .searchWrap{position:relative;width:min(560px,100%)}
+    .searchWrap input{
+      width:100%;padding:10px 12px 10px 36px;
+      border:1px solid var(--line);
+      border-radius:14px;background:var(--bg);color:var(--fg);
+      outline:none;
+    }
+    .searchWrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+    .btn{
+      border:1px solid var(--line);background:var(--card);color:var(--fg);
+      padding:8px 10px;border-radius:12px;cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.06);
+      font-size:13px;
+    }
+
+    .crumbs{
+      margin-top:16px;font-size:13px;color:var(--muted);
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+
+    /* ✅ FIXED GRID ALIGNMENT (matches your “Short Link” post look) */
+    .grid{
+      display:grid;
+      gap:16px;
+      margin-top:16px;
+      align-items:start;          /* stop stretch */
+    }
+    .grid > *{min-width:0;}       /* prevent min-content squeezing */
+
+    @media(min-width:980px){
+      .grid{
+        grid-template-columns: minmax(0, 1fr) 360px; /* stable sidebar width */
+      }
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 1px 2px rgba(0,0,0,.06);
+      width:100%;
+    }
+
+    h1{font-size:32px;line-height:1.2;margin:10px 0 8px}
+    h2{font-size:22px;margin:30px 0 10px}
+    h3{font-size:18px;margin:20px 0 8px}
+    p{margin:12px 0}
+    ul{margin:12px 0 12px 18px}
+    ol{margin:12px 0 12px 18px}
+    .subhead{margin:0 0 10px;font-size:15px;color:var(--muted)}
+    pre{
+      background:var(--code);color:var(--codefg);
+      padding:14px;border-radius:14px;overflow:auto;
+      border:1px solid rgba(255,255,255,.06);
+      max-width:100%;
+    }
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .note{
+      border-left:4px solid var(--link);
+      padding:12px;background:var(--chip);
+      border-radius:12px;margin:16px 0;
+    }
+    .warn{
+      border-left:4px solid #ef4444;
+      padding:12px;background:color-mix(in srgb, #ef4444 10%, var(--chip));
+      border-radius:12px;margin:16px 0;
+    }
+    .ok{
+      border-left:4px solid #22c55e;
+      padding:12px;background:color-mix(in srgb, #22c55e 10%, var(--chip));
+      border-radius:12px;margin:16px 0;
+    }
+
+    .meta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12px; margin:0 0 6px;
+    }
+    .dot{opacity:.8}
+
+    .tagsInline{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .tag{
+      border:1px solid var(--line);
+      padding:5px 10px;border-radius:999px;
+      font-size:12px;color:var(--muted);
+      background:color-mix(in srgb, var(--chip) 92%, transparent);
+    }
+
+    .tocNav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .tocNav a{
+      font-size:13px;color:var(--muted);
+      padding:6px 8px;border-radius:8px;
+      text-decoration:none; line-height:1.35;
+      display:block;
+    }
+    .tocNav a:hover{background:var(--chip);color:var(--fg)}
+    .toc-h3{padding-left:18px;font-size:12px;opacity:.95}
+
+    .adSlot{
+      margin-top:14px;
+      min-height:520px;
+      border:1px dashed var(--line);
+      border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--muted);text-align:center;
+      padding:12px;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+    }
+
+    .relatedGrid{display:grid;gap:12px;margin-top:12px}
+    @media(min-width:720px){ .relatedGrid{grid-template-columns:1fr 1fr} }
+    .relatedItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:color-mix(in srgb, var(--card) 92%, transparent);
+    }
+    .relatedItem b{display:block;margin-bottom:6px;font-size:14px}
+    .relatedItem span{color:var(--muted);font-size:12px}
+
+    footer{
+      margin-top:30px;border-top:1px solid var(--line);
+      padding-top:12px;font-size:12px;color:var(--muted);
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .footRight{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .footRight a{color:var(--muted)}
+    .footRight a:hover{color:var(--fg); text-decoration:none}
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <b><a href="/" aria-label="BitDark Home">BitDark</a></b>
+        <span><a href="/blog/">Blog</a></span>
+      </div>
+
+      <div class="searchbar" role="search">
+        <form class="searchWrap" action="/blog/" method="GET">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <input name="q" id="qTop" placeholder="Search blog…" autocomplete="off">
+        </form>
+      </div>
+
+      <button class="btn" id="themeBtn" type="button">Theme</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="crumbs" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span id="crumbTitle">How to Detect Tracking Links in SMS &amp; WhatsApp</span>
+    </div>
+
+    <div class="grid">
+      <article class="card" id="article">
+        <h1 id="postTitle">How to Detect Tracking Links in SMS &amp; WhatsApp (UTM, Click IDs, Ref Tags)</h1>
+        <p class="subhead"><b>A practical, privacy-first guide to spotting and cleaning tracking parameters—without breaking important links</b></p>
+        <p class="subhead">(For links shared via SMS, WhatsApp, Telegram, email forwards, and “tap here” messages)</p>
+
+        <div class="meta" aria-label="Post metadata">
+          <span>Updated: <time id="updatedTime" datetime="2025-12-25">Dec 25, 2025</time></span>
+          <span class="dot">•</span>
+          <span>Category: <b id="postCategory">Safe-Link Tips</b></span>
+          <span class="dot">•</span>
+          <span>Read time: <span id="readTime">~12–18 min</span></span>
+        </div>
+
+        <div class="tagsInline" aria-label="Tags">
+          <span class="tag">Tracking Links</span>
+          <span class="tag">UTM</span>
+          <span class="tag">Click IDs</span>
+          <span class="tag">WhatsApp</span>
+          <span class="tag">SMS</span>
+          <span class="tag">Privacy-First</span>
+          <span class="tag">Client-Only</span>
+        </div>
+
+        <!-- ✅ CONTENT BELOW IS YOUR FULL POST (unchanged) -->
+        <h2>What Is a “Tracking Link” (and Why You Should Care)</h2>
+        <p>A tracking link is a normal URL with extra identifiers attached to it. Those identifiers help someone measure:</p>
+        <ul>
+          <li>who clicked</li>
+          <li>where you came from</li>
+          <li>which campaign or message worked</li>
+          <li>sometimes: which exact person (or device) clicked</li>
+        </ul>
+        <p>Tracking isn’t always malicious. Many brands use it for marketing analytics. But tracking links are a privacy leak in everyday life—especially when they move through private channels like SMS and WhatsApp.</p>
+
+        <div class="note">
+          <b>BitDark mindset:</b> Before clicking, read the URL. You can often detect tracking (and other risks) just by inspecting the text of the link—client-side, without uploading it to server-based “checkers.”
+        </div>
+
+        <h2>Fast Answer: How to Spot a Tracking Link in 5 Seconds</h2>
+        <p>Look for these characters and patterns:</p>
+        <ul>
+          <li><b>Question mark <code>?</code></b> → query parameters start</li>
+          <li><b>Ampersand <code>&amp;</code></b> → more parameters added</li>
+          <li><b>Common tracking keys</b> like <code>utm_*</code>, <code>gclid</code>, <code>fbclid</code>, <code>msclkid</code>, <code>ref</code></li>
+        </ul>
+        <p>Example (tracking-heavy):</p>
+        <pre><code>https://example.com/product?utm_source=whatsapp&utm_medium=share&utm_campaign=diwali&amp;fbclid=XYZ123</code></pre>
+
+        <div class="ok">
+          <b>Most important skill:</b> everything after <code>?</code> is optional metadata <i>unless</i> the site uses it for sessions, payments, or secure tokens (we’ll cover when NOT to remove).
+        </div>
+
+        <h2>Why Tracking Links Are Common in SMS &amp; WhatsApp</h2>
+        <p>Because messaging is where conversions happen. People forward deals, payment pages, maps, YouTube videos, referral offers, and app installs. Companies want to measure what works, and some platforms add identifiers automatically.</p>
+        <p>Common sources:</p>
+        <ul>
+          <li><b>Marketing teams:</b> UTMs for campaigns and attribution</li>
+          <li><b>Ad platforms:</b> click IDs like <code>gclid</code>, <code>msclkid</code></li>
+          <li><b>Social platforms:</b> click identifiers like <code>fbclid</code></li>
+          <li><b>Affiliate programs:</b> <code>ref</code>, <code>aff</code>, partner IDs</li>
+          <li><b>Apps:</b> referral codes and deep-links</li>
+        </ul>
+
+        <h2>Core Parts of a URL (So You Don’t Get Confused)</h2>
+        <p>Before cleaning anything, know what you’re looking at:</p>
+        <pre><code>https://shop.example.com/product/abc?utm_source=whatsapp&amp;ref=partner123#reviews
+\____/  \______________/ \___________/ \______________________/ \______/
+ scheme      domain           path              query            fragment</code></pre>
+        <ul>
+          <li><b>Domain</b> tells you who owns the site (most important for safety)</li>
+          <li><b>Query</b> after <code>?</code> is where tracking usually lives</li>
+          <li><b>Fragment</b> after <code>#</code> is usually page navigation (often safe)</li>
+        </ul>
+
+        <h2>Tracking Type #1: UTM Parameters (Most Common)</h2>
+        <p>UTM parameters are standardized marketing tags. You’ll commonly see:</p>
+        <ul>
+          <li><code>utm_source</code> — where the click came from (whatsapp, sms, newsletter)</li>
+          <li><code>utm_medium</code> — channel type (social, cpc, email)</li>
+          <li><code>utm_campaign</code> — campaign name</li>
+          <li><code>utm_term</code> — keyword (often ads)</li>
+          <li><code>utm_content</code> — A/B test variant</li>
+        </ul>
+
+        <h3>Example: UTM-only link (typically safe to clean)</h3>
+        <pre><code>https://example.com/sale?utm_source=whatsapp&utm_medium=share&utm_campaign=summer</code></pre>
+        <p>In many cases you can remove the entire query and still reach the same content:</p>
+        <pre><code>https://example.com/sale</code></pre>
+
+        <div class="note">
+          <b>Simple rule:</b> If the page is a public article/product page, UTMs are usually not required for the page to work.
+        </div>
+
+        <h2>Tracking Type #2: Click IDs (Ad Platform Identifiers)</h2>
+        <p>Click IDs are inserted by advertising platforms so the advertiser can measure conversions. Common ones you’ll see in the wild:</p>
+        <ul>
+          <li><code>gclid</code> — Google Ads click ID</li>
+          <li><code>dclid</code> — Google Display click ID (varies by setup)</li>
+          <li><code>msclkid</code> — Microsoft Ads click ID</li>
+          <li><code>fbclid</code> — Meta (Facebook/Instagram) click ID</li>
+          <li><code>ttclid</code> — TikTok click ID</li>
+          <li><code>twclid</code> — X/Twitter click ID (sometimes used by ad tooling)</li>
+          <li><code>gbraid</code>/<code>wbraid</code> — Google-related identifiers used in some environments</li>
+        </ul>
+
+        <h3>Example: Click ID appended to a normal URL</h3>
+        <pre><code>https://example.com/page?fbclid=IwAR0...&amp;utm_source=whatsapp</code></pre>
+        <p>Most of these identifiers exist only for tracking. Removing them typically doesn’t break the destination page.</p>
+
+        <div class="warn">
+          <b>Privacy risk:</b> Click IDs can connect your click to a campaign/ad identity. If you forward such a link to others, you may be forwarding identifiers that track the chain.
+        </div>
+
+        <h2>Tracking Type #3: Ref Tags, Affiliate IDs, and Partner Codes</h2>
+        <p>Referral/affiliate tags are used to attribute sales to a partner or referrer. They look like:</p>
+        <ul>
+          <li><code>ref=</code>, <code>ref_id=</code>, <code>referrer=</code></li>
+          <li><code>aff=</code>, <code>aff_id=</code>, <code>affiliate=</code></li>
+          <li><code>partner=</code>, <code>utm_source=partnername</code></li>
+          <li><code>tag=</code> (common on some e-commerce/affiliate programs)</li>
+        </ul>
+
+        <h3>Example: referral tag</h3>
+        <pre><code>https://example.com/product?ref=partner123</code></pre>
+        <p><b>Should you remove it?</b> Depends on your intent:</p>
+        <ul>
+          <li>If you want privacy and a clean share, remove it.</li>
+          <li>If you intentionally want to support the referrer, keep it (you are choosing attribution).</li>
+        </ul>
+
+        <div class="note">
+          <b>Ethical angle:</b> Removing affiliate tags is not “hacking.” It’s simply removing attribution metadata. Whether you keep it is a personal choice.
+        </div>
+
+        <h2>When NOT to Remove Parameters (They Might Be Required)</h2>
+        <p>Not every query parameter is “just tracking.” Some parameters are functional and removing them can break:</p>
+        <ul>
+          <li>secure logins / password resets</li>
+          <li>payment sessions / checkout steps</li>
+          <li>one-time verification tokens</li>
+          <li>document access links</li>
+          <li>deep links to apps</li>
+        </ul>
+
+        <h3>High-risk examples (do NOT “clean” blindly)</h3>
+        <pre><code>https://accounts.example.com/reset?token=LONG_RANDOM_STRING
+https://pay.example.com/checkout?session_id=abc123
+https://docs.example.com/share?id=FILEID&amp;authuser=0</code></pre>
+
+        <div class="warn">
+          <b>Rule:</b> If the link is for authentication, payment, account recovery, or private access, treat parameters as potentially essential.
+        </div>
+
+        <h2>How to Tell “Tracking” vs “Functional” Parameters</h2>
+        <p>This heuristic works surprisingly well:</p>
+        <ul>
+          <li><b>Tracking parameters</b> often look like marketing words: <code>utm_</code>, <code>ref</code>, <code>campaign</code>, <code>source</code>, <code>medium</code>, click IDs like <code>gclid</code>/<code>fbclid</code>.</li>
+          <li><b>Functional parameters</b> often look like security/session words: <code>token</code>, <code>session</code>, <code>auth</code>, <code>code</code>, <code>state</code>, <code>signature</code>, <code>expires</code>, long random strings.</li>
+        </ul>
+
+        <h3>Two quick tests</h3>
+        <ol>
+          <li><b>Remove only obvious tracking keys</b> (UTM, click IDs) and keep the rest.</li>
+          <li><b>Never remove long random tokens</b> if the link grants access or verifies identity.</li>
+        </ol>
+
+        <h2>Practical: Clean a Link Safely (Without Tools)</h2>
+        <p>You can clean many public links by following a safe order:</p>
+        <ol>
+          <li>Copy the URL into Notes (don’t click).</li>
+          <li>Keep the domain + path unchanged.</li>
+          <li>Remove only the clearly tracking parameters: <code>utm_*</code>, <code>gclid</code>, <code>fbclid</code>, <code>msclkid</code>, <code>ttclid</code>, etc.</li>
+          <li>Keep anything that looks like a session/token unless you’re sure it’s not required.</li>
+        </ol>
+
+        <h3>Example: selective removal</h3>
+        <pre><code>Original:
+https://example.com/p/abc?utm_source=whatsapp&utm_medium=share&fbclid=XYZ&ref=partner123
+
+Cleaned (privacy-first share):
+https://example.com/p/abc</code></pre>
+
+        <h3>Example: keep functional tokens, remove tracking only</h3>
+        <pre><code>Original:
+https://example.com/checkout?session_id=SESS123&utm_source=whatsapp&fbclid=XYZ
+
+Safer cleaned:
+https://example.com/checkout?session_id=SESS123</code></pre>
+
+        <div class="ok">
+          <b>Best practice for sharing:</b> Share the shortest URL that still works.
+        </div>
+
+        <h2>Why Tracking Links Matter More on WhatsApp &amp; SMS</h2>
+        <p>Because these channels are “private,” people assume the link is private too. But tracking parameters make links behave like tracking beacons:</p>
+        <ul>
+          <li>Forwarding spreads the same identifiers to new people</li>
+          <li>Some parameters can tie clicks to ad systems</li>
+          <li>Even if the content is harmless, the metadata isn’t always harmless</li>
+        </ul>
+        <p>If you care about privacy, cleaning links before sharing is one of the highest-impact habits you can adopt.</p>
+
+        <h2>Bonus: Hidden Tracking Patterns You’ll See Often</h2>
+
+        <h3>1) Encoded parameters</h3>
+        <p>Sometimes tracking data is hidden inside values that look random:</p>
+        <pre><code>https://example.com/?data=eyJzb3VyY2UiOiJ3aGF0c2FwcCIsICJpZCI6IjEyMyJ9</code></pre>
+        <p>That value might be encoded JSON or a compact token. Don’t try to “decode everything.” Just recognize it as metadata. If the page is public content, try removing the entire query. If it breaks, restore it.</p>
+
+        <h3>2) Multiple redirects and “link hub” pages</h3>
+        <p>Marketing links often go through a redirect chain:</p>
+        <pre><code>short.link → tracker.example → landing.example → final.example/page?utm_...</code></pre>
+        <p>More hops = less transparency. For safety, confirm the <b>final domain</b> is what you expect before proceeding.</p>
+
+        <h3>3) Parameters that look harmless</h3>
+        <p>Some tracking uses generic keys like:</p>
+        <pre><code>?id=...&amp;cid=...&amp;src=...&amp;spm=...&amp;scid=...</code></pre>
+        <p>These aren’t always tracking, but frequently are. Use the same rule: public content → remove query and test; private/secure links → don’t remove.</p>
+
+        <h2>Privacy-First Workflow: “Don’t Upload Links to Check Them”</h2>
+        <p>Many online “URL cleaners” or “unshorteners” work by sending your URL to their servers. That means the link you received in WhatsApp/SMS becomes someone else’s log data.</p>
+        <p>BitDark.NET is built around a client-only mindset: do as much as possible locally before you trust anything.</p>
+
+        <div class="note">
+          <b>BitDark idea (if you add this feature later):</b> Highlight tracking keys and offer a “Copy Clean Link” option—all in the browser, without uploading the URL.
+        </div>
+
+        <h2>FAQ</h2>
+
+        <h3>Are UTM links dangerous?</h3>
+        <p>Usually not dangerous by themselves. They are mainly a privacy and attribution issue. The real danger comes from the destination domain and what the page asks you to do.</p>
+
+        <h3>Will removing tracking break the page?</h3>
+        <p>For public pages (articles/products), usually no. For logins, payments, verification links, and private access links, removing parameters can break functionality. Remove only obvious tracking keys or don’t remove at all.</p>
+
+        <h3>Why do I see so many different tracking parameters?</h3>
+        <p>Because different platforms and ad systems append different identifiers. WhatsApp/SMS forwarding spreads whatever was already attached.</p>
+
+        <h3>Is it “wrong” to remove affiliate/ref tags?</h3>
+        <p>It’s your choice. Removing ref tags removes attribution. If you want to support the referrer, keep them. If you want privacy and clean sharing, remove them.</p>
+
+        <h2>Quick Summary (If You Remember Only One Thing)</h2>
+        <div class="ok">
+          <ul>
+            <li><b>Tracking usually lives after <code>?</code></b> as UTMs, click IDs, and ref tags.</li>
+            <li><b>Public pages:</b> you can often remove the whole query safely.</li>
+            <li><b>Secure links:</b> don’t remove tokens, sessions, codes, signatures.</li>
+            <li><b>Clean before sharing</b> to protect your privacy and your friends’ privacy.</li>
+            <li><b>Prefer client-only checks</b> when inspecting links from private messages.</li>
+          </ul>
+        </div>
+
+        <h2>Related articles</h2>
+        <div class="relatedGrid">
+          <div class="relatedItem">
+            <b><a href="/blog/how-to-check-a-short-links-real-destination-without-opening-it/">How to Check a Short Link’s Real Destination (Without Opening It)</a></b>
+            <span>Safe-Link Tips • Expand short links safely and read the final domain</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/how-to-spot-a-suspicious-link-without-uploading-it-anywhere/">How to Check if a Link Is Safe — Without Clicking or Uploading It</a></b>
+            <span>Safe-Link Tips • Domain-first inspection workflow</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/how-to-hide-sensitive-files-online-in-2026/">How to Hide Sensitive Files Online in 2026</a></b>
+            <span>Privacy Workflow • Secure file sharing and encryption habits</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/">Browse all posts</a></b>
+            <span>Blog • Search by keywords, tags and categories</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card" aria-label="Sidebar">
+        <b>On this page</b>
+        <nav id="toc" class="tocNav" aria-label="Table of contents"></nav>
+
+        <div class="adSlot">
+          Future AdSense / widgets<br>
+          (Reserved space)
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> BitDark.NET</div>
+      <div class="footRight">
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/faq.html">FAQ</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const title = (document.getElementById("postTitle")?.textContent || "Post").trim();
+      document.getElementById("crumbTitle").textContent = title;
+
+      const cat = document.querySelector("meta[name='bd:category']")?.content?.trim();
+      if (cat) document.getElementById("postCategory").textContent = cat;
+
+      const upd = document.querySelector("meta[name='bd:updated']")?.content?.trim();
+      if (upd) {
+        const t = document.getElementById("updatedTime");
+        t.setAttribute("datetime", upd);
+        const dt = new Date(upd + "T00:00:00");
+        const pretty = dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" });
+        t.textContent = pretty;
+      }
+
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q");
+      if (q) document.getElementById("qTop").value = q;
+    })();
+
+    (() => {
+      const article = document.getElementById("article");
+      const out = document.getElementById("readTime");
+      if (!article || !out) return;
+
+      const text = (article.innerText || "").replace(/\s+/g, " ").trim();
+      const words = text ? text.split(" ").length : 0;
+
+      const wpmFast = 260;
+      const wpmSlow = 220;
+      const minFast = Math.max(1, Math.ceil(words / wpmFast));
+      const minSlow = Math.max(1, Math.ceil(words / wpmSlow));
+
+      out.textContent = `~${minFast}–${minSlow} min`;
+    })();
+
+    (() => {
+      const toc = document.getElementById("toc");
+      const article = document.getElementById("article");
+      if (!toc || !article) return;
+
+      const headings = article.querySelectorAll("h2, h3");
+      if (!headings.length) {
+        toc.innerHTML = "<span style='color:var(--muted);font-size:13px'>No sections</span>";
+        return;
+      }
+
+      const slugify = (s) => (s || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .slice(0, 70);
+
+      const used = new Set();
+
+      headings.forEach((h) => {
+        if (!h.id) {
+          let id = slugify(h.textContent);
+          if (!id) id = "section";
+          let n = 2;
+          while (used.has(id) || document.getElementById(id)) {
+            id = `${slugify(h.textContent)}-${n++}`;
+          }
+          h.id = id;
+          used.add(id);
+        }
+
+        const a = document.createElement("a");
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim();
+        if (h.tagName === "H3") a.classList.add("toc-h3");
+
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById(h.id).scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", `#${h.id}`);
+        });
+
+        toc.appendChild(a);
+      });
+    })();
+  </script>
+</body>
+</html>
