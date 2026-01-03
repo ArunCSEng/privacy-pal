@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>How to Check a QR Code Link Safely (Without Scanning It Blindly) — BitDark Blog</title>
+  <meta name="description" content="QR codes can hide phishing links, fake login pages, and malware downloads. Learn a privacy-first, client-only workflow to inspect a QR code’s destination safely—without scanning blindly—using built-in phone tricks and offline decoding." />
+  <link rel="canonical" href="https://bitdark.net/blog/how-to-check-a-qr-code-link-safely-without-scanning-blindly/" />
+
+  <meta name="bd:category" content="Safe-Link Tips" />
+  <meta name="bd:tags" content="qr-code,qr-phishing,quishing,phishing,malware,fake-login,bank-scam,upi-scam,android,iphone,privacy-first,client-only,url-inspection" />
+  <meta name="bd:updated" content="2026-01-04" />
+
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --card:#ffffff; --shadow:0 1px 2px rgba(0,0,0,.06);
+      --link:#1a73e8; --chip:#f3f4f6;
+      --code:#0b1020; --codefg:#e5e7eb;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b0f1a; --fg:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --card:#0f1626; --shadow:0 1px 2px rgba(0,0,0,.35);
+      --link:#8ab4f8; --chip:#111827;
+      --code:#050814; --codefg:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font:16px/1.85 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
+    }
+    a{color:var(--link); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .wrap{max-width:1200px;margin:0 auto;padding:18px 16px 70px}
+
+    .topbar{
+      position:sticky;top:0;z-index:10;
+      background:color-mix(in srgb,var(--bg) 92%,transparent);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar .inner{
+      max-width:1200px;margin:0 auto;padding:10px 16px;
+      display:flex;gap:12px;align-items:center;
+    }
+    .brand{min-width:180px}
+    .brand b{font-size:16px}
+    .brand span{font-size:12px;color:var(--muted)}
+    .searchbar{flex:1;display:flex;justify-content:flex-end}
+    .searchWrap{position:relative;width:min(560px,100%)}
+    .searchWrap input{
+      width:100%;padding:10px 12px 10px 36px;
+      border:1px solid var(--line);
+      border-radius:14px;background:var(--bg);color:var(--fg);
+      outline:none;
+    }
+    .searchWrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
+    .btn{
+      border:1px solid var(--line);background:var(--card);color:var(--fg);
+      padding:8px 10px;border-radius:12px;cursor:pointer;
+      box-shadow:0 1px 2px rgba(0,0,0,.06);
+      font-size:13px;
+    }
+
+    .crumbs{
+      margin-top:16px;font-size:13px;color:var(--muted);
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+
+    .grid{display:grid;gap:16px;margin-top:16px}
+    @media(min-width:980px){
+      .grid{grid-template-columns:2.3fr 0.9fr}
+    }
+    .card{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 1px 2px rgba(0,0,0,.06);
+    }
+
+    h1{font-size:34px;line-height:1.2;margin:10px 0 8px}
+    h2{font-size:22px;margin:30px 0 10px}
+    h3{font-size:18px;margin:20px 0 8px}
+    p{margin:12px 0}
+    ul{margin:12px 0 12px 18px}
+    ol{margin:12px 0 12px 18px}
+    .subhead{margin:0 0 10px;font-size:15px;color:var(--muted)}
+    pre{
+      background:var(--code);color:var(--codefg);
+      padding:14px;border-radius:14px;overflow:auto;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+
+    .note{
+      border-left:4px solid var(--link);
+      padding:12px;background:var(--chip);
+      border-radius:12px;margin:16px 0;
+    }
+    .warn{
+      border-left:4px solid #ef4444;
+      padding:12px;background:color-mix(in srgb, #ef4444 10%, var(--chip));
+      border-radius:12px;margin:16px 0;
+    }
+    .ok{
+      border-left:4px solid #22c55e;
+      padding:12px;background:color-mix(in srgb, #22c55e 10%, var(--chip));
+      border-radius:12px;margin:16px 0;
+    }
+
+    .meta{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12px; margin:0 0 6px;
+    }
+    .dot{opacity:.8}
+
+    .tagsInline{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .tag{
+      border:1px solid var(--line);
+      padding:5px 10px;border-radius:999px;
+      font-size:12px;color:var(--muted);
+      background:color-mix(in srgb, var(--chip) 92%, transparent);
+    }
+
+    .tocNav{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .tocNav a{
+      font-size:13px;color:var(--muted);
+      padding:6px 8px;border-radius:8px;
+      text-decoration:none; line-height:1.35;
+    }
+    .tocNav a:hover{background:var(--chip);color:var(--fg)}
+    .toc-h3{padding-left:18px;font-size:12px;opacity:.95}
+
+    .adSlot{
+      margin-top:14px;
+      min-height:520px;
+      border:1px dashed var(--line);
+      border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--muted);text-align:center;
+      padding:12px;
+      background:color-mix(in srgb, var(--bg) 92%, transparent);
+    }
+
+    .relatedGrid{display:grid;gap:12px;margin-top:12px}
+    @media(min-width:720px){ .relatedGrid{grid-template-columns:1fr 1fr} }
+    .relatedItem{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:color-mix(in srgb, var(--card) 92%, transparent);
+    }
+    .relatedItem b{display:block;margin-bottom:6px;font-size:14px}
+    .relatedItem span{color:var(--muted);font-size:12px}
+
+    footer{
+      margin-top:30px;border-top:1px solid var(--line);
+      padding-top:12px;font-size:12px;color:var(--muted);
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .footRight{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .footRight a{color:var(--muted)}
+    .footRight a:hover{color:var(--fg); text-decoration:none}
+
+    /* small utilities for this post (still consistent with theme) */
+    .checklist li{margin:8px 0}
+    .kbd{
+      border:1px solid var(--line);
+      background:color-mix(in srgb, var(--chip) 75%, transparent);
+      padding:1px 6px;border-radius:6px;
+      font-size:.9em
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="inner">
+      <div class="brand">
+        <b><a href="/" aria-label="BitDark Home">BitDark</a></b>
+        <span><a href="/blog/">Blog</a></span>
+      </div>
+
+      <div class="searchbar" role="search">
+        <form class="searchWrap" action="/blog/" method="GET">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <input name="q" id="qTop" placeholder="Search blog…" autocomplete="off">
+        </form>
+      </div>
+
+      <button class="btn" id="themeBtn" type="button">Theme</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="crumbs" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/blog/">Blog</a>
+      <span>›</span>
+      <span id="crumbTitle">How to Check a QR Code Link Safely</span>
+    </div>
+
+    <div class="grid">
+      <article class="card" id="article">
+        <h1 id="postTitle">How to Check a QR Code Link Safely (Without Scanning It Blindly)</h1>
+        <p class="subhead"><b>A privacy-first, client-only workflow to reveal where a QR code goes — before you open it</b></p>
+        <p class="subhead">(Works for iPhone + Android, printed QR stickers, menus, parking meters, posters, parcels, and payment codes)</p>
+
+        <div class="meta" aria-label="Post metadata">
+          <span>Updated: <time id="updatedTime" datetime="2026-01-04">Jan 04, 2026</time></span>
+          <span class="dot">•</span>
+          <span>Category: <b id="postCategory">Safe-Link Tips</b></span>
+          <span class="dot">•</span>
+          <span>Read time: <span id="readTime">~18–24 min</span></span>
+        </div>
+
+        <div class="tagsInline" aria-label="Tags">
+          <span class="tag">QR Codes</span>
+          <span class="tag">Phishing</span>
+          <span class="tag">Quishing</span>
+          <span class="tag">Android</span>
+          <span class="tag">iPhone</span>
+          <span class="tag">Privacy-First</span>
+        </div>
+
+        <div class="ok">
+          <b>Fast answer (BitDark method):</b> Don’t “open” a QR code. <b>Extract the link</b> first, <b>read the real domain</b>, and only then decide. The safest flow is:
+          <ol>
+            <li><b>Preview</b> the QR result (don’t tap open)</li>
+            <li><b>Verify the domain</b> (spelling + TLD + path)</li>
+            <li><b>Check the intent</b> (login? payment? download? form?)</li>
+            <li><b>Open in a controlled way</b> (private mode, no saved passwords, no installs)</li>
+          </ol>
+        </div>
+
+        <h2>Why QR Codes Are Dangerous (Even When They Look “Official”)</h2>
+        <p>A QR code is not a “safe object.” It’s just a compact way to store data. That data can be a web link, a payment request, a Wi-Fi join command, a phone number, an SMS template, or even a deep link that jumps into an app. The danger isn’t the black-and-white squares — it’s the invisible instruction hidden inside them.</p>
+        <p>People treat QR codes like physical signs: if it’s printed neatly on a stand, stuck on a wall, or on a restaurant table, it feels trustworthy. Scammers love that. They don’t need to hack your phone. They just need you to <b>open the wrong destination</b>.</p>
+
+        <div class="warn">
+          <b>The core risk:</b> A QR code can <b>hide the real destination</b>. You can’t see the domain in advance like you can with a normal URL. That “blindness” is what attackers exploit.
+        </div>
+
+        <p>There’s also a second factor: QR codes are often used in moments when you’re in a hurry — entering a building, paying for parking, ordering food, joining Wi-Fi, checking a delivery status, or paying a bill. Hurry reduces skepticism. You scan, tap, and move on.</p>
+
+        <h3>QR phishing has a name: “Quishing”</h3>
+        <p>Security people sometimes call it <b>quishing</b> (QR + phishing). It’s the same old scam idea — trick a human into giving away access or money — but delivered in a way that bypasses your normal link instincts.</p>
+
+        <h3>Why QR works so well for scammers</h3>
+        <ul class="checklist">
+          <li><b>It’s offline distribution.</b> A printed sticker can reach thousands without needing ads or email spam.</li>
+          <li><b>It bypasses “hover to preview.”</b> On a PC, you can hover a link and see it. With QR, you usually can’t.</li>
+          <li><b>It piggybacks on trust.</b> People trust menus, posters, tickets, and “official” looking stands.</li>
+          <li><b>It blends into public spaces.</b> A sticker placed on top of a real QR code can look identical from a distance.</li>
+          <li><b>It feels modern and convenient.</b> Convenience lowers skepticism.</li>
+        </ul>
+
+        <div class="note">
+          <b>BitDark mindset:</b> Treat every QR code as a <b>hidden URL</b> until proven otherwise. Your job is to reveal the destination before you go there.
+        </div>
+
+        <h2>What Can Be Inside a QR Code (It’s Not Always a Website)</h2>
+        <p>Most people think QR codes always lead to a website. That’s common — but not guaranteed. Here are common payload types:</p>
+
+        <h3>1) Web link (URL)</h3>
+        <p>Example: <code>https://example.com/menu</code> or <code>http://tinyurl.com/…</code>. This is the most common and the most abused.</p>
+
+        <h3>2) App deep link</h3>
+        <p>Example: <code>upi://pay?pa=…</code>, <code>intent://…</code> (Android), or universal links that open a specific app screen.</p>
+
+        <h3>3) Payment request</h3>
+        <p>UPI payment URIs, wallet requests, “pay to this address,” or merchant payment links.</p>
+
+        <h3>4) Wi-Fi join command</h3>
+        <p>It can auto-fill network name + password. That’s convenient… and also a way to push you onto a hostile network.</p>
+
+        <h3>5) Phone/SMS/email templates</h3>
+        <p>Some codes trigger “call this number,” “send this SMS,” or “email this address.” Those can be used for support scams or social engineering.</p>
+
+        <div class="warn">
+          <b>Important:</b> If your camera preview says “Call”, “Message”, “Join Wi-Fi”, or “Open in app”, treat it as <b>higher risk</b> than a normal web link. Those actions reduce your ability to inspect what will happen next.
+        </div>
+
+        <h2>The Threat Models: What Attackers Try to Achieve</h2>
+        <p>To check QR codes safely, you need to know what “bad outcomes” look like. Most QR scams fall into a few categories:</p>
+
+        <h3>A) Credential theft (fake login)</h3>
+        <p>You scan a QR code that opens what looks like a Microsoft/Google/Bank login page. You enter your username and password. The attacker now has access.</p>
+        <ul>
+          <li>Common targets: email, cloud storage, bank portals, social media, company SSO</li>
+          <li>Common disguise: “Scan to view invoice,” “Scan to see document,” “Scan to confirm delivery,” “Scan to sign in”</li>
+        </ul>
+
+        <h3>B) Payment redirection (fake payment page)</h3>
+        <p>You think you’re paying a parking meter, restaurant, or charity. The QR actually points to a payment request controlled by the attacker.</p>
+        <ul>
+          <li>Common targets: UPI payments, wallet transfers, “small fee” capture</li>
+          <li>Common disguise: QR sticker placed over the real merchant QR</li>
+        </ul>
+
+        <h3>C) Malware / unwanted apps</h3>
+        <p>The QR opens a site that pressures you to download an app, “security update,” “invoice viewer,” or “coupon.” On Android, attackers may push APK downloads.</p>
+
+        <h3>D) Device or account compromise via social engineering</h3>
+        <p>Some QR codes push you to call a number, message “support,” or install remote-access tools. That’s a human-layer hack more than a technical hack.</p>
+
+        <h3>E) Tracking and profiling</h3>
+        <p>Even “not malicious” QR codes can be used to track foot traffic and build profiles. The QR can include unique identifiers that reveal when and where you scanned it.</p>
+
+        <div class="note">
+          <b>Privacy-first tip:</b> If you don’t need an app for the task, don’t let a QR code force you into one. Prefer the web, and prefer minimal permissions.
+        </div>
+
+        <h2>Physical Red Flags: Spotting Tampered QR Codes in the Real World</h2>
+        <p>Before we even talk about digital inspection, start with physical reality. Many QR attacks are literally sticker attacks: a scammer places a new QR code sticker on top of a real one. You scan it, and you’re taken to the attacker’s destination.</p>
+
+        <h3>Look for sticker-over-sticker clues</h3>
+        <ul class="checklist">
+          <li><b>Edges lifting</b> or a second layer visible</li>
+          <li><b>Different material</b> than the original (glossy sticker on a matte sign)</li>
+          <li><b>Misalignment</b> (QR not centered where a designer would place it)</li>
+          <li><b>Different printing quality</b> (blurry, pixelated, wrong contrast)</li>
+          <li><b>Unexpected QR placement</b> (on a random wall instead of on official signage)</li>
+        </ul>
+
+        <h3>Context mismatch</h3>
+        <p>Ask yourself: “Does this QR code belong here?” A QR code for “parking payment” placed on a tree near the lot is suspicious. A QR code on a shop counter that forces you to install an app is suspicious. A QR code on a bus stop that asks for banking login is suspicious.</p>
+
+        <div class="warn">
+          <b>Physical golden rule:</b> If a QR code is <b>easy to replace</b> and <b>hard to verify</b> (public places), assume it may have been replaced.
+        </div>
+
+        <h2>The BitDark Workflow: Reveal → Read → Reason → Open (Controlled)</h2>
+        <p>Most “QR safety tips” stop at “be careful.” That’s useless. You need a repeatable workflow that you can do in seconds — like checking traffic before you cross a road.</p>
+
+        <h3>Step 1: Reveal the destination (without opening it)</h3>
+        <p>Your first goal is not to “visit” anything. It’s to extract what the QR contains. Prefer methods that show a preview string or allow copying the link without loading it.</p>
+
+        <h3>Step 2: Read the domain like a human firewall</h3>
+        <p>Most scams fail if you carefully read the domain. Not the page design. Not the logo. The domain. Train your eyes to lock onto:</p>
+        <ul>
+          <li><b>Root domain</b> (the real site identity)</li>
+          <li><b>Subdomain tricks</b> (login.bank.com.attacker.site)</li>
+          <li><b>Lookalike spelling</b> (paypaI.com vs paypal.com, rn vs m)</li>
+          <li><b>TLD mismatch</b> (.com vs .xyz vs .top vs .click)</li>
+        </ul>
+
+        <h3>Step 3: Reason about intent</h3>
+        <p>Even a “good domain” can be used for bad intent. Example: URL shorteners and file-sharing services can host malicious links. So ask: what is this asking me to do?</p>
+        <ul>
+          <li>Login? Payment? Download? Permission? Install?</li>
+          <li>Does that match the situation (menu vs bank login)?</li>
+        </ul>
+
+        <h3>Step 4: Open in a controlled way</h3>
+        <p>If you decide to proceed, open it in a way that reduces damage:</p>
+        <ul>
+          <li>Use private/incognito mode for unknown QR codes</li>
+          <li>Don’t auto-fill passwords</li>
+          <li>Don’t install apps/APKs from QR-driven pages</li>
+          <li>Don’t grant permissions (notifications, contacts, camera again)</li>
+        </ul>
+
+        <div class="ok">
+          <b>Memory shortcut:</b> <b>Reveal → Read → Reason → Open (Controlled)</b>. If you do only this, you avoid most QR traps.
+        </div>
+
+        <h2>How to Preview a QR Code Link on iPhone (Without Blindly Opening)</h2>
+        <p>On iPhone, the Camera app often detects a QR code and shows a small banner or link suggestion. The key is: <b>don’t rush to tap the banner</b>. Your first goal is to inspect what it is.</p>
+
+        <h3>Method 1: Camera app preview + “copy link” behavior</h3>
+        <ol>
+          <li>Open <b>Camera</b> and point it at the QR code.</li>
+          <li>Wait for the QR prompt/banner to appear.</li>
+          <li><b>Long-press</b> the banner (when available) to see options like <b>Copy Link</b> or <b>Open</b>.</li>
+          <li>Choose <b>Copy</b> (or similar) instead of Open.</li>
+          <li>Paste into a notes app first and inspect the domain.</li>
+        </ol>
+
+        <div class="note">
+          <b>Tip:</b> If long-press doesn’t offer copy options, you can still use the “Reason” step: read the displayed domain carefully before tapping.
+        </div>
+
+        <h3>Method 2: Use Photos (if you have a screenshot or image)</h3>
+        <p>If you already have a picture of the QR code (or take one), iOS can often detect QR codes inside images:</p>
+        <ol>
+          <li>Open the image in <b>Photos</b>.</li>
+          <li>Tap/hold the detected link or QR indicator (varies by iOS version).</li>
+          <li>Try to use <b>Copy</b> instead of <b>Open</b>.</li>
+          <li>Paste into Notes and inspect.</li>
+        </ol>
+
+        <div class="warn">
+          <b>Don’t trust the page design.</b> QR scams frequently clone real brand pages. Domain inspection is your defense, not visuals.
+        </div>
+
+        <h2>How to Preview a QR Code Link on Android (Without Blindly Opening)</h2>
+        <p>Android devices vary, but many support QR detection in the Camera app, Google Lens, or gallery apps. Your goal is the same: extract first, then decide.</p>
+
+        <h3>Method 1: Camera QR prompt (many phones)</h3>
+        <ol>
+          <li>Open Camera and point at the QR.</li>
+          <li>When the prompt appears, look for a <b>preview</b> or <b>expand</b> arrow.</li>
+          <li>If you see options like <b>Copy text</b>, <b>Copy link</b>, or <b>Share</b> — choose that instead of Open.</li>
+          <li>Paste into a notes app to inspect the domain.</li>
+        </ol>
+
+        <h3>Method 2: Google Lens (great for extracting without immediate browsing)</h3>
+        <ol>
+          <li>Open Google app → Lens (or Camera → Lens mode, depending on phone).</li>
+          <li>Scan the QR code.</li>
+          <li>Lens often shows the decoded text/link. Use <b>copy</b> if available.</li>
+          <li>Inspect the domain before opening.</li>
+        </ol>
+
+        <h3>Method 3: Use gallery QR detection from a photo</h3>
+        <p>Take a photo of the QR code first. Then open it in your gallery app. Many phones show a “Scan QR” button on the image. Again: decode first, inspect, then open.</p>
+
+        <div class="note">
+          <b>Why photos help:</b> Taking a photo creates a “pause.” Scams rely on urgency. Photos force you to slow down and inspect.
+        </div>
+
+        <h2>The Safest Method: Decode QR Offline (No Website Loading)</h2>
+        <p>If you want the most privacy-first approach, decode the QR code without contacting any website. That means: convert the QR image into text locally, then decide.</p>
+
+        <h3>Option A: Use an offline QR decoder app (carefully)</h3>
+        <p>Some apps decode QR codes without opening links automatically. If you use an app, choose one that:</p>
+        <ul class="checklist">
+          <li>Works offline</li>
+          <li>Does not request unnecessary permissions</li>
+          <li>Shows the decoded text clearly</li>
+          <li>Does not auto-open links</li>
+        </ul>
+        <div class="warn">
+          <b>App caution:</b> Many “QR scanner” apps are adware-heavy. Ironically, a bad QR app can be riskier than the QR code itself.
+        </div>
+
+        <h3>Option B: Decode in a browser locally (advanced, no upload)</h3>
+        <p>If you control your own tools (like BitDark.NET), a privacy-first QR decoder can run <b>entirely in your browser</b>: you load an image locally, the page decodes it with JavaScript, and nothing is uploaded anywhere.</p>
+        <p>This is exactly the kind of workflow BitDark’s philosophy supports: <b>client-only inspection</b>, no third-party link scanning, no cloud uploads.</p>
+
+        <div class="note">
+          <b>BitDark feature-fit:</b> A “Decode QR to Text (Client-Only)” tool is a natural addition: paste image or use camera → get decoded URL text → highlight the root domain → show risk cues.
+        </div>
+
+        <h2>How to Read the Decoded Link Like a Pro (Domain-First Inspection)</h2>
+        <p>Once you have the decoded text, you must interpret it correctly. This is where most people fail: they see something long and assume it’s “technical.” Actually, you only need to read a few parts.</p>
+
+        <h3>1) Identify the scheme: https vs http vs other</h3>
+        <ul>
+          <li><code>https://</code> is encrypted in transit (good baseline).</li>
+          <li><code>http://</code> is unencrypted (suspicious for logins/payments).</li>
+          <li><code>upi://</code>, <code>tel:</code>, <code>sms:</code>, <code>intent://</code> are action schemes (higher risk).</li>
+        </ul>
+
+        <div class="warn">
+          <b>Rule:</b> Never enter passwords or payment details on <code>http://</code> links.
+        </div>
+
+        <h3>2) Find the real domain (not the fake one)</h3>
+        <p>Domains can be deceptive because attackers can create long subdomains. The real identity is the <b>registrable domain</b> (the part just before the TLD).</p>
+
+        <p>Example:</p>
+        <pre><code>https://login.icici.secure-verify.com/account</code></pre>
+        <p>Many people see “icici” and relax. But the real domain is <code>secure-verify.com</code>, not ICICI.</p>
+
+        <div class="ok">
+          <b>Quick trick:</b> Read the domain from <b>right to left</b>:
+          <ul>
+            <li><code>.com</code> → <code>secure-verify</code> → then everything else is just subdomains.</li>
+          </ul>
+        </div>
+
+        <h3>3) Watch for lookalikes and character tricks</h3>
+        <ul class="checklist">
+          <li><b>I vs l vs 1</b> (paypaI vs paypal)</li>
+          <li><b>rn vs m</b> (modem vs modern)</li>
+          <li><b>Extra words</b> (secure, verify, support, login, update)</li>
+          <li><b>Hyphen stuffing</b> (bank-secure-login-verify.com)</li>
+        </ul>
+
+        <h3>4) Watch for URL shorteners</h3>
+        <p>Short links hide the destination. If the QR decodes to a shortener, your safest move is to expand it <b>without opening</b> (domain-first).</p>
+        <div class="note">
+          If you have BitDark’s short-link workflow already, apply the same logic here: expand → read final domain → decide.
+        </div>
+
+        <h3>5) Look at the path and parameters (the “intent” clues)</h3>
+        <p>Paths like <code>/login</code>, <code>/verify</code>, <code>/reset</code>, <code>/update</code>, <code>/download</code> are riskier than <code>/menu</code> or <code>/hours</code>. Parameters can also reveal intent:</p>
+        <ul>
+          <li><code>redirect=</code> or <code>next=</code> can be used for redirect tricks.</li>
+          <li><code>token=</code> or <code>session=</code> suggests authentication flow.</li>
+          <li><code>amount=</code> suggests payment flow.</li>
+        </ul>
+
+        <h2>Special Case: Payment QR Codes (UPI / Wallets) — How Not to Pay the Wrong Person</h2>
+        <p>Payment QR scams are brutal because the “attack” is simply: you pay the attacker instead of the merchant. No malware needed. No hacking. Just misdirection.</p>
+
+        <h3>Common real-world payment QR scam</h3>
+        <ol>
+          <li>Merchant has a printed QR for payments.</li>
+          <li>Attacker places a new QR sticker on top.</li>
+          <li>You scan, your payment app opens, and you see a name you don’t recognize.</li>
+          <li>You pay anyway because you’re rushed or assume it’s a “payment processor.”</li>
+        </ol>
+
+        <div class="warn">
+          <b>UPI golden rule:</b> Always verify the <b>payee name</b> and <b>UPI ID</b> displayed by the payment app before you pay. If the name looks wrong, stop.
+        </div>
+
+        <h3>What to verify in the payment app</h3>
+        <ul class="checklist">
+          <li><b>Payee name</b> matches the merchant/shop name (or clearly matches the staff’s explained business account)</li>
+          <li><b>UPI ID</b> looks legitimate (not random strings)</li>
+          <li><b>Amount</b> is correct (some requests pre-fill amounts)</li>
+          <li><b>Purpose note</b> (sometimes used to confuse)</li>
+        </ul>
+
+        <div class="note">
+          <b>Practical habit:</b> Ask the staff to say the payee name aloud. If the app shows a different name, you caught a scam in time.
+        </div>
+
+        <h2>Special Case: QR Codes That Join Wi-Fi</h2>
+        <p>Wi-Fi QR codes are convenient in cafes and offices. But a hostile Wi-Fi network can enable tracking or man-in-the-middle attempts, especially if you visit non-HTTPS sites or install apps.</p>
+
+        <h3>Safe approach</h3>
+        <ul class="checklist">
+          <li>Prefer your mobile data if the task involves banking or sensitive logins.</li>
+          <li>If you must join Wi-Fi, avoid installing apps or updating devices while on that network.</li>
+          <li>Turn off “auto-join” after you leave.</li>
+        </ul>
+
+        <div class="warn">
+          <b>Red flag:</b> A Wi-Fi QR code that demands you install an app or “certificate” is suspicious.
+        </div>
+
+        <h2>Special Case: QR Codes That Trigger “Call This Number” or “Message Support”</h2>
+        <p>QR codes that lead to phone calls are common in support scams. The scam is not technical — it’s psychological. Once you call, they pressure you into payments, remote access, or “verification” steps.</p>
+
+        <h3>Red flags</h3>
+        <ul class="checklist">
+          <li>“Urgent security issue” warnings</li>
+          <li>“Your account will be locked” threats</li>
+          <li>Requests to install remote access apps</li>
+          <li>Requests for OTPs, PINs, or screen sharing</li>
+        </ul>
+
+        <div class="ok">
+          <b>Safe rule:</b> If you need support, initiate it from the official website or app you already trust — not from a QR code in the wild.
+        </div>
+
+        <h2>The “Controlled Open” Playbook (If You Decide to Proceed)</h2>
+        <p>Sometimes you genuinely need to scan a QR code — for a menu, event check-in, or a product manual. The goal isn’t to never scan. The goal is to reduce the blast radius if it’s malicious.</p>
+
+        <h3>1) Use a privacy mode for unknown codes</h3>
+        <p>Open the link in private/incognito mode so it doesn’t automatically reuse cookies, sessions, and saved logins. This reduces accidental “one tap login” exposures.</p>
+
+        <h3>2) Don’t allow auto-fill</h3>
+        <p>If a QR code leads to a login page, pause. A real service should already be in your bookmarks or app. Entering credentials from a QR-driven page is high-risk.</p>
+
+        <h3>3) Block permission prompts by default</h3>
+        <p>Scam pages commonly ask for notifications (“Allow”), location, contacts, or camera. The safest move is: deny everything unless you understand why it’s needed.</p>
+
+        <div class="warn">
+          <b>Pattern to recognize:</b> “Click Allow to continue” is almost always a trap — whether it’s notifications, permissions, or popups.
+        </div>
+
+        <h3>4) Never install apps/APKs from QR pages</h3>
+        <p>If a QR page says “Download our app” and offers an APK, treat that as hostile. Use official stores, and only after verifying the publisher.</p>
+
+        <h3>5) Use a separate “risky browsing” browser if you’re cautious</h3>
+        <p>Some people keep a secondary browser with no saved passwords and no logged-in sessions, used only for unknown links. That’s a strong habit if you scan many QR codes in public places.</p>
+
+        <h2>A Quick 10-Second QR Safety Checklist</h2>
+        <div class="ok">
+          <ul class="checklist">
+            <li><b>Is the QR physically tampered?</b> (sticker on sticker?)</li>
+            <li><b>Can I preview/copy the link instead of opening?</b></li>
+            <li><b>What is the real domain?</b> (read right-to-left)</li>
+            <li><b>Does the action match context?</b> (menu vs login/payment)</li>
+            <li><b>Any short link?</b> If yes, expand safely first.</li>
+            <li><b>Any install request?</b> If yes, exit.</li>
+            <li><b>Any permission prompt?</b> If yes, deny.</li>
+            <li><b>Payment?</b> Verify payee name + ID before paying.</li>
+          </ul>
+        </div>
+
+        <h2>Common QR Scam Scenarios (And the Safe Response)</h2>
+
+        <h3>Scenario 1: Restaurant menu QR on the table</h3>
+        <p><b>Risk:</b> Sticker replacement leading to a fake “menu” site that asks for phone number/OTP or pushes downloads.</p>
+        <p><b>Safe response:</b> Preview link → verify domain matches restaurant brand (or known delivery partner) → open in private mode → never enter OTPs.</p>
+
+        <h3>Scenario 2: Parking meter / public payment QR</h3>
+        <p><b>Risk:</b> Payment redirection to attacker’s UPI ID.</p>
+        <p><b>Safe response:</b> Verify payee name in app. If it doesn’t match the authority/merchant, do not pay. Ask staff or use alternate payment method.</p>
+
+        <h3>Scenario 3: “Scan to get discount/coupon” poster</h3>
+        <p><b>Risk:</b> Lead-gen scam, adware, fake surveys collecting personal info.</p>
+        <p><b>Safe response:</b> If the domain is not an official brand domain, skip. Discounts are not worth identity risk.</p>
+
+        <h3>Scenario 4: QR on a package saying “track delivery”</h3>
+        <p><b>Risk:</b> Fake courier tracking page that asks payment/credentials.</p>
+        <p><b>Safe response:</b> Use the official courier website/app manually, using the tracking number, not the QR code.</p>
+
+        <h3>Scenario 5: Office/School notice: “Scan to sign in”</h3>
+        <p><b>Risk:</b> Credential harvesting for corporate accounts.</p>
+        <p><b>Safe response:</b> Confirm with staff, and check domain matches the organization’s real domain. Prefer known sign-in portals.</p>
+
+        <h2>Advanced: Understanding Subdomain Tricks (The #1 QR Link Trap)</h2>
+        <p>Attackers can create domains where the beginning looks legitimate. Humans read left-to-right, so this works:</p>
+        <pre><code>https://google.com.account-security.verify-login.example-attacker.com</code></pre>
+        <p>Most people notice “google.com” at the start and stop reading. But the real domain is:</p>
+        <pre><code>example-attacker.com</code></pre>
+
+        <div class="ok">
+          <b>BitDark reading habit:</b> Always locate the <b>last two</b> meaningful parts:
+          <ul>
+            <li><code>… example-attacker</code> + <code>.com</code></li>
+          </ul>
+          Everything to the left can be manipulated.
+        </div>
+
+        <h2>What to Do If You Already Opened a Bad QR Code</h2>
+        <p>If you scanned and tapped too quickly, don’t panic. What you do next depends on what happened.</p>
+
+        <h3>If you only viewed a page</h3>
+        <ul>
+          <li>Close the tab.</li>
+          <li>Do not accept permissions or installs.</li>
+          <li>Clear the site’s data if you want (optional).</li>
+        </ul>
+
+        <h3>If you entered a password</h3>
+        <ul>
+          <li>Change the password immediately from the official site/app (not the QR page).</li>
+          <li>Enable 2FA if not already enabled.</li>
+          <li>Check account login history for unknown sessions.</li>
+        </ul>
+
+        <h3>If you paid money</h3>
+        <ul>
+          <li>Contact your bank/payment provider quickly with transaction details.</li>
+          <li>Report the UPI ID / merchant ID used.</li>
+          <li>File a cybercrime complaint if applicable in your region.</li>
+        </ul>
+
+        <h3>If you installed an app/APK</h3>
+        <ul>
+          <li>Uninstall it.</li>
+          <li>Run a security scan.</li>
+          <li>Check for accessibility/admin permissions granted to the app and remove them.</li>
+          <li>Change passwords for any accounts you used while the app was installed.</li>
+        </ul>
+
+        <div class="warn">
+          <b>High risk indicator:</b> If an app asked for Accessibility permissions or Device Admin privileges, treat that as serious and remove immediately.
+        </div>
+
+        <h2>Building Your “QR Immunity” Habit</h2>
+        <p>QR safety is mostly a habit, not a tool. Tools help, but habit wins because scammers change tactics constantly. The habit is simple: <b>pause and read</b>.</p>
+
+        <h3>Train your brain to ask one question</h3>
+        <div class="note">
+          <b>“What is the real domain?”</b><br>
+          If you can answer that confidently, you’re already safer than most people.
+        </div>
+
+        <h3>Make it frictionless</h3>
+        <p>The reason people tap blindly is friction: “I just want the menu.” So create a low-friction safety routine:</p>
+        <ul class="checklist">
+          <li>Take a photo first (pause)</li>
+          <li>Decode/preview (reveal)</li>
+          <li>Read domain (verify)</li>
+          <li>Open only if it matches context (reason)</li>
+        </ul>
+
+        <h2>How BitDark.NET Fits This (URL-First, Client-Only)</h2>
+        <p>QR codes are a perfect example of why BitDark’s philosophy matters. A lot of “QR safety” advice pushes cloud scanners. But you often don’t need to upload anything. You just need to reveal the destination and apply a domain-first inspection.</p>
+
+        <div class="ok">
+          <b>BitDark philosophy applied to QR:</b>
+          <ul class="checklist">
+            <li>No blind scanning</li>
+            <li>No unnecessary uploads</li>
+            <li>Inspect locally where possible</li>
+            <li>Decide based on the domain and intent</li>
+          </ul>
+        </div>
+
+        <h2>FAQ</h2>
+
+        <h3>Are QR codes “unsafe by design”?</h3>
+        <p>QR codes are neutral. The unsafe part is the hidden destination plus human habits. If you preview and verify the domain first, QR codes become much safer.</p>
+
+        <h3>Is HTTPS enough to trust a QR link?</h3>
+        <p>No. HTTPS only means the connection is encrypted. Scammers can still use HTTPS on malicious domains. Domain identity matters more.</p>
+
+        <h3>What if the QR code uses a URL shortener?</h3>
+        <p>Expand it first (without opening) and verify the final domain. If you can’t verify, don’t proceed.</p>
+
+        <h3>Can scanning a QR code infect my phone instantly?</h3>
+        <p>Typically, scanning only reveals text or opens a link. The real risk happens when you proceed: entering credentials, paying, installing apps, or granting permissions. Still, it’s smart to treat unknown QR links as hostile until verified.</p>
+
+        <h3>What’s the safest default behavior?</h3>
+        <p>Always try to extract/copy the link first and inspect it. When in doubt, manually type the official site instead of using the QR code.</p>
+
+        <h2>Quick Summary (Remember This)</h2>
+        <div class="ok">
+          <ul class="checklist">
+            <li>QR codes hide destinations — treat them like hidden links.</li>
+            <li>Reveal the link first, then read the real domain.</li>
+            <li>Watch for sticker tampering in public places.</li>
+            <li>Be extra strict with payments, logins, downloads, and permissions.</li>
+            <li>Open unknown QR links in a controlled way (private mode, no autofill).</li>
+          </ul>
+        </div>
+
+        <h2>Related articles</h2>
+        <div class="relatedGrid">
+          <div class="relatedItem">
+            <b><a href="/blog/how-to-check-a-short-links-real-destination-without-opening-it/">How to Check a Short Link’s Real Destination (Without Opening It)</a></b>
+            <span>Safe-Link Tips • Expand short links safely and read the final domain</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/how-to-spot-a-suspicious-link-without-uploading-it-anywhere/">How to Spot a Suspicious Link Without Uploading It Anywhere</a></b>
+            <span>Safe-Link Tips • Domain-first inspection workflow</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/why-your-data-is-still-tracked-even-when-you-turn-off-app-permissions/">Why Your Data Is Still Tracked Even When You Turn Off App Permissions</a></b>
+            <span>Privacy Workflow • Tracking beyond permissions</span>
+          </div>
+          <div class="relatedItem">
+            <b><a href="/blog/">Browse all posts</a></b>
+            <span>Blog • Search by keywords, tags and categories</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card" aria-label="Sidebar">
+        <b>On this page</b>
+        <nav id="toc" class="tocNav" aria-label="Table of contents"></nav>
+
+        <div class="adSlot">
+          Future AdSense / widgets<br>
+          (Reserved space)
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> BitDark.NET</div>
+      <div class="footRight">
+        <a href="/blog/">Blog</a>
+        <a href="/about.html">About</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/faq.html">FAQ</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("bd_blog_theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme") || "light";
+        const next = cur === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("bd_blog_theme", next);
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const title = (document.getElementById("postTitle")?.textContent || "Post").trim();
+      document.getElementById("crumbTitle").textContent = title;
+
+      const cat = document.querySelector("meta[name='bd:category']")?.content?.trim();
+      if (cat) document.getElementById("postCategory").textContent = cat;
+
+      const upd = document.querySelector("meta[name='bd:updated']")?.content?.trim();
+      if (upd) {
+        const t = document.getElementById("updatedTime");
+        t.setAttribute("datetime", upd);
+        const dt = new Date(upd + "T00:00:00");
+        const pretty = dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"2-digit" });
+        t.textContent = pretty;
+      }
+
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q");
+      if (q) document.getElementById("qTop").value = q;
+    })();
+
+    (() => {
+      const article = document.getElementById("article");
+      const out = document.getElementById("readTime");
+      if (!article || !out) return;
+
+      const text = (article.innerText || "").replace(/\s+/g, " ").trim();
+      const words = text ? text.split(" ").length : 0;
+
+      const wpmFast = 260;
+      const wpmSlow = 220;
+      const minFast = Math.max(1, Math.ceil(words / wpmFast));
+      const minSlow = Math.max(1, Math.ceil(words / wpmSlow));
+
+      out.textContent = `~${minFast}–${minSlow} min`;
+    })();
+
+    (() => {
+      const toc = document.getElementById("toc");
+      const article = document.getElementById("article");
+      if (!toc || !article) return;
+
+      const headings = article.querySelectorAll("h2, h3");
+      if (!headings.length) {
+        toc.innerHTML = "<span style='color:var(--muted);font-size:13px'>No sections</span>";
+        return;
+      }
+
+      const slugify = (s) => (s || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .slice(0, 70);
+
+      const used = new Set();
+
+      headings.forEach((h) => {
+        if (!h.id) {
+          let id = slugify(h.textContent);
+          if (!id) id = "section";
+          let n = 2;
+          while (used.has(id) || document.getElementById(id)) {
+            id = `${slugify(h.textContent)}-${n++}`;
+          }
+          h.id = id;
+          used.add(id);
+        }
+
+        const a = document.createElement("a");
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim();
+        if (h.tagName === "H3") a.classList.add("toc-h3");
+
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById(h.id).scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", `#${h.id}`);
+        });
+
+        toc.appendChild(a);
+      });
+    })();
+  </script>
+</body>
+</html>
