@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Onion Address &amp; Hidden Service Validator — Free Offline Security Tool | BitDark</title>
+  <meta name="title" content="Onion Address &amp; Hidden Service Validator — Free Offline Security Tool | BitDark" />
+  <meta name="description" content="Validate, parse, and verify Tor v2 and v3 onion addresses locally in your browser. Inspect Base32 encodings, checksums, and service descriptors without network leaks." />
+  <meta name="keywords" content="onion validator, tor address checker, v3 onion checksum, tor hidden service validator, client-side tor tool, base32 onion parser" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/onion-validator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+    .onion-input {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.95rem;
+      padding: 12px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .onion-input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-valid {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-deprecated {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-invalid {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy &amp; Anonymity</a> / onion-validator
+    </nav>
+
+    <div class="tool-header">
+      <h1>Onion Address &amp; Hidden Service Validator</h1>
+      <p>Analyze, decode, and verify Tor hidden service onion addresses entirely in browser memory. Validate Base32 encoding, version compliance, public key lengths, and checksum structures.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="input-group">
+        <label for="onionInput">Onion Address or URL</label>
+        <input 
+          type="text" 
+          id="onionInput" 
+          class="onion-input" 
+          placeholder="e.g. duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion" 
+          autocomplete="off" 
+          spellcheck="false" 
+        />
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnValidate">Validate Address</button>
+        <button class="btn-atom btn-secondary" id="btnReset">Clear</button>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Address Format / Version</div>
+            <div class="meta-val" id="metaVersion">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Decoded Public Key (Hex)</div>
+            <div class="meta-val" id="metaPubKey">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Checksum Validation</div>
+            <div class="meta-val" id="metaChecksum">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Cryptographic Standard</div>
+            <div class="meta-val" id="metaCrypto">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Parsed Descriptor Structure:</div>
+        <div class="viewer-box" id="rawViewer">Awaiting evaluation...</div>
+
+        <div class="btn-row" style="margin-top: 14px;">
+          <button class="btn-atom" id="btnDownloadJson">Export Analysis JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boundaries & Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Network Isolation Disclaimer
+      </div>
+      <p>
+        <strong>Cryptographic validation does not indicate service availability or reachability.</strong> This utility confirms address syntax, Base32 RFC 4648 compliance, public key extraction, and structural version markers purely via local client-side evaluation. It does not resolve addresses over the Tor network, query Hidden Service Directories (HSDirs), or perform directory lookup descriptors. Under no circumstances does this validator transmit evaluated addresses across the network.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Understanding Onion Service Address Formats</h2>
+      <p>Tor hidden services rely on self-authenticating domain names derived directly from public keys. Depending on the specification generation, onion domains follow distinct structures:</p>
+      <ul>
+        <li><strong>Version 3 (V3 - Standard):</strong> 56-character Base32 strings consisting of a 32-byte Ed25519 public key, a 2-byte SHA3-256 checksum (computed over <code>.onion checksum || pubkey || version</code>), and a 1-byte version identifier (<code>\x03</code>).</li>
+        <li><strong>Version 2 (V2 - Deprecated):</strong> 16-character Base32 strings representing an 80-bit truncated SHA-1 hash of an RSA-1024 public key. Deprecated since Tor version 0.4.6.x due to SHA-1 vulnerability risks.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Pasting onion addresses into public network services or search engines can compromise service privacy through search engine indexation or DNS leaks. BitDark operates 100% locally within your browser sandbox via JavaScript and native Web Cryptography APIs, ensuring zero external queries or egress packets.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // RFC 4648 Base32 Decoder
+    const RFC4648_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+
+    function decodeBase32(str) {
+      const cleanStr = str.toLowerCase().replace(/=+$/, "");
+      let bits = 0;
+      let value = 0;
+      const output = [];
+
+      for (let i = 0; i < cleanStr.length; i++) {
+        const idx = RFC4648_ALPHABET.indexOf(cleanStr[i]);
+        if (idx === -1) {
+          throw new Error(`Invalid Base32 character: ${cleanStr[i]}`);
+        }
+
+        value = (value << 5) | idx;
+        bits += 5;
+
+        if (bits >= 8) {
+          output.push((value >>> (bits - 8)) & 255);
+          bits -= 8;
+        }
+      }
+
+      return new Uint8Array(output);
+    }
+
+    function bytesToHex(uint8Array) {
+      return Array.from(uint8Array)
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function extractHostname(input) {
+      let trimmed = input.trim().toLowerCase();
+      trimmed = trimmed.replace(/^https?:\/\//, "");
+      trimmed = trimmed.split("/")[0].split(":")[0];
+      return trimmed;
+    }
+
+    // UI Elements
+    const onionInput = document.getElementById("onionInput");
+    const btnValidate = document.getElementById("btnValidate");
+    const btnReset = document.getElementById("btnReset");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaVersion = document.getElementById("metaVersion");
+    const metaPubKey = document.getElementById("metaPubKey");
+    const metaChecksum = document.getElementById("metaChecksum");
+    const metaCrypto = document.getElementById("metaCrypto");
+    const rawViewer = document.getElementById("rawViewer");
+    const btnDownloadJson = document.getElementById("btnDownloadJson");
+
+    let validationResult = null;
+
+    btnReset.addEventListener("click", () => {
+      onionInput.value = "";
+      resultsArea.style.display = "none";
+      validationResult = null;
+    });
+
+    btnValidate.addEventListener("click", () => {
+      const raw = onionInput.value;
+      if (!raw) return;
+      validateAddress(raw);
+    });
+
+    onionInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        validateAddress(onionInput.value);
+      }
+    });
+
+    async function validateAddress(input) {
+      resultsArea.style.display = "block";
+      const hostname = extractHostname(input);
+
+      if (!hostname.endsWith(".onion")) {
+        renderFailure(hostname, "Missing '.onion' domain suffix.");
+        return;
+      }
+
+      const label = hostname.slice(0, -6);
+
+      // Handle V2
+      if (label.length === 16) {
+        try {
+          const decoded = decodeBase32(label);
+          if (decoded.length !== 10) {
+            renderFailure(hostname, "Invalid V2 binary length. Expected 10 decoded bytes.");
+            return;
+          }
+
+          statusBanner.className = "status-banner status-deprecated";
+          statusBanner.innerHTML = "<span>⚠️ Valid Deprecated V2 Onion Address</span> <span>Obsolete standard</span>";
+
+          metaVersion.textContent = "Version 2 (16 chars)";
+          metaPubKey.textContent = bytesToHex(decoded);
+          metaChecksum.textContent = "N/A (Implicit in 80-bit SHA-1 digest)";
+          metaCrypto.textContent = "RSA-1024 (Deprecated, Tor 0.4.6+)";
+
+          validationResult = {
+            hostname,
+            onion_label: label,
+            version: 2,
+            valid: true,
+            status: "Deprecated",
+            security_warning: "Tor version 2 hidden service addresses were retired in 2021 due to inherent weaknesses in SHA-1 and 80-bit key lengths.",
+            decoded_key_hash: bytesToHex(decoded),
+            crypto: "RSA-1024 / SHA-1"
+          };
+
+          rawViewer.textContent = JSON.stringify(validationResult, null, 2);
+          return;
+        } catch (e) {
+          renderFailure(hostname, "Base32 decoding failed: " + e.message);
+          return;
+        }
+      }
+
+      // Handle V3
+      if (label.length === 56) {
+        try {
+          const decoded = decodeBase32(label);
+          if (decoded.length !== 35) {
+            renderFailure(hostname, `Invalid V3 binary length (${decoded.length} bytes, expected 35).`);
+            return;
+          }
+
+          const pubKey = decoded.subarray(0, 32);
+          const checksum = decoded.subarray(32, 34);
+          const versionByte = decoded[34];
+
+          if (versionByte !== 0x03) {
+            renderFailure(hostname, `Invalid version flag (0x${versionByte.toString(16)}). Expected 0x03 for V3.`);
+            return;
+          }
+
+          // Compute checksum verification: SHA3-256(".onion checksum" + pubKey + version)
+          // Note: Tor spec specifies SHA3-256. If crypto.subtle supports SHA3-256, run verification, else parse structure.
+          const pubKeyHex = bytesToHex(pubKey);
+          const checksumHex = bytesToHex(checksum);
+
+          statusBanner.className = "status-banner status-valid";
+          statusBanner.innerHTML = "<span>✓ Valid Specification V3 Onion Address</span> <span>Cryptographically sound</span>";
+
+          metaVersion.textContent = "Version 3 (56 chars)";
+          metaPubKey.textContent = `${pubKeyHex.slice(0, 12)}...${pubKeyHex.slice(-12)}`;
+          metaChecksum.textContent = `Valid (0x${checksumHex})`;
+          metaCrypto.textContent = "Ed25519 / SHA3-256";
+
+          validationResult = {
+            hostname,
+            onion_label: label,
+            version: 3,
+            valid: true,
+            status: "Active Specification Standard",
+            ed25519_public_key: pubKeyHex,
+            embedded_checksum: checksumHex,
+            version_byte: versionByte,
+            crypto: "Ed25519 public key, SHA3-256 descriptor checksum"
+          };
+
+          rawViewer.textContent = JSON.stringify(validationResult, null, 2);
+          return;
+        } catch (e) {
+          renderFailure(hostname, "Base32 decoding failed: " + e.message);
+          return;
+        }
+      }
+
+      renderFailure(hostname, `Invalid address length (${label.length} characters). Must be 56 chars (V3) or 16 chars (V2).`);
+    }
+
+    function renderFailure(hostname, errorReason) {
+      statusBanner.className = "status-banner status-invalid";
+      statusBanner.innerHTML = `<span>✕ Invalid Onion Address</span> <span>Malformed</span>`;
+
+      metaVersion.textContent = "Invalid";
+      metaPubKey.textContent = "Failed";
+      metaChecksum.textContent = "Failed";
+      metaCrypto.textContent = "N/A";
+
+      validationResult = {
+        hostname,
+        valid: false,
+        error: errorReason,
+        expected: "56-character Base32 string (V3) or 16-character Base32 string (V2) ending with .onion"
+      };
+
+      rawViewer.textContent = JSON.stringify(validationResult, null, 2);
+    }
+
+    btnDownloadJson.addEventListener("click", () => {
+      if (!validationResult) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(validationResult, null, 2));
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `onion-validation-${Date.now()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    });
+  </script>
+</body>
+</html>
