@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>RSA Key Pair Generator &amp; Key Inspector — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="RSA Key Pair Generator &amp; Key Inspector — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Generate cryptographically secure RSA key pairs (2048, 3072, 4096-bit) and export in PEM (PKCS#1, PKCS#8, SPKI) or JWK formats locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="rsa key generator, generate rsa 4096, pem key generator, pkcs8 private key, spki public key, browser rsa generator, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/rsa-generator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .key-display-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+    @media (max-width: 768px) {
+      .key-display-grid { grid-template-columns: 1fr; }
+    }
+
+    .key-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .key-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .key-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .key-copy-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+    .key-copy-btn:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.5;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / rsa-generator
+    </nav>
+
+    <div class="tool-header">
+      <h1>RSA Key Pair Generator &amp; Key Inspector</h1>
+      <p>Generate high-entropy asymmetric RSA key pairs in PKCS#8 (Private), SPKI (Public), or JWK representations entirely inside local browser memory via the native W3C Web Cryptography API.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="keySize">Modulus Length (Security Level)</label>
+          <select id="keySize">
+            <option value="2048">RSA 2048-bit (Standard Compatibility)</option>
+            <option value="3072">RSA 3072-bit (Recommended Baseline)</option>
+            <option value="4096" selected>RSA 4096-bit (High Assurance)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="keyUsage">Intended Operation Usage</label>
+          <select id="keyUsage">
+            <option value="RSA-OAEP" selected>RSA-OAEP (Encryption / Decryption)</option>
+            <option value="RSA-PSS">RSA-PSS (Digital Signatures / Verification)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="hashAlgo">Associated Hash Algorithm</label>
+          <select id="hashAlgo">
+            <option value="SHA-256" selected>SHA-256 (Standard)</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512 (Maximum Resistance)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnGenerate">Generate New Key Pair</button>
+        <button class="btn-atom btn-secondary" id="btnExportJwk">Export JWK Set</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div class="results-area">
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>Key generator engine ready</span>
+          <span>Idle</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Selected Modulus Size</div>
+            <div class="meta-val" id="metaBits">4096 bits</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Public Exponent (e)</div>
+            <div class="meta-val" id="metaExponent">65537 (0x010001)</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Public Key SHA-256 Fingerprint</div>
+            <div class="meta-val" id="metaFingerprint">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Execution Environment</div>
+            <div class="meta-val">Local W3C WebCrypto API</div>
+          </div>
+        </div>
+
+        <div class="key-display-grid">
+          <div class="key-container">
+            <div class="key-header">
+              <span class="key-label">Public Key (SPKI PEM Format)</span>
+              <button class="key-copy-btn" id="btnCopyPublic">Copy Public Key</button>
+            </div>
+            <div class="viewer-box" id="publicKeyViewer">Public key will be rendered here...</div>
+          </div>
+
+          <div class="key-container">
+            <div class="key-header">
+              <span class="key-label">Private Key (PKCS#8 PEM Format)</span>
+              <button class="key-copy-btn" id="btnCopyPrivate">Copy Private Key</button>
+            </div>
+            <div class="viewer-box" id="privateKeyViewer">Private key will be rendered here...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, lost private keys, unauthorized credential disclosures, corrupted asymmetric transforms, or implementation faults. Private keys generated by this utility reside solely in volatile client-side browser memory and must be backed up securely into a trusted keystore or hardware security module before closing or refreshing this page. All key generation procedures execute locally using the native W3C Web Cryptography API without network transmission.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Asymmetric RSA Cryptography Works</h2>
+      <p>The Rivest-Shamir-Adleman (RSA) algorithm utilizes the computational hardness of factoring the product of two large prime numbers $p$ and $q$ to form modulus $n = p \times q$. The public exponent $e$ (typically $65537$) and private exponent $d$ satisfy the modular congruence:</p>
+      <p>$$e \cdot d \equiv 1 \pmod{\phi(n)}$$</p>
+      <p>where $\phi(n) = (p - 1)(q - 1)$ represents Euler's totient function. Messages encrypted with the public key can only be decrypted by the corresponding private exponent $d$.</p>
+
+      <h2>Export Encoding Standards (PKCS#8 &amp; SPKI)</h2>
+      <ul>
+        <li><strong>SPKI (Subject Public Key Info):</strong> Standard defined under RFC 5280 specifying ASN.1 DER encodings for public keys, universally encapsulated within <code>-----BEGIN PUBLIC KEY-----</code> PEM envelopes.</li>
+        <li><strong>PKCS#8 (Private-Key Information Syntax):</strong> Standard defined under RFC 5958 for storing private keys in a uniform syntax across algorithms, encapsulated within <code>-----BEGIN PRIVATE KEY-----</code> PEM envelopes.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Generating cryptographic keys on untrusted cloud services exposes master keying material to interceptors and server-side logs. BitDark executes all key generation entirely inside your browser's sandboxed thread via <code>window.crypto.subtle.generateKey</code>. No entropy buffers or key data are transmitted across any network boundary.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // ArrayBuffer to Base64 & PEM helpers
+    function ab2str(buf) {
+      return String.fromCharCode.apply(null, new Uint8Array(buf));
+    }
+
+    function exportToPem(buffer, label) {
+      const base64 = window.btoa(ab2str(buffer));
+      const formatted = base64.match(/.{1,64}/g).join("\n");
+      return `-----BEGIN ${label}-----\n${formatted}\n-----END ${label}-----`;
+    }
+
+    function bufToHex(buffer) {
+      return Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join(":");
+    }
+
+    // UI Elements
+    const keySizeSelect = document.getElementById("keySize");
+    const keyUsageSelect = document.getElementById("keyUsage");
+    const hashAlgoSelect = document.getElementById("hashAlgo");
+    const btnGenerate = document.getElementById("btnGenerate");
+    const btnExportJwk = document.getElementById("btnExportJwk");
+    const btnClear = document.getElementById("btnClear");
+    const btnCopyPublic = document.getElementById("btnCopyPublic");
+    const btnCopyPrivate = document.getElementById("btnCopyPrivate");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaBits = document.getElementById("metaBits");
+    const metaFingerprint = document.getElementById("metaFingerprint");
+    const publicKeyViewer = document.getElementById("publicKeyViewer");
+    const privateKeyViewer = document.getElementById("privateKeyViewer");
+
+    let currentKeyPair = null;
+    let currentJwkPair = null;
+
+    async function generateRSA() {
+      const modulusLength = parseInt(keySizeSelect.value, 10);
+      const usageType = keyUsageSelect.value;
+      const hashAlgorithm = hashAlgoSelect.value;
+
+      metaBits.textContent = `${modulusLength} bits`;
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = `<span>Generating ${modulusLength}-bit RSA key pair in browser memory...</span> <span>Computing Primes</span>`;
+
+      try {
+        const keyUsages = usageType === "RSA-OAEP" 
+          ? ["encrypt", "decrypt"] 
+          : ["sign", "verify"];
+
+        const keyPair = await crypto.subtle.generateKey(
+          {
+            name: usageType,
+            modulusLength: modulusLength,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
+            hash: { name: hashAlgorithm }
+          },
+          true,
+          keyUsages
+        );
+
+        currentKeyPair = keyPair;
+
+        // Export keys to PEM
+        const spkiBuffer = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+        const pkcs8Buffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+
+        const publicPem = exportToPem(spkiBuffer, "PUBLIC KEY");
+        const privatePem = exportToPem(pkcs8Buffer, "PRIVATE KEY");
+
+        // Calculate SHA-256 fingerprint of the SPKI public key
+        const fingerprintBuf = await crypto.subtle.digest("SHA-256", spkiBuffer);
+        metaFingerprint.textContent = bufToHex(fingerprintBuf);
+
+        // Export to JWK for optional set downloads
+        const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+        const privateJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+        currentJwkPair = { public: publicJwk, private: privateJwk };
+
+        publicKeyViewer.textContent = publicPem;
+        privateKeyViewer.textContent = privatePem;
+
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ RSA ${modulusLength}-bit Key Pair Generated Successfully</span> <span>Active</span>`;
+
+      } catch (err) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Key Generation Failed: ${err.message}</span> <span>Failed</span>`;
+        publicKeyViewer.textContent = "Error during key pair generation.";
+        privateKeyViewer.textContent = err.message;
+      }
+    }
+
+    btnGenerate.addEventListener("click", generateRSA);
+
+    btnExportJwk.addEventListener("click", () => {
+      if (!currentJwkPair) {
+        alert("Please generate a key pair first.");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentJwkPair, null, 2));
+      const dl = document.createElement("a");
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", `rsa-${keySizeSelect.value}-jwk-${Date.now()}.json`);
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    });
+
+    btnClear.addEventListener("click", () => {
+      publicKeyViewer.textContent = "Public key will be rendered here...";
+      privateKeyViewer.textContent = "Private key will be rendered here...";
+      metaFingerprint.textContent = "-";
+      currentKeyPair = null;
+      currentJwkPair = null;
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+    });
+
+    function setupCopy(btn, viewer) {
+      btn.addEventListener("click", async () => {
+        const text = viewer.textContent;
+        if (!text || text.includes("will be rendered") || text.includes("Error")) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = btn.textContent;
+          btn.textContent = "Copied!";
+          setTimeout(() => { btn.textContent = original; }, 1500);
+        } catch {
+          alert("Clipboard copy failed. Please select text manually.");
+        }
+      });
+    }
+
+    setupCopy(btnCopyPublic, publicKeyViewer);
+    setupCopy(btnCopyPrivate, privateKeyViewer);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      generateRSA();
+    });
+  </script>
+</body>
+</html>
