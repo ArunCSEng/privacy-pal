@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>PDF Metadata Redactor & Sanitizer — Free Offline Privacy Tool | BitDark</title>
+  <meta name="title" content="PDF Metadata Redactor & Sanitizer — Free Offline Privacy Tool | BitDark" />
+  <meta name="description" content="Inspect, extract, and permanently strip hidden PDF metadata (Author, Producer, Software, Creation Date, XMP XML) directly in local browser memory. 100% private." />
+  <meta name="keywords" content="pdf metadata remover, strip pdf metadata, remove pdf author, clean pdf offline, sanitize pdf online free, remove xmp metadata pdf" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/pdf-metadata" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+
+    .file-input-hidden { display: none; }
+
+    /* Results */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-found {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-clean {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 320px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy &amp; OSINT</a> / pdf-metadata
+    </nav>
+
+    <div class="tool-header">
+      <h1>PDF Metadata Redactor &amp; Sanitizer</h1>
+      <p>Inspect document properties, trace author fingerprints, and neutralize structural PDF metadata dictionaries in browser RAM.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">📄</span>
+        <p><strong>Click to choose a PDF file</strong> or drag &amp; drop document here</p>
+        <span class="dropzone-hint">Strictly client-side memory processing • 0-byte upload guarantee</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept="application/pdf" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File Name &amp; Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Document Title</div>
+            <div class="meta-val" id="metaTitle">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Author / Creator</div>
+            <div class="meta-val" id="metaAuthor">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Producer / Tool</div>
+            <div class="meta-val" id="metaProducer">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Detected Metadata Streams &amp; Info Dictionary:</div>
+        <div class="viewer-box" id="rawViewer">Inspecting PDF structure...</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadClean">Download Sanitized PDF</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Redaction Limitations &amp; Document Sanitization Boundaries
+      </div>
+      <p>
+        <strong>Stripping document metadata dictionaries does not redact visible page content or buried vector layers.</strong> This utility neutralizes the catalog <code>/Info</code> dictionary, incremental revision chains, and <code>/Metadata</code> XML streams (Adobe XMP). It does not scan for or purge OCR text, hidden layers, embedded file attachments, font table metadata, or visual text covered by superficial black rectangle shapes. Always execute visual redactions via vector rasterization before public distribution.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How PDF Metadata Leakage Occurs</h2>
+      <p>PDF documents are structured object trees (ISO 32000-1). When word processors and desktop publishing engines export a file, they serialize system names, registered user identities, local file directory paths, and software build hashes into standardized fields:</p>
+      <ul>
+        <li><strong>Classic /Info Object:</strong> Contains key-value mappings such as <code>/Author</code>, <code>/Creator</code>, <code>/Producer</code>, <code>/CreationDate</code>, and <code>/ModDate</code>.</li>
+        <li><strong>XMP Metadata Stream:</strong> An XML packet embedded directly inside the document catalog under <code>/Metadata</code> containing Dublin Core schemas, Photoshop histories, and printer UUIDs.</li>
+        <li><strong>Incremental Update Appends:</strong> When PDFs are modified without full flattening, editors append new revision bodies at the file tail, keeping obsolete author names fully recoverable in previous cross-reference tables (<code>xref</code>).</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Standard online PDF editors upload your sensitive legal agreements, contracts, and internal reports to third-party cloud infrastructure. BitDark parses raw file byte arrays entirely in browser WebAssembly and local JavaScript memory via native <code>ArrayBuffer</code> buffers. Your documents never touch external servers.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Endpoint Fallback IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // In-Memory PDF Parser & Non-Destructive Sanitizer
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFile = document.getElementById("metaFile");
+    const metaTitle = document.getElementById("metaTitle");
+    const metaAuthor = document.getElementById("metaAuthor");
+    const metaProducer = document.getElementById("metaProducer");
+    const rawViewer = document.getElementById("rawViewer");
+    const btnReset = document.getElementById("btnReset");
+    const btnDownloadClean = document.getElementById("btnDownloadClean");
+
+    let sanitizedBlob = null;
+    let originalFileName = "";
+
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processPdf(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processPdf(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      rawViewer.textContent = "Inspecting PDF structure...";
+      sanitizedBlob = null;
+    });
+
+    async function processPdf(file) {
+      if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+        alert("Please select a valid PDF document.");
+        return;
+      }
+
+      originalFileName = file.name;
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaFile.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      metaTitle.textContent = "Inspecting...";
+      metaAuthor.textContent = "Inspecting...";
+      metaProducer.textContent = "Inspecting...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+        inspectAndSanitizePdf(buffer);
+      } catch (err) {
+        rawViewer.textContent = "Error reading PDF binary: " + err.message;
+      }
+    }
+
+    function extractString(text, key) {
+      const regex1 = new RegExp(`\\/${key}\\s*\\(([^)]*)\\)`, "i");
+      const match1 = text.match(regex1);
+      if (match1) return match1[1];
+
+      const regex2 = new RegExp(`\\/${key}\\s*<([0-9a-fA-F]+)>`, "i");
+      const match2 = text.match(regex2);
+      if (match2) {
+        try {
+          const hex = match2[1];
+          let str = "";
+          for (let i = 0; i < hex.length; i += 2) {
+            str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+          }
+          return str;
+        } catch {
+          return match2[1];
+        }
+      }
+      return null;
+    }
+
+    function inspectAndSanitizePdf(buffer) {
+      const bytes = new Uint8Array(buffer);
+      const decoder = new TextDecoder("latin1");
+      let text = decoder.decode(bytes);
+
+      const title = extractString(text, "Title") || "Not set";
+      const author = extractString(text, "Author") || "Not set";
+      const creator = extractString(text, "Creator") || "Not set";
+      const producer = extractString(text, "Producer") || "Not set";
+      const creationDate = extractString(text, "CreationDate") || "Not set";
+      const modDate = extractString(text, "ModDate") || "Not set";
+      const hasXmp = text.includes("<x:xmpmeta") || text.includes("/Type /Metadata") || text.includes("/Type/Metadata");
+
+      metaTitle.textContent = title;
+      metaAuthor.textContent = author;
+      metaProducer.textContent = producer;
+
+      const metadataPresent = author !== "Not set" || producer !== "Not set" || title !== "Not set" || creator !== "Not set" || hasXmp;
+
+      if (metadataPresent) {
+        statusBanner.className = "status-banner status-found";
+        statusBanner.innerHTML = `<span>⚠️ Tracking Metadata Dictionaries Detected</span> <span>Ready for Redaction</span>`;
+      } else {
+        statusBanner.className = "status-banner status-clean";
+        statusBanner.innerHTML = `<span>✓ Minimal / Clean Metadata Signature</span> <span>No standard trace records</span>`;
+      }
+
+      const report = {
+        inspection_status: metadataPresent ? "Leaking Identifiable Metadata" : "Clean Document Header",
+        classic_info_dictionary: {
+          title: title,
+          author: author,
+          creator_tool: creator,
+          producer_engine: producer,
+          creation_date: creationDate,
+          modification_date: modDate
+        },
+        structural_containers: {
+          xmp_metadata_stream: hasXmp ? "Present (Adobe XMP XML Stream)" : "None detected",
+          trailer_info_reference: text.includes("/Info") ? "Referenced in Trailer/Catalog" : "No /Info pointer"
+        }
+      };
+
+      rawViewer.textContent = JSON.stringify(report, null, 2);
+
+      // NON-DESTRUCTIVE SURGICAL SANITIZATION
+      // Operate as an in-place uint8 byte replacement to preserve exact byte offsets and xref tables
+      const outBytes = new Uint8Array(buffer.slice(0));
+
+      function replacePatternExact(pattern, replacementFn) {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          const start = match.index;
+          const len = match[0].length;
+          const repl = replacementFn(match[0]);
+          for (let i = 0; i < len; i++) {
+            outBytes[start + i] = i < repl.length ? repl.charCodeAt(i) : 32; // 32 = Space
+          }
+        }
+      }
+
+      // 1. Uncouple the /Info dictionary pointer from trailer & catalog (e.g., "/Info 12 0 R" -> "/Info null   ")
+      replacePatternExact(/\/Info\s+\d+\s+\d+\s+R/g, (m) => {
+        return "/Info null" + " ".repeat(Math.max(0, m.length - 10));
+      });
+
+      // 2. Uncouple the /Metadata pointer from Catalog (e.g., "/Metadata 15 0 R" -> "/Metadata null   ")
+      replacePatternExact(/\/Metadata\s+\d+\s+\d+\s+R/g, (m) => {
+        return "/Metadata null" + " ".repeat(Math.max(0, m.length - 14));
+      });
+
+      // 3. Clear standard metadata strings inside the Info dictionary object without touching content streams
+      const infoFields = ["Title", "Author", "Subject", "Keywords", "Creator", "Producer", "CreationDate", "ModDate"];
+      infoFields.forEach(field => {
+        // String literal notation: /Author (John Doe) -> /Author ()
+        const litRegex = new RegExp(`\\/${field}\\s*\\(([^)]*)\\)`, "g");
+        replacePatternExact(litRegex, (m) => {
+          return `/${field} ()` + " ".repeat(Math.max(0, m.length - (field.length + 4)));
+        });
+        // Hexadecimal notation: /Author <4A6F686E> -> /Author <>
+        const hexRegex = new RegExp(`\\/${field}\\s*<([0-9a-fA-F]+)>`, "g");
+        replacePatternExact(hexRegex, (m) => {
+          return `/${field} <>` + " ".repeat(Math.max(0, m.length - (field.length + 4)));
+        });
+      });
+
+      // 4. Neutralize embedded XMP XML streams inside their packets without exceeding boundary tags
+      replacePatternExact(/<x:xmpmeta[\s\S]*?<\/x:xmpmeta>/g, (m) => {
+        return " ".repeat(m.length);
+      });
+
+      replacePatternExact(/<\?xpacket begin[\s\S]*?\?xpacket end="[rw]"\?>/g, (m) => {
+        return " ".repeat(m.length);
+      });
+
+      sanitizedBlob = new Blob([outBytes], { type: "application/pdf" });
+    }
+
+    btnDownloadClean.addEventListener("click", () => {
+      if (!sanitizedBlob) return;
+      const cleanName = originalFileName.replace(/\.pdf$/i, "") + "-sanitized.pdf";
+      const url = URL.createObjectURL(sanitizedBlob);
+      const dlAnchor = document.createElement("a");
+      dlAnchor.href = url;
+      dlAnchor.download = cleanName;
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
