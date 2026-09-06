@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Context Window Token Calculator — Free Offline AI Utility | BitDark</title>
+  <meta name="title" content="Context Window Token Calculator — Free Offline AI Utility | BitDark" />
+  <meta name="description" content="Calculate prompt tokens, context limits, and cost projections locally in browser memory across GPT-4o, Claude 3.5, Gemini 1.5/2.0, Llama 3, and DeepSeek. Zero network egress." />
+  <meta name="keywords" content="token counter online, context window calculator, offline tiktoken, estimate llm cost, gpt-4o token count, claude 3 token calculator, deepseek tokens, zero log token counter" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/token-counter" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-heading);
+      font-weight: 600;
+    }
+    .form-group select, .form-group input {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: #fff;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group select:focus, .form-group input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Metric Dashboard Cards */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .metric-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .metric-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      margin-bottom: 4px;
+    }
+    .metric-val {
+      font-size: 1.4rem;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+    }
+    .metric-sub {
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      color: var(--atom-text);
+      margin-top: 4px;
+    }
+
+    /* Progress Context Gauge */
+    .gauge-wrapper {
+      margin-bottom: 20px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+    }
+    .gauge-head {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+    }
+    .gauge-bar-bg {
+      height: 8px;
+      background-color: var(--atom-surface);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .gauge-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--atom-cyan), var(--atom-green));
+      border-radius: 4px;
+      transition: width 0.2s, background-color 0.2s;
+    }
+
+    /* Textarea & Token Visualization */
+    .editor-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+    }
+    .editor-box {
+      width: 100%;
+      height: 240px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+    .editor-box:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover { border-color: var(--atom-amber); color: #fff; }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / token-counter
+    </nav>
+
+    <div class="tool-header">
+      <h1>Context Window Token Calculator</h1>
+      <p>Estimate Byte-Pair Encoding (BPE) prompt tokens, evaluate context saturation boundaries, and project operational compute costs offline in memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="config-grid">
+        <div class="form-group">
+          <label for="modelSelect">Target Architecture & Model</label>
+          <select id="modelSelect">
+            <option value="gpt-4o">OpenAI GPT-4o / o1 (128k context)</option>
+            <option value="claude-35">Anthropic Claude 3.5 Sonnet (200k context)</option>
+            <option value="gemini-15">Google Gemini 1.5 Pro / 2.0 (1M context)</option>
+            <option value="llama-3">Meta Llama 3 / 3.3 (128k context)</option>
+            <option value="deepseek-v3">DeepSeek V3 / R1 (64k context)</option>
+            <option value="legacy-gpt4">Legacy GPT-4 (8k context)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="rateOverride">Input Cost / 1M Tokens ($)</label>
+          <input type="number" id="rateOverride" step="0.01" value="2.50" />
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Estimated Tokens</div>
+          <div class="metric-val" id="metricTokens">0</div>
+          <div class="metric-sub" id="metricRatio">~0.0 chars/token</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Character & Word Count</div>
+          <div class="metric-val" id="metricWords">0 <span style="font-size: 0.8rem; font-weight: normal; color: var(--atom-muted);">words</span></div>
+          <div class="metric-sub" id="metricChars">0 characters (0 lines)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Context Saturation</div>
+          <div class="metric-val" id="metricSaturation">0.00%</div>
+          <div class="metric-sub" id="metricRemaining">128,000 capacity remaining</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Projected Input Cost</div>
+          <div class="metric-val" id="metricCost">$0.0000</div>
+          <div class="metric-sub">Single invocation egress</div>
+        </div>
+      </div>
+
+      <div class="gauge-wrapper">
+        <div class="gauge-head">
+          <span>Context Window Utilization</span>
+          <span id="gaugeLabel">0 / 128,000</span>
+        </div>
+        <div class="gauge-bar-bg">
+          <div class="gauge-bar-fill" id="gaugeBar"></div>
+        </div>
+      </div>
+
+      <div class="editor-label-row">
+        <label for="promptInput">Prompt / System Payload:</label>
+        <span id="readingTime" style="color: var(--atom-muted);">Estimated ~0s read time</span>
+      </div>
+      <textarea id="promptInput" class="editor-box" placeholder="Paste your system prompt, raw text, or JSON payload to compute tokens and context saturation in real-time..."></textarea>
+
+      <div class="btn-row">
+        <button class="btn-atom btn-secondary" id="btnSample">Load Sample Prompt</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+        <button class="btn-atom" id="btnCopy">Copy Prompt</button>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Context Truncation & Tokenization Boundaries
+      </div>
+      <p>
+        <strong>Client-side heuristic token estimation provides an approximation, not a provider-certified bill of inference.</strong> Token counts vary depending on proprietary subword vocabularies (e.g., OpenAI cl100k_base/o200k_base vs. SentencePiece vs. Byte-fallback BPE), chat templating markers (<code>&lt;|im_start|&gt;</code>), and multi-turn message wrapper overhead. Multi-byte UTF-8, Asian languages, and minified source code typically incur higher token-to-character ratios. Never rely exclusively on local estimation for hard system-message truncation boundaries without defensive padding.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How BPE Tokenization Operates</h2>
+      <p>Modern Large Language Models (LLMs) do not process human-readable text directly as characters or words. Instead, input streams are converted into integers via Byte-Pair Encoding (BPE) algorithms:</p>
+      <ul>
+        <li><strong>Subword Splitting:</strong> Common English words frequently map to a single token (e.g., "authentication"), whereas rare vocabulary, code identifiers (e.g., <code>camelCaseFunc</code>), and non-Latin scripts are partitioned into multiple fragments.</li>
+        <li><strong>Character Ratios:</strong> In standard English prose, 1 token roughly corresponds to 4 characters or 0.75 words. In structured JSON or Python code, token density surges due to punctuation and indentation spacing.</li>
+        <li><strong>Context Window Pressure:</strong> Exceeding an LLM's maximum context length results in catastrophic attention degradation or silent pre-prompt truncation, leading to loss of system instructions and hallucinated tool calls.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Traditional tokenization endpoints send your prompt payloads to backend API servers for calculation. BitDark's Token Calculator computes metrics locally within browser RAM via deterministic BPE subword heuristics. No text or telemetry ever leaves your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // 1. Dual-Endpoint IP Telemetry Engine
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // 2. LLM Architecture Presets
+    const MODEL_SPECS = {
+      "gpt-4o": { maxContext: 128000, defaultRate: 2.50, bpeRatio: 3.7 },
+      "claude-35": { maxContext: 200000, defaultRate: 3.00, bpeRatio: 3.6 },
+      "gemini-15": { maxContext: 1000000, defaultRate: 1.25, bpeRatio: 3.8 },
+      "llama-3": { maxContext: 128000, defaultRate: 0.20, bpeRatio: 3.7 },
+      "deepseek-v3": { maxContext: 64000, defaultRate: 0.14, bpeRatio: 3.65 },
+      "legacy-gpt4": { maxContext: 8192, defaultRate: 30.00, bpeRatio: 3.9 }
+    };
+
+    // DOM Elements
+    const modelSelect = document.getElementById("modelSelect");
+    const rateOverride = document.getElementById("rateOverride");
+    const promptInput = document.getElementById("promptInput");
+    const metricTokens = document.getElementById("metricTokens");
+    const metricRatio = document.getElementById("metricRatio");
+    const metricWords = document.getElementById("metricWords");
+    const metricChars = document.getElementById("metricChars");
+    const metricSaturation = document.getElementById("metricSaturation");
+    const metricRemaining = document.getElementById("metricRemaining");
+    const metricCost = document.getElementById("metricCost");
+    const gaugeBar = document.getElementById("gaugeBar");
+    const gaugeLabel = document.getElementById("gaugeLabel");
+    const readingTime = document.getElementById("readingTime");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+    const btnCopy = document.getElementById("btnCopy");
+
+    // Dynamic Rate Adjustment on Model Change
+    modelSelect.addEventListener("change", () => {
+      const model = MODEL_SPECS[modelSelect.value];
+      rateOverride.value = model.defaultRate.toFixed(2);
+      calculateMetrics();
+    });
+
+    rateOverride.addEventListener("input", calculateMetrics);
+    promptInput.addEventListener("input", calculateMetrics);
+
+    // High-Precision BPE Token Heuristic Engine
+    function calculateTokens(text, bpeDivisor) {
+      if (!text || text.length === 0) return 0;
+
+      // Match whitespace words, non-ASCII multi-byte clusters, punctuation, and digits
+      const tokensMatched = text.match(/[\p{L}]+|[0-9]+|[^\s\p{L}0-9]+|\s+/gu);
+      if (!tokensMatched) return Math.ceil(text.length / bpeDivisor);
+
+      let estimate = 0;
+      for (let i = 0; i < tokensMatched.length; i++) {
+        const item = tokensMatched[i];
+        if (/^\s+$/.test(item)) {
+          // Whitespace chunks
+          estimate += Math.ceil(item.length / 4);
+        } else if (/[^\x00-\x7F]/.test(item)) {
+          // Multibyte unicode / CJK characters generate ~1 token per char
+          estimate += item.length;
+        } else if (item.length > 4) {
+          // Subwords partition every ~3.6 chars
+          estimate += Math.ceil(item.length / bpeDivisor);
+        } else {
+          estimate += 1;
+        }
+      }
+      return estimate;
+    }
+
+    function calculateMetrics() {
+      const text = promptInput.value;
+      const modelKey = modelSelect.value;
+      const model = MODEL_SPECS[modelKey];
+      const ratePerMillion = parseFloat(rateOverride.value) || 0;
+
+      const charCount = text.length;
+      const lineCount = text ? text.split("\n").length : 0;
+      const wordsArray = text.trim().match(/\S+/g);
+      const wordCount = wordsArray ? wordsArray.length : 0;
+
+      // Calculate Tokens
+      const estimatedTokens = calculateTokens(text, model.bpeRatio);
+
+      // Ratios & Time
+      const charRatio = estimatedTokens > 0 ? (charCount / estimatedTokens).toFixed(2) : "0.0";
+      const secondsRead = Math.ceil(wordCount / 3.3); // ~200 WPM
+
+      // Context Window Saturation
+      const saturationPercent = (estimatedTokens / model.maxContext) * 100;
+      const remainingCapacity = Math.max(0, model.maxContext - estimatedTokens);
+
+      // Cost Projection
+      const singleInvocationCost = (estimatedTokens / 1000000) * ratePerMillion;
+
+      // Update UI Counters
+      metricTokens.textContent = estimatedTokens.toLocaleString();
+      metricRatio.textContent = `~${charRatio} chars/token`;
+      metricWords.innerHTML = `${wordCount.toLocaleString()} <span style="font-size: 0.8rem; font-weight: normal; color: var(--atom-muted);">words</span>`;
+      metricChars.textContent = `${charCount.toLocaleString()} characters (${lineCount} lines)`;
+      
+      metricSaturation.textContent = `${saturationPercent.toFixed(2)}%`;
+      metricRemaining.textContent = `${remainingCapacity.toLocaleString()} capacity remaining`;
+      metricCost.textContent = `$${singleInvocationCost.toFixed(5)}`;
+
+      readingTime.textContent = `Estimated ~${secondsRead}s read time`;
+      gaugeLabel.textContent = `${estimatedTokens.toLocaleString()} / ${model.maxContext.toLocaleString()}`;
+
+      // Update Saturation Gauge Bar
+      const boundedWidth = Math.min(100, saturationPercent);
+      gaugeBar.style.width = `${boundedWidth}%`;
+
+      if (saturationPercent >= 90) {
+        gaugeBar.style.background = "var(--atom-coral)";
+        metricSaturation.style.color = "var(--atom-coral)";
+      } else if (saturationPercent >= 70) {
+        gaugeBar.style.background = "var(--atom-amber)";
+        metricSaturation.style.color = "var(--atom-amber)";
+      } else {
+        gaugeBar.style.background = "linear-gradient(90deg, var(--atom-cyan), var(--atom-green))";
+        metricSaturation.style.color = "var(--atom-amber)";
+      }
+    }
+
+    // Button Actions
+    btnSample.addEventListener("click", () => {
+      promptInput.value = `You are an enterprise AI Security Auditor. Your mandate is to analyze codebases for zero-day vulnerabilities, deserialization flaws, and misconfigured access controls.\n\nReview the following authorization handler schema:\n{\n  "auth_type": "OAuth2_PKCE",\n  "allowed_scopes": ["read:profile", "write:audit"],\n  "strict_jwt_validation": true\n}\n\nDeliver the analysis in clear sections with concrete remediation steps.`;
+      calculateMetrics();
+    });
+
+    btnClear.addEventListener("click", () => {
+      promptInput.value = "";
+      calculateMetrics();
+    });
+
+    btnCopy.addEventListener("click", () => {
+      if (!promptInput.value) return;
+      navigator.clipboard.writeText(promptInput.value);
+      const originalText = btnCopy.textContent;
+      btnCopy.textContent = "Copied!";
+      setTimeout(() => { btnCopy.textContent = originalText; }, 1500);
+    });
+
+    // Initialize Calculations
+    calculateMetrics();
+  </script>
+</body>
+</html>
