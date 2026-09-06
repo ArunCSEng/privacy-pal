@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Homoglyph & Punycode Phishing Detector — BitDark</title>
+  <meta name="title" content="Homoglyph & Punycode Phishing Detector — BitDark" />
+  <meta name="description" content="Detect Cyrillic, Greek, and mixed-script homoglyph attacks in domain names and URLs. Inspect Punycode transformations offline in browser memory." />
+  <meta name="keywords" content="homoglyph detector, punycode decoder, idn homograph attack checker, spoofed domain detector, mixed script unicode detector" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/homoglyph-detector" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .preset-label {
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+    .btn-preset {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-preset:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-heading);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .input-row input {
+      flex: 1;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: var(--font-code);
+      outline: none;
+    }
+    .input-row input:focus { border-color: var(--atom-border-focus); }
+
+    /* Results Workspace */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-clean {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-found {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.7rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .char-table-wrap {
+      overflow-x: auto;
+      margin-bottom: 16px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
+    table.char-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      text-align: left;
+      background-color: var(--atom-gutter);
+    }
+    table.char-table th, table.char-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    table.char-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      font-weight: 600;
+    }
+    table.char-table tr:last-child td { border-bottom: none; }
+    
+    .badge-script {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .script-latin { background: rgba(152, 195, 121, 0.2); color: var(--atom-green); }
+    .script-foreign { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / homoglyph-detector
+    </nav>
+
+    <div class="tool-header">
+      <h1>Homoglyph & Punycode Phishing Detector</h1>
+      <p>Analyze domain names, URLs, and text strings for Cyrillic/Greek character spoofing, mixed scripts, and Punycode (IDN) visual mimicry.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="preset-bar">
+        <span class="preset-label">Test Vectors:</span>
+        <button class="btn-preset" id="presetApple">Spoofed apple.com</button>
+        <button class="btn-preset" id="presetGoogle">Spoofed google.com</button>
+        <button class="btn-preset" id="presetClean">Clean example.com</button>
+      </div>
+
+      <div class="input-row">
+        <input type="text" id="targetInput" placeholder="Enter domain or URL (e.g., аpple.com or xn--pple-43d.com)..." autocomplete="off" spellcheck="false" />
+        <button class="btn-atom" id="btnAnalyze">Analyze</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-clean">
+        <span>✓ No Spoofing Detected</span>
+        <span>ASCII Clean</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Normalized Input</div>
+          <div class="meta-val" id="metaNormalized">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Punycode Encoding</div>
+          <div class="meta-val" id="metaPunycode">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Script Classification</div>
+          <div class="meta-val" id="metaScript">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Homoglyph Replacements</div>
+          <div class="meta-val" id="metaReplacements">0 Flagged</div>
+        </div>
+      </div>
+
+      <div class="char-table-wrap">
+        <table class="char-table">
+          <thead>
+            <tr>
+              <th>Char</th>
+              <th>Codepoint</th>
+              <th>Script</th>
+              <th>Latin Lookalike</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="charTableBody">
+            <tr><td colspan="5" style="text-align: center; color: var(--atom-muted);">Enter a string to view character breakdown.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom btn-secondary" id="btnCopyPunycode">Copy Punycode</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+    </div>
+
+    <!-- Operational Caution & Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Detection Boundaries & Operational Security Notice
+      </div>
+      <p>
+        <strong>Client-side character analysis highlights script mixing and lookalike codepoints, but cannot verify domain registration status, TLS trust chains, or backend safety.</strong> Many legitimate internationalized domain names (IDNs) legitimately employ non-Latin scripts for native-language audiences. Conversely, brand-jacking and phishing campaigns also employ non-homoglyph techniques such as typosquatting, sub-domain padding, or combo-squatting that cannot be diagnosed through Unicode script inspection alone. Always pair homoglyph checks with authoritative WHOIS and DNS record evaluations.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Understanding Homograph & Punycode Attacks</h2>
+      <p>Internationalized Domain Names (IDNs) allow people around the world to use domain names in local languages and scripts. However, many Unicode characters from different scripts look identical or near-identical to standard ASCII characters:</p>
+      <ul>
+        <li><strong>Cyrillic Small Letter A (<code>U+0430</code>):</strong> Visually identical to Latin <code>a</code> (<code>U+0061</code>), but processed as an entirely different target by DNS resolvers.</li>
+        <li><strong>Punycode Conversion (RFC 3492):</strong> Browsers convert internationalized labels into ASCII-compatible encoding prefixed by <code>xn--</code> (e.g., <code>аpple.com</code> becomes <code>xn--pple-43d.com</code>).</li>
+        <li><strong>Mixed-Script Traps:</strong> Phishers substitute one or two characters in popular domain names to craft fraudulent links that deceive visual inspection in emails, chat apps, and web links.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>All string transformations, script range verifications, and character inspections execute locally in your browser runtime. No text, links, or domain queries are logged or sent to remote servers.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Endpoint IP Telemetry with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Lookup (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Lookup
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Common Homoglyph Map (Cyrillic, Greek, etc. resembling Latin)
+    const HOMOGLYPH_DB = {
+      '\u0430': { latin: 'a', script: 'Cyrillic', name: 'Cyrillic Small Letter A' },
+      '\u0441': { latin: 'c', script: 'Cyrillic', name: 'Cyrillic Small Letter Es' },
+      '\u0434': { latin: 'd', script: 'Cyrillic', name: 'Cyrillic Small Letter De' },
+      '\u0435': { latin: 'e', script: 'Cyrillic', name: 'Cyrillic Small Letter Ie' },
+      '\u0456': { latin: 'i', script: 'Cyrillic', name: 'Cyrillic Small Letter Byelorussian-Ukrainian I' },
+      '\u0458': { latin: 'j', script: 'Cyrillic', name: 'Cyrillic Small Letter Je' },
+      '\u043e': { latin: 'o', script: 'Cyrillic', name: 'Cyrillic Small Letter O' },
+      '\u0440': { latin: 'p', script: 'Cyrillic', name: 'Cyrillic Small Letter Er' },
+      '\u0455': { latin: 's', script: 'Cyrillic', name: 'Cyrillic Small Letter Dze' },
+      '\u0443': { latin: 'y', script: 'Cyrillic', name: 'Cyrillic Small Letter U' },
+      '\u0445': { latin: 'x', script: 'Cyrillic', name: 'Cyrillic Small Letter Ha' },
+      '\u03b1': { latin: 'a', script: 'Greek', name: 'Greek Small Letter Alpha' },
+      '\u03bf': { latin: 'o', script: 'Greek', name: 'Greek Small Letter Omicron' },
+      '\u03c1': { latin: 'p', script: 'Greek', name: 'Greek Small Letter Rho' },
+      '\u03bd': { latin: 'v', script: 'Greek', name: 'Greek Small Letter Nu' }
+    };
+
+    function getScript(cp) {
+      if (cp >= 0x0041 && cp <= 0x005A) return "Latin";
+      if (cp >= 0x0061 && cp <= 0x007A) return "Latin";
+      if (cp >= 0x0030 && cp <= 0x0039) return "ASCII Digit";
+      if (cp === 0x002E || cp === 0x002D || cp === 0x005F) return "Common (Punctuation)";
+      if (cp >= 0x0400 && cp <= 0x04FF) return "Cyrillic";
+      if (cp >= 0x0370 && cp <= 0x03FF) return "Greek";
+      if (cp >= 0x0590 && cp <= 0x05FF) return "Hebrew";
+      if (cp >= 0x0600 && cp <= 0x06FF) return "Arabic";
+      if (cp >= 0x4E00 && cp <= 0x9FFF) return "CJK Unified";
+      return "Extended / Other";
+    }
+
+    // Lightweight Punycode Converter
+    function toPunycode(input) {
+      try {
+        const url = new URL(input.includes("://") ? input : `http://${input}`);
+        return url.hostname;
+      } catch {
+        return input;
+      }
+    }
+
+    const targetInput = document.getElementById("targetInput");
+    const btnAnalyze = document.getElementById("btnAnalyze");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaNormalized = document.getElementById("metaNormalized");
+    const metaPunycode = document.getElementById("metaPunycode");
+    const metaScript = document.getElementById("metaScript");
+    const metaReplacements = document.getElementById("metaReplacements");
+    const charTableBody = document.getElementById("charTableBody");
+    const btnCopyPunycode = document.getElementById("btnCopyPunycode");
+    const btnClear = document.getElementById("btnClear");
+
+    function analyzeDomain() {
+      let val = targetInput.value.trim();
+      if (!val) {
+        metaNormalized.textContent = "-";
+        metaPunycode.textContent = "-";
+        metaScript.textContent = "-";
+        metaReplacements.textContent = "0 Flagged";
+        charTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--atom-muted);">Enter a string to view character breakdown.</td></tr>`;
+        statusBanner.className = "status-banner status-clean";
+        statusBanner.innerHTML = `<span>✓ Ready for Analysis</span> <span>Awaiting Input</span>`;
+        return;
+      }
+
+      // Strip protocol if user pasted standard URL
+      val = val.replace(/^https?:\/\//i, "").split('/')[0];
+      metaNormalized.textContent = val;
+
+      // Check Punycode
+      let puny = val;
+      try {
+        const u = new URL("http://" + val);
+        puny = u.hostname;
+      } catch {}
+      metaPunycode.textContent = puny;
+
+      const scriptsFound = new Set();
+      let homoglyphsFound = 0;
+      let rowsHtml = "";
+
+      for (let i = 0; i < val.length; i++) {
+        const ch = val[i];
+        const cp = ch.codePointAt(0);
+        const hex = "U+" + cp.toString(16).toUpperCase().padStart(4, "0");
+        const script = getScript(cp);
+        scriptsFound.add(script);
+
+        const hEntry = HOMOGLYPH_DB[ch];
+        const isHomoglyph = !!hEntry || (script !== "Latin" && script !== "Common (Punctuation)" && script !== "ASCII Digit");
+
+        if (isHomoglyph && script !== "Common (Punctuation)") {
+          homoglyphsFound++;
+        }
+
+        const scriptBadge = (script === "Latin" || script === "ASCII Digit" || script === "Common (Punctuation)") 
+          ? `<span class="badge-script script-latin">${script}</span>`
+          : `<span class="badge-script script-foreign">${script}</span>`;
+
+        const statusLabel = hEntry 
+          ? `<span style="color: var(--atom-coral); font-weight: 700;">Spoof Risk (Matches '${hEntry.latin}')</span>`
+          : (script === "Latin" || script === "ASCII Digit" || script === "Common (Punctuation)" ? `<span style="color: var(--atom-green);">Clean</span>` : `<span style="color: var(--atom-amber);">Non-Latin</span>`);
+
+        rowsHtml += `
+          <tr>
+            <td><strong>${ch}</strong></td>
+            <td>${hex}</td>
+            <td>${scriptBadge}</td>
+            <td>${hEntry ? hEntry.latin : "-"}</td>
+            <td>${statusLabel}</td>
+          </tr>
+        `;
+      }
+
+      charTableBody.innerHTML = rowsHtml;
+      metaScript.textContent = Array.from(scriptsFound).join(", ");
+      metaReplacements.textContent = `${homoglyphsFound} Character(s)`;
+
+      const hasMixedScript = scriptsFound.has("Latin") && (scriptsFound.has("Cyrillic") || scriptsFound.has("Greek"));
+      const isPuny = puny.startsWith("xn--") || puny.includes(".xn--");
+
+      if (homoglyphsFound > 0 || hasMixedScript || isPuny) {
+        statusBanner.className = "status-banner status-found";
+        statusBanner.innerHTML = `<span>⚠️ Potential Homograph / Spoofed Domain Detected</span> <span>${homoglyphsFound} Lookalike(s)</span>`;
+      } else {
+        statusBanner.className = "status-banner status-clean";
+        statusBanner.innerHTML = `<span>✓ String Appears Standard</span> <span>No Mixed-Script Spying Found</span>`;
+      }
+    }
+
+    targetInput.addEventListener("input", analyzeDomain);
+    btnAnalyze.addEventListener("click", analyzeDomain);
+
+    btnCopyPunycode.addEventListener("click", () => {
+      const p = metaPunycode.textContent;
+      if (!p || p === "-") return;
+      navigator.clipboard.writeText(p).then(() => {
+        const orig = btnCopyPunycode.textContent;
+        btnCopyPunycode.textContent = "Copied Punycode!";
+        setTimeout(() => { btnCopyPunycode.textContent = orig; }, 1500);
+      });
+    });
+
+    btnClear.addEventListener("click", () => {
+      targetInput.value = "";
+      analyzeDomain();
+    });
+
+    // Test Vectors
+    document.getElementById("presetApple").addEventListener("click", () => {
+      // Cyrillic small 'а'
+      targetInput.value = "\u0430pple.com";
+      analyzeDomain();
+    });
+
+    document.getElementById("presetGoogle").addEventListener("click", () => {
+      // Cyrillic small 'о's
+      targetInput.value = "g\u043E\u043Egle.com";
+      analyzeDomain();
+    });
+
+    document.getElementById("presetClean").addEventListener("click", () => {
+      targetInput.value = "example.com";
+      analyzeDomain();
+    });
+  </script>
+</body>
+</html>
