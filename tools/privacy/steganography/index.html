@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Canvas Steganography Tool — BitDark</title>
+  <meta name="title" content="Canvas Steganography Tool — BitDark" />
+  <meta name="description" content="Encode and extract hidden textual payloads within image pixel Least Significant Bits (LSB) entirely in browser memory. Zero network egress." />
+  <meta name="keywords" content="image steganography online, lsb steganography, hide text in image, extract hidden data from image, canvas stego tool, offline steganography" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/steganography" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Mode Navigation Tabs */
+    .mode-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-border);
+      color: var(--atom-amber);
+      border-color: var(--atom-amber);
+      font-weight: 700;
+    }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+      margin-bottom: 20px;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 6px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .file-input-hidden { display: none; }
+
+    .image-preview-box {
+      display: none;
+      text-align: center;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .image-preview-box img {
+      max-width: 100%;
+      max-height: 260px;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px 14px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-label {
+      display: block;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warning {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy & OSINT</a> / steganography
+    </nav>
+
+    <div class="tool-header">
+      <h1>Canvas Steganography Tool</h1>
+      <p>Embed or extract covert text payloads inside pixel Least Significant Bits (LSB) using native HTML5 Canvas memory buffers.</p>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="mode-nav">
+      <button class="tab-btn active" id="tabEncode">Encode Secret</button>
+      <button class="tab-btn" id="tabDecode">Extract / Decode</button>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🖼️</span>
+        <p><strong>Click to choose a carrier image</strong> or drag & drop PNG/BMP here</p>
+        <span class="dropzone-hint">Lossless formats recommended (PNG, BMP, WebP lossless). In-memory Canvas processing only.</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept="image/png,image/bmp,image/webp,image/jpeg" />
+      </div>
+
+      <div class="image-preview-box" id="previewContainer">
+        <img id="imagePreview" alt="Carrier Preview" />
+      </div>
+
+      <div class="meta-grid" id="metaGrid" style="display: none;">
+        <div class="meta-item">
+          <div class="meta-label">Resolution</div>
+          <div class="meta-val" id="metaResolution">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Total Pixels</div>
+          <div class="meta-val" id="metaPixels">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">LSB Capacity</div>
+          <div class="meta-val" id="metaCapacity">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Carrier Format</div>
+          <div class="meta-val" id="metaFormat">-</div>
+        </div>
+      </div>
+
+      <!-- Encode View -->
+      <div id="encodeSection">
+        <div class="input-group">
+          <label class="input-label" for="encodeInput">Secret Message to Embed:</label>
+          <textarea id="encodeInput" placeholder="Type or paste the confidential text payload to conceal inside the carrier image..."></textarea>
+        </div>
+        <div id="encodeStatus" class="status-banner status-warning" style="display: none;"></div>
+        <div class="btn-row">
+          <button class="btn-atom" id="btnEmbed">Embed & Download PNG</button>
+          <button class="btn-atom btn-secondary" id="btnResetEncode">Clear</button>
+        </div>
+      </div>
+
+      <!-- Decode View -->
+      <div id="decodeSection" style="display: none;">
+        <div class="input-group">
+          <label class="input-label" for="decodeOutput">Extracted Secret Message:</label>
+          <textarea id="decodeOutput" readonly placeholder="Extracted hidden payload strings will appear here upon extraction..."></textarea>
+        </div>
+        <div id="decodeStatus" class="status-banner status-warning" style="display: none;"></div>
+        <div class="btn-row">
+          <button class="btn-atom" id="btnExtract">Extract Payload</button>
+          <button class="btn-atom btn-secondary" id="btnCopyExtracted">Copy Text</button>
+          <button class="btn-atom btn-secondary" id="btnResetDecode">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Steganographic Security & Operational Disclaimer
+      </div>
+      <p>
+        <strong>LSB steganography is fragile and does not constitute end-to-end cryptographic protection on its own.</strong> Lossy compression routines (such as JPEG re-encoding, WebP re-sampling, screenshotting, or messaging platforms like Discord, WhatsApp, and Slack) discard least-significant bit data, irreversibly corrupting embedded payloads. Furthermore, standard statistical steganalysis techniques (Chi-square analysis, RS analysis) can identify anomalies in raw color channels. Always pre-encrypt sensitive payloads with authenticated encryption (e.g., AES-GCM) prior to embedding.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Documentation -->
+    <article class="doc-section">
+      <h2>How Canvas LSB Steganography Operates</h2>
+      <p>Least Significant Bit (LSB) steganography embeds covert message bits into the least perceptible bits of RGB color channels in digital graphics:</p>
+      <ul>
+        <li><strong>Color Channel Bit Modification:</strong> Standard 24-bit RGB images dedicate 8 bits (0–255) to Red, Green, and Blue channels per pixel. Flipping the lowest bit alters color luminescence by less than 1%, which is imperceptible to the naked eye.</li>
+        <li><strong>Delimiter & Framing:</strong> To allow deterministic recovery without hardcoding payload length, a 32-bit signature delimiter is encoded into the bitstream to mark the exact termination of the payload data.</li>
+        <li><strong>Format Constraints:</strong> Lossless PNG or WebP must be utilized for transmission. Lossy JPEG quantizations discard higher-frequency color information and destroy LSB modifications.</li>
+      </ul>
+
+      <h2>Zero Network Egress Architecture</h2>
+      <p>All pixel buffer operations, canvas rasterizations, and bitwise stream transformations are calculated in memory via the HTML5 <code>CanvasRenderingContext2D</code> and <code>ImageData</code> APIs. No imagery or hidden text is sent to an external server or logged remotely.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Localhost)";
+        ipv6El.textContent = "::1 (Localhost)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      // IPv4 Resolution
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("Primary IPv4 failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline / Blocked";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline / Blocked";
+        }
+      })();
+
+      // IPv6 Resolution
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("Primary IPv6 failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM Elements
+    const tabEncode = document.getElementById("tabEncode");
+    const tabDecode = document.getElementById("tabDecode");
+    const encodeSection = document.getElementById("encodeSection");
+    const decodeSection = document.getElementById("decodeSection");
+
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const previewContainer = document.getElementById("previewContainer");
+    const imagePreview = document.getElementById("imagePreview");
+
+    const metaGrid = document.getElementById("metaGrid");
+    const metaResolution = document.getElementById("metaResolution");
+    const metaPixels = document.getElementById("metaPixels");
+    const metaCapacity = document.getElementById("metaCapacity");
+    const metaFormat = document.getElementById("metaFormat");
+
+    const encodeInput = document.getElementById("encodeInput");
+    const encodeStatus = document.getElementById("encodeStatus");
+    const btnEmbed = document.getElementById("btnEmbed");
+    const btnResetEncode = document.getElementById("btnResetEncode");
+
+    const decodeOutput = document.getElementById("decodeOutput");
+    const decodeStatus = document.getElementById("decodeStatus");
+    const btnExtract = document.getElementById("btnExtract");
+    const btnCopyExtracted = document.getElementById("btnCopyExtracted");
+    const btnResetDecode = document.getElementById("btnResetDecode");
+
+    let currentImage = null;
+    const DELIMITER = "###BITDARK_STEGO_END###";
+
+    // Tab Switching
+    tabEncode.addEventListener("click", () => {
+      tabEncode.classList.add("active");
+      tabDecode.classList.remove("active");
+      encodeSection.style.display = "block";
+      decodeSection.style.display = "none";
+    });
+
+    tabDecode.addEventListener("click", () => {
+      tabDecode.classList.add("active");
+      tabEncode.classList.remove("active");
+      decodeSection.style.display = "block";
+      encodeSection.style.display = "none";
+    });
+
+    // Dropzone handlers
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          currentImage = img;
+          imagePreview.src = event.target.result;
+          previewContainer.style.display = "block";
+
+          const totalPixels = img.width * img.height;
+          // 3 bits per pixel (R, G, B channels LSB)
+          const capacityBytes = Math.floor((totalPixels * 3) / 8);
+
+          metaResolution.textContent = `${img.width} × ${img.height} px`;
+          metaPixels.textContent = totalPixels.toLocaleString();
+          metaCapacity.textContent = `${(capacityBytes / 1024).toFixed(1)} KB`;
+          metaFormat.textContent = file.type.replace("image/", "").toUpperCase();
+          metaGrid.style.display = "grid";
+
+          encodeStatus.style.display = "none";
+          decodeStatus.style.display = "none";
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // String to Binary Helper
+    function textToBits(str) {
+      let bits = "";
+      for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i);
+        bits += code.toString(2).padStart(8, "0");
+      }
+      return bits;
+    }
+
+    // Binary to String Helper
+    function bitsToText(bits) {
+      let text = "";
+      for (let i = 0; i < bits.length; i += 8) {
+        const byte = bits.slice(i, i + 8);
+        if (byte.length === 8) {
+          text += String.fromCharCode(parseInt(byte, 2));
+        }
+      }
+      return text;
+    }
+
+    // Embed Execution
+    btnEmbed.addEventListener("click", () => {
+      if (!currentImage) {
+        showStatus(encodeStatus, "status-error", "Please upload a carrier image first.");
+        return;
+      }
+      const message = encodeInput.value;
+      if (!message) {
+        showStatus(encodeStatus, "status-error", "Please provide a message to embed.");
+        return;
+      }
+
+      const fullPayload = message + DELIMITER;
+      const bits = textToBits(fullPayload);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = currentImage.width;
+      canvas.height = currentImage.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(currentImage, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+
+      // Available RGB channels (skipping Alpha)
+      const availableBits = (data.length / 4) * 3;
+      if (bits.length > availableBits) {
+        showStatus(encodeStatus, "status-error", `Payload too large! Requires ${bits.length} bits, carrier holds ${availableBits} bits.`);
+        return;
+      }
+
+      let bitIdx = 0;
+      for (let i = 0; i < data.length && bitIdx < bits.length; i += 4) {
+        for (let c = 0; c < 3 && bitIdx < bits.length; c++) {
+          data[i + c] = (data[i + c] & ~1) | parseInt(bits[bitIdx], 10);
+          bitIdx++;
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      // Download result as PNG to preserve LSB bits
+      const downloadUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `stego-payload-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      showStatus(encodeStatus, "status-success", `Success: ${message.length} characters embedded and exported as lossless PNG.`);
+    });
+
+    // Extraction Execution
+    btnExtract.addEventListener("click", () => {
+      if (!currentImage) {
+        showStatus(decodeStatus, "status-error", "Please upload an image to extract from.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = currentImage.width;
+      canvas.height = currentImage.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(currentImage, 0, 0);
+
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+
+      let bits = "";
+      let extractedText = "";
+      let foundDelimiter = false;
+
+      for (let i = 0; i < data.length; i += 4) {
+        for (let c = 0; c < 3; c++) {
+          bits += (data[i + c] & 1).toString();
+
+          if (bits.length % 8 === 0) {
+            const nextChar = String.fromCharCode(parseInt(bits.slice(-8), 2));
+            extractedText += nextChar;
+
+            if (extractedText.endsWith(DELIMITER)) {
+              foundDelimiter = true;
+              break;
+            }
+          }
+        }
+        if (foundDelimiter) break;
+      }
+
+      if (foundDelimiter) {
+        const cleanPayload = extractedText.slice(0, -DELIMITER.length);
+        decodeOutput.value = cleanPayload;
+        showStatus(decodeStatus, "status-success", `Payload extracted successfully: ${cleanPayload.length} characters recovered.`);
+      } else {
+        decodeOutput.value = "";
+        showStatus(decodeStatus, "status-warning", "No hidden payload found with standard BitDark delimiter markers.");
+      }
+    });
+
+    btnCopyExtracted.addEventListener("click", () => {
+      if (!decodeOutput.value) return;
+      navigator.clipboard.writeText(decodeOutput.value).then(() => {
+        const orig = btnCopyExtracted.textContent;
+        btnCopyExtracted.textContent = "Copied!";
+        setTimeout(() => { btnCopyExtracted.textContent = orig; }, 1500);
+      });
+    });
+
+    btnResetEncode.addEventListener("click", () => {
+      encodeInput.value = "";
+      encodeStatus.style.display = "none";
+    });
+
+    btnResetDecode.addEventListener("click", () => {
+      decodeOutput.value = "";
+      decodeStatus.style.display = "none";
+    });
+
+    function showStatus(element, statusClass, message) {
+      element.className = `status-banner ${statusClass}`;
+      element.textContent = message;
+      element.style.display = "flex";
+    }
+  </script>
+</body>
+</html>
