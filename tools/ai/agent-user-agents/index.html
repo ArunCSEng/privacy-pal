@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Automated Agent User-Agent Inspector — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="Automated Agent User-Agent Inspector — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Inspect, parse, and verify autonomous AI agent user agents, search spiders, and headless browser headers locally in browser memory. Zero tracking, zero telemetry." />
+  <meta name="keywords" content="ai agent user agent checker, detect headless browser ua, perplexity crawler user agent, gptbot user agent, claudebot header inspector, ai bot header lookup" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/agent-user-agents" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Frame */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .input-text {
+      flex: 1;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.86rem;
+      outline: none;
+    }
+    .input-text:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .preset-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .preset-btn {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .preset-btn:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-heading);
+    }
+
+    /* Results Workspace */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-bot {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-browser {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-headless {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.86rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-green);
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-muted);
+      color: var(--atom-heading);
+    }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical SEO Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 24px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / agent-user-agents
+    </nav>
+
+    <div class="tool-header">
+      <h1>Automated Agent User-Agent Inspector</h1>
+      <p>Inspect, profile, and verify autonomous AI agent user agents, search spiders, and automated headless browser signatures in local browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="uaInput">User-Agent Header String</label>
+        <div class="input-row">
+          <input type="text" id="uaInput" class="input-text" placeholder="Paste user-agent string here..." />
+          <button class="btn-secondary" id="btnMyUa">Use My Browser</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Common Autonomous & AI Spider Presets</label>
+        <div class="preset-container">
+          <button class="preset-btn" data-ua="Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)">GPTBot (OpenAI)</button>
+          <button class="preset-btn" data-ua="Mozilla/5.0 (compatible; ClaudeBot/1.0; +https://www.anthropic.com/claudebot)">ClaudeBot (Anthropic)</button>
+          <button class="preset-btn" data-ua="Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://docs.perplexity.ai/docs/perplexitybot)">PerplexityBot</button>
+          <button class="preset-btn" data-ua="Mozilla/5.0 (compatible; Google-Extended; +https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers)">Google-Extended</button>
+          <button class="preset-btn" data-ua="CCBot/2.0 (https://commoncrawl.org/faq/)">CCBot (Common Crawl)</button>
+          <button class="preset-btn" data-ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.6099.109 Safari/537.36">HeadlessChrome</button>
+          <button class="preset-btn" data-ua="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36">Standard Desktop Chrome</button>
+        </div>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-bot">
+        <span>🤖 Autonomous Agent Signature Identified</span>
+        <span id="botCategory">AI Indexer / LLM Scraper</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Primary Entity / Organization</div>
+          <div class="meta-val" id="metaOrg">OpenAI</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Agent Intent / Function</div>
+          <div class="meta-val" id="metaIntent">Foundation Model Training</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Headless / Automation Risk</div>
+          <div class="meta-val" id="metaRisk">High (Bot Crawling)</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Standard robots.txt Token</div>
+          <div class="meta-val" id="metaToken">GPTBot</div>
+        </div>
+      </div>
+
+      <div class="meta-label" style="margin-bottom: 6px;">Parsed Token Breakdown & robots.txt Directive:</div>
+      <div class="viewer-box" id="rawTokens">Initializing parser...</div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" id="btnCopyJson">Copy JSON Analysis</button>
+        <button class="btn-atom" id="btnCopyRobots">Copy Disallow Directive</button>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> User-Agent Reliability & Spoofing Disclaimer
+      </div>
+      <p>
+        <strong>User-Agent headers provide zero cryptographic authenticity and are trivially spoofable.</strong> Malicious spiders, scrapers, and automated exploitation scripts can effortlessly masquerade as benign browsers (or as official AI scrapers) simply by sending arbitrary string values.
+      </p>
+      <p style="margin-top: 6px;">
+        To establish definitive agent attribution for defensive firewall decisions, always perform reverse DNS lookups (rDNS verification) on the connecting IP address and compare origin autonomous system numbers (ASNs) rather than trusting client-side headers alone.
+      </p>
+    </aside>
+
+    <!-- Technical SEO Documentation -->
+    <article class="doc-section">
+      <h2>Autonomous AI Agents vs. Conventional Crawlers</h2>
+      <p>Modern autonomous agents deploy specialized user-agent identities distinct from traditional indexing spiders. While legacy search engines (e.g., Googlebot, Bingbot) catalog web pages to direct human users via organic search results, LLM data harvesters (e.g., GPTBot, ClaudeBot, CCBot) ingest site content to synthesize model training corpora or fuel real-time retrieval-augmented generation (RAG) loops.</p>
+      
+      <ul>
+        <li><strong>Retrieval vs. Training Tokens:</strong> Major platforms distinguish between user-facing retrieval agents (such as <code>ChatGPT-User</code>) and mass offline ingestion spiders (such as <code>GPTBot</code>).</li>
+        <li><strong>Headless Browser Indicators:</strong> Scraping engines leveraging automation suites (Puppeteer, Playwright, Selenium) frequently leak string tokens like <code>HeadlessChrome</code> or omit standard hardware rendering tokens.</li>
+        <li><strong>Voluntary Governance:</strong> Standard user-agent policy relies entirely on web server <code>robots.txt</code> and voluntary compliance.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>BitDark's Agent Inspector processes, tokenizes, and evaluates user-agent signatures locally within your browser sandbox. Zero telemetry, logs, or string data are communicated to our servers or external logging endpoints.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Agent Signature Database
+    const AGENT_PATTERNS = [
+      {
+        id: "gptbot",
+        name: "GPTBot",
+        regex: /GPTBot/i,
+        org: "OpenAI",
+        type: "AI Ingestion & Training",
+        category: "Autonomous LLM Spider",
+        risk: "High Scraping Volume",
+        token: "GPTBot"
+      },
+      {
+        id: "chatgpt-user",
+        name: "ChatGPT-User",
+        regex: /ChatGPT-User/i,
+        org: "OpenAI",
+        type: "Live Search / User-Triggered RAG",
+        category: "Interactive Retrieval Agent",
+        risk: "Targeted Single-Page Fetch",
+        token: "ChatGPT-User"
+      },
+      {
+        id: "claudebot",
+        name: "ClaudeBot",
+        regex: /ClaudeBot/i,
+        org: "Anthropic",
+        type: "Model Training & Web Search",
+        category: "Autonomous LLM Spider",
+        risk: "High Scraping Volume",
+        token: "ClaudeBot"
+      },
+      {
+        id: "perplexitybot",
+        name: "PerplexityBot",
+        regex: /PerplexityBot/i,
+        org: "Perplexity AI",
+        type: "Conversational Search Indexing",
+        category: "Search & Synthesis Crawler",
+        risk: "Medium-High Crawl Frequency",
+        token: "PerplexityBot"
+      },
+      {
+        id: "google-extended",
+        name: "Google-Extended",
+        regex: /Google-Extended/i,
+        org: "Google (Gemini)",
+        type: "AI Training Corpora Collection",
+        category: "LLM Training Crawler",
+        risk: "Autonomous Bulk Scraping",
+        token: "Google-Extended"
+      },
+      {
+        id: "ccbot",
+        name: "CCBot",
+        regex: /CCBot/i,
+        org: "Common Crawl",
+        type: "Open Web Dataset Scraping",
+        category: "Public Archive Spider",
+        risk: "Massive Bulk Data Harvester",
+        token: "CCBot"
+      },
+      {
+        id: "bytespider",
+        name: "Bytespider",
+        regex: /Bytespider/i,
+        org: "ByteDance",
+        type: "AI & Content Indexing",
+        category: "Aggressive Crawler",
+        risk: "Very High Rate Limits",
+        token: "Bytespider"
+      },
+      {
+        id: "headless-chrome",
+        name: "HeadlessChrome",
+        regex: /HeadlessChrome/i,
+        org: "Automated Runner (Puppeteer/Playwright)",
+        type: "Headless Browser Automation",
+        category: "Automated Headless Client",
+        risk: "Bot / Screen Scraper",
+        token: "*"
+      },
+      {
+        id: "python-requests",
+        name: "Python Requests / Script",
+        regex: /python-requests|aiohttp|urllib/i,
+        org: "Automated Python Script",
+        type: "Scripted HTTP Client",
+        category: "Headless Script",
+        risk: "Potential Scraping / Probing",
+        token: "*"
+      }
+    ];
+
+    const uaInput = document.getElementById("uaInput");
+    const btnMyUa = document.getElementById("btnMyUa");
+    const statusBanner = document.getElementById("statusBanner");
+    const botCategory = document.getElementById("botCategory");
+    const metaOrg = document.getElementById("metaOrg");
+    const metaIntent = document.getElementById("metaIntent");
+    const metaRisk = document.getElementById("metaRisk");
+    const metaToken = document.getElementById("metaToken");
+    const rawTokens = document.getElementById("rawTokens");
+    const btnCopyJson = document.getElementById("btnCopyJson");
+    const btnCopyRobots = document.getElementById("btnCopyRobots");
+    const presetButtons = document.querySelectorAll(".preset-btn");
+
+    let activeAnalysis = null;
+
+    function analyzeUserAgent(ua) {
+      if (!ua || ua.trim() === "") {
+        ua = navigator.userAgent;
+      }
+
+      let matched = null;
+      for (const pattern of AGENT_PATTERNS) {
+        if (pattern.regex.test(ua)) {
+          matched = pattern;
+          break;
+        }
+      }
+
+      const isBot = matched !== null;
+      const isHeadless = /headless/i.test(ua) || /selenium|phantom|nightwatch/i.test(ua);
+
+      if (isBot) {
+        statusBanner.className = "status-banner status-bot";
+        statusBanner.innerHTML = `<span>🤖 Autonomous Agent Signature Identified</span><span>${matched.category}</span>`;
+        metaOrg.textContent = matched.org;
+        metaIntent.textContent = matched.type;
+        metaRisk.textContent = matched.risk;
+        metaToken.textContent = matched.token;
+      } else if (isHeadless) {
+        statusBanner.className = "status-banner status-headless";
+        statusBanner.innerHTML = `<span>⚠️ Headless Automation Detected</span><span>Scripted Execution</span>`;
+        metaOrg.textContent = "Unknown Headless Suite";
+        metaIntent.textContent = "Automated Browser Task";
+        metaRisk.textContent = "High (Synthetic Client)";
+        metaToken.textContent = "*";
+      } else {
+        statusBanner.className = "status-banner status-browser";
+        statusBanner.innerHTML = `<span>🌐 Standard Interactive Browser</span><span>Human Interactive Client</span>`;
+        metaOrg.textContent = "Standard User Browser";
+        metaIntent.textContent = "Direct Web Navigation";
+        metaRisk.textContent = "Low (Standard Browser)";
+        metaToken.textContent = "N/A";
+      }
+
+      const robotsBlock = isBot && matched.token !== "*"
+        ? `User-agent: ${matched.token}\nDisallow: /`
+        : `# To restrict automated headless agents in general:\nUser-agent: *\nDisallow: /private/`;
+
+      activeAnalysis = {
+        raw_user_agent: ua,
+        classification: {
+          is_autonomous_bot: isBot,
+          is_headless_browser: isHeadless,
+          identified_entity: isBot ? matched.name : (isHeadless ? "Headless Automation" : "Standard Interactive User"),
+          organization: isBot ? matched.org : "Client Endpoint",
+          operational_purpose: isBot ? matched.type : "General Browsing",
+          risk_assessment: isBot ? matched.risk : (isHeadless ? "High" : "Low")
+        },
+        governance: {
+          recommended_robots_token: isBot ? matched.token : "*",
+          sample_robots_directive: robotsBlock
+        }
+      };
+
+      rawTokens.textContent = `${robotsBlock}\n\n# --- Structural Heuristic JSON ---\n${JSON.stringify(activeAnalysis, null, 2)}`;
+    }
+
+    // Event Listeners
+    uaInput.addEventListener("input", (e) => analyzeUserAgent(e.target.value));
+
+    btnMyUa.addEventListener("click", () => {
+      uaInput.value = navigator.userAgent;
+      analyzeUserAgent(navigator.userAgent);
+    });
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const selectedUa = btn.getAttribute("data-ua");
+        uaInput.value = selectedUa;
+        analyzeUserAgent(selectedUa);
+      });
+    });
+
+    btnCopyJson.addEventListener("click", () => {
+      if (!activeAnalysis) return;
+      navigator.clipboard.writeText(JSON.stringify(activeAnalysis, null, 2));
+      btnCopyJson.textContent = "Copied JSON!";
+      setTimeout(() => { btnCopyJson.textContent = "Copy JSON Analysis"; }, 1500);
+    });
+
+    btnCopyRobots.addEventListener("click", () => {
+      if (!activeAnalysis) return;
+      navigator.clipboard.writeText(activeAnalysis.governance.sample_robots_directive);
+      btnCopyRobots.textContent = "Copied Directive!";
+      setTimeout(() => { btnCopyRobots.textContent = "Copy Disallow Directive"; }, 1500);
+    });
+
+    // Default Initialization
+    const initialUA = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)";
+    uaInput.value = initialUA;
+    analyzeUserAgent(initialUA);
+  </script>
+</body>
+</html>
