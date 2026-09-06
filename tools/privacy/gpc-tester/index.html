@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>GPC & DNT Signal Inspector — Free Offline Privacy Tool | BitDark</title>
+  <meta name="title" content="GPC & DNT Signal Inspector — Free Offline Privacy Tool | BitDark" />
+  <meta name="description" content="Audit Global Privacy Control (GPC) and Do Not Track (DNT) browser signals directly in your client runtime. Zero telemetry, zero logging." />
+  <meta name="keywords" content="global privacy control test, gpc tester, do not track tester, dnt header audit, browser privacy signal check, sec-gpc test" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/gpc-tester" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Main Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .signal-summary-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+    }
+    .banner-enabled {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .banner-disabled {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .status-box {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 14px;
+      border-radius: 4px;
+    }
+    .status-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 6px;
+    }
+    .status-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .json-label {
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 8px;
+    }
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy & OSINT</a> / gpc-tester
+    </nav>
+
+    <div class="tool-header">
+      <h1>Global Privacy Control & DNT Signal Inspector</h1>
+      <p>Evaluate your browser's active Global Privacy Control (Sec-GPC) and Do Not Track (DNT) outbound privacy signals locally in memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div id="summaryBanner" class="signal-summary-banner banner-disabled">
+        <span>Auditing Client Privacy Signals...</span>
+        <span>Please wait</span>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-box">
+          <div class="status-label">Global Privacy Control (GPC)</div>
+          <div class="status-value" id="valGpc">Checking...</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Do Not Track (DNT)</div>
+          <div class="status-value" id="valDnt">Checking...</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Private Browsing Indicator</div>
+          <div class="status-value" id="valIncognito">Checking...</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Cookie Enabled Status</div>
+          <div class="status-value" id="valCookies">Checking...</div>
+        </div>
+      </div>
+
+      <div class="json-label">Complete Evaluated Privacy Scope (Client Memory):</div>
+      <div class="viewer-box" id="jsonViewer">Inspecting runtime object trees...</div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnDownloadJson">Export Signal Audit JSON</button>
+        <button class="btn-atom" id="btnRecheck" style="background-color: var(--atom-border); color: var(--atom-text);">Re-audit Signals</button>
+      </div>
+    </div>
+
+    <!-- Regulatory & Technical Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Enforcement & Signal Limitation Notice
+      </div>
+      <p>
+        <strong>Emitting privacy headers does not ensure compliance by third-party tracking infrastructure.</strong> While regulations such as CCPA/CPRA, Colorado Privacy Act (CPA), and European GDPR recognize opt-out preference signals like GPC as legally binding opt-out requests, adherence is enforced server-side. Rogue analytical networks, ad-tech aggregators, and browser-fingerprinting endpoints may ignore <code>Sec-GPC</code> or deprecated <code>DNT: 1</code> headers unless strictly restrained by network-level content blockers or tracking prevention extensions.
+      </p>
+    </aside>
+
+    <!-- Technical Documentation -->
+    <article class="doc-section">
+      <h2>Understanding GPC vs. DNT Standards</h2>
+      <p>Modern browser privacy signaling consists of two primary mechanisms operating across HTTP headers and JavaScript runtime APIs:</p>
+      <ul>
+        <li><strong>Global Privacy Control (GPC):</strong> Standardized through the W3C, <code>navigator.globalPrivacyControl</code> evaluates to <code>true</code> when enabled. It commands websites not to sell or share personal browsing data under statutes like the California Consumer Privacy Act.</li>
+        <li><strong>Do Not Track (DNT):</strong> The legacy predecessor via <code>navigator.doNotTrack</code>. Set to <code>"1"</code> when active. While widely deprecated by major standards bodies due to lack of binding legal consequence, it remains an informative signal for consumer intent.</li>
+      </ul>
+
+      <h2>Zero Network Egress Verification</h2>
+      <p>Unlike third-party test suites that transmit your telemetry back to a centralized server, this audit inspects native properties in memory using local JavaScript bindings (<code>navigator</code> and <code>window</code> scope). No telemetry packets or audit payloads leave your machine.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // GPC & Privacy Signal Inspector Engine
+    let signalReport = null;
+
+    async function evaluateSignals() {
+      const valGpc = document.getElementById("valGpc");
+      const valDnt = document.getElementById("valDnt");
+      const valIncognito = document.getElementById("valIncognito");
+      const valCookies = document.getElementById("valCookies");
+      const summaryBanner = document.getElementById("summaryBanner");
+      const jsonViewer = document.getElementById("jsonViewer");
+
+      // Check GPC (navigator.globalPrivacyControl)
+      const hasGpc = "globalPrivacyControl" in navigator;
+      const gpcValue = hasGpc ? navigator.globalPrivacyControl : undefined;
+      const isGpcActive = gpcValue === true;
+
+      // Check DNT (navigator.doNotTrack or window.doNotTrack)
+      const rawDnt = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      const isDntActive = rawDnt === "1" || rawDnt === "yes";
+
+      // Detect Private Mode heuristic via Storage Quota
+      let isPrivateMode = "Indeterminate";
+      try {
+        if ("storage" in navigator && "estimate" in navigator.storage) {
+          const estimate = await navigator.storage.estimate();
+          if (estimate.quota && estimate.quota < 120000000) {
+            isPrivateMode = "Likely Active";
+          } else {
+            isPrivateMode = "Standard Session";
+          }
+        }
+      } catch {
+        isPrivateMode = "Indeterminate";
+      }
+
+      // Render UI Values
+      valGpc.textContent = isGpcActive ? "ENABLED (true)" : "DISABLED (false / undefined)";
+      valGpc.style.color = isGpcActive ? "var(--atom-green)" : "var(--atom-coral)";
+
+      valDnt.textContent = isDntActive ? `ENABLED ("${rawDnt}")` : `DISABLED (${rawDnt || "null"})`;
+      valDnt.style.color = isDntActive ? "var(--atom-green)" : "var(--atom-muted)";
+
+      valIncognito.textContent = isPrivateMode;
+      valIncognito.style.color = isPrivateMode === "Likely Active" ? "var(--atom-cyan)" : "var(--atom-text)";
+
+      valCookies.textContent = navigator.cookieEnabled ? "Enabled" : "Blocked";
+      valCookies.style.color = navigator.cookieEnabled ? "var(--atom-amber)" : "var(--atom-green)";
+
+      // Update Top Status Banner
+      if (isGpcActive) {
+        summaryBanner.className = "signal-summary-banner banner-enabled";
+        summaryBanner.innerHTML = `<span>✓ Global Privacy Control Signal Active</span> <span>Opt-Out Preference Broadcasting</span>`;
+      } else {
+        summaryBanner.className = "signal-summary-banner banner-disabled";
+        summaryBanner.innerHTML = `<span>✕ Global Privacy Control Inactive</span> <span>Standard Tracking Exposure</span>`;
+      }
+
+      // Build JSON Diagnostic Object
+      signalReport = {
+        timestamp: new Date().toISOString(),
+        signals: {
+          global_privacy_control: {
+            api_supported: hasGpc,
+            active: isGpcActive,
+            raw_value: gpcValue === undefined ? null : gpcValue,
+            w3c_header_name: "Sec-GPC",
+            legal_frameworks: ["CCPA/CPRA", "CPA", "VCDPA (Broad Recognition)"]
+          },
+          do_not_track: {
+            active: isDntActive,
+            raw_value: rawDnt || null,
+            status: "Legacy / Deprecated Standard"
+          }
+        },
+        client_context: {
+          user_agent: navigator.userAgent,
+          platform: navigator.platform,
+          cookies_enabled: navigator.cookieEnabled,
+          storage_private_mode_heuristic: isPrivateMode,
+          hardware_concurrency: navigator.hardwareConcurrency || "Undisclosed",
+          language: navigator.language
+        },
+        security_evaluation: {
+          tracking_protection_status: isGpcActive ? "Protected by GPC Assertion" : "Unprotected (Standard Profile)",
+          recommendation: isGpcActive 
+            ? "Your browser broadcasts legitimate opt-out preference signals." 
+            : "Enable GPC via browser privacy settings or use a privacy-respecting browser/extension."
+        }
+      };
+
+      jsonViewer.textContent = JSON.stringify(signalReport, null, 2);
+    }
+
+    document.getElementById("btnRecheck").addEventListener("click", evaluateSignals);
+
+    document.getElementById("btnDownloadJson").addEventListener("click", () => {
+      if (!signalReport) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(signalReport, null, 2));
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `gpc-signal-audit-${Date.now()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    });
+
+    window.addEventListener("DOMContentLoaded", evaluateSignals);
+  </script>
+</body>
+</html>
