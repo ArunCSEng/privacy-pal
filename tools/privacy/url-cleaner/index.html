@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>URL Tracking Parameter Stripper & Privacy Cleaner — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="URL Tracking Parameter Stripper & Privacy Cleaner — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Strip marketing trackers, telemetry tokens, click IDs (fbclid, gclid, utm_*), and referral parameters locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="url cleaner, strip utm parameters, remove gclid, remove fbclid, link tracking stripper, privacy url sanitize, clean link tool, offline url cleaner" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/url-cleaner" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .url-input-wrap {
+      display: flex;
+      gap: 10px;
+    }
+    .url-input-wrap input {
+      flex: 1;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: var(--atom-heading);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-input-wrap input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    .quick-examples {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .example-tag {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      color: var(--atom-cyan);
+    }
+    .example-tag:hover {
+      border-color: var(--atom-cyan);
+      color: #fff;
+    }
+
+    /* Results Panel */
+    .results-area {
+      margin-top: 24px;
+      border-top: 1px solid var(--atom-border);
+      padding-top: 20px;
+      display: none;
+    }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-found {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-neutral {
+      background-color: rgba(86, 182, 194, 0.12);
+      border: 1px solid var(--atom-cyan);
+      color: var(--atom-cyan);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .clean-result-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: var(--atom-green);
+      word-break: break-all;
+      margin-bottom: 14px;
+      user-select: all;
+    }
+
+    .table-container {
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-bottom: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      text-align: left;
+    }
+    th {
+      background-color: var(--atom-bg);
+      padding: 10px 14px;
+      color: var(--atom-heading);
+      border-bottom: 1px solid var(--atom-border);
+    }
+    td {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      word-break: break-all;
+    }
+    tr:last-child td { border-bottom: none; }
+    .tag-stripped {
+      color: var(--atom-coral);
+      font-weight: bold;
+    }
+    .tag-retained {
+      color: var(--atom-green);
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy & OSINT</a> / url-cleaner
+    </nav>
+
+    <div class="tool-header">
+      <h1>URL Tracking Parameter Stripper & Sanitizer</h1>
+      <p>Remove tracking identifiers, marketing payloads, and telemetry parameters in real time directly within browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="urlInput">Enter URL to Sanitize</label>
+        <div class="url-input-wrap">
+          <input type="text" id="urlInput" placeholder="https://example.com/article?utm_source=twitter&utm_medium=social&gclid=CjwKCAjw&id=9872" autocomplete="off" />
+          <button class="btn-atom" id="btnClean">Clean URL</button>
+        </div>
+      </div>
+
+      <div class="quick-examples">
+        <span>Try Sample:</span>
+        <span class="example-tag" data-sample="https://shop.example.com/item?id=8391&utm_source=newsletter&utm_medium=email&utm_campaign=winter_sale&fbclid=IwAR3x1">Newsletter + Facebook</span>
+        <span class="example-tag" data-sample="https://news.ycombinator.com/item?id=3847291&mc_cid=839201&mc_eid=a7b129c">Mailchimp Tracker</span>
+        <span class="example-tag" data-sample="https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=pZJ2qWk98v1&feature=share">YouTube Share & SI</span>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-label">Sanitized URL:</div>
+        <div class="clean-result-box" id="cleanUrlOutput"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Total Parameters Found</div>
+            <div class="meta-val" id="metaTotalParams">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Trackers Stripped</div>
+            <div class="meta-val" id="metaStrippedCount">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Legitimate Keys Kept</div>
+            <div class="meta-val" id="metaKeptCount">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Origin Host</div>
+            <div class="meta-val" id="metaHost">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Parameter Inspection Matrix:</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter Name</th>
+                <th>Value</th>
+                <th>Classification</th>
+                <th>Action Taken</th>
+              </tr>
+            </thead>
+            <tbody id="paramTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnCopy">Copy Sanitized URL</button>
+          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic & Privacy Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Privacy Scope & Link Sanitization Boundaries
+      </div>
+      <p>
+        <strong>Stripping query parameters does not guarantee total anonymity or bypass server-side tracking.</strong> While this engine neutralizes standard telemetry flags (such as Google Click IDs, Meta pixel tokens, and Google Analytics UTM tags), it cannot intercept fingerprinting or session states executed after loading the target website. Certain platforms encode tracking information into opaque URL paths (e.g., redirect hops, affiliate path segments, or encoded subpaths) which cannot be safely stripped without breaking resource resolution. Do not rely entirely on URL parameter scrubbing for threat defense; verify target links using sandboxed environments or isolated routing.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How URL Query Telemetry Operates</h2>
+      <p>Marketing funnels, data brokers, and advertising platforms append key-value query parameters to external hyperlinks. When a user navigates via these decorated links, web application firewalls and analytics servers log these unique identifiers to stitch cross-site activity back to individual profiles.</p>
+      <ul>
+        <li><strong>Ad Network Click IDs:</strong> Flags like <code>gclid</code> (Google), <code>fbclid</code> (Meta), <code>msclkid</code> (Microsoft), and <code>dclid</code> pass high-entropy correlation IDs to monitor conversions across distinct origins.</li>
+        <li><strong>Urchin Tracking Module (UTM):</strong> Standardized parameters including <code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>utm_term</code>, and <code>utm_content</code> identify referring channels and user journeys.</li>
+        <li><strong>Ephemeral Social Tracking:</strong> Modern social networks (such as X/Twitter's <code>twclid</code>, YouTube's <code>si</code>, and TikTok's <code>tt_medium</code>) introduce ephemeral session hashes into simple media share links.</li>
+      </ul>
+
+      <h2>Zero Network Egress Architecture</h2>
+      <p>Traditional URL shorteners and online link expanders proxy navigation requests through external intermediary servers, logging incoming client IP headers and link metadata. BitDark's URL Tracking Parameter Stripper processes all input locally via the browser's native <code>URL</code> and <code>URLSearchParams</code> APIs. No link strings, hosts, or parameter lists are ever transmitted externally.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Known Telemetry & Tracking Parameter Dictionary
+    const TRACKING_PARAM_PATTERNS = [
+      // Urchin Tracking Module
+      /^utm_source$/i, /^utm_medium$/i, /^utm_campaign$/i, /^utm_term$/i, /^utm_content$/i, /^utm_id$/i,
+      /^utm_reader$/i, /^utm_name$/i, /^utm_cid$/i, /^utm_place$/i, /^utm_userid$/i, /^utm_swu$/i,
+      
+      // Google Ads & Analytics
+      /^gclid$/i, /^gclsrc$/i, /^dclid$/i, /^gbraid$/i, /^wbraid$/i, /^_ga$/i, /^_gl$/i,
+      
+      // Meta / Facebook / Instagram
+      /^fbclid$/i, /^fbc$/i, /^fbp$/i, /^igshid$/i,
+      
+      // Microsoft / Bing
+      /^msclkid$/i,
+      
+      // Twitter / X
+      /^twclid$/i, /^ref_src$/i, /^ref_url$/i,
+      
+      // TikTok & ByteDance
+      /^tt_medium$/i, /^tt_content$/i, /^_branch_match_id$/i,
+      
+      // Hubspot & Marketo
+      /^_hsenc$/i, /^_hsmi$/i, /^hsCtaTracking$/i, /^mkt_tok$/i,
+      
+      // Mailchimp & Newsletter Engines
+      /^mc_cid$/i, /^mc_eid$/i,
+      
+      // Social Media Link Share Tokens
+      /^si$/i, /^feature=share$/i, /^share_id$/i,
+      
+      // Generic & Affiliate Click Tracking
+      /^wickedid$/i, /^yclid$/i, /^rb_clickid$/i, /^s_kwcid$/i, /^otc$/i, /^vero_id$/i, /^ncid$/i
+    ];
+
+    function isTrackingKey(key) {
+      return TRACKING_PARAM_PATTERNS.some(pattern => pattern.test(key));
+    }
+
+    const urlInput = document.getElementById("urlInput");
+    const btnClean = document.getElementById("btnClean");
+    const btnReset = document.getElementById("btnReset");
+    const btnCopy = document.getElementById("btnCopy");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const cleanUrlOutput = document.getElementById("cleanUrlOutput");
+    const metaTotalParams = document.getElementById("metaTotalParams");
+    const metaStrippedCount = document.getElementById("metaStrippedCount");
+    const metaKeptCount = document.getElementById("metaKeptCount");
+    const metaHost = document.getElementById("metaHost");
+    const paramTableBody = document.getElementById("paramTableBody");
+
+    function executeCleaning() {
+      let raw = urlInput.value.trim();
+      if (!raw) return;
+
+      if (!/^https?:\/\//i.test(raw)) {
+        raw = "https://" + raw;
+      }
+
+      let parsedUrl;
+      try {
+        parsedUrl = new URL(raw);
+      } catch {
+        alert("Invalid URL format. Please provide a valid address (e.g., https://example.com?utm_source=test).");
+        return;
+      }
+
+      resultsArea.style.display = "block";
+      metaHost.textContent = parsedUrl.hostname;
+
+      const originalParams = Array.from(parsedUrl.searchParams.entries());
+      metaTotalParams.textContent = originalParams.length;
+
+      let strippedCount = 0;
+      let keptCount = 0;
+      paramTableBody.innerHTML = "";
+
+      // Inspect and filter
+      const cleanedSearchParams = new URLSearchParams();
+
+      originalParams.forEach(([key, value]) => {
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+
+        const tdVal = document.createElement("td");
+        tdVal.textContent = value.length > 40 ? value.substring(0, 37) + "..." : value;
+
+        const tdClass = document.createElement("td");
+        const tdAction = document.createElement("td");
+
+        if (isTrackingKey(key)) {
+          strippedCount++;
+          tdClass.innerHTML = `<span class="tag-stripped">Telemetry / Tracker</span>`;
+          tdAction.innerHTML = `<span class="tag-stripped">Stripped</span>`;
+        } else {
+          keptCount++;
+          cleanedSearchParams.append(key, value);
+          tdClass.innerHTML = `<span class="tag-retained">Functional / Parameter</span>`;
+          tdAction.innerHTML = `<span class="tag-retained">Retained</span>`;
+        }
+
+        tr.appendChild(tdKey);
+        tr.appendChild(tdVal);
+        tr.appendChild(tdClass);
+        tr.appendChild(tdAction);
+        paramTableBody.appendChild(tr);
+      });
+
+      metaStrippedCount.textContent = strippedCount;
+      metaKeptCount.textContent = keptCount;
+
+      parsedUrl.search = cleanedSearchParams.toString();
+      cleanUrlOutput.textContent = parsedUrl.toString();
+
+      if (strippedCount > 0) {
+        statusBanner.className = "status-banner status-found";
+        statusBanner.innerHTML = `<span>✓ Sanitized: ${strippedCount} Tracking Identifier(s) Removed</span> <span>Telemetry Purged</span>`;
+      } else {
+        statusBanner.className = "status-banner status-neutral";
+        statusBanner.innerHTML = `<span>✓ Clean: No Standard Tracking Parameters Located</span> <span>No Action Required</span>`;
+      }
+    }
+
+    btnClean.addEventListener("click", executeCleaning);
+    urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") executeCleaning();
+    });
+
+    btnReset.addEventListener("click", () => {
+      urlInput.value = "";
+      resultsArea.style.display = "none";
+    });
+
+    btnCopy.addEventListener("click", () => {
+      const text = cleanUrlOutput.textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      btnCopy.textContent = "Copied!";
+      setTimeout(() => { btnCopy.textContent = "Copy Sanitized URL"; }, 1500);
+    });
+
+    // Sample Fillers
+    document.querySelectorAll(".example-tag").forEach(tag => {
+      tag.addEventListener("click", () => {
+        urlInput.value = tag.getAttribute("data-sample");
+        executeCleaning();
+      });
+    });
+  </script>
+</body>
+</html>
