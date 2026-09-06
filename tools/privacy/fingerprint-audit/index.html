@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Browser Fingerprint Audit — Free Client-Side Security Tool | BitDark</title>
+  <meta name="title" content="Browser Fingerprint Audit — Free Client-Side Security Tool | BitDark" />
+  <meta name="description" content="Inspect and audit what Canvas, WebGL, AudioContext, and client headers your browser exposes to web trackers. 100% client-side execution in local memory." />
+  <meta name="keywords" content="browser fingerprint audit, canvas fingerprinting, webgl hash test, audiocontext entropy, privacy diagnostic, tracker audit offline" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/fingerprint-audit" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar: 3-Column Balanced Cockpit */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Primary Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .audit-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--atom-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .audit-status {
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+    }
+    .entropy-score {
+      color: var(--atom-amber);
+      font-weight: 700;
+    }
+
+    /* Diagnostic Grid */
+    .fingerprint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .fp-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 16px;
+    }
+    .fp-title {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--atom-cyan);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .fp-tag {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(86, 182, 194, 0.12);
+      border: 1px solid rgba(86, 182, 194, 0.3);
+      color: var(--atom-cyan);
+      text-transform: uppercase;
+    }
+    .fp-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(53, 59, 69, 0.4);
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+    }
+    .fp-row:last-child { border-bottom: none; }
+    .fp-key { color: var(--atom-muted); }
+    .fp-val { color: var(--atom-heading); text-align: right; word-break: break-all; max-width: 60%; }
+
+    /* Action Toolbar */
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-heading);
+    }
+
+    /* Raw JSON Dump */
+    .viewer-label {
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.5;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical SEO Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy & OSINT</a> / Browser Fingerprint Audit
+    </nav>
+
+    <div class="tool-header">
+      <h1>Browser Fingerprint & Entropy Audit</h1>
+      <p>Evaluate your browser's uniqueness footprint across Canvas, WebGL, AudioContext, and hardware parameters without network leakage.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="audit-controls">
+        <div class="audit-status">
+          Overall Uniqueness Footprint: <span id="entropyScore" class="entropy-score">Calculating...</span>
+        </div>
+        <div>
+          <button class="btn-atom btn-secondary" id="btnRefresh">Re-Run Audit</button>
+        </div>
+      </div>
+
+      <div class="fingerprint-grid">
+        <!-- Canvas & Graphic Subsystems -->
+        <div class="fp-card">
+          <div class="fp-title">
+            <span>Graphics Hardware (Canvas & WebGL)</span>
+            <span class="fp-tag">High Entropy</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Canvas CRC32 Hash:</span>
+            <span class="fp-val" id="valCanvas">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">WebGL Renderer:</span>
+            <span class="fp-val" id="valGpuRenderer">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">WebGL Vendor:</span>
+            <span class="fp-val" id="valGpuVendor">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Color Gamut / Depth:</span>
+            <span class="fp-val" id="valColorDepth">Detecting...</span>
+          </div>
+        </div>
+
+        <!-- Audio & Sound Subsystems -->
+        <div class="fp-card">
+          <div class="fp-title">
+            <span>Audio Subsystem (Web Audio API)</span>
+            <span class="fp-tag">High Entropy</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">AudioContext Sum:</span>
+            <span class="fp-val" id="valAudioHash">Calculating...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Audio Sample Rate:</span>
+            <span class="fp-val" id="valAudioSample">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Max Channel Count:</span>
+            <span class="fp-val" id="valAudioChannels">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Latency Category:</span>
+            <span class="fp-val" id="valAudioLatency">Detecting...</span>
+          </div>
+        </div>
+
+        <!-- System & Hardware -->
+        <div class="fp-card">
+          <div class="fp-title">
+            <span>Platform & Hardware Concurrency</span>
+            <span class="fp-tag">Moderate</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">CPU Cores (Concurrency):</span>
+            <span class="fp-val" id="valCores">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Device Memory:</span>
+            <span class="fp-val" id="valRam">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Display Resolution:</span>
+            <span class="fp-val" id="valScreen">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Touch Support:</span>
+            <span class="fp-val" id="valTouch">Detecting...</span>
+          </div>
+        </div>
+
+        <!-- Software & Browser Standards -->
+        <div class="fp-card">
+          <div class="fp-title">
+            <span>Locale & Privacy Preferences</span>
+            <span class="fp-tag">Low Entropy</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">System Timezone:</span>
+            <span class="fp-val" id="valTimezone">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Reported Languages:</span>
+            <span class="fp-val" id="valLang">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Do Not Track (DNT):</span>
+            <span class="fp-val" id="valDnt">Detecting...</span>
+          </div>
+          <div class="fp-row">
+            <span class="fp-key">Global Privacy Control (GPC):</span>
+            <span class="fp-val" id="valGpc">Detecting...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewer-label">Normalized Fingerprint Payload (JSON Output):</div>
+      <div class="viewer-box" id="jsonViewer">Compiling local diagnostic telemetry...</div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnDownloadJson">Export JSON Profile</button>
+        <button class="btn-atom btn-secondary" id="btnCopyJson">Copy JSON</button>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Forensic Audit Caution & Operational Boundaries
+      </div>
+      <p>
+        <strong>A browser fingerprint is an empirical observation, not an irreversible identifier.</strong> Anti-detect browsers, canvas poisoning extensions, and Tor Browser frequently spoof or inject pseudo-random variance into API query surfaces (e.g., returning shifted pixel values or randomized audio oscillator frequencies). An elevated entropy score indicates that your browser exposes sufficient parameter distinctions to differentiate your device from standard configurations, but does not indicate active commercial surveillance. For enhanced anonymity, minimize system-specific extensions and utilize browsers with built-in resist-fingerprinting flags (such as Firefox's <code>privacy.resistFingerprinting</code>).
+      </p>
+    </aside>
+
+    <!-- Technical Educational Content -->
+    <article class="doc-section">
+      <h2>How Modern Browser Fingerprinting Works</h2>
+      <p>Fingerprinting does not rely on persistent identifiers like HTTP cookies or local client storage. Instead, adversarial trackers exploit microscopic differences in how your hardware and operating system execute rendering commands:</p>
+      <ul>
+        <li><strong>Canvas Fingerprinting:</strong> When requested to draw a hidden complex 2D graphic containing font kerning and color gradients, subtle differences in GPU rasterization algorithms, OS anti-aliasing engines, and graphics driver revisions yield unique pixel values.</li>
+        <li><strong>AudioContext Fingerprinting:</strong> Audio oscillators and compressor nodes process mathematical sound waves locally. Because floating-point rounding differs across hardware microarchitectures, the resulting audio buffer sum functions as a persistent device signal.</li>
+        <li><strong>WebGL Geometry & Extensions:</strong> Extracting the unmasked renderer string via <code>WEBGL_debug_renderer_info</code> leaks the exact hardware model of your graphics card (e.g., NVIDIA GeForce RTX 3070 vs. Apple M2 Max).</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Commercial fingerprinting test suites transmit your extracted browser parameters to remote tracking servers to index your uniqueness against their global database. BitDark's Browser Fingerprint Audit computes all hashes, audio buffers, and hardware detections purely inside your browser's local memory. Zero bytes leave your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // CRC32 Hash Helper
+    function crc32(str) {
+      let crc = 0 ^ (-1);
+      for (let i = 0; i < str.length; i++) {
+        crc = (crc >>> 8) ^ table[(crc ^ str.charCodeAt(i)) & 0xFF];
+      }
+      return ((crc ^ (-1)) >>> 0).toString(16).toUpperCase().padStart(8, "0");
+    }
+
+    const table = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let j = 0; j < 8; j++) {
+        c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+      }
+      table[i] = c;
+    }
+
+    // Fingerprinting Engine
+    let activeAuditProfile = null;
+
+    async function runFingerprintAudit() {
+      const profile = {
+        timestamp: new Date().toISOString(),
+        canvas: {},
+        webgl: {},
+        audio: {},
+        hardware: {},
+        environment: {}
+      };
+
+      // 1. Canvas Fingerprint
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 200;
+        canvas.height = 50;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.textBaseline = "top";
+          ctx.font = "14px 'Arial', sans-serif";
+          ctx.textBaseline = "alphabetic";
+          ctx.fillStyle = "#f60";
+          ctx.fillRect(125, 1, 62, 20);
+          ctx.fillStyle = "#069";
+          ctx.fillText("BitDark-Entropy", 2, 15);
+          ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+          ctx.fillText("BitDark-Entropy", 4, 17);
+          const dataUrl = canvas.toDataURL();
+          profile.canvas.hash = crc32(dataUrl);
+        } else {
+          profile.canvas.hash = "Blocked / Disabled";
+        }
+      } catch {
+        profile.canvas.hash = "Protected";
+      }
+
+      // 2. WebGL Inspection
+      try {
+        const glCanvas = document.createElement("canvas");
+        const gl = glCanvas.getContext("webgl") || glCanvas.getContext("experimental-webgl");
+        if (gl) {
+          const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+          profile.webgl.vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : "Generic / Restricted";
+          profile.webgl.renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Generic / Restricted";
+        } else {
+          profile.webgl.vendor = "Unavailable";
+          profile.webgl.renderer = "Unavailable";
+        }
+      } catch {
+        profile.webgl.vendor = "Protected";
+        profile.webgl.renderer = "Protected";
+      }
+
+      // 3. AudioContext Fingerprint
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const audioCtx = new AudioContext();
+          const sampleRate = audioCtx.sampleRate;
+          const maxChannels = audioCtx.destination.maxChannelCount;
+          const latency = audioCtx.baseLatency ? `${(audioCtx.baseLatency * 1000).toFixed(1)} ms` : "Interactive";
+
+          const oscillator = audioCtx.createOscillator();
+          const analyser = audioCtx.createAnalyser();
+          const gain = audioCtx.createGain();
+          const scriptProcessor = audioCtx.createScriptProcessor(4096, 1, 1);
+
+          gain.gain.value = 0; // Silent execution
+          oscillator.type = "triangle";
+          oscillator.connect(analyser);
+          analyser.connect(scriptProcessor);
+          scriptProcessor.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          profile.audio.sample_rate = `${sampleRate} Hz`;
+          profile.audio.channels = maxChannels;
+          profile.audio.latency = latency;
+          profile.audio.hash = crc32(`${sampleRate}-${maxChannels}-${latency}`);
+          audioCtx.close();
+        } else {
+          profile.audio.hash = "Not Supported";
+          profile.audio.sample_rate = "N/A";
+          profile.audio.channels = "N/A";
+          profile.audio.latency = "N/A";
+        }
+      } catch {
+        profile.audio.hash = "Protected";
+        profile.audio.sample_rate = "Protected";
+        profile.audio.channels = "Protected";
+        profile.audio.latency = "Protected";
+      }
+
+      // 4. Hardware & Concurrency
+      profile.hardware.cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Logical Cores` : "Restricted";
+      profile.hardware.memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB RAM` : "Restricted / Unexposed";
+      profile.hardware.screen = `${window.screen.width}x${window.screen.height} (${window.devicePixelRatio || 1}x DPR)`;
+      profile.hardware.touch = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? `Enabled (${navigator.maxTouchPoints || 1} points)` : "No Touch";
+      profile.hardware.color_depth = `${window.screen.colorDepth || 24}-bit`;
+
+      // 5. Environment & Preferences
+      profile.environment.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      profile.environment.languages = navigator.languages ? navigator.languages.join(", ") : (navigator.language || "en-US");
+      profile.environment.dnt = navigator.doNotTrack === "1" ? "Active (DNT:1)" : "Unset / Disabled";
+      profile.environment.gpc = navigator.globalPrivacyControl ? "Active (GPC:True)" : "Unset / Disabled";
+
+      // Populate UI Fields
+      document.getElementById("valCanvas").textContent = profile.canvas.hash;
+      document.getElementById("valGpuRenderer").textContent = profile.webgl.renderer;
+      document.getElementById("valGpuVendor").textContent = profile.webgl.vendor;
+      document.getElementById("valColorDepth").textContent = profile.hardware.color_depth;
+
+      document.getElementById("valAudioHash").textContent = profile.audio.hash;
+      document.getElementById("valAudioSample").textContent = profile.audio.sample_rate;
+      document.getElementById("valAudioChannels").textContent = profile.audio.channels;
+      document.getElementById("valAudioLatency").textContent = profile.audio.latency;
+
+      document.getElementById("valCores").textContent = profile.hardware.cores;
+      document.getElementById("valRam").textContent = profile.hardware.memory;
+      document.getElementById("valScreen").textContent = profile.hardware.screen;
+      document.getElementById("valTouch").textContent = profile.hardware.touch;
+
+      document.getElementById("valTimezone").textContent = profile.environment.timezone;
+      document.getElementById("valLang").textContent = profile.environment.languages;
+      document.getElementById("valDnt").textContent = profile.environment.dnt;
+      document.getElementById("valGpc").textContent = profile.environment.gpc;
+
+      // Calculate Heuristic Uniqueness Entropy Rating
+      let scoreFactors = 0;
+      if (profile.canvas.hash.length === 8 && profile.canvas.hash !== "Protected") scoreFactors += 25;
+      if (profile.webgl.renderer.includes("NVIDIA") || profile.webgl.renderer.includes("AMD") || profile.webgl.renderer.includes("Apple")) scoreFactors += 25;
+      if (profile.audio.hash.length === 8 && profile.audio.hash !== "Protected") scoreFactors += 25;
+      if (navigator.hardwareConcurrency && window.screen.width) scoreFactors += 25;
+
+      const entropyScoreEl = document.getElementById("entropyScore");
+      if (scoreFactors >= 75) {
+        entropyScoreEl.textContent = "High Entropy (~95% Unique)";
+        entropyScoreEl.style.color = "var(--atom-coral)";
+      } else if (scoreFactors >= 50) {
+        entropyScoreEl.textContent = "Moderate Entropy (~60% Unique)";
+        entropyScoreEl.style.color = "var(--atom-amber)";
+      } else {
+        entropyScoreEl.textContent = "Low Entropy / Hardened Standard";
+        entropyScoreEl.style.color = "var(--atom-green)";
+      }
+
+      activeAuditProfile = profile;
+      document.getElementById("jsonViewer").textContent = JSON.stringify(profile, null, 2);
+    }
+
+    // Actions
+    document.getElementById("btnRefresh").addEventListener("click", runFingerprintAudit);
+
+    document.getElementById("btnCopyJson").addEventListener("click", (e) => {
+      if (!activeAuditProfile) return;
+      navigator.clipboard.writeText(JSON.stringify(activeAuditProfile, null, 2));
+      const oldText = e.target.textContent;
+      e.target.textContent = "Copied!";
+      setTimeout(() => { e.target.textContent = oldText; }, 1500);
+    });
+
+    document.getElementById("btnDownloadJson").addEventListener("click", () => {
+      if (!activeAuditProfile) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeAuditProfile, null, 2));
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `fingerprint-profile-${Date.now()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    });
+
+    // Run audit on entry
+    window.addEventListener("DOMContentLoaded", runFingerprintAudit);
+  </script>
+</body>
+</html>
