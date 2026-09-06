@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>llms.txt & AI Crawler Policy Builder — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="llms.txt & AI Crawler Policy Builder — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Generate hardened llms.txt context manifests and robots.txt governance rules for AI crawlers like GPTBot, ClaudeBot, and Perplexity locally in your browser memory." />
+  <meta name="keywords" content="llms txt generator, ai crawler policy maker, block gptbot robots txt, claudebot permissions, llms.txt spec builder, ai scraping defense" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/llms-txt-builder" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+
+    /* Layout Frame */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Interactive Tool Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-bg);
+      border-color: var(--atom-border);
+      color: var(--atom-amber);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+    .input-text, .select-input {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 9px 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      outline: none;
+    }
+    .input-text:focus, .select-input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Crawler Matrix Grid */
+    .crawler-matrix {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .crawler-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 3px;
+      background-color: var(--atom-surface);
+    }
+    .crawler-name {
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+    }
+    .crawler-toggle {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      border-radius: 3px;
+      padding: 2px 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Output Editor Area */
+    .output-section {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+    }
+    .editor-box {
+      width: 100%;
+      height: 220px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-green);
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      white-space: pre;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-muted);
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Section */
+    .disclaimer-card {
+      background-color: rgba(229, 192, 123, 0.05);
+      border: 1px solid rgba(229, 192, 123, 0.3);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 32px;
+      font-size: 0.83rem;
+      line-height: 1.6;
+    }
+    .disclaimer-title {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--atom-amber);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .disclaimer-card p {
+      color: var(--atom-text);
+      margin-bottom: 6px;
+    }
+    .disclaimer-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Technical SEO Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 24px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Detecting...</strong></span>
+        <span>·</span>
+        <span>IPv6: <strong id="ipv6Display">Detecting...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / llms-txt-builder
+    </nav>
+
+    <div class="tool-header">
+      <h1>llms.txt & AI Crawler Policy Builder</h1>
+      <p>Configure standardized Markdown context manifests (llms.txt) and declare granular crawler access control rules for autonomous AI indexing spiders in local memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="tab-nav">
+        <button class="tab-btn active" id="tabModeLlms">/llms.txt Builder</button>
+        <button class="tab-btn" id="tabModeRobots">AI robots.txt Directives</button>
+      </div>
+
+      <!-- View 1: llms.txt Configuration -->
+      <div id="viewLlms">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="siteName">Project / Site Name</label>
+            <input type="text" id="siteName" class="input-text" value="Acme Platform" placeholder="e.g., BitDark Security Suite" />
+          </div>
+          <div class="form-group">
+            <label for="siteSummary">Summary / Primary Objective</label>
+            <input type="text" id="siteSummary" class="input-text" value="Defensive cybersecurity tools running 100% client-side in browser RAM." placeholder="Single sentence overview for LLMs" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="coreLinks">Curated Core Sections (Markdown Link Format: [Title](URL): Description)</label>
+          <textarea id="coreLinks" class="input-text" style="height: 100px; resize: vertical;" placeholder="[API Reference](https://example.com/docs/api.md): Complete OpenAPI markdown schema&#10;[Architecture Guide](https://example.com/docs/arch.md): Threat models and client-side design">[Documentation](/docs/index.md): Developer architecture guides
+[API Reference](/api/spec.md): OpenAPI raw specifications
+[Security Policy](/security.md): Threat model and audit reports</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="optionalLinks">Optional / Secondary Deep-Dive Context</label>
+          <textarea id="optionalLinks" class="input-text" style="height: 80px; resize: vertical;" placeholder="[Changelog](/changelog.md): Historical releases">[Changelog](/releases.md): Version history and security patches
+[Whitepaper](/research/airgap.md): Mathematical proofs of memory privacy</textarea>
+        </div>
+      </div>
+
+      <!-- View 2: AI robots.txt Directives -->
+      <div id="viewRobots" style="display: none;">
+        <div class="form-group">
+          <label>AI Scraping & Training Bot Permissions</label>
+          <p style="font-size: 0.78rem; color: var(--atom-muted); margin-bottom: 10px;">Select whether to permit or disallow major autonomous LLM scrapers and search indices.</p>
+          <div class="crawler-matrix">
+            <div class="crawler-row">
+              <span class="crawler-name">GPTBot (OpenAI)</span>
+              <select class="crawler-toggle" data-bot="GPTBot">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+            <div class="crawler-row">
+              <span class="crawler-name">ClaudeBot (Anthropic)</span>
+              <select class="crawler-toggle" data-bot="ClaudeBot">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+            <div class="crawler-row">
+              <span class="crawler-name">PerplexityBot</span>
+              <select class="crawler-toggle" data-bot="PerplexityBot">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+            <div class="crawler-row">
+              <span class="crawler-name">Google-Extended (Gemini)</span>
+              <select class="crawler-toggle" data-bot="Google-Extended">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+            <div class="crawler-row">
+              <span class="crawler-name">CCBot (Common Crawl)</span>
+              <select class="crawler-toggle" data-bot="CCBot">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+            <div class="crawler-row">
+              <span class="crawler-name">Bytespider (ByteDance)</span>
+              <select class="crawler-toggle" data-bot="Bytespider">
+                <option value="Disallow">Disallow</option>
+                <option value="Allow">Allow</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="disallowPaths">Protected Paths (Comma Separated)</label>
+            <input type="text" id="disallowPaths" class="input-text" value="/api/, /private/, /admin/, /vault/" />
+          </div>
+          <div class="form-group">
+            <label for="sitemapUrl">Sitemap / llms.txt Reference</label>
+            <input type="text" id="sitemapUrl" class="input-text" value="https://example.com/llms.txt" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Output Display -->
+      <div class="output-section">
+        <div class="output-header">
+          <span id="outputLabel">Generated File: /llms.txt</span>
+          <span id="charMetrics">0 chars</span>
+        </div>
+        <textarea id="outputViewer" class="editor-box" readonly></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" id="btnCopy">Copy Content</button>
+        <button class="btn-atom" id="btnDownload">Download File</button>
+      </div>
+    </div>
+
+    <!-- Security & Compliance Disclaimer -->
+    <div class="disclaimer-card">
+      <div class="disclaimer-title">
+        <span>⚠️</span> Autonomous Agent Compliance & Legal Disclaimer
+      </div>
+      <p><strong>Robots.txt and llms.txt directives operate on voluntary compliance.</strong> While reputable AI research institutions (OpenAI, Anthropic, Google) respect standard user-agent exclusions, rogue scrapers, third-party data brokers, and predatory training spiders routinely ignore robots.txt and fetch headers without attribution.</p>
+      <p>To definitively protect confidential datasets or proprietary documentation, pairing these policy markers with origin-level Web Application Firewall (WAF) rate limits, IP fingerprinting, authenticated session barriers, or honeypot traps is strongly advised.</p>
+    </div>
+
+    <!-- Technical SEO Documentation -->
+    <article class="doc-section">
+      <h2>The Standardized /llms.txt Specification</h2>
+      <p>The <code>llms.txt</code> standard provides structured context specifically curated for Large Language Models and AI search agents. As web interfaces contain extensive navigation bars, interactive forms, and JavaScript overhead, serving clean Markdown files at the root of a domain allows inference agents to ingest documentation with minimal token consumption.</p>
+      
+      <ul>
+        <li><strong>H1 Title & Blockquote:</strong> Declares the brand or project identity and provides a condensed context summary for zero-shot orientation.</li>
+        <li><strong>Curated Core Sections:</strong> Lists canonical, high-density Markdown links that contain definitive technical documentation.</li>
+        <li><strong>Optional Sections:</strong> Outlines supplementary context, historical change logs, or auxiliary tutorials that models can retrieve on-demand.</li>
+      </ul>
+
+      <h2>Governing AI Spiders in robots.txt</h2>
+      <p>Modern AI systems deploy specialized user-agent bots distinct from traditional search crawlers. For example, disallowing <code>Google-Extended</code> disables Google's generative AI training while retaining indexing status on Google Search via <code>Googlebot</code>. Specifying distinct directives per agent provides granular control over corporate data governance.</p>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>All syntax formatting, Markdown generation, and policy transformations run purely inside your web browser's local sandbox memory. No telemetry or configuration values are transmitted to BitDark servers or external APIs.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // IP Resolver
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          ipv6El.textContent = "Not Supported";
+        }
+      } catch {
+        ipv6El.textContent = "Not Supported";
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Tab Navigation Logic
+    let currentMode = "llms"; // "llms" or "robots"
+    const tabModeLlms = document.getElementById("tabModeLlms");
+    const tabModeRobots = document.getElementById("tabModeRobots");
+    const viewLlms = document.getElementById("viewLlms");
+    const viewRobots = document.getElementById("viewRobots");
+    const outputViewer = document.getElementById("outputViewer");
+    const outputLabel = document.getElementById("outputLabel");
+    const charMetrics = document.getElementById("charMetrics");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDownload = document.getElementById("btnDownload");
+
+    tabModeLlms.addEventListener("click", () => {
+      currentMode = "llms";
+      tabModeLlms.classList.add("active");
+      tabModeRobots.classList.remove("active");
+      viewLlms.style.display = "block";
+      viewRobots.style.display = "none";
+      outputLabel.textContent = "Generated File: /llms.txt";
+      generateOutput();
+    });
+
+    tabModeRobots.addEventListener("click", () => {
+      currentMode = "robots";
+      tabModeRobots.classList.add("active");
+      tabModeLlms.classList.remove("active");
+      viewRobots.style.display = "block";
+      viewLlms.style.display = "none";
+      outputLabel.textContent = "Generated File: /robots.txt";
+      generateOutput();
+    });
+
+    // Inputs & Listeners
+    const siteName = document.getElementById("siteName");
+    const siteSummary = document.getElementById("siteSummary");
+    const coreLinks = document.getElementById("coreLinks");
+    const optionalLinks = document.getElementById("optionalLinks");
+    const disallowPaths = document.getElementById("disallowPaths");
+    const sitemapUrl = document.getElementById("sitemapUrl");
+    const crawlerToggles = document.querySelectorAll(".crawler-toggle");
+
+    [siteName, siteSummary, coreLinks, optionalLinks, disallowPaths, sitemapUrl].forEach(el => {
+      el.addEventListener("input", generateOutput);
+    });
+
+    crawlerToggles.forEach(toggle => {
+      toggle.addEventListener("change", generateOutput);
+    });
+
+    function generateOutput() {
+      if (currentMode === "llms") {
+        let content = `# ${siteName.value.trim() || "Project Name"}\n\n`;
+        content += `> ${siteSummary.value.trim() || "Project Summary"}\n\n`;
+        
+        content += `## Docs\n\n`;
+        const core = coreLinks.value.trim().split("\n").filter(l => l.trim().length > 0);
+        core.forEach(line => {
+          content += `- ${line.trim()}\n`;
+        });
+        
+        if (optionalLinks.value.trim()) {
+          content += `\n## Optional\n\n`;
+          const opt = optionalLinks.value.trim().split("\n").filter(l => l.trim().length > 0);
+          opt.forEach(line => {
+            content += `- ${line.trim()}\n`;
+          });
+        }
+        
+        outputViewer.value = content;
+      } else {
+        let content = `# AI Crawler Permissions & Scraping Governance\n`;
+        content += `# Generated via BitDark Offline Suite\n\n`;
+
+        const paths = disallowPaths.value.split(",").map(p => p.trim()).filter(p => p.length > 0);
+
+        crawlerToggles.forEach(toggle => {
+          const bot = toggle.getAttribute("data-bot");
+          const action = toggle.value;
+          
+          content += `User-agent: ${bot}\n`;
+          if (action === "Disallow") {
+            content += `Disallow: /\n\n`;
+          } else {
+            if (paths.length > 0) {
+              paths.forEach(p => {
+                content += `Disallow: ${p}\n`;
+              });
+              content += `Allow: /\n\n`;
+            } else {
+              content += `Allow: /\n\n`;
+            }
+          }
+        });
+
+        if (sitemapUrl.value.trim()) {
+          content += `# Context Endpoints\n`;
+          content += `Sitemap: ${sitemapUrl.value.trim()}\n`;
+        }
+
+        outputViewer.value = content;
+      }
+
+      charMetrics.textContent = `${outputViewer.value.length} chars · ${outputViewer.value.split(/\s+/).filter(Boolean).length} words`;
+    }
+
+    // Action Handlers
+    btnCopy.addEventListener("click", () => {
+      navigator.clipboard.writeText(outputViewer.value);
+      btnCopy.textContent = "Copied!";
+      setTimeout(() => { btnCopy.textContent = "Copy Content"; }, 1500);
+    });
+
+    btnDownload.addEventListener("click", () => {
+      const filename = currentMode === "llms" ? "llms.txt" : "robots.txt";
+      const blob = new Blob([outputViewer.value], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const dlLink = document.createElement("a");
+      dlLink.href = url;
+      dlLink.download = filename;
+      document.body.appendChild(dlLink);
+      dlLink.click();
+      dlLink.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // Initialize initial render
+    generateOutput();
+  </script>
+</body>
+</html>
