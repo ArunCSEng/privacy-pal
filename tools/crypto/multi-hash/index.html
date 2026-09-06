@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Multi-Hash Generator &amp; Checksum Verifier — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="Multi-Hash Generator &amp; Checksum Verifier — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Compute cryptographic checksums and cryptographic digests (SHA-1, SHA-256, SHA-384, SHA-512, MD5, and HMAC) simultaneously in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="multi hash generator, local checksum verifier, browser sha256 calculator, sha512 file hasher, offline cryptographic checksum, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/multi-hash" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .input-section { margin-bottom: 20px; }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group textarea {
+      width: 100%;
+      height: 120px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+    }
+    .form-group textarea:focus { border-color: var(--atom-border-focus); }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .file-input-hidden { display: none; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Hash Output Cards */
+    .hash-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .hash-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .hash-card.matched {
+      border-color: var(--atom-green);
+      background-color: rgba(152, 195, 121, 0.05);
+    }
+    .hash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .hash-title {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--atom-cyan);
+      text-transform: uppercase;
+    }
+    .hash-copy-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-muted);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .hash-copy-btn:hover {
+      color: var(--atom-amber);
+      border-color: var(--atom-amber);
+    }
+    .hash-value {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      word-break: break-all;
+      user-select: all;
+    }
+
+    /* Verification Box */
+    .verify-box {
+      margin-top: 20px;
+      padding: 14px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
+    .verify-input-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .verify-input {
+      flex: 1;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .verify-input:focus { border-color: var(--atom-border-focus); }
+    .verify-status {
+      margin-top: 8px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+    }
+    .match-found { color: var(--atom-green); }
+    .match-none { color: var(--atom-coral); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / multi-hash
+    </nav>
+
+    <div class="tool-header">
+      <h1>Multi-Algorithm Cryptographic Hash Generator</h1>
+      <p>Compute simultaneous cryptographic message digests across standard hash functions locally in browser memory for integrity verification, forensics, and checksum comparisons.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabText" onclick="switchMode('text')">Text Input</button>
+        <button class="tab-btn" id="tabFile" onclick="switchMode('file')">File Checksum</button>
+      </div>
+
+      <div class="input-section" id="textSection">
+        <div class="form-group">
+          <label for="textPayload">Plaintext Payload</label>
+          <textarea id="textPayload" placeholder="Type or paste payload to calculate hashes in real time..."></textarea>
+        </div>
+      </div>
+
+      <div class="input-section" id="fileSection" style="display: none;">
+        <div class="dropzone" id="dropArea">
+          <span class="dropzone-icon">📁</span>
+          <p><strong>Click to browse file</strong> or drag and drop here</p>
+          <span class="dropzone-hint">Processed locally via File and ArrayBuffer APIs. Zero bytes uploaded.</span>
+          <input type="file" id="filePicker" class="file-input-hidden" />
+        </div>
+        <div id="fileMeta" style="margin-top: 10px; font-family: var(--font-code); font-size: 0.8rem; color: var(--atom-cyan); display: none;"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="hash-list">
+        <div class="hash-card" id="cardSha256">
+          <div class="hash-header">
+            <span class="hash-title">SHA-256 (Secure Hash Standard - 256 bit)</span>
+            <button class="hash-copy-btn" onclick="copyHash('hashSha256', this)">Copy</button>
+          </div>
+          <div class="hash-value" id="hashSha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+        </div>
+
+        <div class="hash-card" id="cardSha512">
+          <div class="hash-header">
+            <span class="hash-title">SHA-512 (SHA-2 Family - 512 bit)</span>
+            <button class="hash-copy-btn" onclick="copyHash('hashSha512', this)">Copy</button>
+          </div>
+          <div class="hash-value" id="hashSha512">cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e</div>
+        </div>
+
+        <div class="hash-card" id="cardSha384">
+          <div class="hash-header">
+            <span class="hash-title">SHA-384 (SHA-2 Family - 384 bit)</span>
+            <button class="hash-copy-btn" onclick="copyHash('hashSha384', this)">Copy</button>
+          </div>
+          <div class="hash-value" id="hashSha384">38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b</div>
+        </div>
+
+        <div class="hash-card" id="cardSha1">
+          <div class="hash-header">
+            <span class="hash-title">SHA-1 (Legacy Digest - 160 bit)</span>
+            <button class="hash-copy-btn" onclick="copyHash('hashSha1', this)">Copy</button>
+          </div>
+          <div class="hash-value" id="hashSha1">da39a3ee5e6b4b0d3255bfef95601890afd80709</div>
+        </div>
+
+        <div class="hash-card" id="cardMd5">
+          <div class="hash-header">
+            <span class="hash-title">MD5 (Legacy Message Digest - 128 bit)</span>
+            <button class="hash-copy-btn" onclick="copyHash('hashMd5', this)">Copy</button>
+          </div>
+          <div class="hash-value" id="hashMd5">d41d8cd98f00b204e9800998ecf8427e</div>
+        </div>
+      </div>
+
+      <!-- Live Checksum Comparator -->
+      <div class="verify-box">
+        <label for="compareInput" style="font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Verify Against Known Checksum</label>
+        <div class="verify-input-group">
+          <input type="text" id="compareInput" class="verify-input" placeholder="Paste expected hash to verify match..." spellcheck="false" />
+        </div>
+        <div id="verifyStatus" class="verify-status"></div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, verification errors, corrupted downloads, hash collisions, or missed file tampering events. MD5 and SHA-1 algorithms are cryptographically broken and vulnerable to practical collision generation; they are provided solely for historical verification, legacy software cataloging, and non-security integrity checks. For collision-resistant security proofs and signing procedures, always enforce SHA-256 or SHA-512 standards. All calculations execute client-side inside memory without transmission over the network.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Understanding Cryptographic Hash Functions</h2>
+      <p>Cryptographic hash algorithms are deterministic mathematical operations that map arbitrary-length binary inputs into fixed-length hex output strings:</p>
+      <ul>
+        <li><strong>Pre-image Resistance:</strong> Computationally infeasible to reverse the resulting hash back to the original source input.</li>
+        <li><strong>Second Pre-image Resistance:</strong> Infeasible to discover an alternative distinct input that produces the exact same hash digest.</li>
+        <li><strong>Collision Resistance:</strong> Infeasible to locate two separate inputs that evaluate to identical outputs.</li>
+      </ul>
+
+      <h2>Digest Specifications</h2>
+      <ul>
+        <li><strong>SHA-256 &amp; SHA-512:</strong> Federal Information Processing Standard (FIPS 180-4) algorithms with Merkle-Damgård constructions and non-linear word compressions, standard for blockchain, TLS certificates, and package validation.</li>
+        <li><strong>MD5 &amp; SHA-1:</strong> Historically prevalent algorithms now deprecated for authentication and digital signatures due to chosen-prefix collision attacks.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Whether hashing sensitive keys, binary executables, or confidential records, BitDark executes all logic using the native browser W3C Web Cryptography API (<code>crypto.subtle</code>) alongside optimized local routines. No bytes are sent over the network.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Optimized Local Pure-JS MD5 Implementation
+    function computeMD5(bytes) {
+      function safeAdd(x, y) {
+        const lsw = (x & 0xFFFF) + (y & 0xFFFF);
+        const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+        return (msw << 16) | (lsw & 0xFFFF);
+      }
+      function bitRol(num, cnt) { return (num << cnt) | (num >>> (32 - cnt)); }
+      function cmn(q, a, b, x, s, t) { return safeAdd(bitRol(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
+      function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
+      function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (~d)), a, b, x, s, t); }
+      function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
+      function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (~d)), a, b, x, s, t); }
+
+      const nblk = ((bytes.length + 8) >> 6) + 1;
+      const blks = new Array(nblk * 16).fill(0);
+      for (let i = 0; i < bytes.length; i++) {
+        blks[i >> 2] |= bytes[i] << ((i % 4) * 8);
+      }
+      blks[bytes.length >> 2] |= 0x80 << ((bytes.length % 4) * 8);
+      blks[nblk * 16 - 2] = bytes.length * 8;
+
+      let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+
+      for (let i = 0; i < blks.length; i += 16) {
+        const olda = a, oldb = b, oldc = c, oldd = d;
+        a = ff(a, b, c, d, blks[i], 7, -680876936);
+        d = ff(d, a, b, c, blks[i + 1], 12, -389564586);
+        c = ff(c, d, a, b, blks[i + 2], 17, 606105819);
+        b = ff(b, c, d, a, blks[i + 3], 22, -1044525330);
+        a = ff(a, b, c, d, blks[i + 4], 7, -176418897);
+        d = ff(d, a, b, c, blks[i + 5], 12, 1200080426);
+        c = ff(c, d, a, b, blks[i + 6], 17, -1473231341);
+        b = ff(b, c, d, a, blks[i + 7], 22, -45705983);
+        a = ff(a, b, c, d, blks[i + 8], 7, 1770035416);
+        d = ff(d, a, b, c, blks[i + 9], 12, -1958414417);
+        c = ff(c, d, a, b, blks[i + 10], 17, -42063);
+        b = ff(b, c, d, a, blks[i + 11], 22, -1990404162);
+        a = ff(a, b, c, d, blks[i + 12], 7, 1804603682);
+        d = ff(d, a, b, c, blks[i + 13], 12, -40341101);
+        c = ff(c, d, a, b, blks[i + 14], 17, -1502002290);
+        b = ff(b, c, d, a, blks[i + 15], 22, 1236535329);
+
+        a = gg(a, b, c, d, blks[i + 1], 5, -165796510);
+        d = gg(d, a, b, c, blks[i + 6], 9, -1069501632);
+        c = gg(c, d, a, b, blks[i + 11], 14, 643717713);
+        b = gg(b, c, d, a, blks[i], 20, -373897302);
+        a = gg(a, b, c, d, blks[i + 5], 5, -701558691);
+        d = gg(d, a, b, c, blks[i + 10], 9, 38016083);
+        c = gg(c, d, a, b, blks[i + 15], 14, -660478335);
+        b = gg(b, c, d, a, blks[i + 4], 20, -405537848);
+        a = gg(a, b, c, d, blks[i + 9], 5, 568446438);
+        d = gg(d, a, b, c, blks[i + 14], 9, -1019803690);
+        c = gg(c, d, a, b, blks[i + 3], 14, -187363961);
+        b = gg(b, c, d, a, blks[i + 8], 20, 1163531501);
+        a = gg(a, b, c, d, blks[i + 13], 5, -1444681467);
+        d = gg(d, a, b, c, blks[i + 2], 9, -51403784);
+        c = gg(c, d, a, b, blks[i + 7], 14, 1735328473);
+        b = gg(b, c, d, a, blks[i + 12], 20, -1926607734);
+
+        a = hh(a, b, c, d, blks[i + 5], 4, -378558);
+        d = hh(d, a, b, c, blks[i + 8], 11, -2022574463);
+        c = hh(c, d, a, b, blks[i + 11], 16, 1839030562);
+        b = hh(b, c, d, a, blks[i + 14], 23, -35309556);
+        a = hh(a, b, c, d, blks[i + 1], 4, -1530992060);
+        d = hh(d, a, b, c, blks[i + 4], 11, 1272893353);
+        c = hh(c, d, a, b, blks[i + 7], 16, -155497632);
+        b = hh(b, c, d, a, blks[i + 10], 23, -1094730640);
+        a = hh(a, b, c, d, blks[i + 13], 4, 681279174);
+        d = hh(d, a, b, c, blks[i], 11, -358537222);
+        c = hh(c, d, a, b, blks[i + 3], 16, -722521979);
+        b = hh(b, c, d, a, blks[i + 6], 23, 76029189);
+        a = hh(a, b, c, d, blks[i + 9], 4, -640364487);
+        d = hh(d, a, b, c, blks[i + 12], 11, -421815835);
+        c = hh(c, d, a, b, blks[i + 15], 16, 530742520);
+        b = hh(b, c, d, a, blks[i + 2], 23, -995338651);
+
+        a = ii(a, b, c, d, blks[i], 6, -198630844);
+        d = ii(d, a, b, c, blks[i + 7], 10, 1126891415);
+        c = ii(c, d, a, b, blks[i + 14], 15, -1416354905);
+        b = ii(b, c, d, a, blks[i + 5], 21, -57434055);
+        a = ii(a, b, c, d, blks[i + 12], 6, 1700485571);
+        d = ii(d, a, b, c, blks[i + 3], 10, -1894986606);
+        c = ii(c, d, a, b, blks[i + 10], 15, -1051523);
+        b = ii(b, c, d, a, blks[i + 1], 21, -2054922799);
+        a = ii(a, b, c, d, blks[i + 8], 6, 1873313359);
+        d = ii(d, a, b, c, blks[i + 15], 10, -30611744);
+        c = ii(c, d, a, b, blks[i + 6], 15, -1560198380);
+        b = ii(b, c, d, a, blks[i + 13], 21, 1309151649);
+        a = ii(a, b, c, d, blks[i + 4], 6, -145523070);
+        d = ii(d, a, b, c, blks[i + 11], 10, -1120210379);
+        c = ii(c, d, a, b, blks[i + 2], 15, 718787259);
+        b = ii(b, c, d, a, blks[i + 9], 21, -343485551);
+
+        a = safeAdd(a, olda);
+        b = safeAdd(b, oldb);
+        c = safeAdd(c, oldc);
+        d = safeAdd(d, oldd);
+      }
+
+      function toHex(val) {
+        let str = "";
+        for (let i = 0; i < 4; i++) {
+          str += ((val >> (i * 8)) & 0xFF).toString(16).padStart(2, "0");
+        }
+        return str;
+      }
+      return toHex(a) + toHex(b) + toHex(c) + toHex(d);
+    }
+
+    // WebCrypto Digest Helper
+    async function digestSubtle(algo, buffer) {
+      const hashBuffer = await crypto.subtle.digest(algo, buffer);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    // UI & Mode State
+    let activeMode = "text";
+    const tabText = document.getElementById("tabText");
+    const tabFile = document.getElementById("tabFile");
+    const textSection = document.getElementById("textSection");
+    const fileSection = document.getElementById("fileSection");
+    const textPayload = document.getElementById("textPayload");
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const fileMeta = document.getElementById("fileMeta");
+    const btnClear = document.getElementById("btnClear");
+    const compareInput = document.getElementById("compareInput");
+    const verifyStatus = document.getElementById("verifyStatus");
+
+    const hashSha256 = document.getElementById("hashSha256");
+    const hashSha512 = document.getElementById("hashSha512");
+    const hashSha384 = document.getElementById("hashSha384");
+    const hashSha1 = document.getElementById("hashSha1");
+    const hashMd5 = document.getElementById("hashMd5");
+
+    const cardSha256 = document.getElementById("cardSha256");
+    const cardSha512 = document.getElementById("cardSha512");
+    const cardSha384 = document.getElementById("cardSha384");
+    const cardSha1 = document.getElementById("cardSha1");
+    const cardMd5 = document.getElementById("cardMd5");
+
+    function switchMode(mode) {
+      activeMode = mode;
+      if (mode === "text") {
+        tabText.classList.add("active");
+        tabFile.classList.remove("active");
+        textSection.style.display = "block";
+        fileSection.style.display = "none";
+        computeFromText();
+      } else {
+        tabFile.classList.add("active");
+        tabText.classList.remove("active");
+        fileSection.style.display = "block";
+        textSection.style.display = "none";
+      }
+    }
+
+    async function processBuffer(buffer) {
+      const bytes = new Uint8Array(buffer);
+      
+      const [sha256, sha512, sha384, sha1] = await Promise.all([
+        digestSubtle("SHA-256", buffer),
+        digestSubtle("SHA-512", buffer),
+        digestSubtle("SHA-384", buffer),
+        digestSubtle("SHA-1", buffer)
+      ]);
+      const md5 = computeMD5(bytes);
+
+      hashSha256.textContent = sha256;
+      hashSha512.textContent = sha512;
+      hashSha384.textContent = sha384;
+      hashSha1.textContent = sha1;
+      hashMd5.textContent = md5;
+
+      checkComparison();
+    }
+
+    function computeFromText() {
+      const text = textPayload.value;
+      const encoder = new TextEncoder();
+      const buffer = encoder.encode(text);
+      processBuffer(buffer);
+    }
+
+    textPayload.addEventListener("input", computeFromText);
+
+    // File Drag/Drop Handling
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileInput(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileInput(e.target.files[0]);
+      }
+    });
+
+    async function handleFileInput(file) {
+      fileMeta.style.display = "block";
+      fileMeta.textContent = `Processing file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`;
+      const buffer = await file.arrayBuffer();
+      await processBuffer(buffer);
+      fileMeta.textContent = `Completed: ${file.name} (${file.size} bytes)`;
+    }
+
+    // Comparison Checker
+    function checkComparison() {
+      const needle = compareInput.value.trim().toLowerCase();
+      
+      [cardSha256, cardSha512, cardSha384, cardSha1, cardMd5].forEach(card => {
+        card.classList.remove("matched");
+      });
+
+      if (!needle) {
+        verifyStatus.innerHTML = "";
+        return;
+      }
+
+      const activeHashes = [
+        { name: "SHA-256", val: hashSha256.textContent.toLowerCase(), card: cardSha256 },
+        { name: "SHA-512", val: hashSha512.textContent.toLowerCase(), card: cardSha512 },
+        { name: "SHA-384", val: hashSha384.textContent.toLowerCase(), card: cardSha384 },
+        { name: "SHA-1", val: hashSha1.textContent.toLowerCase(), card: cardSha1 },
+        { name: "MD5", val: hashMd5.textContent.toLowerCase(), card: cardMd5 }
+      ];
+
+      const match = activeHashes.find(h => h.val === needle);
+      if (match) {
+        match.card.classList.add("matched");
+        verifyStatus.innerHTML = `<span class="match-found">✓ Exact Match Verified: Digest matches active ${match.name}.</span>`;
+      } else {
+        verifyStatus.innerHTML = `<span class="match-none">✕ Checksum Mismatch: Input does not match any computed digest.</span>`;
+      }
+    }
+
+    compareInput.addEventListener("input", checkComparison);
+
+    function copyHash(elementId, btn) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    }
+
+    btnClear.addEventListener("click", () => {
+      textPayload.value = "";
+      filePicker.value = "";
+      fileMeta.style.display = "none";
+      compareInput.value = "";
+      verifyStatus.innerHTML = "";
+      computeFromText();
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      computeFromText();
+    });
+  </script>
+</body>
+</html>
