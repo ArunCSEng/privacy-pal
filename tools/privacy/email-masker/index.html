@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Email Masker &amp; PII Obfuscator — Free Offline Privacy Tool | BitDark</title>
+  <meta name="title" content="Email Masker &amp; PII Obfuscator — Free Offline Privacy Tool | BitDark" />
+  <meta name="description" content="Mask, redact, and obfuscate email addresses and personal identifiable identifiers locally in your browser memory. Custom redaction modes with zero network tracking." />
+  <meta name="keywords" content="email masker, redact email addresses, pii obfuscator, anonymize email, local privacy tool, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/email-masker" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .options-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+      font-family: var(--font-code);
+    }
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .option-group select, .option-group input[type="text"] {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .option-group select:focus, .option-group input[type="text"]:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) {
+      .editor-grid { grid-template-columns: 1fr; }
+    }
+
+    .pane-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      margin-bottom: 6px;
+    }
+
+    textarea.text-pane {
+      width: 100%;
+      height: 250px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      white-space: pre-wrap;
+    }
+    textarea.text-pane:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#privacy">Privacy &amp; Anonymity</a> / email-masker
+    </nav>
+
+    <div class="tool-header">
+      <h1>Email Masker &amp; PII Redaction Tool</h1>
+      <p>Identify, sanitize, and redact email addresses and personal identity artifacts within raw logs, exports, and unstructured text directly in your browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="options-bar">
+        <div class="option-group">
+          <label for="maskMode">Masking Style:</label>
+          <select id="maskMode">
+            <option value="partial">Partial (j***n@example.com)</option>
+            <option value="domain">Redact All Except Domain (*****@example.com)</option>
+            <option value="full">Complete Redaction ([REDACTED_EMAIL])</option>
+            <option value="hash">SHA-256 Pseudo-Anonymize</option>
+          </select>
+        </div>
+
+        <div class="option-group">
+          <label for="maskChar">Mask Character:</label>
+          <input type="text" id="maskChar" value="*" maxlength="3" style="width: 45px; text-align: center;" />
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <div>
+          <div class="pane-label">Raw Text Input (Paste records here)</div>
+          <textarea id="rawInput" class="text-pane" placeholder="Paste logs, databases, or text containing emails... e.g.:&#10;Contact alice.smith@company.org or support-team@internal-service.io for inquiries."></textarea>
+        </div>
+        <div>
+          <div class="pane-label">Sanitized / Redacted Output</div>
+          <textarea id="sanitizedOutput" class="text-pane" readonly placeholder="Redacted output will populate automatically..."></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnMask">Mask Emails</button>
+        <button class="btn-atom btn-secondary" id="btnCopy">Copy Output</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="results-area">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Unique Emails Detected</div>
+            <div class="meta-val" id="metaUniqueCount">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Total Occurrences Replaced</div>
+            <div class="meta-val" id="metaTotalMatches">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Domains Preserved</div>
+            <div class="meta-val" id="metaDomains">None</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, accidental disclosure of confidential data, or undetected PII patterns. Pattern-matching regex algorithms cannot guarantee detection of every non-standard or obfuscated email syntax format. Ensure manual compliance audits before publishing proprietary or regulated datasets. All processing occurs strictly in-memory without server transfers.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Why Client-Side Email Redaction Matters</h2>
+      <p>Organizations and developers often need to share logs, issue reports, or debugging traces without violating data protection standards like GDPR, HIPAA, or CCPA. Traditional online redaction services upload your unmasked sensitive files to remote servers, exposing PII to intermediate network logs and third-party storage vectors.</p>
+      
+      <h2>Redaction Algorithms Implemented</h2>
+      <ul>
+        <li><strong>Partial Masking:</strong> Retains the first and last character of the mailbox handle and substitutes internal characters with masking tokens (e.g., <code>j***n@domain.com</code>), allowing human reviewers to preserve context while blocking automated web scrapers.</li>
+        <li><strong>Domain-Preserving Anonymization:</strong> Erases the mailbox name completely while retaining domain routing paths, useful for domain-level metric aggregation and infrastructure debugging.</li>
+        <li><strong>Deterministic Pseudonymization:</strong> Computes a truncated SHA-256 digest of normalized addresses, ensuring recurring identifiers remain linkable across datasets without exposing actual user addresses.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>This utility operates entirely within the isolated runtime of your client browser. No text, hashes, or analytical metrics are transferred across the wire.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Email Redaction Engine
+    const rawInput = document.getElementById("rawInput");
+    const sanitizedOutput = document.getElementById("sanitizedOutput");
+    const maskMode = document.getElementById("maskMode");
+    const maskChar = document.getElementById("maskChar");
+    const btnMask = document.getElementById("btnMask");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnClear = document.getElementById("btnClear");
+    const metaUniqueCount = document.getElementById("metaUniqueCount");
+    const metaTotalMatches = document.getElementById("metaTotalMatches");
+    const metaDomains = document.getElementById("metaDomains");
+
+    const EMAIL_REGEX = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g;
+
+    async function sha256Hex(str) {
+      const msgBuffer = new TextEncoder().encode(str.toLowerCase().trim());
+      const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
+    }
+
+    async function maskSingleEmail(email, mode, char) {
+      const parts = email.split("@");
+      const user = parts[0];
+      const domain = parts.slice(1).join("@");
+
+      if (mode === "full") {
+        return "[REDACTED_EMAIL]";
+      }
+
+      if (mode === "hash") {
+        const hash = await sha256Hex(email);
+        return `anon_${hash}@${domain}`;
+      }
+
+      if (mode === "domain") {
+        return `${char.repeat(user.length || 5)}@${domain}`;
+      }
+
+      // Partial Masking Default
+      if (user.length <= 2) {
+        return `${user[0] || ""}${char.repeat(3)}@${domain}`;
+      }
+
+      const maskedUser = user[0] + char.repeat(Math.max(3, user.length - 2)) + user[user.length - 1];
+      return `${maskedUser}@${domain}`;
+    }
+
+    async function executeMasking() {
+      const text = rawInput.value;
+      if (!text) {
+        sanitizedOutput.value = "";
+        metaUniqueCount.textContent = "0";
+        metaTotalMatches.textContent = "0";
+        metaDomains.textContent = "None";
+        return;
+      }
+
+      const matches = text.match(EMAIL_REGEX) || [];
+      const mode = maskMode.value;
+      const char = maskChar.value || "*";
+
+      const uniqueEmails = Array.from(new Set(matches));
+      const domains = new Set();
+
+      // Pre-compute replacement mappings
+      const replacementMap = new Map();
+      for (const email of uniqueEmails) {
+        const masked = await maskSingleEmail(email, mode, char);
+        replacementMap.set(email, masked);
+        const domain = email.split("@")[1];
+        if (domain) domains.add(domain.toLowerCase());
+      }
+
+      // Replace using exact token boundary matching
+      const result = text.replace(EMAIL_REGEX, (matched) => {
+        return replacementMap.get(matched) || matched;
+      });
+
+      sanitizedOutput.value = result;
+      metaUniqueCount.textContent = uniqueEmails.length.toString();
+      metaTotalMatches.textContent = matches.length.toString();
+      metaDomains.textContent = domains.size > 0 ? Array.from(domains).slice(0, 5).join(", ") + (domains.size > 5 ? "..." : "") : "None";
+    }
+
+    btnMask.addEventListener("click", executeMasking);
+    rawInput.addEventListener("input", executeMasking);
+    maskMode.addEventListener("change", executeMasking);
+    maskChar.addEventListener("input", executeMasking);
+
+    btnCopy.addEventListener("click", async () => {
+      if (!sanitizedOutput.value) return;
+      try {
+        await navigator.clipboard.writeText(sanitizedOutput.value);
+        const prevText = btnCopy.textContent;
+        btnCopy.textContent = "Copied!";
+        setTimeout(() => { btnCopy.textContent = prevText; }, 1500);
+      } catch {
+        sanitizedOutput.select();
+        document.execCommand("copy");
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      rawInput.value = "";
+      sanitizedOutput.value = "";
+      metaUniqueCount.textContent = "0";
+      metaTotalMatches.textContent = "0";
+      metaDomains.textContent = "None";
+    });
+  </script>
+</body>
+</html>
