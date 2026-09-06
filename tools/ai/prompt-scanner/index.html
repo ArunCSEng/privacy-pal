@@ -90,9 +90,11 @@
       font-family: var(--font-code);
       font-size: 0.72rem;
       display: inline-flex;
+      align-items: center;
       gap: 6px;
     }
     .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
 
     /* Layout Frame */
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
@@ -342,35 +344,29 @@
       overflow-x: auto;
     }
 
-    /* Disclaimer Section */
+    /* Operational Boundaries & Disclaimer Callout */
     .disclaimer-card {
-      background-color: var(--atom-surface);
+      background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 6px;
-      padding: 16px 20px;
-      margin-bottom: 32px;
-      font-size: 0.83rem;
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
       line-height: 1.6;
+      color: var(--atom-text);
     }
-    .disclaimer-title {
-      font-family: var(--font-code);
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--atom-amber);
-      text-transform: uppercase;
-      margin-bottom: 6px;
+    .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .disclaimer-card p {
-      color: var(--atom-text);
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
       margin-bottom: 6px;
+      font-size: 0.88rem;
     }
-    .disclaimer-card p:last-child {
-      margin-bottom: 0;
-    }
+    .disclaimer-card strong { color: var(--atom-heading); }
 
     /* Technical SEO Documentation */
     .doc-section {
@@ -379,7 +375,7 @@
       font-size: 0.88rem;
       line-height: 1.7;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 24px; }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
     .doc-section h2:first-of-type { margin-top: 0; }
     .doc-section p { margin-bottom: 12px; }
     .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
@@ -418,9 +414,9 @@
         <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
       </div>
       <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Detecting...</strong></span>
-        <span>·</span>
-        <span>IPv6: <strong id="ipv6Display">Detecting...</strong></span>
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
       </div>
     </div>
   </header>
@@ -494,13 +490,17 @@
     </div>
 
     <!-- Security Limitations & Operational Disclaimer -->
-    <div class="disclaimer-card">
-      <div class="disclaimer-title">
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
         <span>⚠️</span> Security Limitations & Heuristic Boundaries
       </div>
-      <p><strong>Deterministic heuristics cannot guarantee complete safety against semantic jailbreaks.</strong> Large language models are non-deterministic token predictors. While this scanner accurately flags common structural indicators (e.g., role overrides, delimiter injections, and known persona pivots), adversarial actors continuously evolve attacks through semantic indirection, fictional storytelling framing, leetspeak variations, and polyglot encoding.</p>
-      <p>Do not use this scanner as an absolute pass/fail firewall. Effective enterprise LLM defense requires a defense-in-depth approach: pair input sanitization with strict least-privilege tool access, structural encapsulation (such as strict schema enforcement), and deterministic output monitors.</p>
-    </div>
+      <p>
+        <strong>Heuristic scanning cannot provide absolute immunity against LLM jailbreaks.</strong> Large language models are non-deterministic, probabilistic token completion engines. A "Clean (0 / 100)" audit means the input contains no known structural control tokens (e.g., <code>&lt;|im_start|&gt;</code>), explicit system override directives, or signature persona jailbreaks in our database. It does not prove that creative semantic metaphors, foreign-language translations, multi-turn dialogue manipulation, or mathematical encodings cannot steer a model outside intended guardrails.
+      </p>
+      <p>
+        <strong>Production Defense-in-Depth:</strong> Never rely on client-side regexes as your sole security barrier. Combine client-side pre-filtering with parameter-enforced APIs (JSON/XML schemas), least-privilege tool execution permissions, and isolated dual-LLM evaluator checks on untrusted outputs.
+      </p>
+    </aside>
 
     <!-- Technical & Educational Content -->
     <article class="doc-section">
@@ -528,40 +528,53 @@
   </main>
 
   <script>
-    // Exact Working IP Resolver from Reference Index
+    // Dual Endpoint IP Telemetry with Fallbacks (from working C2PA implementation)
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
 
-      // Local testing fallback check
-      if (window.location.protocol === "file:") {
-        ipv4El.textContent = "127.0.0.1 (Localhost)";
-        ipv6El.textContent = "::1 (Localhost)";
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
         return;
       }
 
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
       try {
         const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
         if (res4.ok) {
           const data4 = await res4.json();
           ipv4El.textContent = data4.ip;
         } else {
-          ipv4El.textContent = "Unavailable";
+          throw new Error("Primary failed");
         }
       } catch {
-        ipv4El.textContent = "Offline / Blocked";
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
       }
 
+      // IPv6 Detection
       try {
         const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
         if (res6.ok) {
-          const data6 = await res6.json();
-          ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
         } else {
-          ipv6El.textContent = "Not Supported";
+          throw new Error("Primary failed");
         }
       } catch {
-        ipv6El.textContent = "Not Supported";
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
       }
     }
     window.addEventListener("DOMContentLoaded", detectUserIPs);
