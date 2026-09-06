@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>AI Latent Noise & Diffusion Residual Inspector — Free Offline Forensic Tool | BitDark</title>
+  <meta name="title" content="AI Latent Noise & Diffusion Residual Inspector — Free Offline Forensic Tool | BitDark" />
+  <meta name="description" content="Inspect high-frequency residuals, error level analysis (ELA), and latent diffusion grid artifacts offline in browser memory. 100% client-side, zero network egress." />
+  <meta name="keywords" content="diffusion noise inspector, latent artifact analyzer, ai image forensics offline, error level analysis browser, high frequency residual detector" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/noise-inspector" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+
+    .file-input-hidden { display: none; }
+
+    /* Controls Bar */
+    .filter-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+      align-items: center;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px 16px;
+      border-radius: 4px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-family: var(--font-code);
+    }
+    .control-label { color: var(--atom-muted); }
+    .btn-mode {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-mode.active, .btn-mode:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-heading);
+      background-color: rgba(229, 192, 123, 0.1);
+    }
+    .range-slider {
+      accent-color: var(--atom-amber);
+      cursor: pointer;
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-normal {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warning {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    /* Split View Container */
+    .canvas-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+      .canvas-layout { grid-template-columns: 1fr; }
+    }
+    .view-pane {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .pane-title {
+      align-self: flex-start;
+      font-size: 0.75rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      margin-bottom: 8px;
+    }
+    .preview-box {
+      max-width: 100%;
+      max-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+    .preview-box img, .preview-box canvas {
+      max-width: 100%;
+      max-height: 400px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Operational Caution & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / noise-inspector
+    </nav>
+
+    <div class="tool-header">
+      <h1>AI Latent Noise & Diffusion Residual Inspector</h1>
+      <p>Analyze high-frequency pixel residuals, Laplacian variance, and compression anomalies to uncover synthetic artifacts locally in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🔬</span>
+        <p><strong>Click to choose an image</strong> or drag & drop image here</p>
+        <span class="dropzone-hint">Supports PNG, JPEG, WebP, AVIF, TIFF (In-memory Canvas processing, 0 network egress)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept="image/*" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File Dimensions & Size</div>
+            <div class="meta-val" id="metaDim">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Checksum</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">High-Frequency Variance</div>
+            <div class="meta-val" id="metaVariance">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Noise Uniformity Index</div>
+            <div class="meta-val" id="metaUniformity">-</div>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+          <div class="control-group">
+            <span class="control-label">Analysis Mode:</span>
+            <button class="btn-mode active" data-mode="residual">High-Pass Residual</button>
+            <button class="btn-mode" data-mode="laplacian">Laplacian Edge Filter</button>
+            <button class="btn-mode" data-mode="ela">Error Level Sim (ELA)</button>
+          </div>
+          <div class="control-group" style="margin-left: auto;">
+            <span class="control-label">Gain / Amplification:</span>
+            <input type="range" id="gainSlider" class="range-slider" min="1" max="20" value="6" />
+            <span id="gainVal" style="color: var(--atom-amber); width: 24px;">6x</span>
+          </div>
+        </div>
+
+        <div class="canvas-layout" style="margin-top: 16px;">
+          <div class="view-pane">
+            <div class="pane-title">ORIGINAL ASSET SOURCE</div>
+            <div class="preview-box">
+              <img id="origPreview" alt="Original Source" />
+            </div>
+          </div>
+          <div class="view-pane">
+            <div class="pane-title" id="canvasTitle">AMPLIFIED RESIDUAL ARTIFACTS</div>
+            <div class="preview-box">
+              <canvas id="filterCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadFiltered">Export Residual Canvas</button>
+          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Forensic Caution & Algorithmic Boundaries
+      </div>
+      <p>
+        <strong>Residual noise inspection is a heuristic diagnostic and cannot provide absolute proof of AI generation.</strong> Diffusion models (such as Stable Diffusion, Midjourney, or DALL-E) frequently introduce characteristic checkerboard grid patterns or unnaturally uniform background sensor noise. However, aggressive lossy JPEG compression, camera sensor noise at high ISO, post-processing filters, and social media downscalers produce similar spatial artifacts. Never use high-pass residuals in isolation to establish definitive authenticity without cross-referencing cryptographic provenance (C2PA) and authentic capture metadata.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Diffusion Noise Inspection Operates</h2>
+      <p>Latent Diffusion Models construct images iteratively by predicting and removing Gaussian noise conditioned on latent prompts. This leaves telltale statistical fingerprints in the spatial domain:</p>
+      <ul>
+        <li><strong>High-Frequency Residuals:</strong> Applying an unsharp mask or high-pass convolution kernel subtracts low-frequency structures, exposing synthetic noise distributions and tiling seams.</li>
+        <li><strong>Laplacian Second-Order Derivation:</strong> Highlights sudden shifts in gradient curvature, identifying unnatural boundary sharpness often seen around synthetic contours.</li>
+        <li><strong>Error Level Analysis (ELA):</strong> Approximates recompression tolerances across uniform areas to detect local variance mismatches between synthetic subject insertions and natural backgrounds.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>All canvas manipulations, image decoding, convolution filters, and cryptographic hash computations run purely inside your browser memory using the HTML5 Canvas API and Web Cryptography. Not a single pixel is ever uploaded to external servers.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Endpoint IP Telemetry with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Lookup
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Lookup
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM References
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaDim = document.getElementById("metaDim");
+    const metaHash = document.getElementById("metaHash");
+    const metaVariance = document.getElementById("metaVariance");
+    const metaUniformity = document.getElementById("metaUniformity");
+    const origPreview = document.getElementById("origPreview");
+    const filterCanvas = document.getElementById("filterCanvas");
+    const canvasTitle = document.getElementById("canvasTitle");
+    const gainSlider = document.getElementById("gainSlider");
+    const gainVal = document.getElementById("gainVal");
+    const btnReset = document.getElementById("btnReset");
+    const btnDownloadFiltered = document.getElementById("btnDownloadFiltered");
+    const modeButtons = document.querySelectorAll(".btn-mode");
+
+    let currentMode = "residual";
+    let activeImage = null;
+
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        modeButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentMode = btn.dataset.mode;
+        applyCurrentFilter();
+      });
+    });
+
+    gainSlider.addEventListener("input", (e) => {
+      gainVal.textContent = `${e.target.value}x`;
+      applyCurrentFilter();
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      activeImage = null;
+    });
+
+    async function handleFile(file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file.");
+        return;
+      }
+
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaDim.textContent = "Loading...";
+      metaHash.textContent = "Calculating SHA-256...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+        const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+        const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        metaHash.textContent = `${hashHex.slice(0, 8)}...${hashHex.slice(-8)}`;
+
+        const img = new Image();
+        img.onload = () => {
+          activeImage = img;
+          origPreview.src = img.src;
+          metaDim.textContent = `${img.naturalWidth} × ${img.naturalHeight} (${(file.size / 1024).toFixed(1)} KB)`;
+          applyCurrentFilter();
+        };
+        img.src = URL.createObjectURL(file);
+      } catch (err) {
+        alert("Failed to process image buffer: " + err.message);
+      }
+    }
+
+    function applyCurrentFilter() {
+      if (!activeImage) return;
+
+      const w = activeImage.naturalWidth;
+      const h = activeImage.naturalHeight;
+
+      // Restrict working canvas max resolution for browser responsiveness
+      const maxDim = 1200;
+      let targetW = w;
+      let targetH = h;
+      if (targetW > maxDim || targetH > maxDim) {
+        if (targetW > targetH) {
+          targetH = Math.round((targetH * maxDim) / targetW);
+          targetW = maxDim;
+        } else {
+          targetW = Math.round((targetW * maxDim) / targetH);
+          targetH = maxDim;
+        }
+      }
+
+      filterCanvas.width = targetW;
+      filterCanvas.height = targetH;
+      const ctx = filterCanvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(activeImage, 0, 0, targetW, targetH);
+
+      const srcData = ctx.getImageData(0, 0, targetW, targetH);
+      const outData = ctx.createImageData(targetW, targetH);
+      const gain = parseFloat(gainSlider.value);
+
+      if (currentMode === "residual") {
+        canvasTitle.textContent = `HIGH-PASS RESIDUAL (GAIN: ${gain}x)`;
+        applyHighPass(srcData, outData, targetW, targetH, gain);
+      } else if (currentMode === "laplacian") {
+        canvasTitle.textContent = `LAPLACIAN EDGE RESIDUAL (GAIN: ${gain}x)`;
+        applyLaplacian(srcData, outData, targetW, targetH, gain);
+      } else if (currentMode === "ela") {
+        canvasTitle.textContent = `ERROR LEVEL ARTIFACT SIMULATION (GAIN: ${gain}x)`;
+        applyELA(ctx, targetW, targetH, gain);
+        return;
+      }
+
+      ctx.putImageData(outData, 0, 0);
+      computeDiagnostics(outData);
+    }
+
+    // High-Pass Filter (3x3 Kernel: [ -1 -1 -1 / -1 8 -1 / -1 -1 -1 ])
+    function applyHighPass(src, dst, w, h, gain) {
+      const s = src.data;
+      const d = dst.data;
+
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const idx = (y * w + x) * 4;
+
+          for (let c = 0; c < 3; c++) {
+            let sum = s[idx + c] * 8;
+            sum -= s[((y - 1) * w + (x - 1)) * 4 + c];
+            sum -= s[((y - 1) * w + x) * 4 + c];
+            sum -= s[((y - 1) * w + (x + 1)) * 4 + c];
+            sum -= s[(y * w + (x - 1)) * 4 + c];
+            sum -= s[(y * w + (x + 1)) * 4 + c];
+            sum -= s[((y + 1) * w + (x - 1)) * 4 + c];
+            sum -= s[((y + 1) * w + x) * 4 + c];
+            sum -= s[((y + 1) * w + (x + 1)) * 4 + c];
+
+            d[idx + c] = Math.min(255, Math.max(0, 128 + sum * (gain * 0.25)));
+          }
+          d[idx + 3] = 255;
+        }
+      }
+    }
+
+    // Laplacian Edge Filter ( [ 0 1 0 / 1 -4 1 / 0 1 0 ] )
+    function applyLaplacian(src, dst, w, h, gain) {
+      const s = src.data;
+      const d = dst.data;
+
+      for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+          const idx = (y * w + x) * 4;
+
+          for (let c = 0; c < 3; c++) {
+            let sum = -4 * s[idx + c];
+            sum += s[((y - 1) * w + x) * 4 + c];
+            sum += s[((y + 1) * w + x) * 4 + c];
+            sum += s[(y * w + (x - 1)) * 4 + c];
+            sum += s[(y * w + (x + 1)) * 4 + c];
+
+            d[idx + c] = Math.min(255, Math.max(0, Math.abs(sum) * (gain * 0.5)));
+          }
+          d[idx + 3] = 255;
+        }
+      }
+    }
+
+    // Error Level Analysis (ELA) Simulation via in-memory canvas re-compression
+    function applyELA(ctx, w, h, gain) {
+      const baseCanvas = document.createElement("canvas");
+      baseCanvas.width = w;
+      baseCanvas.height = h;
+      const bCtx = baseCanvas.getContext("2d");
+      bCtx.drawImage(activeImage, 0, 0, w, h);
+
+      const origData = bCtx.getImageData(0, 0, w, h);
+      const recompressed = new Image();
+
+      recompressed.onload = () => {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        const tCtx = tempCanvas.getContext("2d");
+        tCtx.drawImage(recompressed, 0, 0, w, h);
+
+        const compData = tCtx.getImageData(0, 0, w, h);
+        const outData = ctx.createImageData(w, h);
+
+        const d1 = origData.data;
+        const d2 = compData.data;
+        const out = outData.data;
+
+        for (let i = 0; i < d1.length; i += 4) {
+          out[i] = Math.min(255, Math.abs(d1[i] - d2[i]) * gain * 3);
+          out[i + 1] = Math.min(255, Math.abs(d1[i + 1] - d2[i + 1]) * gain * 3);
+          out[i + 2] = Math.min(255, Math.abs(d1[i + 2] - d2[i + 2]) * gain * 3);
+          out[i + 3] = 255;
+        }
+
+        ctx.putImageData(outData, 0, 0);
+        computeDiagnostics(outData);
+      };
+
+      recompressed.src = baseCanvas.toDataURL("image/jpeg", 0.75);
+    }
+
+    // Compute Variance Metrics & Diagnostics
+    function computeDiagnostics(imgData) {
+      const data = imgData.data;
+      let totalLum = 0;
+      let count = 0;
+
+      for (let i = 0; i < data.length; i += 16) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        totalLum += lum;
+        count++;
+      }
+
+      const meanLum = totalLum / count;
+      let varianceSum = 0;
+
+      for (let i = 0; i < data.length; i += 16) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        varianceSum += (lum - meanLum) ** 2;
+      }
+
+      const variance = (varianceSum / count).toFixed(2);
+      metaVariance.textContent = `${variance} (Spatial Lum)`;
+
+      const uniformityRatio = (meanLum > 0 ? (Math.sqrt(variance) / meanLum).toFixed(3) : "1.000");
+      metaUniformity.textContent = uniformityRatio;
+
+      if (parseFloat(uniformityRatio) < 0.45) {
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ Unnatural Noise Uniformity Detected</span> <span>Possible Synthetic/Filtered Asset</span>`;
+      } else {
+        statusBanner.className = "status-banner status-normal";
+        statusBanner.innerHTML = `<span>✓ Natural Gradient Variance Observed</span> <span>Typical Sensor Distribution</span>`;
+      }
+    }
+
+    btnDownloadFiltered.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = `residual-inspection-${Date.now()}.png`;
+      link.href = filterCanvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+</body>
+</html>
