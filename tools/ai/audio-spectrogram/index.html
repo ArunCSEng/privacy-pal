@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Synthetic Audio Spectrogram Viewer — Free Client-Side Audio Forensics | BitDark</title>
+  <meta name="title" content="Synthetic Audio Spectrogram Viewer — Free Client-Side Audio Forensics | BitDark" />
+  <meta name="description" content="Generate high-resolution FFT spectrograms and inspect frequency roll-offs locally in browser memory to evaluate synthetic speech, deepfake voice clones, and codec cutoffs." />
+  <meta name="keywords" content="audio spectrogram viewer, synthetic voice detector, voice deepfake spectrogram, audio frequency analyzer, client-side audio forensics, web audio fft" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/audio-spectrogram" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+
+    .file-input-hidden { display: none; }
+
+    /* Spectrogram Canvas Workspace */
+    .spectrogram-area {
+      display: none;
+      margin-top: 20px;
+    }
+    .audio-controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
+    .audio-player {
+      flex: 1;
+      min-width: 250px;
+      height: 36px;
+    }
+    .canvas-container {
+      position: relative;
+      background: #000;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 320px;
+    }
+
+    /* Diagnostics & Stats Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Forensic Boundaries Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / audio-spectrogram
+    </nav>
+
+    <div class="tool-header">
+      <h1>Synthetic Audio Spectrogram Viewer</h1>
+      <p>Analyze frequency distributions and spectral cutoffs locally in browser memory to identify synthetic voice synthesis patterns and artifacts.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🎙️</span>
+        <p><strong>Click to choose an audio file</strong> or drag & drop audio here</p>
+        <span class="dropzone-hint">Supports WAV, MP3, OGG, FLAC, AAC, M4A (Processed entirely in local memory)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept="audio/*" />
+      </div>
+
+      <div class="spectrogram-area" id="spectrogramArea">
+        <div class="audio-controls-row">
+          <audio id="audioElement" class="audio-player" controls></audio>
+          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Load Other File</button>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="spectrogramCanvas" width="1024" height="320"></canvas>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File Name & Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Duration & Channels</div>
+            <div class="meta-val" id="metaDetails">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Sample Rate</div>
+            <div class="meta-val" id="metaSampleRate">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Frequency Cutoff Observation</div>
+            <div class="meta-val" id="metaCutoff">-</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnExportCanvas">Export Spectrogram (PNG)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Forensic Caution & Synthesis Detection Boundaries
+      </div>
+      <p>
+        <strong>Spectrogram visualization alone does not provide definitive proof of voice cloning or authenticity.</strong> While many neural text-to-speech (TTS) vocoders and early deepfake pipelines exhibit sharp frequency cutoffs (e.g., brick-wall filtering above 16 kHz or 22 kHz), lossy compression formats (such as MP3, AAC, or Opus via cellular and messaging apps) also introduce aggressive acoustic roll-offs. Conversely, modern diffusion-based voice synthesis can simulate realistic high-frequency harmonics and background noise. Cross-validate forensic results with multi-factor biometric analysis and file provenance metadata.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Spectrogram Forensics Operate</h2>
+      <p>A spectrogram maps the spectrum of frequencies over time. When inspecting spoken dialogue, natural human speech exhibits continuous acoustic resonance across fundamental frequencies and upper harmonics with gradual high-frequency attenuation.</p>
+      <ul>
+        <li><strong>Vocoder Frequency Walls:</strong> Models trained on lower sampling rates (e.g., 22.05 kHz or 24 kHz) often exhibit an abrupt lack of spectral energy above 11 kHz or 12 kHz, appearing as an unnatural flat black horizontal band across the top of the spectrogram.</li>
+        <li><strong>Robotic Harmonics & Phasing:</strong> Concatenative and neural synthesis engines can produce rigid, parallel harmonic stripes devoid of natural micro-tremors and biological formant shifts.</li>
+        <li><strong>Noise Discontinuity:</strong> Discontinuities in ambient background hiss around speech bursts often reveal where synthetic phonemes were spliced or generated without uniform acoustic grounding.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Uploaded audio files are decoded directly into an in-memory <code>AudioBuffer</code> via the native browser <code>AudioContext</code> and analyzed with the <code>Web Audio API</code>. No audio payloads, hashes, or analytical telemetry leave your machine.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Endpoint IP Telemetry Engine
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary endpoint failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary endpoint failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Audio Forensics & Spectrogram Workspace
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const spectrogramArea = document.getElementById("spectrogramArea");
+    const audioElement = document.getElementById("audioElement");
+    const canvas = document.getElementById("spectrogramCanvas");
+    const ctx = canvas.getContext("2d");
+    const btnReset = document.getElementById("btnReset");
+    const btnExportCanvas = document.getElementById("btnExportCanvas");
+
+    const metaFile = document.getElementById("metaFile");
+    const metaDetails = document.getElementById("metaDetails");
+    const metaSampleRate = document.getElementById("metaSampleRate");
+    const metaCutoff = document.getElementById("metaCutoff");
+
+    let audioCtx = null;
+    let currentObjectUrl = null;
+
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      audioElement.pause();
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl);
+        currentObjectUrl = null;
+      }
+      spectrogramArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+    });
+
+    btnExportCanvas.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = `spectrogram-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    async function handleFile(file) {
+      dropArea.style.display = "none";
+      spectrogramArea.style.display = "block";
+
+      metaFile.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      metaDetails.textContent = "Analyzing audio stream...";
+      metaSampleRate.textContent = "Decoding...";
+      metaCutoff.textContent = "Processing FFT...";
+
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = URL.createObjectURL(file);
+      audioElement.src = currentObjectUrl;
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+        metaDetails.textContent = `${audioBuffer.duration.toFixed(2)}s • ${audioBuffer.numberOfChannels} ch`;
+        metaSampleRate.textContent = `${audioBuffer.sampleRate} Hz`;
+
+        renderOfflineSpectrogram(audioBuffer);
+      } catch (err) {
+        metaCutoff.textContent = "Decode Failed";
+        metaDetails.textContent = "Unsupported audio encoding";
+        renderEmptyCanvasMessage("Could not decode audio format locally: " + err.message);
+      }
+    }
+
+    function renderEmptyCanvasMessage(msg) {
+      ctx.fillStyle = "#1e2227";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#e06c75";
+      ctx.font = "14px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(msg, canvas.width / 2, canvas.height / 2);
+    }
+
+    // Color mapper for spectral energy (inferno-like palette)
+    function getSpectralColor(normValue) {
+      // normValue ranges 0 to 1
+      const v = Math.min(Math.max(normValue, 0), 1);
+      const r = Math.floor(255 * Math.min(1.5 * v, 1));
+      const g = Math.floor(255 * Math.max(0, Math.min(2 * (v - 0.35), 1)));
+      const b = Math.floor(255 * Math.max(0, Math.min(3 * (v - 0.65), 1)));
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    async function renderOfflineSpectrogram(audioBuffer) {
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.fillStyle = "#0a0c10";
+      ctx.fillRect(0, 0, width, height);
+
+      const channelData = audioBuffer.getChannelData(0);
+      const totalSamples = channelData.length;
+      const sampleRate = audioBuffer.sampleRate;
+      const nyquist = sampleRate / 2;
+
+      // Parameters for Short-Time Fourier Transform (STFT)
+      const fftSize = 512;
+      const halfFft = fftSize / 2;
+      const numColumns = width;
+      const step = Math.max(1, Math.floor((totalSamples - fftSize) / numColumns));
+
+      // Reusable arrays for FFT processing
+      const real = new Float32Array(fftSize);
+      const imag = new Float32Array(fftSize);
+      const windowWeights = new Float32Array(fftSize);
+
+      // Precompute Hann window
+      for (let i = 0; i < fftSize; i++) {
+        windowWeights[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (fftSize - 1)));
+      }
+
+      let highFreqZeroCount = 0;
+      let evaluatedBins = 0;
+
+      for (let col = 0; col < numColumns; col++) {
+        const offset = col * step;
+        if (offset + fftSize > totalSamples) break;
+
+        for (let i = 0; i < fftSize; i++) {
+          real[i] = channelData[offset + i] * windowWeights[i];
+          imag[i] = 0;
+        }
+
+        // Run In-Place Cooley-Tukey Radix-2 FFT
+        transformRadix2(real, imag, fftSize);
+
+        // Render vertical frequency slice (0 Hz at bottom, Nyquist at top)
+        for (let bin = 0; bin < halfFft; bin++) {
+          const mag = Math.sqrt(real[bin] * real[bin] + imag[bin] * imag[bin]);
+          // Convert to normalized logarithmic decibel scale
+          const db = 20 * Math.log10(Math.max(mag, 1e-6));
+          const norm = (db + 80) / 80;
+
+          ctx.fillStyle = getSpectralColor(norm);
+          const y = height - Math.floor((bin / halfFft) * height);
+          ctx.fillRect(col, y, 1, Math.ceil(height / halfFft));
+
+          // Check for high-frequency energy presence in upper 25% of spectrum
+          if (bin > halfFft * 0.75) {
+            evaluatedBins++;
+            if (mag < 1e-4) highFreqZeroCount++;
+          }
+        }
+      }
+
+      // Overlay frequency calibration labels
+      ctx.fillStyle = "rgba(215, 218, 224, 0.75)";
+      ctx.font = "11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`${(nyquist / 1000).toFixed(1)} kHz (Nyquist limit)`, 10, 18);
+      ctx.fillText(`${(nyquist * 0.5 / 1000).toFixed(1)} kHz`, 10, height / 2);
+      ctx.fillText("0 kHz", 10, height - 8);
+
+      // Evaluate heuristic observation
+      const highFreqSilenceRatio = evaluatedBins > 0 ? (highFreqZeroCount / evaluatedBins) : 0;
+      if (highFreqSilenceRatio > 0.85 && nyquist >= 16000) {
+        metaCutoff.innerHTML = `<span style="color: var(--atom-coral);">Abrupt High-Cutoff (&gt;${(nyquist * 0.75 / 1000).toFixed(0)} kHz Void)</span>`;
+      } else if (sampleRate <= 24000) {
+        metaCutoff.innerHTML = `<span style="color: var(--atom-amber);">Limited Bandwidth (${(sampleRate / 1000).toFixed(1)} kHz Source)</span>`;
+      } else {
+        metaCutoff.innerHTML = `<span style="color: var(--atom-green);">Full-Spectrum Energy Present</span>`;
+      }
+    }
+
+    // In-place Cooley-Tukey FFT implementation
+    function transformRadix2(real, imag, n) {
+      let j = 0;
+      for (let i = 0; i < n - 1; i++) {
+        if (i < j) {
+          let tr = real[i]; real[i] = real[j]; real[j] = tr;
+          let ti = imag[i]; imag[i] = imag[j]; imag[j] = ti;
+        }
+        let k = n >> 1;
+        while (k <= j) {
+          j -= k;
+          k >>= 1;
+        }
+        j += k;
+      }
+
+      for (let len = 2; len <= n; len <<= 1) {
+        const half = len >> 1;
+        const angle = (-2 * Math.PI) / len;
+        const wStepR = Math.cos(angle);
+        const wStepI = Math.sin(angle);
+
+        for (let i = 0; i < n; i += len) {
+          let wR = 1;
+          let wI = 0;
+          for (let m = 0; m < half; m++) {
+            const uR = real[i + m];
+            const uI = imag[i + m];
+            const tR = wR * real[i + m + half] - wI * imag[i + m + half];
+            const tI = wR * imag[i + m + half] + wI * real[i + m + half];
+
+            real[i + m] = uR + tR;
+            imag[i + m] = uI + tI;
+            real[i + m + half] = uR - tR;
+            imag[i + m + half] = uI - tI;
+
+            const nextWR = wR * wStepR - wI * wStepI;
+            wI = wR * wStepI + wI * wStepR;
+            wR = nextWR;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
