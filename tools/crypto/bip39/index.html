@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>BIP39 Mnemonic Phrase Generator &amp; Seed Verifier — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="BIP39 Mnemonic Phrase Generator &amp; Seed Verifier — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Generate, inspect, and verify BIP39 mnemonic phrases, calculate checksums, and derive PBKDF2 seed keys in client browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="bip39 generator, mnemonic seed phrase verifier, bitcoin seed tool, pbkdf2 seed derivation, offline bip39 checksum, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/bip39" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .form-group textarea {
+      height: 90px;
+      resize: vertical;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    .results-area { margin-top: 20px; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .word-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .word-num {
+      color: var(--atom-amber);
+      font-size: 0.72rem;
+      min-width: 20px;
+    }
+    .word-txt {
+      color: var(--atom-heading);
+      font-weight: 600;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / bip39
+    </nav>
+
+    <div class="tool-header">
+      <h1>BIP39 Mnemonic Phrase Generator &amp; Seed Verifier</h1>
+      <p>Generate cryptographically secure mnemonic phrases, verify checksums, and compute PBKDF2 deterministic wallet seeds locally inside browser memory.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="strengthSelect">Mnemonic Length / Entropy Strength</label>
+          <select id="strengthSelect">
+            <option value="128">12 Words (128-bit Entropy)</option>
+            <option value="160" selected>15 Words (160-bit Entropy)</option>
+            <option value="192">18 Words (192-bit Entropy)</option>
+            <option value="224">21 Words (224-bit Entropy)</option>
+            <option value="256">24 Words (256-bit Entropy)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="passphraseInput">Optional Passphrase (Salt Extension)</label>
+          <input type="password" id="passphraseInput" placeholder="Optional passphrase..." autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="mnemonicInput">Mnemonic Phrase (Verify Existing or View Generated)</label>
+        <textarea id="mnemonicInput" placeholder="Type or paste 12, 15, 18, 21, or 24 BIP39 words here to verify checksum, or click 'Generate Mnemonic'..." spellcheck="false"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnGenerate">Generate Mnemonic</button>
+        <button class="btn-atom btn-secondary" id="btnVerify">Verify &amp; Compute Seed</button>
+        <button class="btn-atom btn-secondary" id="btnCopy">Copy Mnemonic</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="results-area">
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>Cryptographic mnemonic engine ready</span>
+          <span>Idle</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Word Count</div>
+            <div class="meta-val" id="metaWordCount">0 Words</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Entropy Length</div>
+            <div class="meta-val" id="metaEntropy">0 bits</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Checksum Integrity</div>
+            <div class="meta-val" id="metaChecksum">Awaiting Input</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Execution Environment</div>
+            <div class="meta-val">Local WebCrypto Sandbox</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 8px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Word Index Breakdown:</div>
+        <div class="word-grid" id="wordGrid"></div>
+
+        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Derived 512-bit Binary Master Seed (PBKDF2 Hex):</div>
+        <div class="viewer-box" id="rawViewer">Seed output will appear here after calculation...</div>
+      </div>
+    </div>
+
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, lost crypto assets, unauthorized seed exposure, compromised mnemonic phrases, or software flaws. Generating seed phrases inside a browser environment connected to the internet carries operational risk; for production or high-value crypto wallets, generate entropy only on dedicated, air-gapped hardware wallets or offline live operating systems. All entropy generation and cryptographic hashes run strictly in browser memory without remote network transmission.
+      </p>
+    </aside>
+
+    <article class="doc-section">
+      <h2>How BIP39 Mnemonic Generation Operates</h2>
+      <p>The Bitcoin Improvement Proposal 39 (BIP39) specifies a deterministic method for translating raw entropy into human-readable word sequences:</p>
+      <ul>
+        <li><strong>Entropy Generation:</strong> A cryptographically secure random sequence of length $ENT$ (between 128 and 256 bits) is produced using <code>crypto.getRandomValues</code>.</li>
+        <li><strong>Checksum Appending:</strong> A checksum of length $CS = ENT / 32$ bits is created from the first $CS$ bits of the SHA-256 digest of the entropy.</li>
+        <li><strong>Index Mapping:</strong> The combined binary sequence is partitioned into chunks of 11 bits. Each 11-bit chunk represents a number between 0 and 2047, which references a specific word in the 2,048-entry wordlist.</li>
+      </ul>
+
+      <h2>Master Seed Derivation (PBKDF2)</h2>
+      <p>To convert the mnemonic words into a 512-bit binary master seed for hierarchical deterministic (HD) wallet paths (BIP32/BIP44), BIP39 utilizes PBKDF2-HMAC-SHA512 with 2,048 rounds. The normalized mnemonic serves as the password, and the UTF-8 string <code>"mnemonic" + passphrase</code> serves as the salt.</p>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Entropy generated or pasted into this interface is processed locally inside your browser runtime. No seeds, phrases, hashes, or telemetry are ever uploaded or transmitted across external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    let WORDLIST = null;
+
+    async function loadWordlist() {
+      if (WORDLIST && WORDLIST.length === 2048) return WORDLIST;
+      try {
+        const res = await fetch("https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt", { cache: "force-cache" });
+        if (res.ok) {
+          const raw = await res.text();
+          const list = raw.trim().split(/\s+/);
+          if (list.length === 2048) {
+            WORDLIST = list;
+            return WORDLIST;
+          }
+        }
+      } catch {}
+
+      const cdn = await fetch("https://cdn.jsdelivr.net/gh/bitcoin/bips@master/bip-0039/english.txt");
+      if (cdn.ok) {
+        const raw = await cdn.text();
+        WORDLIST = raw.trim().split(/\s+/);
+        return WORDLIST;
+      }
+      throw new Error("Could not load BIP39 wordlist dictionary.");
+    }
+
+    function bytesToBinary(bytes) {
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) {
+        bin += bytes[i].toString(2).padStart(8, "0");
+      }
+      return bin;
+    }
+
+    function bufToHex(buffer) {
+      return Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    async function deriveSeed(mnemonic, passphrase = "") {
+      const enc = new TextEncoder();
+      const passwordBuffer = enc.encode(mnemonic.normalize("NFKD"));
+      const saltBuffer = enc.encode("mnemonic" + passphrase.normalize("NFKD"));
+
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        passwordBuffer,
+        { name: "PBKDF2" },
+        false,
+        ["deriveBits"]
+      );
+
+      const derivedBits = await crypto.subtle.deriveBits(
+        {
+          name: "PBKDF2",
+          salt: saltBuffer,
+          iterations: 2048,
+          hash: "SHA-512"
+        },
+        keyMaterial,
+        512
+      );
+
+      return bufToHex(derivedBits);
+    }
+
+    const strengthSelect = document.getElementById("strengthSelect");
+    const passphraseInput = document.getElementById("passphraseInput");
+    const mnemonicInput = document.getElementById("mnemonicInput");
+    const btnGenerate = document.getElementById("btnGenerate");
+    const btnVerify = document.getElementById("btnVerify");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaWordCount = document.getElementById("metaWordCount");
+    const metaEntropy = document.getElementById("metaEntropy");
+    const metaChecksum = document.getElementById("metaChecksum");
+    const wordGrid = document.getElementById("wordGrid");
+    const rawViewer = document.getElementById("rawViewer");
+
+    async function generateMnemonic() {
+      try {
+        const wordlist = await loadWordlist();
+        const bits = parseInt(strengthSelect.value, 10);
+        const byteCount = bits / 8;
+        const entropy = new Uint8Array(byteCount);
+        crypto.getRandomValues(entropy);
+
+        const entropyBin = bytesToBinary(entropy);
+        const hashBuf = await crypto.subtle.digest("SHA-256", entropy);
+        const hashBin = bytesToBinary(new Uint8Array(hashBuf));
+        const csLength = bits / 32;
+        const checksum = hashBin.slice(0, csLength);
+
+        const combined = entropyBin + checksum;
+        const phraseWords = [];
+
+        for (let i = 0; i < combined.length; i += 11) {
+          const index = parseInt(combined.slice(i, i + 11), 2);
+          phraseWords.push(wordlist[index]);
+        }
+
+        const phrase = phraseWords.join(" ");
+        mnemonicInput.value = phrase;
+        await verifyMnemonic(phrase);
+
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Cryptographically Secure ${phraseWords.length}-word Mnemonic Generated</span> <span>${bits}-bit PRNG</span>`;
+      } catch (err) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Generation Failed: ${err.message}</span> <span>Error</span>`;
+        rawViewer.textContent = "Error: " + err.message;
+      }
+    }
+
+    async function verifyMnemonic(phraseOverride) {
+      try {
+        const wordlist = await loadWordlist();
+        const phrase = (phraseOverride || mnemonicInput.value).trim().toLowerCase();
+
+        if (!phrase) {
+          rawViewer.textContent = "Please input or generate a mnemonic phrase.";
+          return;
+        }
+
+        const words = phrase.split(/\s+/);
+        const totalWords = words.length;
+        metaWordCount.textContent = `${totalWords} Words`;
+
+        if (![12, 15, 18, 21, 24].includes(totalWords)) {
+          statusBanner.className = "status-banner status-danger";
+          statusBanner.innerHTML = "<span>✕ Invalid Word Count (Must be 12, 15, 18, 21, or 24 words)</span> <span>Invalid Length</span>";
+          metaChecksum.textContent = "Invalid Count";
+          wordGrid.innerHTML = "";
+          rawViewer.textContent = "Error: Standard BIP39 phrases require exactly 12, 15, 18, 21, or 24 words.";
+          return;
+        }
+
+        const indices = [];
+        for (let i = 0; i < words.length; i++) {
+          const idx = wordlist.indexOf(words[i]);
+          if (idx === -1) {
+            statusBanner.className = "status-banner status-danger";
+            statusBanner.innerHTML = `<span>✕ Word Not in BIP39 List: "${words[i]}"</span> <span>Unknown Word</span>`;
+            metaChecksum.textContent = "Wordlist Mismatch";
+            wordGrid.innerHTML = "";
+            rawViewer.textContent = `Error: Word #${i + 1} ("${words[i]}") does not exist in the official BIP39 dictionary.`;
+            return;
+          }
+          indices.push(idx);
+        }
+
+        let bitStream = "";
+        for (const idx of indices) {
+          bitStream += idx.toString(2).padStart(11, "0");
+        }
+
+        const totalBits = totalWords * 11;
+        const csBits = totalBits % 32;
+        const entBits = totalBits - csBits;
+
+        metaEntropy.textContent = `${entBits} bits`;
+
+        const entropyBinary = bitStream.slice(0, entBits);
+        const claimedChecksum = bitStream.slice(entBits);
+
+        const entropyBytes = new Uint8Array(entBits / 8);
+        for (let i = 0; i < entropyBytes.length; i++) {
+          entropyBytes[i] = parseInt(entropyBinary.slice(i * 8, (i + 1) * 8), 2);
+        }
+
+        const hashBuf = await crypto.subtle.digest("SHA-256", entropyBytes);
+        const calculatedHashBin = bytesToBinary(new Uint8Array(hashBuf));
+        const expectedChecksum = calculatedHashBin.slice(0, csBits);
+
+        if (claimedChecksum !== expectedChecksum) {
+          statusBanner.className = "status-banner status-danger";
+          statusBanner.innerHTML = "<span>✕ Invalid BIP39 Checksum (Phrase mistyped or out of sequence)</span> <span>Checksum Error</span>";
+          metaChecksum.textContent = "Checksum Mismatch";
+          wordGrid.innerHTML = "";
+          rawViewer.textContent = `Checksum verification failed.\nExpected Checksum Bits: ${expectedChecksum}\nReceived Checksum Bits: ${claimedChecksum}`;
+          return;
+        }
+
+        metaChecksum.textContent = "Valid BIP39 Checksum";
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ Mnemonic Verified: Checksum and Dictionary Passed</span> <span>Authentic</span>";
+
+        wordGrid.innerHTML = "";
+        words.forEach((w, i) => {
+          const item = document.createElement("div");
+          item.className = "word-item";
+          item.innerHTML = `<span class="word-num">${i + 1}.</span><span class="word-txt">${w}</span>`;
+          wordGrid.appendChild(item);
+        });
+
+        const passphrase = passphraseInput.value;
+        const masterSeedHex = await deriveSeed(phrase, passphrase);
+        rawViewer.textContent = masterSeedHex;
+
+      } catch (err) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Engine Error: ${err.message}</span> <span>Failed</span>`;
+        rawViewer.textContent = "Error: " + err.message;
+      }
+    }
+
+    btnGenerate.addEventListener("click", generateMnemonic);
+    btnVerify.addEventListener("click", () => verifyMnemonic());
+    strengthSelect.addEventListener("change", generateMnemonic);
+
+    btnCopy.addEventListener("click", async () => {
+      const text = mnemonicInput.value.trim();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const orig = btnCopy.textContent;
+        btnCopy.textContent = "Copied!";
+        setTimeout(() => { btnCopy.textContent = orig; }, 1500);
+      } catch {
+        alert("Copy failed. Please copy text manually.");
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      mnemonicInput.value = "";
+      passphraseInput.value = "";
+      wordGrid.innerHTML = "";
+      rawViewer.textContent = "Seed output will appear here after calculation...";
+      metaWordCount.textContent = "0 Words";
+      metaEntropy.textContent = "0 bits";
+      metaChecksum.textContent = "Awaiting Input";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+    });
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await loadWordlist();
+        generateMnemonic();
+      } catch (err) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>⚠️ ${err.message}</span> <span>Dictionary Load Error</span>`;
+      }
+    });
+  </script>
+</body>
+</html>
