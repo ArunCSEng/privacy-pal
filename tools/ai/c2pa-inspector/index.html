@@ -89,9 +89,11 @@
       font-family: var(--font-code);
       font-size: 0.72rem;
       display: inline-flex;
+      align-items: center;
       gap: 6px;
     }
     .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
 
     /* Layout */
     .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
@@ -114,7 +116,7 @@
       border: 1px solid var(--atom-border);
       border-radius: 6px;
       padding: 24px;
-      margin-bottom: 36px;
+      margin-bottom: 24px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
 
@@ -209,6 +211,30 @@
     }
     .btn-atom:hover { opacity: 0.9; }
 
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
     /* Technical Docs Section */
     .doc-section {
       border-top: 1px solid var(--atom-border);
@@ -255,9 +281,9 @@
         <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
       </div>
       <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Detecting...</strong></span>
-        <span>·</span>
-        <span>IPv6: <strong id="ipv6Display">Detecting...</strong></span>
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
       </div>
     </div>
   </header>
@@ -269,7 +295,7 @@
 
     <div class="tool-header">
       <h1>C2PA Provenance Manifest Reader</h1>
-      <p>Inspect, extract, and evaluate Coalition for Content Provenance and Authenticity (C2PA / CAI) metadata chains entirely in browser memory.</p>
+      <p>Inspect, extract, and evaluate Coalition for Content Provenance and Authenticity (C2PA / CAI) metadata chains entirely in browser memory[cite: 1, 2].</p>
     </div>
 
     <!-- Active Tool Workspace -->
@@ -313,10 +339,20 @@
       </div>
     </div>
 
+    <!-- Forensic Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Forensic Caution & Authenticity Boundaries
+      </div>
+      <p>
+        <strong>Absence of C2PA metadata does not prove human authorship.</strong> Provenance containers are fragile: standard social media platforms (X, Instagram, WhatsApp), messaging pipelines, screenshots, and simple image re-encoders strip JUMBF headers immediately. Conversely, a present claim demonstrates that an asset was stamped by a conforming generator (e.g., Copilot, DALL-E, Firefly), but does not guarantee the file was not altered post-generation if the cryptographic signature hash has been broken[cite: 1, 2]. Always cross-reference client-side manifests with full X.509 authority validation.
+      </p>
+    </aside>
+
     <!-- Technical & Educational Content -->
     <article class="doc-section">
       <h2>How C2PA Provenance Operates</h2>
-      <p>The Coalition for Content Provenance and Authenticity (C2PA) defines an open technical standard allowing publishers, creators, and AI model engines (such as Adobe Firefly, OpenAI DALL-E 3, Midjourney, and Google Imagen) to embed cryptographically verifiable claims directly into asset binaries[cite: 1].</p>
+      <p>The Coalition for Content Provenance and Authenticity (C2PA) defines an open technical standard allowing publishers, creators, and AI model engines (such as Adobe Firefly, OpenAI DALL-E 3, Midjourney, and Google Imagen) to embed cryptographically verifiable claims directly into asset binaries[cite: 1, 2].</p>
       <ul>
         <li><strong>JPEG/AVIF/HEIC Encodings:</strong> Manifests are stored inside isolated application segments (such as <code>APP11</code> with identifier <code>c2pa</code> or <code>JUMBF</code> boxes).</li>
         <li><strong>PNG Containers:</strong> Embedded as private chunks labeled <code>c2pa</code> or standard ancillary metadata chunks (<code>eXIf</code>, <code>zTXt</code>).</li>
@@ -324,11 +360,11 @@
       </ul>
 
       <h2>Zero Network Egress Guarantee</h2>
-      <p>Traditional C2PA verification portals transmit uploaded assets to cloud-hosted parser services. BitDark's C2PA Inspector executes entirely within your browser's local sandbox via raw <code>ArrayBuffer</code> parsing and the native <code>crypto.subtle</code> Web API[cite: 1]. Zero bytes are transferred over the wire[cite: 1].</p>
+      <p>Traditional C2PA verification portals transmit uploaded assets to cloud-hosted parser services[cite: 1, 2]. BitDark's C2PA Inspector executes entirely within your browser's local sandbox via raw <code>ArrayBuffer</code> parsing and the native <code>crypto.subtle</code> Web API[cite: 1, 2]. Zero bytes are transferred over the wire[cite: 1, 2].</p>
     </article>
 
     <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite[cite: 1, 2].</span>
       <nav>
         <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
       </nav>
@@ -336,24 +372,54 @@
   </main>
 
   <script>
-    // IP Pill Detection
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
-      if (window.location.protocol === "file:") {
-        ipv4El.textContent = "127.0.0.1 (Localhost)";
-        ipv6El.textContent = "::1 (Localhost)";
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
         return;
       }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
       try {
         const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        ipv4El.textContent = res4.ok ? (await res4.json()).ip : "Unavailable";
-      } catch { ipv4El.textContent = "Offline"; }
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
       try {
         const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        const d6 = await res6.json();
-        ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-      } catch { ipv6El.textContent = "Not Supported"; }
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
     }
     window.addEventListener("DOMContentLoaded", detectUserIPs);
 
@@ -427,7 +493,7 @@
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
         metaHash.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
 
-        // Pass calculated hash to parser to prevent scope ReferenceError
+        // Pass calculated hash directly into parser
         parseC2PABinary(buffer, file, hashHex);
       } catch (err) {
         metaMarker.textContent = "Error";
@@ -460,14 +526,15 @@
           size_bytes: file.size,
           sha256: hashHex,
           status: "No C2PA markers or JUMBF provenance containers located in file header or metadata chunks.",
-          recommendation: "Asset was either produced without Content Credentials or metadata was stripped by an intermediary CDN or editor."
+          caveat: "Absence of metadata does not guarantee the image was taken by a human. Most social platforms and editors strip C2PA headers.",
+          recommendation: "Asset was either produced without Content Credentials or metadata was stripped during transit."
         };
 
         rawViewer.textContent = JSON.stringify(activeManifestJson, null, 2);
         return;
       }
 
-      // 1. Detect AI Engine
+      // 1. Detect AI Engine Heuristics
       let detectedGenerator = "Standard C2PA Assertion Chain";
       if (/Microsoft\s*Copilot/i.test(textDump) || /softwareAgent\.dname[q\x00-\x1F]*Microsoft/i.test(textDump)) {
         detectedGenerator = "Microsoft Copilot (DALL·E 3 Engine)";
@@ -481,7 +548,7 @@
         detectedGenerator = "Google Imagen (SynthID)";
       }
 
-      // 2. Extract Timestamp
+      // 2. Extract Claim Timestamp
       const dateMatch = textDump.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))/);
       const timestampClaim = dateMatch ? dateMatch[1] : "Not explicitly timestamped";
 
@@ -512,7 +579,7 @@
       metaMarker.textContent = "Present (APP11/JUMBF/c2pa)";
       metaClaim.textContent = detectedGenerator;
 
-      // Render Structured Payload into Raw Viewer
+      // Render Structured Payload
       activeManifestJson = {
         file_summary: {
           file_name: file.name,
@@ -529,7 +596,8 @@
         validation_status: {
           c2pa_markers_present: true,
           cai_urn_located: textDump.includes("urn:c2pa"),
-          tamper_evident_status: "Intact (Local Manifest Present)"
+          tamper_evident_status: "Intact (Local Manifest Present)",
+          trust_boundary_note: "Signature matches expected container schema. Absence of trust certificates does not invalidate origin claim."
         }
       };
 
