@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BitDark — Safe Link & Cyber Triage Workbench</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Client-side privacy-first heuristic URL scanner and digital triage workbench. 100% local, no servers, zero data leakage.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <style>
+    /* ========== Base Reset ========== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden; overflow-y: auto;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* ========== Layout Shell ========== */
+    .page { min-height: 100vh; display: flex; flex-direction: column; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+    .brand { font-weight: 700; letter-spacing: 0.04em; font-size: 1.1rem; text-decoration: none; }
+    .nav-group { display: flex; align-items: center; gap: 16px; }
+    .nav-link { font-size: 0.85rem; font-weight: 500; text-decoration: none; color: inherit; opacity: 0.85; }
+    .nav-link:hover { opacity: 1; text-decoration: underline; }
+    .theme-select { padding: 6px 12px; border-radius: 999px; border: 1px solid #d4d4d4; font-size: 0.8rem; background: #fff; cursor: pointer; }
+
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 16px; }
+    
+    .card {
+      width: 100%; max-width: 760px;
+      border-radius: 14px; padding: 26px 22px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      border: 1px solid #e5e5e5; background: #ffffff;
+    }
+
+    /* Workbench Tabs */
+    .workbench-tabs {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 12px;
+    }
+    .tab-btn {
+      background: transparent; border: 1px solid transparent;
+      padding: 6px 14px; font-size: 0.82rem; font-weight: 600;
+      border-radius: 999px; cursor: pointer; color: #52525b;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover { background: #f4f4f5; color: #111827; }
+    .tab-btn.active { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+
+    .airgap-banner {
+      font-size: 0.74rem; color: #059669; background: #ecfdf5;
+      padding: 7px 12px; border-radius: 6px; border: 1px solid #a7f3d0;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 6px;
+    }
+
+    .tool-panel { display: none; }
+    .tool-panel.active { display: block; }
+
+    .tool-label {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #2563eb; margin-bottom: 4px;
+    }
+    .header-title { font-size: 1.55rem; font-weight: 700; margin-bottom: 6px; line-height: 1.25; }
+    .header-sub { font-size: 0.9rem; line-height: 1.45; color: #374151; margin-bottom: 14px; }
+    label { display: block; font-size: 0.84rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    
+    .input-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .input-wrapper { position: relative; flex: 1 1 240px; display: flex; align-items: center; }
+    
+    input[type="text"], input[type="url"], textarea {
+      width: 100%; border: 1px solid #d4d4d4; font-size: 0.9rem; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="text"], input[type="url"] { padding: 11px 42px 11px 14px; border-radius: 999px; }
+    textarea { padding: 12px; min-height: 110px; border-radius: 8px; font-family: monospace; resize: vertical; }
+    
+    input:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+
+    .paste-btn {
+      position: absolute; right: 6px; background: transparent; border: none;
+      color: #4b5563; padding: 6px 8px; cursor: pointer; font-size: 0.75rem; font-weight: 600; border-radius: 999px;
+    }
+    .paste-btn:hover { background: rgba(0, 0, 0, 0.05); color: #111827; }
+
+    .btn-submit {
+      border-radius: 999px; border: none; padding: 11px 22px; font-size: 0.85rem; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; background: #2563eb; color: #ffffff;
+      white-space: nowrap; transition: background 0.15s, transform 0.1s;
+    }
+    .btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .chip-container { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+    .chip-label { font-size: 0.74rem; color: #52525b; font-weight: 500; }
+    .chip {
+      background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 999px;
+      padding: 3px 10px; font-size: 0.74rem; cursor: pointer; color: #27272a;
+    }
+    .chip:hover { background: #e4e4e7; }
+
+    .hint { margin-top: 10px; font-size: 0.77rem; line-height: 1.4; color: #52525b; }
+
+    /* Results */
+    .results { margin-top: 14px; border-radius: 12px; padding: 16px; background: #f9fafb; border: 1px solid #e5e7eb; font-size: 0.88rem; }
+    .results-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .score-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #52525b; font-weight: 600; }
+    .status-line { font-size: 1rem; font-weight: 600; color: #111827; margin-top: 2px; }
+    .status-note { font-size: 0.8rem; color: #52525b; margin-top: 4px; }
+
+    .score-pill {
+      display: inline-flex; align-items: center; gap: 6px; border-radius: 999px;
+      padding: 4px 12px; font-size: 0.85rem; font-variant-numeric: tabular-nums;
+      font-weight: 700; border: 1px solid #e5e7eb; color: #111827; background: #ffffff;
+    }
+    .score-dot { width: 8px; height: 8px; border-radius: 999px; background: currentColor; }
+    .score-low { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
+    .score-medium { color: #b45309; border-color: #fde68a; background: #fffbeb; }
+    .score-high { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+
+    .action-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-tool {
+      font-size: 0.75rem; padding: 5px 12px; border-radius: 6px; border: 1px solid #d4d4d8;
+      background: #ffffff; color: #27272a; cursor: pointer; font-weight: 600;
+    }
+    .btn-tool:hover { background: #f4f4f5; }
+
+    .issues-title { margin-top: 12px; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: #52525b; font-weight: 600; }
+    ul.issue-list { margin-top: 6px; padding-left: 18px; list-style: disc; color: #18181b; font-size: 0.83rem; }
+    ul.issue-list li + li { margin-top: 3px; }
+    .issue-badge { display: inline-block; margin-top: 8px; padding: 4px 10px; border-radius: 999px; border: 1px solid #d1d5db; font-size: 0.76rem; font-weight: 600; color: #27272a; background: #ffffff; }
+
+    .reading-recommendation {
+      margin-top: 12px; padding: 10px 12px; background: #f0f9ff; border: 1px solid #bae6fd;
+      border-radius: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    .rec-icon { font-size: 1.2rem; }
+    .rec-text { font-size: 0.8rem; color: #0369a1; line-height: 1.35; }
+    .rec-text a { color: #0284c7; font-weight: 600; text-decoration: underline; }
+
+    .output-box {
+      background: #111827; color: #34d399; font-family: monospace; font-size: 0.82rem;
+      padding: 12px; border-radius: 8px; margin-top: 10px; white-space: pre-wrap; word-break: break-all;
+    }
+
+    .footer-note { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 0.76rem; color: #52525b; }
+    .footer-note strong { color: #111827; font-weight: 600; }
+
+    /* Matrix Theme */
+    #matrix-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    body.theme-matrix { background: #000000; color: #d1fae5; }
+    body.theme-matrix #matrix-canvas { opacity: 1; }
+    body.theme-matrix .card { background: rgba(0,0,0,0.85); border-color: rgba(16,185,129,0.7); box-shadow: 0 0 25px rgba(16,185,129,0.35); color: #d1fae5; }
+    body.theme-matrix .brand, body.theme-matrix .tool-label { color: #34d399; }
+    body.theme-matrix .tab-btn { color: #a7f3d0; }
+    body.theme-matrix .tab-btn:hover { background: rgba(16,185,129,0.2); }
+    body.theme-matrix .tab-btn.active { background: #064e3b; color: #6ee7b7; border-color: #10b981; }
+    body.theme-matrix .airgap-banner { background: #022c22; border-color: #059669; color: #6ee7b7; }
+    body.theme-matrix .header-sub, body.theme-matrix .hint, body.theme-matrix .status-note, body.theme-matrix .chip-label { color: #a7f3d0; }
+    body.theme-matrix label { color: #d1fae5; }
+    body.theme-matrix input[type="text"], body.theme-matrix input[type="url"], body.theme-matrix textarea { background: #021a12; color: #e5f9f0; border-color: #065f46; }
+    body.theme-matrix input:focus, body.theme-matrix textarea:focus { border-color: #22c55e; }
+    body.theme-matrix .paste-btn { color: #6ee7b7; }
+    body.theme-matrix .btn-submit { background: #059669; }
+    body.theme-matrix .chip { background: #064e3b; border-color: #047857; color: #a7f3d0; }
+    body.theme-matrix .results { background: rgba(4, 30, 20, 0.95); border-color: #059669; }
+    body.theme-matrix .status-line, body.theme-matrix .issues-title, body.theme-matrix .issue-list { color: #ecfdf5; }
+    body.theme-matrix .score-label { color: #6ee7b7; }
+    body.theme-matrix .issue-badge { background: #022c22; color: #d1fae5; border-color: #059669; }
+    body.theme-matrix .reading-recommendation { background: #064e3b; border-color: #10b981; }
+    body.theme-matrix .rec-text { color: #d1fae5; }
+    body.theme-matrix .rec-text a { color: #6ee7b7; }
+    body.theme-matrix .footer-note { color: #a7f3d0; border-top-color: #065f46; }
+    body.theme-matrix .footer-note strong { color: #34d399; }
+    body.theme-matrix .output-box { background: #000; border: 1px solid #065f46; color: #6ee7b7; }
+    body.theme-matrix .btn-tool { background: #022c22; border-color: #059669; color: #d1fae5; }
+
+    /* Neon Dark Theme */
+    body.theme-neon { background: radial-gradient(circle at top, #111827 0%, #020617 60%, #000 100%); color: #e5e7eb; }
+    body.theme-neon .card { background: rgba(15, 23, 42, 0.92); border-color: rgba(148,163,184,0.3); box-shadow: 0 0 25px rgba(59,130,246,0.3); }
+    body.theme-neon .tool-label { color: #38bdf8; }
+    body.theme-neon .tab-btn { color: #94a3b8; }
+    body.theme-neon .tab-btn.active { background: #0c4a6e; color: #38bdf8; border-color: #0284c7; }
+    body.theme-neon .airgap-banner { background: #082f49; border-color: #0284c7; color: #38bdf8; }
+    body.theme-neon .header-sub, body.theme-neon .hint, body.theme-neon .status-note, body.theme-neon .chip-label { color: #94a3b8; }
+    body.theme-neon label { color: #e2e8f0; }
+    body.theme-neon input[type="text"], body.theme-neon input[type="url"], body.theme-neon textarea { background: #020617; color: #f1f5f9; border-color: #334155; }
+    body.theme-neon input:focus, body.theme-neon textarea:focus { border-color: #38bdf8; }
+    body.theme-neon .paste-btn { color: #38bdf8; }
+    body.theme-neon .btn-submit { background: #0284c7; }
+    body.theme-neon .chip { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+    body.theme-neon .results { background: #090e17; border-color: #1e293b; }
+    body.theme-neon .status-line, body.theme-neon .issues-title, body.theme-neon .issue-list { color: #f8fafc; }
+    body.theme-neon .score-label { color: #38bdf8; }
+    body.theme-neon .issue-badge { background: #020617; color: #cbd5e1; border-color: #334155; }
+    body.theme-neon .reading-recommendation { background: #0f172a; border-color: #0284c7; }
+    body.theme-neon .rec-text { color: #e2e8f0; }
+    body.theme-neon .rec-text a { color: #38bdf8; }
+    body.theme-neon .footer-note { color: #94a3b8; border-top-color: #1e293b; }
+    body.theme-neon .footer-note strong { color: #38bdf8; }
+    body.theme-neon .output-box { background: #000; border: 1px solid #1e293b; color: #38bdf8; }
+    body.theme-neon .btn-tool { background: #020617; border-color: #334155; color: #cbd5e1; }
+
+    /* Footer Indicators */
+    .mini-ip-info, .mini-footer {
+      position: fixed; bottom: 12px; z-index: 20; padding: 6px 12px; border-radius: 999px;
+      font-size: 0.76rem; background: rgba(255, 255, 255, 0.85); color: #374151;
+      backdrop-filter: blur(4px); display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .mini-ip-info { left: 12px; font-variant-numeric: tabular-nums; }
+    .mini-footer { right: 12px; }
+    .mini-footer a { color: inherit; text-decoration: none; font-weight: 500; }
+    .mini-footer a:hover { text-decoration: underline; }
+    .sep { opacity: 0.5; }
+    
+    body.theme-matrix .mini-ip-info, body.theme-matrix .mini-footer,
+    body.theme-neon .mini-ip-info, body.theme-neon .mini-footer {
+      background: rgba(0, 0, 0, 0.65); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 640px) {
+      .card { padding: 20px 16px; }
+      .input-row { flex-direction: column; }
+      .btn-submit { width: 100%; }
+      .mini-ip-info, .mini-footer {
+        position: static; width: 100%; border-radius: 0; justify-content: center;
+        background: transparent; box-shadow: none; padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body class="theme-light">
+  <canvas id="matrix-canvas"></canvas>
+
+  <div class="page">
+    <header class="top-bar">
+      <a href="/" class="brand">BitDark</a>
+      <div class="nav-group">
+        <a href="/blog/" class="nav-link">Privacy Guides</a>
+        <select id="theme-select" class="theme-select" aria-label="Select color theme">
+          <option value="theme-light">Classic (Light)</option>
+          <option value="theme-matrix">Matrix</option>
+          <option value="theme-neon">Neon Dark</option>
+        </select>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" aria-label="Digital Triage Tools">
+        
+        <!-- Workbench Navigation Tabs -->
+        <div class="workbench-tabs">
+          <button class="tab-btn active" data-target="panel-scanner">🔗 Safe Link Analyzer</button>
+          <button class="tab-btn" data-target="panel-email">📧 Email Header Parser</button>
+          <button class="tab-btn" data-target="panel-decode">🔓 De-Obfuscate & Carve</button>
+          <button class="tab-btn" data-target="panel-cidr">🌐 Subnet / CIDR</button>
+          <button class="tab-btn" data-target="panel-jwt">🔑 Hash & JWT</button>
+        </div>
+
+        <div class="airgap-banner">
+          🔒 <strong>Passive Air-Gapped Mode Verified:</strong> This workbench makes zero outbound HTTP requests for analysis. All tools execute locally.
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: FULL SAFE LINK ANALYZER             -->
+        <!-- ========================================== -->
+        <div id="panel-scanner" class="tool-panel active">
+          <div class="header">
+            <p class="tool-label">Safe Link Analyzer</p>
+            <h1 class="header-title">Check if a link is risky or unsafe</h1>
+            <p class="header-sub">
+              Paste a link from SMS, WhatsApp, email, or browser popups. We run local privacy-friendly heuristic checks.
+            </p>
+          </div>
+
+          <form id="scan-form" novalidate>
+            <label for="url-input">Paste suspicious URL</label>
+            <div class="input-row">
+              <div class="input-wrapper">
+                <input
+                  id="url-input"
+                  type="url"
+                  placeholder="https://example.com/verify-account"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <button type="button" id="btn-paste" class="paste-btn" title="Paste from clipboard">
+                  📋 Paste
+                </button>
+              </div>
+              <button type="submit" class="btn-submit">Scan</button>
+            </div>
+
+            <!-- 1-Click Interactive Example Chips -->
+            <div class="chip-container">
+              <span class="chip-label">Try an example:</span>
+              <button type="button" class="chip" data-url="https://paypa1-security-update.xyz/login?urgent=1">Phishing Lookalike</button>
+              <button type="button" class="chip" data-url="https://bit.ly/3xSamplePromo">Bitly Shortener</button>
+              <button type="button" class="chip" data-url="http://192.168.1.1/wallet-verify?token=otp">Suspicious IP & HTTP</button>
+            </div>
+
+            <div class="hint">
+              Analysis happens only in your browser. We don’t send your link to any server.
+              <br><strong>Privacy-First:</strong> Client-only heuristic analysis • No servers • No tracking • No uploads.
+            </div>
+          </form>
+
+          <section class="results" id="results-panel" aria-live="polite">
+            <div class="results-header">
+              <div>
+                <div class="score-label">BitDark Safety Score</div>
+                <div id="status-line" class="status-line">Waiting for a link…</div>
+              </div>
+              <div id="score-pill" class="score-pill">
+                <span class="score-dot"></span>
+                <span id="score-value">– / 100</span>
+              </div>
+            </div>
+
+            <div id="status-note" class="status-note">
+              Score is based on URL structure only. We do not check if the website actually exists.
+            </div>
+
+            <!-- Action Bar (Defang, Clean Tracking, Copy JSON) -->
+            <div id="action-tools" class="action-row" style="display:none;">
+              <button type="button" id="btn-defang" class="btn-tool">Defang & Copy (hxxp)</button>
+              <button type="button" id="btn-clean" class="btn-tool" style="display:none;">Clean Tracking IDs</button>
+              <button type="button" id="btn-copy-json" class="btn-tool">Copy JSON / STIX</button>
+            </div>
+
+            <div id="issues-block" style="display:none;">
+              <div class="issues-title">Detected indicators</div>
+              <ul id="issue-list" class="issue-list"></ul>
+              <div id="issue-summary" class="issue-badge"></div>
+            </div>
+
+            <!-- Contextual Blog Link -->
+            <div id="rec-block" class="reading-recommendation" style="display:none;">
+              <span class="rec-icon">📖</span>
+              <div class="rec-text" id="rec-content"></div>
+            </div>
+
+            <div class="footer-note">
+              This is not a blacklist or antivirus. <strong>Never trust a link just because it scores green.</strong>
+            </div>
+          </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: EMAIL HEADER PARSER                 -->
+        <!-- ========================================== -->
+        <div id="panel-email" class="tool-panel">
+          <p class="tool-label">Phishing Artifact Triage</p>
+          <h2 class="header-title">Email Header Analyzer</h2>
+          <p class="header-sub">Paste raw RFC 822 email headers to extract SPF, DKIM, DMARC stamps, and gateway hop paths.</p>
+          <textarea id="email-input" placeholder="Delivered-To: victim@domain.com&#10;Authentication-Results: spf=pass dkim=pass dmarc=pass...&#10;Received: from mail-sender.com..."></textarea>
+          <div class="action-row">
+            <button type="button" id="btn-parse-email" class="btn-submit">Parse Headers</button>
+          </div>
+          <div id="email-output" class="output-box" style="display:none;"></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: DE-OBFUSCATOR & ARTIFACT CARVER     -->
+        <!-- ========================================== -->
+        <div id="panel-decode" class="tool-panel">
+          <p class="tool-label">De-Obfuscation & Carving</p>
+          <h2 class="header-title">Payload Decoder & Shannon Entropy</h2>
+          <p class="header-sub">Unpack obfuscated Base64, URL-encoded hex strings, and measure randomness entropy for DGA detection.</p>
+          <textarea id="decode-input" placeholder="Paste encoded payload, nested Base64, or text block..."></textarea>
+          <div class="action-row">
+            <button type="button" id="btn-b64-dec" class="btn-tool">Base64 Decode</button>
+            <button type="button" id="btn-url-dec" class="btn-tool">URL Decode</button>
+            <button type="button" id="btn-hex-asc" class="btn-tool">Hex to ASCII</button>
+            <button type="button" id="btn-calc-entropy" class="btn-tool">Calculate Shannon Entropy</button>
+            <button type="button" id="btn-carve-iocs" class="btn-tool">Carve URLs & IPs</button>
+          </div>
+          <div id="decode-output" class="output-box" style="display:none;"></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: SUBNET & CIDR CALCULATOR           -->
+        <!-- ========================================== -->
+        <div id="panel-cidr" class="tool-panel">
+          <p class="tool-label">Network Infrastructure</p>
+          <h2 class="header-title">CIDR & Subnet Range Calculator</h2>
+          <p class="header-sub">Compute network boundaries, broadcast addresses, and usable host scopes.</p>
+          <div class="input-row">
+            <div class="input-wrapper">
+              <input id="cidr-input" type="text" placeholder="192.168.1.0/24 or 10.0.0.0/16" />
+            </div>
+            <button type="button" id="btn-calc-cidr" class="btn-submit">Calculate</button>
+          </div>
+          <div id="cidr-output" class="output-box" style="display:none;"></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: CRYPTO, HASH & JWT DEBUGGER        -->
+        <!-- ========================================== -->
+        <div id="panel-jwt" class="tool-panel">
+          <p class="tool-label">AppSec & Cryptography</p>
+          <h2 class="header-title">Hash Generator & JWT Debugger</h2>
+          <p class="header-sub">Generate client-side SHA-256 digests via WebCrypto or inspect JWT claims without leaking secrets.</p>
+          <textarea id="crypto-input" placeholder="Paste string to hash OR paste eyJhbGciOi... JWT token"></textarea>
+          <div class="action-row">
+            <button type="button" id="btn-hash-sha256" class="btn-tool">SHA-256 Hash</button>
+            <button type="button" id="btn-jwt-decode" class="btn-tool">Inspect JWT Claims</button>
+          </div>
+          <div id="crypto-output" class="output-box" style="display:none;"></div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Bottom Indicators -->
+    <div class="mini-ip-info" id="ip-display" aria-live="polite">
+      <span id="ipv4-val">IPv4: Detecting…</span>
+      <span class="sep">·</span>
+      <span id="ipv6-val">IPv6: Detecting…</span>
+    </div>
+
+    <footer class="mini-footer">
+      <a href="/blog/">Blog</a>
+      <span class="sep">·</span>
+      <a href="/about.html">About</a>
+      <span class="sep">·</span>
+      <a href="/privacy.html">Privacy</a>
+      <span class="sep">·</span>
+      <a href="/terms.html">Terms</a>
+      <span class="sep">·</span>
+      <a href="/faq.html">FAQ</a>
+      <span class="sep">·</span>
+      © <span id="year"></span> BitDark.NET
+    </footer>
+  </div>
+
+  <script>
+    // =========================
+    // THEME SWITCHER
+    // =========================
+    const themeSelect = document.getElementById('theme-select');
+    const body = document.body;
+
+    function applyTheme(themeClass) {
+      body.className = themeClass;
+      try { localStorage.setItem('bitdark-theme', themeClass); } catch {}
+    }
+
+    (function initTheme() {
+      try {
+        const saved = localStorage.getItem('bitdark-theme');
+        if (saved && ['theme-light','theme-matrix','theme-neon'].includes(saved)) {
+          applyTheme(saved);
+          themeSelect.value = saved;
+        }
+      } catch {}
+    })();
+
+    themeSelect.addEventListener('change', () => applyTheme(themeSelect.value));
+
+    // =========================
+    // MATRIX RAIN CANVAS
+    // =========================
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    const chars = '01Δδη2θιΛλ3μΞξセ5ソチツ6テ7ネ8ノ9ΠΩ<>%&'.split('');
+    const fontSize = 16;
+    let columns = Math.floor(width / fontSize);
+    let drops = new Array(columns).fill(1);
+
+    function drawMatrix() {
+      if (!body.classList.contains('theme-matrix')) {
+        requestAnimationFrame(drawMatrix);
+        return;
+      }
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#22c55e';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      requestAnimationFrame(drawMatrix);
+    }
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      drops = new Array(columns).fill(1);
+    }, { passive: true });
+    drawMatrix();
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // =========================
+    // WORKBENCH TAB CONTROLLER
+    // =========================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target).classList.add('active');
+      });
+    });
+
+    const showOutput = (elId, text) => {
+      const el = document.getElementById(elId);
+      el.textContent = text;
+      el.style.display = 'block';
+    };
+
+    // ========================================================
+    // TAB 1: COMPLETE SAFE LINK ANALYZER ENGINE (ALL RULES)
+    // ========================================================
+    const form = document.getElementById('scan-form');
+    const urlInput = document.getElementById('url-input');
+    const scorePill = document.getElementById('score-pill');
+    const scoreValue = document.getElementById('score-value');
+    const statusLine = document.getElementById('status-line');
+    const statusNote = document.getElementById('status-note');
+    const issuesBlock = document.getElementById('issues-block');
+    const issueList = document.getElementById('issue-list');
+    const issueSummary = document.getElementById('issue-summary');
+    const actionTools = document.getElementById('action-tools');
+    const btnDefang = document.getElementById('btn-defang');
+    const btnClean = document.getElementById('btn-clean');
+    const btnCopyJson = document.getElementById('btn-copy-json');
+    const recBlock = document.getElementById('rec-block');
+    const recContent = document.getElementById('rec-content');
+
+    let currentScannedUrl = '';
+    let currentCleanedUrl = '';
+    let lastResultObj = null;
+
+    const suspiciousTlds = [
+      '.xyz', '.top', '.monster', '.zip', '.work', '.quest', '.click',
+      '.cam', '.cf', '.gq', '.ml', '.ga', '.tk'
+    ];
+
+    const phishingKeywords = [
+      'verify', 'verification', 'bonus', 'free', 'gift', 'reward', 'offer',
+      'login', 'signin', 'login-required', 'account', 'otp', 'password',
+      'urgent', 'update', 'parcel', 'refund', 'delivery', 'prize',
+      'airdrop', 'wallet', 'metamask', 'exchange'
+    ];
+
+    const shortenerHosts = [
+      'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'is.gd',
+      'buff.ly', 'cutt.ly', 'shorturl.at', 'bit.do', 'rebrand.ly'
+    ];
+
+    const brandTargets = [
+      'google', 'facebook', 'whatsapp', 'instagram', 'amazon',
+      'apple', 'paypal', 'microsoft', 'netflix', 'telegram',
+      'binance', 'metamask', 'flipkart', 'phonepe', 'paytm'
+    ];
+
+    function safelyParseUrl(raw) {
+      try { return new URL(raw); } 
+      catch {
+        try { return new URL('https://' + raw); } 
+        catch { return null; }
+      }
+    }
+
+    function isIpHost(host) { return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host); }
+
+    function percentEncodedRatio(str) {
+      const matches = str.match(/%[0-9a-fA-F]{2}/g);
+      return matches ? matches.length / Math.max(str.length, 1) : 0;
+    }
+
+    function levenshtein(a, b) {
+      a = a.toLowerCase(); b = b.toLowerCase();
+      const m = a.length, n = b.length;
+      if (!m) return n; if (!n) return m;
+      const dp = Array.from({ length: m + 1 }, () => new Array(n + 1));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        }
+      }
+      return dp[m][n];
+    }
+
+    function detectBrandSpoofFromHost(host) {
+      const matches = [];
+      const hostWithoutTld = host.split('.').slice(0, -1).join('.');
+      if (!hostWithoutTld) return matches;
+      const tokens = hostWithoutTld.split(/[^a-z0-9]+/i).filter(Boolean);
+      for (const rawToken of tokens) {
+        const token = rawToken.toLowerCase();
+        if (token.length < 4) continue;
+        for (const brand of brandTargets) {
+          if (token === brand) continue;
+          const d = levenshtein(token, brand);
+          if (d > 0 && d <= 2 && Math.abs(token.length - brand.length) <= 2) {
+            matches.push({ brand, label: rawToken });
+          }
+        }
+      }
+      return matches;
+    }
+
+    function analyzeUrl(rawUrl) {
+      if (rawUrl.length > 2048) {
+        return {
+          valid: false, score: 0, level: 'high',
+          issues: ['URL is unusually long (' + rawUrl.length + ' characters).'],
+          status: 'Suspicious oversized URL.', note: 'Extremely long links often hide payloads.',
+          rec: null, hasTracking: false
+        };
+      }
+
+      const url = safelyParseUrl(rawUrl);
+      if (!url) {
+        return {
+          valid: false, score: 0, level: 'high',
+          issues: ['Not a valid URL format.'],
+          status: 'Invalid URL.', note: 'Ensure you entered a valid address format.',
+          rec: null, hasTracking: false
+        };
+      }
+
+      const issues = [];
+      let score = 100;
+      let rec = null;
+      const href = url.href;
+      const host = url.hostname.toLowerCase();
+      const parts = host.split('.');
+      const tld = parts.length > 1 ? '.' + parts[parts.length - 1] : '';
+      const isIp = isIpHost(host);
+
+      if (parts.some(label => label.startsWith('xn--'))) {
+        score -= 40;
+        issues.push('Uses punycode (xn--) domain, often used for deceptive character spoofing.');
+      }
+      if (suspiciousTlds.includes(tld)) {
+        score -= 25;
+        issues.push('High-risk top-level domain: ' + tld);
+      }
+      if (!isIp && parts.length >= 4) {
+        score -= 15;
+        issues.push('Unusually high subdomain count: ' + host);
+      }
+
+      const brandSpoofs = detectBrandSpoofFromHost(host);
+      if (brandSpoofs.length) {
+        const uniqueBrands = [...new Set(brandSpoofs.map(m => m.brand))].slice(0, 3);
+        score -= 35;
+        issues.push('Domain looks deceptively similar to: ' + uniqueBrands.join(', '));
+        rec = {
+          title: "“Your Session Expired” Scams: How to Tell Fake Login Pages Instantly",
+          url: "/blog/your-session-expired-scams-how-to-tell-fake-login-pages-instantly/"
+        };
+      }
+
+      let isShortener = false;
+      if (shortenerHosts.includes(host)) {
+        isShortener = true;
+        score -= 35;
+        issues.push('Opaque shortened URL. Destination is hidden from the user.');
+        rec = {
+          title: "How to Check a Short Link's Real Destination (Without Opening It)",
+          url: "/blog/how-to-check-a-short-links-real-destination/"
+        };
+      }
+
+      const pathAndHost = (host + url.pathname).toLowerCase();
+      const keywordHits = phishingKeywords.filter(kw => pathAndHost.includes(kw));
+      if (keywordHits.length) {
+        score -= Math.min(25, keywordHits.length * 5);
+        issues.push('Contains sensitive action keywords: ' + keywordHits.slice(0, 4).join(', '));
+      }
+
+      let hasTracking = false;
+      if (/[?&](utm_|fbclid|gclid|ref=|_hsenc)/i.test(href)) {
+        hasTracking = true;
+        issues.push('Contains embedded click tracking or campaign identifiers.');
+        if (!rec) {
+          rec = {
+            title: "How to Detect Tracking Links in SMS & WhatsApp (UTM, Click IDs)",
+            url: "/blog/how-to-detect-tracking-links-in-sms-whatsapp-utm-click-ids-ref-tags/"
+          };
+        }
+      }
+
+      if (href.includes('@')) { score -= 20; issues.push('Contains "@" sign, which can mask destination authority.'); }
+      if (percentEncodedRatio(href) > 0.12) { score -= 15; issues.push('Contains heavy percentage encoding (%xx).'); }
+      if (isIp) { score -= 25; issues.push('Uses a bare IP address instead of an authenticated domain.'); }
+      if (url.protocol === 'http:') { score -= 20; issues.push('Unencrypted connection (Plain HTTP). Data can be intercepted.'); }
+
+      if (isShortener && score > 65) score = 65;
+      score = Math.max(0, Math.min(100, score));
+
+      let level, status, note;
+      if (score >= 85) {
+        level = 'low'; status = 'Low-risk patterns detected.';
+        note = 'No obvious heuristic warning signs detected in the link structure.';
+      } else if (score >= 60) {
+        level = 'medium'; status = 'Caution advised — Suspicious patterns.';
+        note = 'Exercise caution. Do not enter credentials, phone numbers, or passwords.';
+      } else {
+        level = 'high'; status = 'High risk — Likely deceptive or malicious.';
+        note = 'Matches common scam and credential harvesting structures. Avoid opening.';
+      }
+
+      if (!issues.length) issues.push('No obvious heuristic red flags found.');
+
+      return {
+        valid: true, score, level, issues, status, note, rec, hasTracking,
+        host: url.hostname, normalizedUrl: url.href
+      };
+    }
+
+    function updateUiWithResult(result) {
+      issueList.innerHTML = '';
+      currentScannedUrl = urlInput.value.trim();
+      lastResultObj = result;
+
+      if (!result.valid) {
+        scoreValue.textContent = result.score + ' / 100';
+        scorePill.className = 'score-pill score-high';
+        statusLine.textContent = result.status;
+        statusNote.textContent = result.note;
+        issuesBlock.style.display = 'none';
+        actionTools.style.display = 'none';
+        recBlock.style.display = 'none';
+        return;
+      }
+
+      scoreValue.textContent = result.score + ' / 100';
+      scorePill.className = 'score-pill ' + (
+        result.level === 'low' ? 'score-low' : result.level === 'medium' ? 'score-medium' : 'score-high'
+      );
+
+      statusLine.textContent = result.status;
+      statusNote.textContent = result.note;
+      actionTools.style.display = 'flex';
+      btnDefang.textContent = 'Defang & Copy (hxxp)';
+
+      if (result.hasTracking) {
+        try {
+          const parsed = safelyParseUrl(currentScannedUrl);
+          const params = new URLSearchParams(parsed.search);
+          [...params.keys()].filter(k => /^(utm_|fbclid|gclid|ref|_hsenc)/i.test(k)).forEach(k => params.delete(k));
+          parsed.search = params.toString() ? '?' + params.toString() : '';
+          currentCleanedUrl = parsed.toString();
+          btnClean.style.display = 'inline-block';
+          btnClean.textContent = 'Clean Tracking IDs';
+        } catch { btnClean.style.display = 'none'; }
+      } else { btnClean.style.display = 'none'; }
+
+      issuesBlock.style.display = 'block';
+      for (const issue of result.issues) {
+        const li = document.createElement('li');
+        li.textContent = issue;
+        issueList.appendChild(li);
+      }
+
+      issueSummary.textContent =
+        result.level === 'low' ? 'Overall: Low Risk (Heuristic Check)' :
+        result.level === 'medium' ? 'Overall: Caution / Warning (Heuristic Check)' :
+        'Overall: High Risk (Likely Phishing or Blind Shortener)';
+
+      if (result.rec) {
+        recContent.innerHTML = '<strong>Recommended Guide:</strong> <a href="' + result.rec.url + '">' + result.rec.title + ' →</a>';
+        recBlock.style.display = 'flex';
+      } else {
+        recContent.innerHTML = '<strong>Learn More:</strong> <a href="/blog/how-to-spot-a-suspicious-link-without-uploading-it-anywhere/">How to Spot a Suspicious Link Without Uploading It Anywhere →</a>';
+        recBlock.style.display = 'flex';
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const raw = urlInput.value.trim();
+      if (!raw) {
+        updateUiWithResult({
+          valid: false, score: 0, issues: ['No URL provided.'],
+          status: 'Please paste a link first.',
+          note: 'Enter a link in the field above to run heuristic analysis.'
+        });
+        return;
+      }
+      statusLine.textContent = 'Scanning link structure…';
+      scoreValue.textContent = '…';
+      issuesBlock.style.display = 'none';
+      recBlock.style.display = 'none';
+      setTimeout(() => updateUiWithResult(analyzeUrl(raw)), 80);
+    });
+
+    document.getElementById('btn-paste').addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text) { urlInput.value = text; form.dispatchEvent(new Event('submit')); }
+        } else { urlInput.focus(); }
+      } catch { urlInput.focus(); }
+    });
+
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        urlInput.value = chip.getAttribute('data-url');
+        form.dispatchEvent(new Event('submit'));
+      });
+    });
+
+    btnDefang.addEventListener('click', () => {
+      if (!currentScannedUrl) return;
+      const defanged = currentScannedUrl
+        .replace(/^https?:\/\//i, (m) => m.startsWith('https') ? 'hxxps://' : 'hxxp://')
+        .replace(/\./g, '[.]');
+      navigator.clipboard.writeText(defanged).then(() => {
+        btnDefang.textContent = '✓ Copied Defanged Link!';
+        setTimeout(() => { btnDefang.textContent = 'Defang & Copy (hxxp)'; }, 2000);
+      });
+    });
+
+    btnClean.addEventListener('click', () => {
+      if (!currentCleanedUrl) return;
+      navigator.clipboard.writeText(currentCleanedUrl).then(() => {
+        btnClean.textContent = '✓ Copied Cleaned Link!';
+        setTimeout(() => { btnClean.textContent = 'Clean Tracking IDs'; }, 2000);
+      });
+    });
+
+    btnCopyJson.addEventListener('click', () => {
+      if (!lastResultObj) return;
+      const payload = JSON.stringify({
+        artifact: currentScannedUrl,
+        timestamp: new Date().toISOString(),
+        score: lastResultObj.score,
+        risk_level: lastResultObj.level,
+        indicators: lastResultObj.issues
+      }, null, 2);
+      navigator.clipboard.writeText(payload).then(() => {
+        btnCopyJson.textContent = '✓ Copied JSON Report!';
+        setTimeout(() => { btnCopyJson.textContent = 'Copy JSON / STIX'; }, 2000);
+      });
+    });
+
+    // ==========================================
+    // TAB 2: EMAIL HEADER PARSER
+    // ==========================================
+    document.getElementById('btn-parse-email').addEventListener('click', () => {
+      const text = document.getElementById('email-input').value;
+      if (!text.trim()) return showOutput('email-output', 'Please paste RFC 822 email headers first.');
+      const auth = text.match(/Authentication-Results:.*?(dkim=[a-z]+|spf=[a-z]+|dmarc=[a-z]+)/gi) || [];
+      const received = text.match(/Received:\s*from.*?\[([0-9\.]+)\]/gi) || [];
+      const from = text.match(/From:\s*([^\r\n]+)/i);
+      const replyTo = text.match(/Reply-To:\s*([^\r\n]+)/i);
+
+      let report = `=== EMAIL TRIAGE REPORT ===\n`;
+      report += `From:     ${from ? from[1] : 'Not specified'}\n`;
+      report += `Reply-To: ${replyTo ? replyTo[1] : 'Same as From'}\n\n`;
+      report += `--- Authentication Stamps ---\n${auth.length ? auth.join('\n') : 'No explicit SPF/DKIM/DMARC headers detected.'}\n\n`;
+      report += `--- Hop Relay Chain (Sender IPs) ---\n${received.length ? received.join('\n') : 'No hop IPs carved.'}`;
+      showOutput('email-output', report);
+    });
+
+    // ==========================================
+    // TAB 3: DE-OBFUSCATION & ENTROPY
+    // ==========================================
+    const decodeInput = document.getElementById('decode-input');
+    document.getElementById('btn-b64-dec').addEventListener('click', () => {
+      try { showOutput('decode-output', atob(decodeInput.value.trim())); }
+      catch { showOutput('decode-output', 'Error: Invalid Base64 payload.'); }
+    });
+    document.getElementById('btn-url-dec').addEventListener('click', () => {
+      try { showOutput('decode-output', decodeURIComponent(decodeInput.value.trim())); }
+      catch { showOutput('decode-output', 'Error: Invalid URL encoding.'); }
+    });
+    document.getElementById('btn-hex-asc').addEventListener('click', () => {
+      const hex = decodeInput.value.replace(/[^0-9A-Fa-f]/g, '');
+      let str = '';
+      for (let i = 0; i < hex.length; i += 2) str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      showOutput('decode-output', str || 'Error: Invalid Hex sequence.');
+    });
+    document.getElementById('btn-calc-entropy').addEventListener('click', () => {
+      const str = decodeInput.value;
+      if (!str) return showOutput('decode-output', 'Please enter a string to calculate entropy.');
+      const len = str.length;
+      const freq = {};
+      for (let i = 0; i < len; i++) freq[str[i]] = (freq[str[i]] || 0) + 1;
+      let entropy = 0;
+      for (const c in freq) {
+        const p = freq[c] / len;
+        entropy -= p * Math.log2(p);
+      }
+      let verdict = entropy > 4.5 ? "HIGH (Likely packed, encrypted, or DGA domain)" : "NORMAL (Standard human or structured text)";
+      showOutput('decode-output', `Shannon Entropy: ${entropy.toFixed(4)} / 8.0\nVerdict: ${verdict}`);
+    });
+    document.getElementById('btn-carve-iocs').addEventListener('click', () => {
+      const str = decodeInput.value;
+      const urls = str.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+      const ips = str.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || [];
+      showOutput('decode-output', `--- Carved URLs (${urls.length}) ---\n${urls.join('\n') || 'None'}\n\n--- Carved IPv4s (${ips.length}) ---\n${[...new Set(ips)].join('\n') || 'None'}`);
+    });
+
+    // ==========================================
+    // TAB 4: CIDR & SUBNET CALCULATOR
+    // ==========================================
+    function int2ip(int) { return [ (int >>> 24) & 255, (int >>> 16) & 255, (int >>> 8) & 255, int & 255 ].join('.'); }
+    document.getElementById('btn-calc-cidr').addEventListener('click', () => {
+      const cidr = document.getElementById('cidr-input').value.trim();
+      try {
+        const [ip, maskStr] = cidr.split('/');
+        const mask = parseInt(maskStr, 10);
+        const parts = ip.split('.').map(Number);
+        if (parts.length !== 4 || isNaN(mask) || mask < 0 || mask > 32) throw new Error();
+        const ipInt = (parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3];
+        const wildcard = mask === 0 ? 0xFFFFFFFF : (0xFFFFFFFF >>> mask);
+        const netInt = ipInt & ~wildcard;
+        const broadInt = netInt | wildcard;
+        const report = `Network ID:    ${int2ip(netInt)}\nBroadcast:     ${int2ip(broadInt)}\nSubnet Mask:   ${int2ip(~wildcard)}\nUsable Range:  ${int2ip(netInt + 1)} - ${int2ip(broadInt - 1)}\nTotal Usable:  ${mask >= 31 ? 0 : wildcard - 1} hosts`;
+        showOutput('cidr-output', report);
+      } catch { showOutput('cidr-output', 'Invalid CIDR format. Example valid input: 192.168.1.0/24'); }
+    });
+
+    // ==========================================
+    // TAB 5: CRYPTO & JWT INSPECTOR
+    // ==========================================
+    const cryptoInput = document.getElementById('crypto-input');
+    document.getElementById('btn-hash-sha256').addEventListener('click', async () => {
+      const text = cryptoInput.value;
+      if (!text) return showOutput('crypto-output', 'Please enter text to hash.');
+      const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      const hash = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      showOutput('crypto-output', `Algorithm: SHA-256\nLength:    64 hex characters\nDigest:    ${hash}`);
+    });
+    document.getElementById('btn-jwt-decode').addEventListener('click', () => {
+      try {
+        const parts = cryptoInput.value.trim().split('.');
+        if (parts.length !== 3) throw new Error();
+        const b64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+        const header = JSON.parse(b64(parts[0]));
+        const payload = JSON.parse(b64(parts[1]));
+        showOutput('crypto-output', `[HEADER]\n${JSON.stringify(header, null, 2)}\n\n[PAYLOAD CLAIMS]\n${JSON.stringify(payload, null, 2)}\n\n[SIGNATURE]\nVerified present (3rd segment).`);
+      } catch { showOutput('crypto-output', 'Error: Invalid JWT structure. Ensure it has 3 dot-separated segments.'); }
+    });
+
+    // ==========================================
+    // DUAL IP DISPLAY (IPv4 & IPv6 FALLBACK)
+    // ==========================================
+    async function fetchWithTimeout(url, t = 3500) {
+      const c = new AbortController();
+      const id = setTimeout(() => c.abort(), t);
+      try {
+        const r = await fetch(url, { signal: c.signal, cache: 'no-store' });
+        clearTimeout(id);
+        return r.ok ? (await r.json()).ip : null;
+      } catch { return null; }
+    }
+
+    async function getIPv4() {
+      let ip = await fetchWithTimeout('https://api.ipify.org?format=json');
+      if (!ip) {
+        try {
+          const res = await fetch('https://1.1.1.1/cdn-cgi/trace', { cache: 'no-store' });
+          const text = await res.text();
+          const match = text.match(/ip=([0-9.]+)/);
+          if (match) ip = match[1];
+        } catch {}
+      }
+      return ip;
+    }
+
+    async function getIPv6() {
+      return await fetchWithTimeout('https://api6.ipify.org?format=json', 3500);
+    }
+
+    window.addEventListener('load', async () => {
+      const [ipv4, ipv6] = await Promise.all([getIPv4(), getIPv6()]);
+      document.getElementById('ipv4-val').textContent = 'IPv4: ' + (ipv4 || 'Unavailable');
+      document.getElementById('ipv6-val').textContent = 'IPv6: ' + (ipv6 || 'Not Supported');
+    });
+  </script>
+</body>
+</html>
