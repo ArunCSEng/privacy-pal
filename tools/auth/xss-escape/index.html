@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Contextual XSS Sanitizer & Encoder — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="Contextual XSS Sanitizer & Encoder — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Simulate, escape, and sanitize dynamic user input across HTML body, attribute, JavaScript literal, URI component, and CSS contexts. 100% client-side memory execution." />
+  <meta name="keywords" content="xss sanitizer, contextual xss escape, cross-site scripting encoder, html entity encoder, javascript string escape, uri encoder, appsec tools, offline security tools" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/xss-escape" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Cockpit Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Frame */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .text-input {
+      width: 100%;
+      height: 110px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      outline: none;
+      resize: vertical;
+    }
+    .text-input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Attack Payload Preset Chips */
+    .sample-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+    }
+    .sample-btn {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-cyan);
+      padding: 5px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      transition: all 0.15s ease;
+    }
+    .sample-btn:hover {
+      border-color: var(--atom-cyan);
+      color: #fff;
+    }
+    .sample-btn.active {
+      border-color: var(--atom-cyan);
+      background-color: rgba(86, 182, 194, 0.12);
+      color: #fff;
+    }
+
+    /* Contextual Code Panels */
+    .context-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .context-block {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+    }
+    .context-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .context-title {
+      font-size: 0.82rem;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-badge {
+      font-size: 0.7rem;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-muted);
+      font-weight: normal;
+    }
+    .btn-copy {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover {
+      border-color: var(--atom-amber);
+      color: #fff;
+    }
+    .output-pre {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 180px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .context-desc {
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      margin-top: 6px;
+      font-family: var(--font-code);
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / xss-escape
+    </nav>
+
+    <div class="tool-header">
+      <h1>Contextual XSS Sanitizer & Encoder</h1>
+      <p>Evaluate and transform potentially malicious strings into safe representations across HTML Body, Attribute, JavaScript, URI, and CSS execution contexts.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="rawInput">RAW USER INPUT / PAYLOAD STRING</label>
+        <textarea id="rawInput" class="text-input" placeholder='Type or paste test string (e.g., <script>alert("XSS")</script> or " onfocus="alert(1))...'></textarea>
+      </div>
+
+      <div class="sample-bar">
+        <span style="color: var(--atom-muted);">Load Attack Payload:</span>
+        <button type="button" class="sample-btn active" data-sample="&lt;script&gt;alert(document.cookie)&lt;/script&gt;">Script Tag</button>
+        <button type="button" class="sample-btn" data-sample='" onmouseover="alert(1)" style="color:red'>Attribute Breakout</button>
+        <button type="button" class="sample-btn" data-sample="javascript:alert(1)">URI Scheme</button>
+        <button type="button" class="sample-btn" data-sample="'-alert(1)-'">JS String Literal</button>
+        <button type="button" class="sample-btn" data-sample="&lt;/script&gt;&lt;svg onload=alert(1)&gt;">Context Escape</button>
+      </div>
+
+      <div class="context-stack">
+        <!-- 1. HTML Body Context -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              1. HTML Body Context
+              <span class="context-badge">&lt;div&gt;...&lt;/div&gt;</span>
+            </div>
+            <button class="btn-copy" data-target="outHtmlBody">Copy</button>
+          </div>
+          <pre class="output-pre" id="outHtmlBody">-</pre>
+          <div class="context-desc">Escapes &amp;, &lt;, &gt;, &quot;, &#x27;, and / into HTML entity references.</div>
+        </div>
+
+        <!-- 2. HTML Attribute Context -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              2. HTML Attribute Context
+              <span class="context-badge">&lt;input value=&quot;...&quot;&gt;</span>
+            </div>
+            <button class="btn-copy" data-target="outHtmlAttr">Copy</button>
+          </div>
+          <pre class="output-pre" id="outHtmlAttr">-</pre>
+          <div class="context-desc">Alphanumeric strict hex-entity escaping (&amp;#xHH;) preventing delimiter quote breakouts and unquoted attribute injections.</div>
+        </div>
+
+        <!-- 3. JavaScript String Literal Context -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              3. JavaScript String Literal Context
+              <span class="context-badge">&lt;script&gt;let v = &#39;...&#39;;&lt;/script&gt;</span>
+            </div>
+            <button class="btn-copy" data-target="outJsString">Copy</button>
+          </div>
+          <pre class="output-pre" id="outJsString">-</pre>
+          <div class="context-desc">Unicode escapes non-alphanumerics (\uXXXX) and strips closing HTML script tags to prevent immediate script termination.</div>
+        </div>
+
+        <!-- 4. URI Component Context -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              4. URI Component Context
+              <span class="context-badge">&lt;a href=&quot;https://site.com?q=...&quot;&gt;</span>
+            </div>
+            <button class="btn-copy" data-target="outUriComp">Copy</button>
+          </div>
+          <pre class="output-pre" id="outUriComp">-</pre>
+          <div class="context-desc">RFC 3986 percent-encoded format. Does not guarantee safety if used as a raw scheme (e.g., javascript: links).</div>
+        </div>
+
+        <!-- 5. CSS Value Context -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              5. CSS Value Context
+              <span class="context-badge">&lt;style&gt;body { color: ...; }&lt;/style&gt;</span>
+            </div>
+            <button class="btn-copy" data-target="outCssValue">Copy</button>
+          </div>
+          <pre class="output-pre" id="outCssValue">-</pre>
+          <div class="context-desc">Hexadecimal CSS escapes (\HH ) preventing style block breakouts and CSS expression execution.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicit Legal & Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Boundary Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible for application security decisions, remediation outcomes, or bypass vulnerabilities resulting from the use of this tool.</strong> Contextual escaping is a defense-in-depth practice that must be implemented according to strict syntactic boundaries. Encoding dynamic content for one context (such as HTML entity encoding) will not protect an application if placed inside an incompatible context (such as raw JavaScript blocks, event handlers, or href URI targets). Always combine contextual output escaping with contextual HTML sanitization and robust Content Security Policies (CSP).
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Documentation -->
+    <article class="doc-section">
+      <h2>Why Contextual Encoding Matters</h2>
+      <p>Cross-Site Scripting (XSS) occurs when untrusted user input is injected into an application without proper contextual translation. Web browsers parse documents through distinct tokenizer phases: the HTML parser, the JavaScript engine, the CSS interpreter, and the URI resolver. What is safe inside an HTML paragraph element may result in immediate script execution inside an attribute or JavaScript block.</p>
+      <ul>
+        <li><strong>HTML Entity Encoding:</strong> Translates characters like <code>&lt;</code> and <code>&gt;</code> into <code>&amp;lt;</code> and <code>&amp;gt;</code>. While sufficient for inner text, it fails inside direct JavaScript script tags because the JS parser does not decode HTML entities.</li>
+        <li><strong>Attribute Escaping:</strong> Must account for single-quoted, double-quoted, and unquoted attributes. Hexadecimal entity encoding ensures that space characters and quotes cannot terminate the attribute container.</li>
+        <li><strong>JavaScript Literal Escaping:</strong> Requires backslash or Unicode representation (<code>\u0027</code>, <code>\u0022</code>) as well as protection against <code>&lt;/script&gt;</code> tags, which the HTML parser prioritizes above JavaScript evaluation.</li>
+      </ul>
+
+      <h2>Zero Egress Guarantee</h2>
+      <p>All sanitization and string transformation routines execute directly inside your browser using standard JavaScript string manipulation. No text or payload strings are transmitted to any server or logged to any third-party infrastructure.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      // IPv4 Resolution
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("IPv4 primary failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline";
+        }
+      })();
+
+      // IPv6 Resolution
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("IPv6 primary failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Contextual XSS Sanitization Engines
+    const rawInput = document.getElementById("rawInput");
+    const outHtmlBody = document.getElementById("outHtmlBody");
+    const outHtmlAttr = document.getElementById("outHtmlAttr");
+    const outJsString = document.getElementById("outJsString");
+    const outUriComp = document.getElementById("outUriComp");
+    const outCssValue = document.getElementById("outCssValue");
+    const sampleButtons = document.querySelectorAll(".sample-btn");
+
+    function escapeHtmlBody(str) {
+      return str.replace(/[&<>"'/]/g, (char) => {
+        switch (char) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case "'": return '&#x27;';
+          case '/': return '&#x2F;';
+          default: return char;
+        }
+      });
+    }
+
+    function escapeHtmlAttribute(str) {
+      return str.replace(/[^a-zA-Z0-9\-_]/g, (char) => {
+        const hex = char.charCodeAt(0).toString(16).toUpperCase();
+        return `&#x${hex.length === 1 ? '0' + hex : hex};`;
+      });
+    }
+
+    function escapeJavaScriptString(str) {
+      return str.replace(/[^a-zA-Z0-9]/g, (char) => {
+        const code = char.charCodeAt(0);
+        const hex = code.toString(16).toUpperCase().padStart(4, '0');
+        return `\\u${hex}`;
+      });
+    }
+
+    function escapeUriComponent(str) {
+      try {
+        return encodeURIComponent(str).replace(/[!'()*]/g, (c) => {
+          return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+        });
+      } catch (err) {
+        return "Encoding Error: " + err.message;
+      }
+    }
+
+    function escapeCssValue(str) {
+      return str.replace(/[^a-zA-Z0-9]/g, (char) => {
+        const hex = char.charCodeAt(0).toString(16).toLowerCase();
+        return `\\${hex} `;
+      });
+    }
+
+    function runContextEscapes() {
+      const val = rawInput.value;
+      if (!val) {
+        outHtmlBody.textContent = "-";
+        outHtmlAttr.textContent = "-";
+        outJsString.textContent = "-";
+        outUriComp.textContent = "-";
+        outCssValue.textContent = "-";
+        return;
+      }
+
+      outHtmlBody.textContent = escapeHtmlBody(val);
+      outHtmlAttr.textContent = escapeHtmlAttribute(val);
+      outJsString.textContent = escapeJavaScriptString(val);
+      outUriComp.textContent = escapeUriComponent(val);
+      outCssValue.textContent = escapeCssValue(val);
+    }
+
+    rawInput.addEventListener("input", () => {
+      sampleButtons.forEach(b => {
+        if (b.dataset.sample !== rawInput.value) {
+          b.classList.remove("active");
+        }
+      });
+      runContextEscapes();
+    });
+
+    sampleButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        sampleButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        rawInput.value = btn.dataset.sample;
+        runContextEscapes();
+      });
+    });
+
+    document.querySelectorAll(".btn-copy").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const el = document.getElementById(targetId);
+        if (!el || el.textContent === "-") return;
+
+        navigator.clipboard.writeText(el.textContent);
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1400);
+      });
+    });
+
+    const initialPreset = document.querySelector(".sample-btn.active");
+    if (initialPreset) {
+      rawInput.value = initialPreset.dataset.sample;
+    }
+    runContextEscapes();
+  </script>
+</body>
+</html>
