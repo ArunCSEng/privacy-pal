@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>TOTP &amp; HOTP Authenticator Token Generator — Free Offline 2FA Tool | BitDark</title>
+  <meta name="title" content="TOTP &amp; HOTP Authenticator Token Generator — Free Offline 2FA Tool | BitDark" />
+  <meta name="description" content="Generate and verify RFC 6238 TOTP and RFC 4226 HOTP two-factor authentication codes locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="totp generator, hotp generator, 2fa token generator, rfc 6238 authenticator, offline 2fa tool, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/totp" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group input, .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .inline-btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .inline-btn-group input {
+      flex: 1;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Token Visualizer Box */
+    .token-display-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px 20px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .token-value {
+      font-family: var(--font-code);
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: var(--atom-green);
+      user-select: all;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .token-timer-bar {
+      width: 100%;
+      max-width: 320px;
+      height: 6px;
+      background: var(--atom-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .token-timer-progress {
+      height: 100%;
+      width: 100%;
+      background-color: var(--atom-cyan);
+      transition: width 1s linear;
+    }
+    .token-timer-label {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-muted);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / totp
+    </nav>
+
+    <div class="tool-header">
+      <h1>TOTP &amp; HOTP Authenticator Token Generator</h1>
+      <p>Generate, verify, and inspect RFC 6238 Time-Based and RFC 4226 HMAC-Based One-Time Passwords directly inside browser memory without sending secrets over the network.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabTotp" onclick="switchMode('totp')">Time-Based OTP (TOTP)</button>
+        <button class="tab-btn" id="tabHotp" onclick="switchMode('hotp')">HMAC Counter-Based OTP (HOTP)</button>
+      </div>
+
+      <div class="form-group">
+        <label for="secretKey">Base32 Secret Key (or otpauth:// URI)</label>
+        <div class="inline-btn-group">
+          <input type="text" id="secretKey" placeholder="e.g. JBSWY3DPEHPK3PXP or paste otpauth://..." spellcheck="false" autocomplete="off" />
+          <button class="btn-atom btn-secondary" id="btnGenSecret">Random Key</button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="hashAlgo">HMAC Hash Algorithm</label>
+          <select id="hashAlgo">
+            <option value="SHA-1" selected>SHA-1 (Standard Google Authenticator)</option>
+            <option value="SHA-256">SHA-256</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="digitCount">Token Code Digits</label>
+          <select id="digitCount">
+            <option value="6" selected>6 Digits (Standard)</option>
+            <option value="8">8 Digits</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="groupTimeStep">
+          <label for="timeStep">Period / Time Step (Seconds)</label>
+          <input type="number" id="timeStep" value="30" min="5" max="300" />
+        </div>
+
+        <div class="form-group" id="groupCounter" style="display: none;">
+          <label for="counterVal">HOTP Counter Value</label>
+          <div class="inline-btn-group">
+            <input type="number" id="counterVal" value="0" min="0" />
+            <button class="btn-atom btn-secondary" id="btnIncCounter">+1</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="token-display-container">
+        <div class="token-value" id="tokenDisplay">------</div>
+        <div class="token-timer-bar" id="timerBar">
+          <div class="token-timer-progress" id="timerProgress"></div>
+        </div>
+        <div class="token-timer-label" id="timerLabel">Updates in 30s</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnCopyToken">Copy Code</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="results-area">
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>Authentication subsystem operational</span>
+          <span>Active</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Protocol Standard</div>
+            <div class="meta-val" id="metaProtocol">RFC 6238 (TOTP)</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Current Counter Epoch / Step</div>
+            <div class="meta-val" id="metaStep">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Secret Key Validity</div>
+            <div class="meta-val" id="metaSecretStatus">Base32 Decoded</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Processing Integrity</div>
+            <div class="meta-val">100% Client-Side Sandbox</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Dynamic Dynamic Truncation &amp; Assertion Package:</div>
+        <div class="viewer-box" id="rawViewer">Parameters and HMAC assertion payloads will appear here...</div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, desynchronized clock drift, authentication lockouts, compromised 2FA shared secrets, or replay attacks. Ensure your system clock is accurately synchronized via Network Time Protocol (NTP) to maintain valid TOTP token calculation. Never expose raw Base32 shared seeds over unsecured communication channels. All cryptographic operations run strictly within your local browser memory via the W3C Web Cryptography API.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How One-Time Password Algorithms Operate</h2>
+      <p>Two-factor authentication tokens generated by apps like Google Authenticator, Bitwarden, or hardware security keys rely on open RFC standards:</p>
+      <ul>
+        <li><strong>HOTP (RFC 4226):</strong> An HMAC-based One-Time Password derived from a shared secret $K$ and an incrementing 64-bit integer counter $C$:</li>
+      </ul>
+      <p>$$\text{HOTP}(K, C) = \text{Truncate}(\text{HMAC-SHA-1}(K, C)) \pmod{10^{\text{digits}}}$$</p>
+      <ul>
+        <li><strong>TOTP (RFC 6238):</strong> A time-based extension where the moving counter $C$ is computed dynamically from Unix epoch time $T$ divided by a time step window $X$ (standard 30 seconds):</li>
+      </ul>
+      <p>$$C = \left\lfloor \frac{T - T_0}{X} \right\rfloor$$</p>
+
+      <h2>Dynamic Truncation Scheme</h2>
+      <p>The output of the HMAC digest (20 bytes for SHA-1, 32 for SHA-256) is truncated using the lower 4 bits of the last byte as an offset index (ranging from 0 to 15). A 31-bit unsigned big-endian integer is extracted from the 4 bytes starting at that offset, masked with <code>0x7FFFFFFF</code>, and modulo reduced to produce the final 6 or 8-digit token string.</p>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Secrets evaluated in this tool remain isolated in client memory. All HMAC calculations utilize the Web Cryptography API (<code>crypto.subtle</code>), preventing unauthorized data extraction, logs, or analytics.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // RFC 4648 Base32 Decoding / Encoding
+    const B32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+    function base32ToBuf(base32Str) {
+      const clean = base32Str.toUpperCase().replace(/[\s\-_=]/g, "");
+      let bits = 0;
+      let value = 0;
+      const bytes = [];
+
+      for (let i = 0; i < clean.length; i++) {
+        const idx = B32_ALPHABET.indexOf(clean[i]);
+        if (idx === -1) {
+          throw new Error(`Invalid Base32 character encountered: '${clean[i]}'`);
+        }
+        value = (value << 5) | idx;
+        bits += 5;
+
+        if (bits >= 8) {
+          bytes.push((value >>> (bits - 8)) & 255);
+          bits -= 8;
+        }
+      }
+      return new Uint8Array(bytes).buffer;
+    }
+
+    function bufToBase32(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let bits = 0;
+      let value = 0;
+      let output = "";
+
+      for (let i = 0; i < bytes.length; i++) {
+        value = (value << 8) | bytes[i];
+        bits += 8;
+        while (bits >= 5) {
+          output += B32_ALPHABET[(value >>> (bits - 5)) & 31];
+          bits -= 5;
+        }
+      }
+      if (bits > 0) {
+        output += B32_ALPHABET[(value << (5 - bits)) & 31];
+      }
+      return output;
+    }
+
+    function parseOtpAuthUri(uri) {
+      try {
+        const url = new URL(uri);
+        if (url.protocol !== "otpauth:") return null;
+        const type = url.hostname.toLowerCase(); // 'totp' or 'hotp'
+        const secret = url.searchParams.get("secret");
+        const algorithm = (url.searchParams.get("algorithm") || "SHA1").toUpperCase();
+        const digits = url.searchParams.get("digits") || "6";
+        const period = url.searchParams.get("period") || "30";
+        const counter = url.searchParams.get("counter") || "0";
+
+        let algoName = "SHA-1";
+        if (algorithm === "SHA256") algoName = "SHA-256";
+        if (algorithm === "SHA512") algoName = "SHA-512";
+
+        return { type, secret, algorithm: algoName, digits, period, counter };
+      } catch {
+        return null;
+      }
+    }
+
+    // Tool State & UI
+    let currentMode = "totp";
+    let timerInterval = null;
+
+    const tabTotp = document.getElementById("tabTotp");
+    const tabHotp = document.getElementById("tabHotp");
+    const secretKeyInput = document.getElementById("secretKey");
+    const btnGenSecret = document.getElementById("btnGenSecret");
+    const hashAlgoSelect = document.getElementById("hashAlgo");
+    const digitCountSelect = document.getElementById("digitCount");
+    const groupTimeStep = document.getElementById("groupTimeStep");
+    const timeStepInput = document.getElementById("timeStep");
+    const groupCounter = document.getElementById("groupCounter");
+    const counterValInput = document.getElementById("counterVal");
+    const btnIncCounter = document.getElementById("btnIncCounter");
+    const tokenDisplay = document.getElementById("tokenDisplay");
+    const timerBar = document.getElementById("timerBar");
+    const timerProgress = document.getElementById("timerProgress");
+    const timerLabel = document.getElementById("timerLabel");
+    const btnCopyToken = document.getElementById("btnCopyToken");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaProtocol = document.getElementById("metaProtocol");
+    const metaStep = document.getElementById("metaStep");
+    const metaSecretStatus = document.getElementById("metaSecretStatus");
+    const rawViewer = document.getElementById("rawViewer");
+
+    function switchMode(mode) {
+      currentMode = mode;
+      if (mode === "totp") {
+        tabTotp.classList.add("active");
+        tabHotp.classList.remove("active");
+        groupTimeStep.style.display = "flex";
+        groupCounter.style.display = "none";
+        timerBar.style.display = "block";
+        timerLabel.style.display = "block";
+        metaProtocol.textContent = "RFC 6238 (TOTP)";
+        startTotpTicker();
+      } else {
+        tabHotp.classList.add("active");
+        tabTotp.classList.remove("active");
+        groupTimeStep.style.display = "none";
+        groupCounter.style.display = "flex";
+        timerBar.style.display = "none";
+        timerLabel.style.display = "none";
+        metaProtocol.textContent = "RFC 4226 (HOTP)";
+        stopTotpTicker();
+        calculateHOTP();
+      }
+    }
+
+    function generateRandomSecret() {
+      const bytes = new Uint8Array(20); // 160-bit standard seed
+      crypto.getRandomValues(bytes);
+      secretKeyInput.value = bufToBase32(bytes);
+      updateOtpExecution();
+    }
+
+    btnGenSecret.addEventListener("click", generateRandomSecret);
+
+    btnIncCounter.addEventListener("click", () => {
+      counterValInput.value = parseInt(counterValInput.value || "0", 10) + 1;
+      calculateHOTP();
+    });
+
+    btnClear.addEventListener("click", () => {
+      secretKeyInput.value = "";
+      tokenDisplay.textContent = "------";
+      rawViewer.textContent = "Workspace cleared.";
+      metaSecretStatus.textContent = "Awaiting Key";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+    });
+
+    btnCopyToken.addEventListener("click", async () => {
+      const val = tokenDisplay.textContent.trim();
+      if (!val || val === "------") return;
+      try {
+        await navigator.clipboard.writeText(val);
+        const orig = btnCopyToken.textContent;
+        btnCopyToken.textContent = "Copied!";
+        setTimeout(() => { btnCopyToken.textContent = orig; }, 1500);
+      } catch {
+        alert("Clipboard copy failed. Please copy manually.");
+      }
+    });
+
+    tokenDisplay.addEventListener("click", () => {
+      btnCopyToken.click();
+    });
+
+    secretKeyInput.addEventListener("input", () => {
+      const raw = secretKeyInput.value.trim();
+      if (raw.startsWith("otpauth://")) {
+        const parsed = parseOtpAuthUri(raw);
+        if (parsed) {
+          secretKeyInput.value = parsed.secret;
+          hashAlgoSelect.value = parsed.algorithm;
+          digitCountSelect.value = parsed.digits;
+          if (parsed.type === "hotp") {
+            switchMode("hotp");
+            counterValInput.value = parsed.counter;
+          } else {
+            switchMode("totp");
+            timeStepInput.value = parsed.period;
+          }
+        }
+      }
+      updateOtpExecution();
+    });
+
+    hashAlgoSelect.addEventListener("change", updateOtpExecution);
+    digitCountSelect.addEventListener("change", updateOtpExecution);
+    timeStepInput.addEventListener("input", updateOtpExecution);
+    counterValInput.addEventListener("input", calculateHOTP);
+
+    function updateOtpExecution() {
+      if (currentMode === "totp") {
+        calculateTOTP();
+      } else {
+        calculateHOTP();
+      }
+    }
+
+    async function computeOtpCore(secretBuf, counterNumber, digits, algo) {
+      // 8-byte big-endian counter buffer
+      const counterBuffer = new ArrayBuffer(8);
+      const view = new DataView(counterBuffer);
+      
+      const high = Math.floor(counterNumber / 0x100000000);
+      const low = counterNumber & 0xFFFFFFFF;
+      view.setUint32(0, high, false);
+      view.setUint32(4, low, false);
+
+      const cryptoKey = await crypto.subtle.importKey(
+        "raw",
+        secretBuf,
+        { name: "HMAC", hash: { name: algo } },
+        false,
+        ["sign"]
+      );
+
+      const hmacResult = await crypto.subtle.sign("HMAC", cryptoKey, counterBuffer);
+      const hmacBytes = new Uint8Array(hmacResult);
+
+      // RFC 4226 Dynamic Truncation
+      const offset = hmacBytes[hmacBytes.length - 1] & 0x0F;
+      const binaryCode =
+        ((hmacBytes[offset] & 0x7F) << 24) |
+        ((hmacBytes[offset + 1] & 0xFF) << 16) |
+        ((hmacBytes[offset + 2] & 0xFF) << 8) |
+        (hmacBytes[offset + 3] & 0xFF);
+
+      const mod = Math.pow(10, digits);
+      const token = (binaryCode % mod).toString().padStart(digits, "0");
+
+      return {
+        token,
+        offset,
+        binaryCode,
+        hmacHex: Array.from(hmacBytes).map(b => b.toString(16).padStart(2, "0")).join("")
+      };
+    }
+
+    async function calculateTOTP() {
+      const secretStr = secretKeyInput.value.trim();
+      if (!secretStr) {
+        tokenDisplay.textContent = "------";
+        metaSecretStatus.textContent = "Awaiting Key";
+        return;
+      }
+
+      const step = parseInt(timeStepInput.value, 10) || 30;
+      const digits = parseInt(digitCountSelect.value, 10);
+      const algo = hashAlgoSelect.value;
+      const epochSeconds = Math.floor(Date.now() / 1000);
+      const counter = Math.floor(epochSeconds / step);
+
+      metaStep.textContent = `${counter} (Epoch: ${epochSeconds}s)`;
+
+      try {
+        const secretBuf = base32ToBuf(secretStr);
+        metaSecretStatus.textContent = `Valid Base32 (${secretBuf.byteLength} Bytes)`;
+
+        const res = await computeOtpCore(secretBuf, counter, digits, algo);
+        tokenDisplay.textContent = res.token;
+
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ TOTP Token Generated</span> <span>Active &amp; Valid</span>";
+
+        const packageResult = {
+          mode: "TOTP (RFC 6238)",
+          token: res.token,
+          digits: digits,
+          time_step_seconds: step,
+          current_epoch_time: epochSeconds,
+          time_counter_C: counter,
+          algorithm: `HMAC-${algo}`,
+          hmac_digest_hex: res.hmacHex,
+          dynamic_truncation: {
+            offset_byte: res.offset,
+            masked_binary_code: res.binaryCode
+          }
+        };
+
+        rawViewer.textContent = JSON.stringify(packageResult, null, 2);
+
+      } catch (err) {
+        tokenDisplay.textContent = "------";
+        metaSecretStatus.textContent = "Decode Error";
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Calculation Error: ${err.message}</span> <span>Failed</span>`;
+        rawViewer.textContent = "TOTP Generation Failed: " + err.message;
+      }
+    }
+
+    async function calculateHOTP() {
+      const secretStr = secretKeyInput.value.trim();
+      if (!secretStr) {
+        tokenDisplay.textContent = "------";
+        metaSecretStatus.textContent = "Awaiting Key";
+        return;
+      }
+
+      const counter = parseInt(counterValInput.value, 10) || 0;
+      const digits = parseInt(digitCountSelect.value, 10);
+      const algo = hashAlgoSelect.value;
+
+      metaStep.textContent = `Counter: ${counter}`;
+
+      try {
+        const secretBuf = base32ToBuf(secretStr);
+        metaSecretStatus.textContent = `Valid Base32 (${secretBuf.byteLength} Bytes)`;
+
+        const res = await computeOtpCore(secretBuf, counter, digits, algo);
+        tokenDisplay.textContent = res.token;
+
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ HOTP Token Generated</span> <span>Counter Evaluated</span>";
+
+        const packageResult = {
+          mode: "HOTP (RFC 4226)",
+          token: res.token,
+          digits: digits,
+          counter_value: counter,
+          algorithm: `HMAC-${algo}`,
+          hmac_digest_hex: res.hmacHex,
+          dynamic_truncation: {
+            offset_byte: res.offset,
+            masked_binary_code: res.binaryCode
+          }
+        };
+
+        rawViewer.textContent = JSON.stringify(packageResult, null, 2);
+
+      } catch (err) {
+        tokenDisplay.textContent = "------";
+        metaSecretStatus.textContent = "Decode Error";
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Calculation Error: ${err.message}</span> <span>Failed</span>`;
+        rawViewer.textContent = "HOTP Generation Failed: " + err.message;
+      }
+    }
+
+    function startTotpTicker() {
+      stopTotpTicker();
+      updateTotpTimer();
+      timerInterval = setInterval(() => {
+        updateTotpTimer();
+      }, 1000);
+    }
+
+    function stopTotpTicker() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTotpTimer() {
+      if (currentMode !== "totp") return;
+      const step = parseInt(timeStepInput.value, 10) || 30;
+      const nowSec = Math.floor(Date.now() / 1000);
+      const remaining = step - (nowSec % step);
+      const percent = (remaining / step) * 100;
+
+      timerProgress.style.width = `${percent}%`;
+      timerLabel.textContent = `Updates in ${remaining}s`;
+
+      if (remaining === step || tokenDisplay.textContent === "------") {
+        calculateTOTP();
+      }
+    }
+
+    // Default initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      generateRandomSecret();
+      startTotpTicker();
+    });
+  </script>
+</body>
+</html>
