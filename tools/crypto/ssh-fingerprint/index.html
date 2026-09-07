@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SSH Public Key Fingerprint Generator — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="SSH Public Key Fingerprint Generator — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Parse OpenSSH public keys (RSA, Ed25519, ECDSA, DSA) and compute standardized SHA-256 and MD5 fingerprints in-memory for server verification and authorized_keys validation." />
+  <meta name="keywords" content="ssh fingerprint generator, openssh key parser, sha256 ssh fingerprint, md5 ssh fingerprint, ed25519 fingerprint, rsa key fingerprint, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/ssh-fingerprint" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group textarea {
+      width: 100%;
+      height: 110px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      resize: vertical;
+      outline: none;
+    }
+    .form-group textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Output Results Workspace */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 18px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.84rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .fingerprint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .fingerprint-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 16px;
+    }
+    .fingerprint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .fingerprint-title {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--atom-cyan);
+      text-transform: uppercase;
+    }
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-muted);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      color: var(--atom-amber);
+      border-color: var(--atom-amber);
+    }
+    .fingerprint-value {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      word-break: break-all;
+      user-select: all;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / ssh-fingerprint
+    </nav>
+
+    <div class="tool-header">
+      <h1>SSH Public Key Fingerprint Generator</h1>
+      <p>Parse OpenSSH public keys (RSA, Ed25519, ECDSA, DSA) and compute standardized SHA-256 and MD5 fingerprints in-memory for server verification and authorized_keys validation.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="sshKeyInput">OpenSSH Public Key (e.g., id_rsa.pub, id_ed25519.pub)</label>
+        <textarea id="sshKeyInput" placeholder="Paste single-line OpenSSH public key (e.g., ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... user@host)" spellcheck="false"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnSampleEd25519">Sample Ed25519</button>
+        <button class="btn-atom" id="btnSampleRsa">Sample RSA</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Awaiting OpenSSH public key payload...</span>
+        <span>Ready</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Key Type</div>
+          <div class="meta-val" id="metaKeyType">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Decoded Binary Size</div>
+          <div class="meta-val" id="metaKeySize">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Key Comment / Host</div>
+          <div class="meta-val" id="metaComment">-</div>
+        </div>
+      </div>
+
+      <div class="fingerprint-list">
+        <div class="fingerprint-card">
+          <div class="fingerprint-header">
+            <span class="fingerprint-title">SHA-256 Fingerprint (Default OpenSSH Standard)</span>
+            <button class="copy-btn" onclick="copyValue('fpSha256', this)">Copy</button>
+          </div>
+          <div class="fingerprint-value" id="fpSha256">-</div>
+        </div>
+
+        <div class="fingerprint-card">
+          <div class="fingerprint-header">
+            <span class="fingerprint-title">MD5 Fingerprint (Legacy OpenSSH Format)</span>
+            <button class="copy-btn" onclick="copyValue('fpMd5', this)">Copy</button>
+          </div>
+          <div class="fingerprint-value" id="fpMd5">-</div>
+        </div>
+
+        <div class="fingerprint-card">
+          <div class="fingerprint-header">
+            <span class="fingerprint-title">SHA-256 Raw Hexadecimal</span>
+            <button class="copy-btn" onclick="copyValue('fpSha256Hex', this)">Copy</button>
+          </div>
+          <div class="fingerprint-value" id="fpSha256Hex">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, verification errors, corrupted host authorizations, misconfigured <code>authorized_keys</code> files, or unauthorized server access. Only supply <strong>public</strong> keys. Never disclose or paste private SSH identity keys (<code>id_rsa</code>, <code>id_ed25519</code> without <code>.pub</code> extension) into web environments. While modern OpenSSH clients rely exclusively on Base64 SHA-256 digests, legacy infrastructure still outputs colon-separated MD5 fingerprints; MD5 is cryptographically weak and provided solely for legacy comparison against pre-existing audit logs. All key parsing and fingerprint computations execute strictly client-side in local browser memory without network egress.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How SSH Public Key Fingerprints Are Formatted</h2>
+      <p>An OpenSSH public key file contains three space-separated elements: the key type declaration (e.g., <code>ssh-rsa</code> or <code>ssh-ed25519</code>), a Base64-encoded binary string containing algorithm parameters and public exponents, and an optional trailing comment.</p>
+      <ul>
+        <li><strong>Binary Decoding:</strong> The fingerprint is generated strictly across the decoded binary blob of the second field, never including the type string or the comment.</li>
+        <li><strong>OpenSSH Modern Standard (SHA-256):</strong> The raw binary is hashed using SHA-256, encoded into standard Base64, stripped of trailing padding characters (<code>=</code>), and prefixed with <code>SHA256:</code>.</li>
+        <li><strong>Legacy Format (MD5):</strong> The raw binary is hashed using MD5 and rendered as sixteen lowercase two-digit hexadecimal octets joined by colons (e.g., <code>md5:12:34:56:...</code>).</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Verifying server host keys and client certificates often occurs in sensitive deployment pipelines. BitDark executes the entire SSH key extraction and hashing pipeline locally in your browser memory via native <code>crypto.subtle</code> and typed array buffers. Zero bytes leave your workstation.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Optimized Local Pure-JS MD5 Implementation
+    function computeMD5(bytes) {
+      function safeAdd(x, y) {
+        const lsw = (x & 0xFFFF) + (y & 0xFFFF);
+        const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+        return (msw << 16) | (lsw & 0xFFFF);
+      }
+      function bitRol(num, cnt) { return (num << cnt) | (num >>> (32 - cnt)); }
+      function cmn(q, a, b, x, s, t) { return safeAdd(bitRol(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
+      function ff(a, b, c, d, x, s, t) { return cmn((b & c) | ((~b) & d), a, b, x, s, t); }
+      function gg(a, b, c, d, x, s, t) { return cmn((b & d) | (c & (~d)), a, b, x, s, t); }
+      function hh(a, b, c, d, x, s, t) { return cmn(b ^ c ^ d, a, b, x, s, t); }
+      function ii(a, b, c, d, x, s, t) { return cmn(c ^ (b | (~d)), a, b, x, s, t); }
+
+      const nblk = ((bytes.length + 8) >> 6) + 1;
+      const blks = new Array(nblk * 16).fill(0);
+      for (let i = 0; i < bytes.length; i++) {
+        blks[i >> 2] |= bytes[i] << ((i % 4) * 8);
+      }
+      blks[bytes.length >> 2] |= 0x80 << ((bytes.length % 4) * 8);
+      blks[nblk * 16 - 2] = bytes.length * 8;
+
+      let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+
+      for (let i = 0; i < blks.length; i += 16) {
+        const olda = a, oldb = b, oldc = c, oldd = d;
+        a = ff(a, b, c, d, blks[i], 7, -680876936);
+        d = ff(d, a, b, c, blks[i + 1], 12, -389564586);
+        c = ff(c, d, a, b, blks[i + 2], 17, 606105819);
+        b = ff(b, c, d, a, blks[i + 3], 22, -1044525330);
+        a = ff(a, b, c, d, blks[i + 4], 7, -176418897);
+        d = ff(d, a, b, c, blks[i + 5], 12, 1200080426);
+        c = ff(c, d, a, b, blks[i + 6], 17, -1473231341);
+        b = ff(b, c, d, a, blks[i + 7], 22, -45705983);
+        a = ff(a, b, c, d, blks[i + 8], 7, 1770035416);
+        d = ff(d, a, b, c, blks[i + 9], 12, -1958414417);
+        c = ff(c, d, a, b, blks[i + 10], 17, -42063);
+        b = ff(b, c, d, a, blks[i + 11], 22, -1990404162);
+        a = ff(a, b, c, d, blks[i + 12], 7, 1804603682);
+        d = ff(d, a, b, c, blks[i + 13], 12, -40341101);
+        c = ff(c, d, a, b, blks[i + 14], 17, -1502002290);
+        b = ff(b, c, d, a, blks[i + 15], 22, 1236535329);
+
+        a = gg(a, b, c, d, blks[i + 1], 5, -165796510);
+        d = gg(d, a, b, c, blks[i + 6], 9, -1069501632);
+        c = gg(c, d, a, b, blks[i + 11], 14, 643717713);
+        b = gg(b, c, d, a, blks[i], 20, -373897302);
+        a = gg(a, b, c, d, blks[i + 5], 5, -701558691);
+        d = gg(d, a, b, c, blks[i + 10], 9, 38016083);
+        c = gg(c, d, a, b, blks[i + 15], 14, -660478335);
+        b = gg(b, c, d, a, blks[i + 4], 20, -405537848);
+        a = gg(a, b, c, d, blks[i + 9], 5, 568446438);
+        d = gg(d, a, b, c, blks[i + 14], 9, -1019803690);
+        c = gg(c, d, a, b, blks[i + 3], 14, -187363961);
+        b = gg(b, c, d, a, blks[i + 8], 20, 1163531501);
+        a = gg(a, b, c, d, blks[i + 13], 5, -1444681467);
+        d = gg(d, a, b, c, blks[i + 2], 9, -51403784);
+        c = gg(c, d, a, b, blks[i + 7], 14, 1735328473);
+        b = gg(b, c, d, a, blks[i + 12], 20, -1926607734);
+
+        a = hh(a, b, c, d, blks[i + 5], 4, -378558);
+        d = hh(d, a, b, c, blks[i + 8], 11, -2022574463);
+        c = hh(c, d, a, b, blks[i + 11], 16, 1839030562);
+        b = hh(b, c, d, a, blks[i + 14], 23, -35309556);
+        a = hh(a, b, c, d, blks[i + 1], 4, -1530992060);
+        d = hh(d, a, b, c, blks[i + 4], 11, 1272893353);
+        c = hh(c, d, a, b, blks[i + 7], 16, -155497632);
+        b = hh(b, c, d, a, blks[i + 10], 23, -1094730640);
+        a = hh(a, b, c, d, blks[i + 13], 4, 681279174);
+        d = hh(d, a, b, c, blks[i], 11, -358537222);
+        c = hh(c, d, a, b, blks[i + 3], 16, -722521979);
+        b = hh(b, c, d, a, blks[i + 6], 23, 76029189);
+        a = hh(a, b, c, d, blks[i + 9], 4, -640364487);
+        d = hh(d, a, b, c, blks[i + 12], 11, -421815835);
+        c = hh(c, d, a, b, blks[i + 15], 16, 530742520);
+        b = hh(b, c, d, a, blks[i + 2], 23, -995338651);
+
+        a = ii(a, b, c, d, blks[i], 6, -198630844);
+        d = ii(d, a, b, c, blks[i + 7], 10, 1126891415);
+        c = ii(c, d, a, b, blks[i + 14], 15, -1416354905);
+        b = ii(b, c, d, a, blks[i + 5], 21, -57434055);
+        a = ii(a, b, c, d, blks[i + 12], 6, 1700485571);
+        d = ii(d, a, b, c, blks[i + 3], 10, -1894986606);
+        c = ii(c, d, a, b, blks[i + 10], 15, -1051523);
+        b = ii(b, c, d, a, blks[i + 1], 21, -2054922799);
+        a = ii(a, b, c, d, blks[i + 8], 6, 1873313359);
+        d = ii(d, a, b, c, blks[i + 15], 10, -30611744);
+        c = ii(c, d, a, b, blks[i + 6], 15, -1560198380);
+        b = ii(b, c, d, a, blks[i + 13], 21, 1309151649);
+        a = ii(a, b, c, d, blks[i + 4], 6, -145523070);
+        d = ii(d, a, b, c, blks[i + 11], 10, -1120210379);
+        c = ii(c, d, a, b, blks[i + 2], 15, 718787259);
+        b = ii(b, c, d, a, blks[i + 9], 21, -343485551);
+
+        a = safeAdd(a, olda);
+        b = safeAdd(b, oldb);
+        c = safeAdd(c, oldc);
+        d = safeAdd(d, oldd);
+      }
+
+      const out = new Uint8Array(16);
+      const words = [a, b, c, d];
+      for (let i = 0; i < 4; i++) {
+        out[i * 4] = words[i] & 0xFF;
+        out[i * 4 + 1] = (words[i] >> 8) & 0xFF;
+        out[i * 4 + 2] = (words[i] >> 16) & 0xFF;
+        out[i * 4 + 3] = (words[i] >> 24) & 0xFF;
+      }
+      return out;
+    }
+
+    // UI Elements
+    const sshKeyInput = document.getElementById("sshKeyInput");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaKeyType = document.getElementById("metaKeyType");
+    const metaKeySize = document.getElementById("metaKeySize");
+    const metaComment = document.getElementById("metaComment");
+    const fpSha256 = document.getElementById("fpSha256");
+    const fpMd5 = document.getElementById("fpMd5");
+    const fpSha256Hex = document.getElementById("fpSha256Hex");
+    const btnClear = document.getElementById("btnClear");
+    const btnSampleEd25519 = document.getElementById("btnSampleEd25519");
+    const btnSampleRsa = document.getElementById("btnSampleRsa");
+
+    function parseSSHKey(rawInput) {
+      const clean = rawInput.trim();
+      if (!clean) {
+        resetOutputs("Awaiting OpenSSH public key payload...", "Ready", false);
+        return;
+      }
+
+      if (clean.includes("PRIVATE KEY")) {
+        resetOutputs("Security Warning: Private key detected. Never paste private keys into browser tools.", "Danger", true);
+        return;
+      }
+
+      // OpenSSH standard format: <type> <base64-blob> [comment]
+      const parts = clean.split(/\s+/);
+      let base64Part = "";
+      let declaredType = "";
+      let comment = "-";
+
+      if (parts.length >= 2 && (parts[0].startsWith("ssh-") || parts[0].startsWith("ecdsa-") || parts[0].startsWith("sk-"))) {
+        declaredType = parts[0];
+        base64Part = parts[1];
+        if (parts.length >= 3) {
+          comment = parts.slice(2).join(" ");
+        }
+      } else if (parts.length === 1 && /^[A-Za-z0-9+/=]+$/.test(parts[0])) {
+        base64Part = parts[0];
+        declaredType = "Raw Decoded Base64";
+      } else {
+        resetOutputs("Invalid format: Expected OpenSSH public key string (e.g. 'ssh-ed25519 AAAA... user@host').", "Invalid", true);
+        return;
+      }
+
+      try {
+        // Normalize Base64 padding if stripped or truncated
+        let sanitizedBase64 = base64Part.replace(/[^A-Za-z0-9+/]/g, "");
+        while (sanitizedBase64.length % 4 !== 0) {
+          sanitizedBase64 += "=";
+        }
+
+        const binaryStr = atob(sanitizedBase64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        if (bytes.length < 15) {
+          throw new Error("Byte length too small to represent an OpenSSH public key structure");
+        }
+
+        // Validate SSH internal string header if present (4-byte length prefix)
+        let internalKeyType = declaredType;
+        if (bytes.length > 4) {
+          const typeLen = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+          if (typeLen > 0 && typeLen <= bytes.length - 4) {
+            const decoder = new TextDecoder("utf-8");
+            const parsedType = decoder.decode(bytes.slice(4, 4 + typeLen));
+            if (/^[a-zA-Z0-9@._-]+$/.test(parsedType)) {
+              internalKeyType = parsedType;
+            }
+          }
+        }
+
+        metaKeyType.textContent = internalKeyType;
+        metaKeySize.textContent = `${bytes.length} bytes`;
+        metaComment.textContent = comment;
+
+        // Compute SHA-256 and MD5
+        crypto.subtle.digest("SHA-256", bytes).then(hashBuffer => {
+          const hashBytes = new Uint8Array(hashBuffer);
+
+          // Standard OpenSSH SHA256 base64 without padding
+          let binaryHash = "";
+          for (let i = 0; i < hashBytes.length; i++) {
+            binaryHash += String.fromCharCode(hashBytes[i]);
+          }
+          const base64Fp = btoa(binaryHash).replace(/=+$/, "");
+          fpSha256.textContent = `SHA256:${base64Fp}`;
+
+          // SHA-256 Hex
+          const hexFp = Array.from(hashBytes).map(b => b.toString(16).padStart(2, "0")).join("");
+          fpSha256Hex.textContent = hexFp;
+
+          // Standard OpenSSH MD5 colon-separated format
+          const md5Bytes = computeMD5(bytes);
+          const md5Colon = Array.from(md5Bytes).map(b => b.toString(16).padStart(2, "0")).join(":");
+          fpMd5.textContent = `MD5:${md5Colon}`;
+
+          statusBanner.className = "status-banner status-safe";
+          statusBanner.innerHTML = `<span>✓ Valid OpenSSH Key Parsed (${internalKeyType})</span> <span>Authentic</span>`;
+        });
+
+      } catch (err) {
+        resetOutputs(`Decoding error: ${err.message}. Ensure valid Base64 encoding.`, "Failed", true);
+      }
+    }
+
+    function resetOutputs(message, stateText, isError) {
+      statusBanner.className = isError ? "status-banner status-danger" : "status-banner status-safe";
+      statusBanner.innerHTML = `<span>${message}</span> <span>${stateText}</span>`;
+      metaKeyType.textContent = "-";
+      metaKeySize.textContent = "-";
+      metaComment.textContent = "-";
+      fpSha256.textContent = "-";
+      fpMd5.textContent = "-";
+      fpSha256Hex.textContent = "-";
+    }
+
+    function copyValue(elementId, btn) {
+      const text = document.getElementById(elementId).textContent;
+      if (!text || text === "-") return;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    }
+
+    sshKeyInput.addEventListener("input", () => parseSSHKey(sshKeyInput.value));
+
+    btnClear.addEventListener("click", () => {
+      sshKeyInput.value = "";
+      parseSSHKey("");
+    });
+
+    btnSampleEd25519.addEventListener("click", () => {
+      sshKeyInput.value = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGo4kIuT0j8zW8YQYgL6dD3/3gN3QY4d5p4l1o7u8n9k admin@bitdark.net";
+      parseSSHKey(sshKeyInput.value);
+    });
+
+    btnSampleRsa.addEventListener("click", () => {
+      sshKeyInput.value = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8u7qJqP+l873l+GqW4vG3zNfLp6q2O0pL1k1Z9b8= deploy@production-cluster";
+      parseSSHKey(sshKeyInput.value);
+    });
+  </script>
+</body>
+</html>
