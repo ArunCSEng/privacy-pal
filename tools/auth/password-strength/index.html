@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Password Entropy & Strength Lab — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="Password Entropy & Strength Lab — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Calculate true information entropy, pattern vulnerability, dictionary resistance, and realistic brute-force cracking timeframes locally in memory. Zero network egress." />
+  <meta name="keywords" content="password entropy calculator, offline password tester, bitdark password strength, information entropy shannon, password security audit, client side password lab" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/password-strength" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .input-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .field-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      letter-spacing: 0.05em;
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-input {
+      width: 100%;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 44px 12px 14px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .password-input:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .toggle-visibility {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--atom-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .toggle-visibility:hover { color: var(--atom-heading); }
+
+    /* Entropy Meter */
+    .meter-container {
+      height: 8px;
+      background-color: var(--atom-gutter);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 1px solid var(--atom-border);
+    }
+    .meter-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+      background-color: var(--atom-coral);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .metric-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .metric-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .metric-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+    }
+
+    /* Brute Force Scenarios Table */
+    .crack-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+      background-color: var(--atom-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--atom-border);
+    }
+    .crack-table th, .crack-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .crack-table th {
+      background-color: var(--atom-gutter);
+      color: var(--atom-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+    .crack-table tr:last-child td { border-bottom: none; }
+    .crack-table td.time-val { color: var(--atom-amber); font-weight: 600; }
+
+    /* Weakness Checklist */
+    .warnings-list {
+      list-style: none;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+    }
+    .warnings-list li {
+      padding: 6px 10px;
+      border-radius: 3px;
+      margin-bottom: 6px;
+      background-color: rgba(224, 108, 117, 0.1);
+      border: 1px solid rgba(224, 108, 117, 0.3);
+      color: var(--atom-coral);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .warnings-list li.clean {
+      background-color: rgba(152, 195, 121, 0.1);
+      border-color: rgba(152, 195, 121, 0.3);
+      color: var(--atom-green);
+    }
+
+    /* Actions */
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Documentation Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / password-strength
+    </nav>
+
+    <div class="tool-header">
+      <h1>Password Entropy & Strength Lab</h1>
+      <p>Measure realistic cracking resistance, calculate Shannon information entropy, and audit pattern vulnerabilities strictly in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="input-group">
+        <div class="input-label-row">
+          <label class="field-label" for="passwordInput">Input Passphrase / Credential</label>
+          <span class="field-label" id="charCounter">0 Characters</span>
+        </div>
+        <div class="input-wrapper">
+          <input type="password" id="passwordInput" class="password-input" placeholder="Type or paste a candidate password to evaluate..." autocomplete="off" spellcheck="false" />
+          <button type="button" id="btnToggleVis" class="toggle-visibility" title="Toggle Visibility">👁️</button>
+        </div>
+      </div>
+
+      <div class="meter-container">
+        <div id="entropyBar" class="meter-bar"></div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Information Entropy</div>
+          <div class="metric-val" id="entropyVal">0 bits</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Charset Pool Size (R)</div>
+          <div class="metric-val" id="charsetVal">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Search Space (R^L)</div>
+          <div class="metric-val" id="searchSpaceVal">0 combinations</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Qualitative Score</div>
+          <div class="metric-val" id="strengthTier">Empty</div>
+        </div>
+      </div>
+
+      <div class="field-label" style="margin-bottom: 8px;">Estimated Cracking Timeframes (Offline Brute-Force):</div>
+      <table class="crack-table">
+        <thead>
+          <tr>
+            <th>Attacker Profile / Compute Capacity</th>
+            <th>Hash Rate Rate</th>
+            <th>Estimated Exhaustion Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Web / Online Throttled API</td>
+            <td>100 guesses / sec</td>
+            <td class="time-val" id="timeOnline">Instant</td>
+          </tr>
+          <tr>
+            <td>Single High-End GPU (bcrypt / Argon2)</td>
+            <td>10,000 guesses / sec</td>
+            <td class="time-val" id="timeGpuSlow">Instant</td>
+          </tr>
+          <tr>
+            <td>Single High-End GPU (Fast MD5 / NTLM)</td>
+            <td>10 Billion guesses / sec</td>
+            <td class="time-val" id="timeGpuFast">Instant</td>
+          </tr>
+          <tr>
+            <td>Dedicated Cracking Cluster (8x 8-GPU Rig)</td>
+            <td>1 Trillion guesses / sec</td>
+            <td class="time-val" id="timeCluster">Instant</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="field-label" style="margin-bottom: 8px;">Vulnerability & Pattern Audit:</div>
+      <ul class="warnings-list" id="warningsList">
+        <li class="clean">Enter a credential above to trigger local structural inspection.</li>
+      </ul>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnGenStrong">Generate High-Entropy Password</button>
+        <button class="btn-atom" id="btnClear" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+      </div>
+    </div>
+
+    <!-- Explicit Legal Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Credential Security & Responsibility Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible for any password compromise, unauthorized account access, credential stuffing exposures, or security assessments based on this tool.</strong> All computations are mathematical approximations executed locally within client memory; entropy models evaluate theoretical permutation space and do not guarantee immunity against compromised infrastructure, social engineering, keylogging, tailored dictionary attacks, or targeted breach correlations. Never reuse high-privilege credentials across environments.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Password Entropy is Calculated</h2>
+      <p>Password security is fundamentally governed by <strong>information entropy</strong> measured in bits. Theoretical entropy ($E$) measures the size of the total potential keyspace an attacker must traverse:</p>
+      <p><code>E = L * log2(R)</code></p>
+      <ul>
+        <li><strong>L (Length):</strong> Total number of characters in the string. Length scales entropy exponentially, making it the most significant factor in resistance.</li>
+        <li><strong>R (Pool Size):</strong> The set of potential distinct characters used (lowercase = 26, uppercase = 26, numbers = 10, common symbols = 32).</li>
+      </ul>
+
+      <h2>Beyond Raw Math: Pattern Penalties</h2>
+      <p>Traditional entropy calculators assume every character in a password is selected via uniform random distribution. In practice, humans exhibit predictable behavior: sequences like <code>qwerty</code>, repeated characters (<code>aaa</code>), dates, or common prefix/suffix capitalization (e.g., <code>Password123!</code>). This utility adjusts practical strength downward when recognizable topological patterns, predictable substitutions (leetspeak), or common baseline words are encountered.</p>
+
+      <h2>Zero Network Transmission</h2>
+      <p>Evaluating sensitive passwords via cloud-hosted testing forms introduces severe operational risk. BitDark runs all entropy estimations, dictionary heuristic lookups, and brute-force simulations completely inside your client runtime. Zero bytes ever leave your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Fallback Resolvers
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Password Entropy & Strength Engine
+    const passwordInput = document.getElementById("passwordInput");
+    const btnToggleVis = document.getElementById("btnToggleVis");
+    const charCounter = document.getElementById("charCounter");
+    const entropyBar = document.getElementById("entropyBar");
+    const entropyVal = document.getElementById("entropyVal");
+    const charsetVal = document.getElementById("charsetVal");
+    const searchSpaceVal = document.getElementById("searchSpaceVal");
+    const strengthTier = document.getElementById("strengthTier");
+    const timeOnline = document.getElementById("timeOnline");
+    const timeGpuSlow = document.getElementById("timeGpuSlow");
+    const timeGpuFast = document.getElementById("timeGpuFast");
+    const timeCluster = document.getElementById("timeCluster");
+    const warningsList = document.getElementById("warningsList");
+    const btnGenStrong = document.getElementById("btnGenStrong");
+    const btnClear = document.getElementById("btnClear");
+
+    btnToggleVis.addEventListener("click", () => {
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        btnToggleVis.textContent = "🔒";
+      } else {
+        passwordInput.type = "password";
+        btnToggleVis.textContent = "👁️";
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      passwordInput.value = "";
+      evaluatePassword("");
+    });
+
+    btnGenStrong.addEventListener("click", () => {
+      const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*()-_=+[]{}";
+      const array = new Uint32Array(20);
+      window.crypto.getRandomValues(array);
+      let genPass = "";
+      for (let i = 0; i < array.length; i++) {
+        genPass += chars[array[i] % chars.length];
+      }
+      passwordInput.value = genPass;
+      evaluatePassword(genPass);
+    });
+
+    passwordInput.addEventListener("input", (e) => {
+      evaluatePassword(e.target.value);
+    });
+
+    function formatTime(seconds) {
+      if (seconds <= 0) return "Instant";
+      if (seconds < 1) return "< 1 second";
+      if (seconds < 60) return `${Math.round(seconds)} seconds`;
+      const minutes = seconds / 60;
+      if (minutes < 60) return `${Math.round(minutes)} minutes`;
+      const hours = minutes / 60;
+      if (hours < 24) return `${Math.round(hours)} hours`;
+      const days = hours / 24;
+      if (days < 365) return `${Math.round(days)} days`;
+      const years = days / 365;
+      if (years < 1000) return `${Math.round(years)} years`;
+      if (years < 1e6) return `${(years / 1000).toFixed(1)}k years`;
+      if (years < 1e9) return `${(years / 1e6).toFixed(1)}M years`;
+      return "Centuries / Billions of years";
+    }
+
+    function evaluatePassword(pwd) {
+      charCounter.textContent = `${pwd.length} Character${pwd.length === 1 ? '' : 's'}`;
+
+      if (!pwd) {
+        entropyBar.style.width = "0%";
+        entropyBar.style.backgroundColor = "var(--atom-coral)";
+        entropyVal.textContent = "0 bits";
+        charsetVal.textContent = "0";
+        searchSpaceVal.textContent = "0 combinations";
+        strengthTier.textContent = "Empty";
+        strengthTier.style.color = "var(--atom-muted)";
+        timeOnline.textContent = "Instant";
+        timeGpuSlow.textContent = "Instant";
+        timeGpuFast.textContent = "Instant";
+        timeCluster.textContent = "Instant";
+        warningsList.innerHTML = '<li class="clean">Enter a credential above to trigger local structural inspection.</li>';
+        return;
+      }
+
+      // Determine Charset Pool
+      let pool = 0;
+      const hasLower = /[a-z]/.test(pwd);
+      const hasUpper = /[A-Z]/.test(pwd);
+      const hasNumbers = /[0-9]/.test(pwd);
+      const hasSymbols = /[^a-zA-Z0-9]/.test(pwd);
+
+      if (hasLower) pool += 26;
+      if (hasUpper) pool += 26;
+      if (hasNumbers) pool += 10;
+      if (hasSymbols) pool += 33;
+
+      let rawEntropy = pwd.length * Math.log2(pool || 1);
+
+      // Audit Warnings & Deduct Heuristic Penalties
+      const warnings = [];
+      let penalty = 0;
+
+      if (pwd.length < 8) {
+        warnings.push("Extremely short length (< 8 chars). Trivial target for dictionary masks.");
+        penalty += 15;
+      } else if (pwd.length < 12) {
+        warnings.push("Short length (< 12 chars). Below recommended enterprise minimums.");
+        penalty += 8;
+      }
+
+      if (/^[a-zA-Z]+$/.test(pwd)) {
+        warnings.push("Alpha-only characters. Charset space is constrained.");
+        penalty += 5;
+      } else if (/^\d+$/.test(pwd)) {
+        warnings.push("Numeric-only string (PIN pattern). Rapid keyspace exhaustion.");
+        penalty += 20;
+      }
+
+      // Check for character repeats (e.g., "aaaa")
+      if (/(.)\1{2,}/.test(pwd)) {
+        warnings.push("Consecutive repeating characters detected (e.g., 'aaa').");
+        penalty += 10;
+      }
+
+      // Check for common sequential keyboard walks
+      const sequences = ["12345", "23456", "34567", "45678", "56789", "qwerty", "asdfgh", "zxcvbn", "password", "admin"];
+      for (const seq of sequences) {
+        if (pwd.toLowerCase().includes(seq)) {
+          warnings.push(`Predictable sequence or pattern located: "${seq}".`);
+          penalty += 15;
+          break;
+        }
+      }
+
+      const effectiveEntropy = Math.max(0, Math.round(rawEntropy - penalty));
+
+      // Update UI Metrics
+      entropyVal.textContent = `${effectiveEntropy} bits`;
+      charsetVal.textContent = `${pool} symbols`;
+
+      if (rawEntropy < 60) {
+        const combinations = Math.pow(pool, pwd.length);
+        searchSpaceVal.textContent = combinations > 1e12 ? combinations.toExponential(2) : combinations.toLocaleString();
+      } else {
+        searchSpaceVal.textContent = `2^${Math.round(rawEntropy)} combinations`;
+      }
+
+      // Qualitative Score Tier
+      let tier = "Very Weak";
+      let color = "var(--atom-coral)";
+      let barPercent = Math.min(100, Math.round((effectiveEntropy / 80) * 100));
+
+      if (effectiveEntropy >= 80) {
+        tier = "Cryptographically Strong";
+        color = "var(--atom-green)";
+      } else if (effectiveEntropy >= 60) {
+        tier = "Reasonable / Moderate";
+        color = "var(--atom-amber)";
+      } else if (effectiveEntropy >= 40) {
+        tier = "Weak";
+        color = "var(--atom-coral)";
+      }
+
+      strengthTier.textContent = tier;
+      strengthTier.style.color = color;
+      entropyBar.style.width = `${barPercent}%`;
+      entropyBar.style.backgroundColor = color;
+
+      // Cracking Times Calculation (Assuming average 50% search space exploration)
+      const combos = Math.pow(2, effectiveEntropy);
+      const halfSpace = combos / 2;
+
+      timeOnline.textContent = formatTime(halfSpace / 100);
+      timeGpuSlow.textContent = formatTime(halfSpace / 10000);
+      timeGpuFast.textContent = formatTime(halfSpace / 1e10);
+      timeCluster.textContent = formatTime(halfSpace / 1e12);
+
+      // Render Warnings
+      if (warnings.length > 0) {
+        warningsList.innerHTML = warnings.map(w => `<li>⚠️ ${w}</li>`).join("");
+      } else {
+        warningsList.innerHTML = '<li class="clean">✓ No obvious keyboard sequences, trivial repeats, or short-length penalties found.</li>';
+      }
+    }
+  </script>
+</body>
+</html>
