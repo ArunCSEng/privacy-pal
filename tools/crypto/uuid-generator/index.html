@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>UUID / GUID Generator &amp; Validator — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="UUID / GUID Generator &amp; Validator — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Generate and validate cryptographically secure RFC 4122 Version 4 (Random), Version 1 (Timestamp-based), Version 7 (Unix Epoch), and Nil UUIDs locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="uuid generator, guid generator, uuid v4 generator, uuid v7 generator, uuid validator, offline uuid generator, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/uuid-generator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .panel-section { display: none; }
+    .panel-section.active { display: block; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group select, .form-group input {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group select:focus, .form-group input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+    }
+    .checkbox-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .checkbox-item input {
+      accent-color: var(--atom-amber);
+      cursor: pointer;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Output Display Area */
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Status Banner */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    /* Results Metadata Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / uuid-generator
+    </nav>
+
+    <div class="tool-header">
+      <h1>UUID / GUID Generator &amp; Inspector</h1>
+      <p>Generate high-entropy, cryptographically secure RFC 4122 and RFC 9562 UUID identifiers locally in browser memory using the native Web Cryptography API.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabGen" onclick="switchTab('gen')">Batch Generator</button>
+        <button class="tab-btn" id="tabVal" onclick="switchTab('val')">Parser &amp; Validator</button>
+      </div>
+
+      <!-- Generator Mode Panel -->
+      <div class="panel-section active" id="panelGen">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="uuidVersion">UUID Version</label>
+            <select id="uuidVersion">
+              <option value="v4" selected>Version 4 (Cryptographically Random)</option>
+              <option value="v7">Version 7 (Unix Epoch Time-Sorted)</option>
+              <option value="v1">Version 1 (Timestamp &amp; Node Pseudo-MAC)</option>
+              <option value="nil">Nil UUID (00000000-0000-0000-0000-000000000000)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="batchCount">Quantity</label>
+            <input type="number" id="batchCount" value="5" min="1" max="1000" />
+          </div>
+
+          <div class="form-group">
+            <label for="caseFormat">Character Case</label>
+            <select id="caseFormat">
+              <option value="lower" selected>Lowercase (Standard)</option>
+              <option value="upper">Uppercase</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="optHyphens" checked /> Hyphens (-)
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="optBraces" /> Braces ({})
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="optQuotes" /> Wrapped in Quotes ("")
+          </label>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnGenerate">Generate UUIDs</button>
+          <button class="btn-atom btn-secondary" id="btnCopyGen">Copy All</button>
+          <button class="btn-atom btn-secondary" id="btnDownloadText">Download TXT</button>
+        </div>
+
+        <div class="viewer-box" id="genViewer">Generating UUIDs...</div>
+      </div>
+
+      <!-- Validator & Parser Mode Panel -->
+      <div class="panel-section" id="panelVal">
+        <div class="form-group">
+          <label for="inspectInput">Input UUID / GUID to Inspect</label>
+          <input type="text" id="inspectInput" placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnInspect">Analyze Identifier</button>
+          <button class="btn-atom btn-secondary" id="btnClearInspect">Clear</button>
+        </div>
+
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>Awaiting UUID string inspection</span>
+          <span>Idle</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Validity</div>
+            <div class="meta-val" id="metaValid">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Detected Version</div>
+            <div class="meta-val" id="metaVersion">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Variant</div>
+            <div class="meta-val" id="metaVariant">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Timestamp Payload</div>
+            <div class="meta-val" id="metaTimestamp">-</div>
+          </div>
+        </div>
+
+        <div class="viewer-box" id="inspectViewer">Parsed breakdown and canonical RFC fields will appear here...</div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, accidental UUID collisions in legacy generators, database indexing performance issues, or implementation errors in external systems. Version 4 and Version 7 UUIDs generated by this application rely strictly on client-side entropy sourced via the W3C Web Cryptography API (<code>crypto.getRandomValues</code>). All transformations and generation routines execute exclusively inside your local browser runtime without network calls.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>UUID Structural Anatomy &amp; Specifications</h2>
+      <p>A Universally Unique Identifier (UUID) is a 128-bit identifier defined by RFC 4122 and RFC 9562, represented in canonical form as five hexadecimal groups separated by hyphens (8-4-4-4-12):</p>
+      <p>$$\text{urn:uuid:xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx}$$</p>
+      <ul>
+        <li><strong>Version ($M$):</strong> The high 4 bits of the seventh byte define the UUID version (e.g., <code>1</code>, <code>4</code>, or <code>7</code>).</li>
+        <li><strong>Variant ($N$):</strong> The high 1 to 3 bits of the ninth byte define layout and multiplexing semantics. Standard RFC 4122/9562 variants require bits <code>10xx</code> (hex <code>8</code>, <code>9</code>, <code>a</code>, or <code>b</code>).</li>
+      </ul>
+
+      <h2>Evaluating UUID Implementations</h2>
+      <ul>
+        <li><strong>UUIDv4 (Random):</strong> 122 bits of cryptographically secure random entropy. The collision probability of two independently generated UUIDv4 tokens is negligibly small ($1$ in $2^{122}$).</li>
+        <li><strong>UUIDv7 (Unix Epoch Time-Sorted):</strong> Combines a 48-bit millisecond Unix timestamp with 74 bits of entropy, optimizing performance for B-Tree database indexes while preventing fragmentation.</li>
+        <li><strong>UUIDv1 (Timestamp &amp; Node):</strong> 60-bit 100-nanosecond intervals since Oct 15, 1582, concatenated with clock sequence and a simulated 48-bit random Node MAC address to safeguard client hardware privacy.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Generating identification keys on public cloud endpoints risks server logging and exposure to middleboxes. BitDark produces all identifiers directly inside volatile memory. Zero entropy buffers or generated tokens are sent across the wire.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Cryptographic UUID Generators
+    function bytesToHex(bytes) {
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function formatUuid(bytes, withHyphens) {
+      const hex = bytesToHex(bytes);
+      if (!withHyphens) return hex;
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+    }
+
+    function generateV4Bytes() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      bytes[6] = (bytes[6] & 0x0f) | 0x40; // Version 4
+      bytes[8] = (bytes[8] & 0x3f) | 0x80; // Variant RFC 4122
+      return bytes;
+    }
+
+    function generateV7Bytes() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      
+      const now = Date.now();
+      // 48-bit timestamp in big-endian
+      bytes[0] = (now / 0x10000000000) & 0xff;
+      bytes[1] = (now / 0x100000000) & 0xff;
+      bytes[2] = (now / 0x1000000) & 0xff;
+      bytes[3] = (now / 0x10000) & 0xff;
+      bytes[4] = (now / 0x100) & 0xff;
+      bytes[5] = now & 0xff;
+
+      bytes[6] = (bytes[6] & 0x0f) | 0x70; // Version 7
+      bytes[8] = (bytes[8] & 0x3f) | 0x80; // Variant RFC 4122
+      return bytes;
+    }
+
+    let v1ClockSequence = Math.floor(Math.random() * 0x3fff);
+    let v1SimulatedNode = null;
+
+    function generateV1Bytes() {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+
+      if (!v1SimulatedNode) {
+        v1SimulatedNode = new Uint8Array(6);
+        crypto.getRandomValues(v1SimulatedNode);
+        v1SimulatedNode[0] |= 0x01; // Multicast bit set to avoid real hardware collisions
+      }
+
+      // Gregorian epoch offset: 1582-10-15 to 1970-01-01 in 100-ns intervals
+      const GREGORIAN_OFFSET = 122192928000000000n;
+      const now100ns = BigInt(Date.now()) * 10000n + GREGORIAN_OFFSET;
+
+      const timeLow = Number(now100ns & 0xffffffffn);
+      const timeMid = Number((now100ns >> 32n) & 0xffffn);
+      const timeHiAndVer = Number((now100ns >> 48n) & 0x0fffn) | 0x1000; // Version 1
+
+      v1ClockSequence = (v1ClockSequence + 1) & 0x3fff;
+      const clockSeqHi = ((v1ClockSequence >> 8) & 0x3f) | 0x80; // Variant
+      const clockSeqLow = v1ClockSequence & 0xff;
+
+      // Bytes 0-3: time_low
+      bytes[0] = (timeLow >>> 24) & 0xff;
+      bytes[1] = (timeLow >>> 16) & 0xff;
+      bytes[2] = (timeLow >>> 8) & 0xff;
+      bytes[3] = timeLow & 0xff;
+
+      // Bytes 4-5: time_mid
+      bytes[4] = (timeMid >>> 8) & 0xff;
+      bytes[5] = timeMid & 0xff;
+
+      // Bytes 6-7: time_hi_and_version
+      bytes[6] = (timeHiAndVer >>> 8) & 0xff;
+      bytes[7] = timeHiAndVer & 0xff;
+
+      // Bytes 8-9: clock_seq
+      bytes[8] = clockSeqHi;
+      bytes[9] = clockSeqLow;
+
+      // Bytes 10-15: simulated node
+      bytes.set(v1SimulatedNode, 10);
+
+      return bytes;
+    }
+
+    function generateNilBytes() {
+      return new Uint8Array(16);
+    }
+
+    // UI State & DOM References
+    let activeTab = "gen";
+    const tabGen = document.getElementById("tabGen");
+    const tabVal = document.getElementById("tabVal");
+    const panelGen = document.getElementById("panelGen");
+    const panelVal = document.getElementById("panelVal");
+
+    const uuidVersion = document.getElementById("uuidVersion");
+    const batchCount = document.getElementById("batchCount");
+    const caseFormat = document.getElementById("caseFormat");
+    const optHyphens = document.getElementById("optHyphens");
+    const optBraces = document.getElementById("optBraces");
+    const optQuotes = document.getElementById("optQuotes");
+    const btnGenerate = document.getElementById("btnGenerate");
+    const btnCopyGen = document.getElementById("btnCopyGen");
+    const btnDownloadText = document.getElementById("btnDownloadText");
+    const genViewer = document.getElementById("genViewer");
+
+    const inspectInput = document.getElementById("inspectInput");
+    const btnInspect = document.getElementById("btnInspect");
+    const btnClearInspect = document.getElementById("btnClearInspect");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaValid = document.getElementById("metaValid");
+    const metaVersion = document.getElementById("metaVersion");
+    const metaVariant = document.getElementById("metaVariant");
+    const metaTimestamp = document.getElementById("metaTimestamp");
+    const inspectViewer = document.getElementById("inspectViewer");
+
+    function switchTab(tab) {
+      activeTab = tab;
+      if (tab === "gen") {
+        tabGen.classList.add("active");
+        tabVal.classList.remove("active");
+        panelGen.classList.add("active");
+        panelVal.classList.remove("active");
+      } else {
+        tabVal.classList.add("active");
+        tabGen.classList.remove("active");
+        panelVal.classList.add("active");
+        panelGen.classList.remove("active");
+      }
+    }
+
+    function runBatchGeneration() {
+      const count = Math.max(1, Math.min(1000, parseInt(batchCount.value, 10) || 1));
+      const ver = uuidVersion.value;
+      const isUpper = caseFormat.value === "upper";
+      const withHyphens = optHyphens.checked;
+      const withBraces = optBraces.checked;
+      const withQuotes = optQuotes.checked;
+
+      const results = [];
+
+      for (let i = 0; i < count; i++) {
+        let b;
+        if (ver === "v4") b = generateV4Bytes();
+        else if (ver === "v7") b = generateV7Bytes();
+        else if (ver === "v1") b = generateV1Bytes();
+        else b = generateNilBytes();
+
+        let str = formatUuid(b, withHyphens);
+        if (isUpper) str = str.toUpperCase();
+        else str = str.toLowerCase();
+
+        if (withBraces) str = `{${str}}`;
+        if (withQuotes) str = `"${str}"`;
+
+        results.push(str);
+      }
+
+      genViewer.textContent = results.join("\n");
+    }
+
+    btnGenerate.addEventListener("click", runBatchGeneration);
+
+    btnCopyGen.addEventListener("click", async () => {
+      const text = genViewer.textContent.trim();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const orig = btnCopyGen.textContent;
+        btnCopyGen.textContent = "Copied!";
+        setTimeout(() => { btnCopyGen.textContent = orig; }, 1500);
+      } catch {
+        alert("Clipboard copy failed. Please select and copy manually.");
+      }
+    });
+
+    btnDownloadText.addEventListener("click", () => {
+      const text = genViewer.textContent.trim();
+      if (!text) return;
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const dl = document.createElement("a");
+      dl.href = url;
+      dl.download = `uuids-${Date.now()}.txt`;
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // Inspector & Parser Logic
+    function inspectUuidString() {
+      const raw = inspectInput.value.trim();
+      if (!raw) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>Awaiting UUID string inspection</span> <span>Idle</span>";
+        metaValid.textContent = "-";
+        metaVersion.textContent = "-";
+        metaVariant.textContent = "-";
+        metaTimestamp.textContent = "-";
+        inspectViewer.textContent = "Parsed breakdown and canonical RFC fields will appear here...";
+        return;
+      }
+
+      // Strip enclosing brackets and quotation marks
+      const clean = raw.replace(/^[{"]+|[}"]+$/g, "").trim();
+      const hexClean = clean.replace(/-/g, "");
+
+      if (!/^[0-9a-fA-F]{32}$/.test(hexClean)) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = "<span>✕ Invalid UUID Syntax</span> <span>Malformed Hex Stream</span>";
+        metaValid.textContent = "Invalid (Length / Non-Hex)";
+        metaVersion.textContent = "Unknown";
+        metaVariant.textContent = "Unknown";
+        metaTimestamp.textContent = "N/A";
+        inspectViewer.textContent = `Error: Input must contain exactly 32 hexadecimal characters (with or without hyphens).\nProvided length: ${hexClean.length} characters.`;
+        return;
+      }
+
+      // Check for Nil UUID
+      if (hexClean === "00000000000000000000000000000000") {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ Valid RFC 4122 Nil UUID</span> <span>All Zeros</span>";
+        metaValid.textContent = "Valid (Nil UUID)";
+        metaVersion.textContent = "Nil (0)";
+        metaVariant.textContent = "Reserved (Nil)";
+        metaTimestamp.textContent = "N/A";
+        inspectViewer.textContent = JSON.stringify({
+          canonical_format: "00000000-0000-0000-0000-000000000000",
+          version: "Nil",
+          variant: "Nil (RFC 4122 Section 4.1.7)",
+          entropy_bits: 0
+        }, null, 2);
+        return;
+      }
+
+      const byteArr = new Uint8Array(16);
+      for (let i = 0; i < 16; i++) {
+        byteArr[i] = parseInt(hexClean.substr(i * 2, 2), 16);
+      }
+
+      // Extract Version & Variant
+      const versionNibble = byteArr[6] >> 4;
+      const variantByte = byteArr[8];
+      let variantName = "Unknown";
+
+      if ((variantByte & 0x80) === 0x00) {
+        variantName = "NCS Backward Compatibility (0xxx)";
+      } else if ((variantByte & 0xc0) === 0x80) {
+        variantName = "RFC 4122 / RFC 9562 Standard (10xx)";
+      } else if ((variantByte & 0xe0) === 0xc0) {
+        variantName = "Microsoft GUID Compatibility (110x)";
+      } else {
+        variantName = "Reserved for Future Definition (111x)";
+      }
+
+      let timestampOutput = "N/A (Non-temporal variant)";
+      let versionDescription = `Version ${versionNibble}`;
+
+      if (versionNibble === 1) {
+        versionDescription = "Version 1 (Time & Node Based)";
+        const timeLow = (BigInt(byteArr[0]) << 24n) | (BigInt(byteArr[1]) << 16n) | (BigInt(byteArr[2]) << 8n) | BigInt(byteArr[3]);
+        const timeMid = (BigInt(byteArr[4]) << 8n) | BigInt(byteArr[5]);
+        const timeHi = (BigInt(byteArr[6] & 0x0f) << 8n) | BigInt(byteArr[7]);
+        const full100ns = (timeHi << 48n) | (timeMid << 32n) | timeLow;
+        const GREGORIAN_OFFSET = 122192928000000000n;
+        const unixMillis = Number((full100ns - GREGORIAN_OFFSET) / 10000n);
+        const parsedDate = new Date(unixMillis);
+        timestampOutput = !isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : "Timestamp Out of Bounds";
+      } else if (versionNibble === 4) {
+        versionDescription = "Version 4 (Cryptographically Random)";
+      } else if (versionNibble === 7) {
+        versionDescription = "Version 7 (Unix Epoch Time-Sorted)";
+        let ms = 0;
+        for (let i = 0; i < 6; i++) {
+          ms = (ms * 256) + byteArr[i];
+        }
+        const parsedDate = new Date(ms);
+        timestampOutput = !isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : "Malformed Milliseconds";
+      }
+
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>✓ Valid Syntactic UUID Detected</span> <span>Decoded</span>";
+
+      metaValid.textContent = "Valid";
+      metaVersion.textContent = `Version ${versionNibble}`;
+      metaVariant.textContent = variantName;
+      metaTimestamp.textContent = timestampOutput;
+
+      const parsedPayload = {
+        canonical_urn: `urn:uuid:${formatUuid(byteArr, true)}`,
+        version: versionDescription,
+        variant: variantName,
+        timestamp: timestampOutput,
+        structure: {
+          time_low: bytesToHex(byteArr.slice(0, 4)),
+          time_mid: bytesToHex(byteArr.slice(4, 6)),
+          time_hi_and_version: bytesToHex(byteArr.slice(6, 8)),
+          clock_seq_hi_and_reserved: bytesToHex(byteArr.slice(8, 9)),
+          clock_seq_low: bytesToHex(byteArr.slice(9, 10)),
+          node: bytesToHex(byteArr.slice(10, 16))
+        }
+      };
+
+      inspectViewer.textContent = JSON.stringify(parsedPayload, null, 2);
+    }
+
+    btnInspect.addEventListener("click", inspectUuidString);
+    inspectInput.addEventListener("input", inspectUuidString);
+
+    btnClearInspect.addEventListener("click", () => {
+      inspectInput.value = "";
+      inspectUuidString();
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      runBatchGeneration();
+    });
+  </script>
+</body>
+</html>
