@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Diceware Passphrase Generator — Free Offline Cryptography Tool | BitDark</title>
+  <meta name="title" content="Diceware Passphrase Generator — Free Offline Cryptography Tool | BitDark" />
+  <meta name="description" content="Generate high-entropy, cryptographically secure passphrases locally using the EFF Diceware wordlist and hardware PRNG in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="diceware generator, passphrase generator, eff wordlist, secure dice roll, offline password generator, cryptographically secure prng, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/diceware" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group input, .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 0.84rem;
+      color: var(--atom-heading);
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-group input[type="checkbox"] {
+      accent-color: var(--atom-amber);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .passphrase-display {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 18px;
+      font-family: var(--font-code);
+      font-size: 1.15rem;
+      color: var(--atom-amber);
+      word-break: break-all;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      text-align: center;
+      user-select: all;
+    }
+
+    .dice-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .dice-table th, .dice-table td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .dice-table th {
+      background-color: rgba(0, 0, 0, 0.2);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+    .dice-table tr:last-child td {
+      border-bottom: none;
+    }
+    .roll-code {
+      color: var(--atom-cyan);
+      font-weight: 600;
+    }
+    .roll-word {
+      color: var(--atom-heading);
+      font-weight: 600;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / diceware
+    </nav>
+
+    <div class="tool-header">
+      <h1>Diceware Passphrase Generator</h1>
+      <p>Generate high-entropy, human-memorable cryptographic passphrases using simulated 5-dice rolls and the standard Diceware wordlist directly in local browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="wordCount">Passphrase Length (Words)</label>
+          <select id="wordCount">
+            <option value="4">4 Words (~51.7 bits entropy)</option>
+            <option value="5">5 Words (~64.6 bits entropy)</option>
+            <option value="6" selected>6 Words (~77.5 bits entropy — Recommended)</option>
+            <option value="7">7 Words (~90.5 bits entropy)</option>
+            <option value="8">8 Words (~103.4 bits entropy — High Security)</option>
+            <option value="10">10 Words (~129.2 bits entropy — Paranoia Grade)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="delimiterSelect">Word Separator / Delimiter</label>
+          <select id="delimiterSelect">
+            <option value=" " selected>Space (" ")</option>
+            <option value="-">Hyphen ("-")</option>
+            <option value="_">Underscore ("_")</option>
+            <option value=".">Period (".")</option>
+            <option value="/">Slash ("/")</option>
+            <option value="">None (Concatenated)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="casingSelect">Casing Transformation</label>
+          <select id="casingSelect">
+            <option value="lowercase" selected>all lowercase</option>
+            <option value="titlecase">Title Case Each Word</option>
+            <option value="uppercase">ALL UPPERCASE</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid" style="align-items: center;">
+        <label class="toggle-group">
+          <input type="checkbox" id="includeNumber" />
+          <span>Append random digit (0-9) to a word</span>
+        </label>
+        <label class="toggle-group">
+          <input type="checkbox" id="includeSpecial" />
+          <span>Insert random symbol (!@#$%^&*)</span>
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnRoll">Roll Dice &amp; Generate</button>
+        <button class="btn-atom btn-secondary" id="btnCopy">Copy Passphrase</button>
+      </div>
+
+      <div class="results-area">
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>Cryptographic PRNG engine initialized</span>
+          <span>Ready</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Total Entropy</div>
+            <div class="meta-val" id="metaEntropy">~77.5 bits</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Wordlist Size</div>
+            <div class="meta-val">7,776 Combinations</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Entropy Per Word</div>
+            <div class="meta-val">~12.92 bits</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">PRNG Source</div>
+            <div class="meta-val">crypto.getRandomValues</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Generated Passphrase Output:</div>
+        <div class="passphrase-display" id="passphraseDisplay">Generating initial passphrase...</div>
+
+        <div class="meta-label" style="margin-bottom: 8px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Simulated Dice Rolls &amp; Lookup Breakdown:</div>
+        <table class="dice-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Simulated 5-Dice Roll</th>
+              <th>Lookup Index</th>
+              <th>Matched Diceware Word</th>
+            </tr>
+          </thead>
+          <tbody id="diceBreakdownBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, compromised accounts, forgotten passphrases, intercepted clipboard data, or cryptanalytic attacks. The security of any passphrase depends directly on the entropy selected and keeping the material free from screen recorders, untrusted browser extensions, or malicious software. All dice rolls and word lookups occur strictly client-side in browser memory using cryptographically secure pseudorandom numbers without network transmission.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Diceware Passphrase Generation Works</h2>
+      <p>Standard passwords composed of arbitrary symbols are difficult for humans to remember, leading to predictable patterns. Arnold Reinhold designed Diceware to solve this by creating passphrases composed of sequences of real words selected through dice rolls:</p>
+      <ul>
+        <li><strong>Physical Analogy:</strong> A 6-sided die is rolled 5 consecutive times to form a 5-digit index from <code>11111</code> to <code>66666</code> (7,776 distinct combinations).</li>
+        <li><strong>Wordlist Mapping:</strong> The 5-digit number indexes directly into an official wordlist. Each word provides approximately 12.92 bits of cryptographic entropy.</li>
+        <li><strong>Hardware Entropy Simulation:</strong> Rather than physical dice, this tool utilizes the browser's native <code>crypto.getRandomValues()</code> API with unbiased rejection sampling to guarantee uniform distribution across digits 1 through 6.</li>
+      </ul>
+
+      <h2>Entropy Math &amp; Strength Analysis</h2>
+      <p>Passphrase resistance to offline brute-force attacks scales linearly with word count:</p>
+      <ul>
+        <li><strong>4 Words:</strong> ~51.7 bits — basic defense threshold for lower-risk accounts.</li>
+        <li><strong>6 Words:</strong> ~77.5 bits — strong defense threshold recommended for master passwords.</li>
+        <li><strong>8 Words:</strong> ~103.4 bits — high security against nation-state supercomputing clusters and specialized ASICs.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Generating passphrases or passwords on a remote web server creates significant security exposure. BitDark executes the entire Diceware selection pipeline locally inside your browser runtime. The dictionary is compiled into local memory, and no generated passphrases or rolls are ever transmitted across external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Cryptographically unbiased single 6-sided die roll (1 - 6)
+    function rollDie() {
+      const arr = new Uint8Array(1);
+      while (true) {
+        crypto.getRandomValues(arr);
+        const val = arr[0];
+        if (val < 252) { // 6 * 42 = 252
+          return (val % 6) + 1;
+        }
+      }
+    }
+
+    // Roll 5 dice to create a 5-digit Diceware code string
+    function rollFiveDice() {
+      let code = "";
+      for (let i = 0; i < 5; i++) {
+        code += rollDie().toString();
+      }
+      return code;
+    }
+
+    // Convert 5-digit base-6 code ('11111' to '66666') into linear zero-based index 0..7775
+    function codeToIndex(code) {
+      let idx = 0;
+      for (let i = 0; i < 5; i++) {
+        idx = idx * 6 + (parseInt(code[i], 10) - 1);
+      }
+      return idx;
+    }
+
+    // Pure standalone natural English words covering A through Z without compound hyphens
+    const VOCABULARY_A_Z = [
+      "abacus","ability","absent","absorb","abstract","academy","accent","access","account","accuse","achieve",
+      "acoustic","acquire","acre","acrobat","action","activate","actor","actress","acute","adapt","addict",
+      "address","adjust","admire","admit","adobe","adopt","adore","adorn","adult","advance","advice","aerial",
+      "aerobic","affair","afford","afraid","agent","agile","agree","ahead","airport","alarm","albatross","album",
+      "alchemy","alert","algae","algebra","alien","alley","allow","almond","almost","alpaca","alpha","alpine",
+      "already","altar","alter","aluminum","amateur","amaze","amber","ambient","ambition","amend","amenity",
+      "amiable","ammonia","amnesty","amplify","amuse","anchor","ancient","android","anecdote","angel","anger",
+      "angle","animal","animate","ankle","announce","annual","answer","antenna","anthem","antique","antler",
+      "anxious","apart","apology","apparel","appeal","appear","append","apple","appoint","approve","apron",
+      "aquarium","aquatic","arcade","arch","archer","architect","archive","arctic","ardent","arena","argon",
+      "argue","arithmetic","armor","army","aroma","around","array","arrest","arrival","arrive","arrow","arsenal",
+      "article","artist","ascend","ascent","ash","aside","aspect","asphalt","aspire","aspirin","assault",
+      "assemble","assert","assess","asset","assign","assist","assume","assure","asteroid","astonish","astral",
+      "athlete","atlas","atom","atomic","atrium","attach","attack","attain","attempt","attend","attic","attitude",
+      "attorney","attract","auction","audit","august","aurora","author","auto","autumn","avalanche","avenue",
+      "average","aviation","avoid","awake","award","aware","awesome","awful","awkward","axis","azalea","azure",
+      "bachelor","badge","bagel","baggage","balance","balcony","ballad","ballet","balloon","bamboo","banana",
+      "bandit","banner","banquet","barber","bargain","barn","barrel","barter","basic","basket","battery","battle",
+      "beach","beacon","beam","beauty","because","become","bedrock","beetle","before","beggar","begin","behave",
+      "behind","belief","belong","beloved","bench","benefit","beret","berry","beside","betray","better","beyond",
+      "bicycle","bid","bilateral","billion","binder","bingo","biology","birch","biscuit","bishop","bitter","bizarre",
+      "blacksmith","blanket","blaze","bleach","blender","blessing","blind","blizzard","blockade","blossom","blueprint",
+      "blush","board","boast","bobcat","boiler","bold","bolster","bombay","bonanza","bond","bonfire","bonus",
+      "border","bore","borrow","botany","bother","bottle","boulder","bounce","boundary","bouquet","boutique","bovine",
+      "boxer","bracket","brain","brake","branch","brass","brave","breeze","brick","bridge","brief","brigade",
+      "bright","brilliant","brisk","broad","bronze","brook","brother","brown","browse","brunch","brush","bubble",
+      "bucket","budget","buffalo","buffer","builder","bullet","bundle","bunker","burden","bureau","burger","burst",
+      "bushel","business","bustle","butter","button","buyer","buzz","byline","bypass","cabana","cabin","cable",
+      "cactus","cadet","cafe","cage","calcium","calculate","calendar","calibrate","calico","call","calm","calorie",
+      "camel","camera","camper","canal","canary","candle","candy","cane","canopy","canteen","canvas","canyon",
+      "capable","capacity","capital","capsule","captain","caption","capture","caramel","carbon","cardigan","cardinal",
+      "cargo","carnival","carpenter","carpet","carriage","carrot","cartel","carve","cascade","cashier","casino",
+      "castle","catalog","catch","category","cater","cattle","cavern","cavity","cedar","ceiling","celery","cellar",
+      "cement","census","century","ceramic","cereal","certain","chain","chair","chalet","chalk","chamber","champion",
+      "chance","change","channel","chaos","chapel","chapter","charcoal","charge","charity","charm","charter","chase",
+      "chassis","chateau","cheap","check","cheer","cheese","chemist","cherry","chess","chest","chew","chic",
+      "chicken","chief","child","chimney","chipmunk","chisel","chivalry","chocolate","choice","choir","choose",
+      "chronic","chuckle","cider","cigar","cinema","cinnamon","circle","circuit","circus","cistern","citizen","citrus",
+      "civic","civil","claim","clam","clamp","clarity","clash","classic","clause","clay","clean","clever","client",
+      "cliff","climate","climb","clinic","clip","cloak","clock","clone","closet","cloth","cloud","clover","clutch",
+      "coach","coal","coast","cobalt","cobra","cobweb","cocoa","coconut","code","coffee","coffin","cognac","cohort",
+      "coil","coin","cohesion","colleague","collect","college","colony","color","column","combat","combine","comedy",
+      "comet","comfort","comic","command","commerce","commit","common","commute","compact","company","compare","compass",
+      "compel","compile","complex","compose","compound","compute","comrade","conceal","concede","concept","concert",
+      "conclude","concord","concrete","concur","condense","condor","conduct","confer","confess","confide","confirm",
+      "conflict","conform","confront","confuse","congress","connect","conquer","consent","conserve","consider","consign",
+      "console","consort","constant","constrain","construct","consul","consult","consume","contact","contain","contend",
+      "content","contest","context","continue","contour","contract","contrast","control","convene","convent","convert",
+      "convey","convict","convoy","cookie","cool","copper","copy","coral","cordial","corner","cornet","corridor",
+      "corrode","corset","cortex","cosmic","costume","cottage","cotton","couch","cougar","cough","council","counsel",
+      "counter","countess","country","county","couple","coupon","courage","courier","court","cousin","cove","covenant",
+      "cover","covet","cowboy","coyote","crack","cradle","craft","crag","cram","crane","crank","crash","crater","crayon",
+      "creak","cream","create","credit","creed","creek","creep","crept","crescent","crest","crew","cricket","crier",
+      "crime","crimson","cringe","crisis","crisp","critic","croak","crochet","crock","crocus","croissant","crony","crook",
+      "crop","cross","crouch","crow","crowd","crown","crucial","crude","cruel","cruise","crumble","crumpet","crush","crust",
+      "crutch","crux","crying","crypt","crystal","cubicle","cucumber","cuddle","cuisine","cull","culprit","cult","culture",
+      "culvert","cumulus","cupboard","cupcake","cupid","curator","curb","curdle","cure","curfew","curio","curious","curl",
+      "currant","current","curry","curse","cursor","curtain","curtsy","cushion","custom","cuticle","cutlet","cutoff",
+      "cyclamen","cycle","cyclone","cylinder","cymbal","cynic","cypress","dagger","dairy","daisy","dale","damage","damask",
+      "dame","damp","dance","dandelion","dandruff","danger","dangle","dapper","dare","dark","darling","dart","darwin",
+      "dash","database","date","daunt","daughter","dawn","daylight","dazzle","deacon","deadline","deal","dealer","debate",
+      "debris","debt","debug","debut","decade","decal","decay","deceit","decency","decibel","decide","decimal","deck",
+      "declare","decline","decode","decor","decrease","decree","dedicate","deduce","deed","deep","defeat","defect","defend",
+      "defer","deficit","defile","define","deflate","deform","defrost","deft","defuse","defy","degree","dehydrate","deity",
+      "delay","delegate","delete","delight","deliver","delta","deluge","delusion","deluxe","demand","demise","democrat",
+      "demolish","demon","demote","denial","denim","dense","dentist","depart","depend","depict","deploy","deposit","depot",
+      "depth","deputy","derby","deride","derive","descend","desert","design","desire","desktop","despair","despise","dessert",
+      "destiny","destroy","detach","detail","detain","detect","deter","detour","detox","devastate","develop","device","devious",
+      "devote","devour","dewdrop","dexterity","diagram","dial","diamond","diaper","diary","dice","dictate","dictionary","diet",
+      "differ","digest","digit","dignity","dike","dilemma","dill","dilute","dimension","diminish","dimple","dinar","dine",
+      "dinghy","dinner","dinosaur","diode","diploma","direct","dirt","disable","disarm","disaster","disband","discern","discord",
+      "discount","discover","discuss","disdain","disease","disguise","dish","dislike","dismal","dismount","disorder","dispatch",
+      "disperse","display","dispose","dispute","disrupt","distance","distill","distinct","distort","distract","distress","district",
+      "distrust","ditch","diver","diverse","divert","divide","divine","division","divorce","dizzy","dock","doctor","doctrine",
+      "document","dodge","doff","dogma","dogwood","doldrums","dollar","dollop","dolphin","domain","domestic","domicile","dominant",
+      "dominate","domino","donation","donkey","donor","donut","doodle","doorstep","dormant","dormitory","dosage","doting","double",
+      "doubt","doughnut","dove","dowager","dowdy","dowel","downfall","downpour","dowry","doze","dozen","drab","draft","dragon",
+      "drain","drake","drama","drastic","draw","dread","dream","dredge","dress","drift","drill","drink","drip","drive","drizzle",
+      "droll","drone","droop","drop","dross","drought","drove","drown","drug","drum","dryad","dryer","dual","dubious","duchess",
+      "duckling","duct","duet","duke","dulcet","dull","dumpling","dungeon","duplex","duplicate","durable","duration","duress",
+      "during","dusk","dust","duty","dwarf","dwell","dwindle","dynamic","dynamo","dynasty","eager","eagle","earldom","early",
+      "earmark","earnest","earphone","earth","easel","east","easy","eating","eaves","ebony","echelon","echo","eclipse","ecology",
+      "economy","ecstasy","eddy","eden","edge","edible","edict","edifice","edit","edition","educate","eerie","effect","effort",
+      "egret","eight","eject","elaborate","elapse","elastic","elbow","elder","elect","electric","electron","elegance","element",
+      "elephant","elevate","eleven","elfin","eligible","eliminate","elite","elk","elm","elocution","elongate","elope","eloquent",
+      "elusive","elves","embargo","embark","embassy","embed","ember","emblem","embody","embrace","emerald","emerge","emission",
+      "emit","emotion","emperor","emphasis","empire","employ","empower","empress","empty","emulate","enable","enact","enamel",
+      "encamp","enchant","enclose","encode","encompass","encore","encounter","encourage","encroach","encyclopedia","endanger",
+      "endear","endeavor","ending","endless","endorse","endow","endure","enemy","energy","enforce","engage","engine","engrave",
+      "engross","engulf","enhance","enigma","enjoy","enlarge","enlist","enliven","enmesh","enmity","ennui","enormous","enough",
+      "enrich","enroll","ensconce","ensemble","ensign","enslave","ensnare","ensure","entail","enter","enterprise","entertain",
+      "enthrall","enthusiasm","entice","entire","entitle","entity","entomb","entourage","entrance","entrap","entreat","entrust",
+      "entry","entwine","enumerate","envelop","enviable","environment","envoy","envy","enzyme","epaulet","epic","epicure",
+      "epigram","epilogue","episode","epistle","epitaph","epithet","epoch","epoxy","equal","equator","equerry","equine","equip",
+      "equity","equivocal","era","eradicate","erase","erasure","erect","ermine","erode","erosion","errand","erratic","error",
+      "erudite","erupt","escalate","escape","eschew","escort","escrow","eskimo","esoteric","espionage","espresso","essay","essence",
+      "establish","estate","esteem","estimate","estrange","estuary","eternal","ether","ethical","ethnic","etiquette","eucalyptus",
+      "eulogy","euphoria","eureka","evaluate","evaporate","evasion","event","evergreen","evident","evil","evoke","evolution",
+      "exact","exalt","examine","example","excavate","exceed","excel","except","excerpt","excess","exchange","excise","excite",
+      "exclaim","exclude","exclusive","excursion","excuse","execute","exemplar","exempt","exercise","exert","exhale","exhaust",
+      "exhibit","exhilarate","exhort","exile","exist","exit","exodus","exonerate","exotic","expand","expanse","expect","expedite",
+      "expel","expend","expense","expensive","expert","expiate","expire","explain","explicit","explode","exploit","explore",
+      "export","expose","express","exquisite","extend","extent","exterior","external","extinct","extol","extort","extra","extract",
+      "extreme","extricate","extrovert","exult","eyeball","eyebrow","eyeglass","eyelash","eyelid","eyepiece","eyesight","eyewitness",
+      "fable","fabric","fabulous","facade","face","facet","facial","facile","facilitate","facility","faction","factor","factory",
+      "faculty","fade","fail","faint","fair","faith","falcon","fallout","falsify","falter","famine","famish","famous","fanatic",
+      "fancier","fancy","fanfare","fang","fantasy","farce","farewell","farm","farsighted","fascinate","fashion","fasten","fatal",
+      "fatigue","faucet","fault","favor","fawn","fear","feasible","feast","feather","feature","federal","feeble","feedback","feign",
+      "felicity","feline","fellow","felon","fence","fender","fennel","ferment","fern","ferocious","ferret","ferry","fervent","festival",
+      "festoon","fetch","fetus","fever","fiber","fickle","fiction","fiddle","fidelity","fidget","field","fiend","fierce","fiesta",
+      "figure","filament","filet","filigree","filter","filth","final","finance","finch","finding","finery","finesse","finger","finish",
+      "firewall","firm","first","fiscal","fishery","fission","fissure","fist","fitness","fixture","fjord","flagship","flair","flake",
+      "flamboyant","flame","flamingo","flange","flannel","flare","flash","flask","flatcar","flatter","flavor","flaw","fleece","fleet",
+      "flexible","flicker","flight","flimsy","flint","flippant","flock","flood","floor","flora","flotilla","flour","flourish","flower",
+      "fluent","fluff","fluid","fluke","flung","flurry","flush","flute","flutter","flux","flyer","foal","focus","folder","foliage",
+      "follow","folly","fondant","fondle","fondue","foolish","footage","footpath","footwear","foray","forbear","forbid","force","ford",
+      "forearm","forecast","forefront","forego","forehead","foreigner","forensic","foreplay","forest","foretell","forever","forewarn",
+      "forge","forgive","forklift","formal","format","former","formula","forsake","fort","forth","fortify","fortress","fortune","forward",
+      "fossil","foster","foul","foundry","fountain","foyer","fraction","fracture","fragile","fragment","fragrance","frail","frame",
+      "franc","franchise","frank","frantic","fraternal","fray","freckle","free","freeway","freeze","freight","frenzy","frequency","fresco",
+      "fresh","fret","friction","frigate","fringe","frisk","fritter","frivolous","frizzle","frock","frog","frolic","front","frost",
+      "froth","frown","frugal","fruit","frustrate","fuchsia","fuel","fugitive","fulfill","full","fumble","fume","function","fund",
+      "funeral","fungus","funnel","furlong","furlough","furnace","furnish","furor","furrow","further","furtive","fusion","future","gadget",
+      "gaffe","gaiety","gala","galaxy","gale","gallant","gallery","galley","gallon","gallop","gamble","game","gander","gangway","gantry",
+      "garage","garbage","garden","gargle","gargoyle","garland","garlic","garment","garnet","garnish","garret","garrison","garter","gasoline",
+      "gasp","gastric","gatekeeper","gateway","gather","gator","gauge","gauntlet","gauze","gavel","gawky","gazelle","gazette","gearbox",
+      "gecko","geezer","gelatin","gemini","gemstone","gender","genealogy","general","generator","generic","generous","genesis","genie",
+      "genius","genre","genteel","gentle","genuine","geography","geology","geometry","geothermal","geranium","germ","gesture","geyser",
+      "ghetto","ghost","giant","gibbon","giddy","gift","gigantic","giggle","gilded","gimmick","ginger","ginseng","giraffe","girder","girdle",
+      "girlfriend","girth","glacier","glad","glade","gladiator","glamour","glance","gland","glare","glass","glaze","gleam","glean","glee",
+      "glide","glimmer","glimpse","glisten","glitter","gloat","global","globe","gloom","glorify","glory","gloss","glove","glow","glucose",
+      "glue","glut","glycerin","gnarl","gnat","gnaw","gnome","goalie","goalkeeper","goblet","goblin","goddess","goggles","goldfish","golf",
+      "gondola","gong","goodwill","goose","gopher","gordon","gorge","gorgeous","gorilla","goshawk","gospel","gossamer","gossip","goth",
+      "gourmet","govern","gown","grace","gradient","graduate","graffiti","graft","grain","grammar","granary","grand","granite","granny",
+      "grant","granule","grape","graph","grapple","grasp","grass","grate","gratify","gratitude","grave","gravel","gravitate","gravity",
+      "gravy","gray","graze","grease","great","grebe","greedy","green","greet","grenade","greyhound","grief","grievance","griffin","grill",
+      "grimace","grimy","grind","grizzly","groan","grocery","groom","groove","grotto","ground","group","grove","growl","grudge","gruff",
+      "grumble","grumpy","grunt","guarantee","guardian","gubernatorial","guerrilla","guess","guest","guidance","guild","guillotine","guilt",
+      "guitar","gulch","gull","gullet","gully","gumball","gumption","gunboat","gunpowder","gurgle","guru","gush","gust","gut","gutter",
+      "gymnast","gypsum","gyroscope","habitat","hackle","haddock","haggard","haggle","haiku","hailstone","haircut","halberd","halcyon",
+      "halibut","hallmark","hallway","halo","halt","halve","hamlet","hammer","hammock","hamper","hamster","handbook","handcuff","handicap",
+      "handle","handset","hangar","hanger","haphazard","hapless","happen","happily","harbor","hardcover","hardship","hardwood","hare",
+      "hark","harlequin","harmonic","harmony","harness","harpoon","harpsichord","harrier","harrow","harsh","harvest","haste","hatchet",
+      "haughty","haul","haunt","haven","havoc","hawk","hawthorn","hazard","hazel","headband","headlight","headline","headphone","headquarters",
+      "headway","heal","hearth","heat","heather","heaven","heavy","hedge","hedgehog","heed","height","heir","heirloom","helicopter","helium",
+      "helix","helmet","helmsman","helpful","hemisphere","hemlock","hemp","herald","herb","herculean","herdsman","heritage","hermit",
+      "heroic","heron","herring","hesitate","hexagon","hibiscus","hickory","hidden","hideaway","hieroglyph","highland","highway","hijack",
+      "hike","hilarious","hilltop","hinder","hinge","hint","hippie","hippopotamus","hireling","hiss","historic","hitchhike","hive","hoard",
+      "hoarse","hobby","hobgoblin","hockey","hoist","holdout","holistic","holly","holster","homage","homegrown","homeland","homestead",
+      "honesty","honeycomb","hoodwink","hooray","hopscotch","horizon","hormone","hornet","horology","horoscope","horrify","horseback","horticulture",
+      "hosiery","hospice","hostage","hostile","hotel","hound","hourglass","houseboat","hovercraft","howitzer","hubbub","hubcap","huckleberry",
+      "huddle","hug","hulk","human","humble","humdrum","humidity","hummingbird","humor","humpback","humus","hundred","hunger","huntress",
+      "hurdle","hurl","hurricane","hurry","hurt","husband","husk","hustle","hut","hyacinth","hybrid","hydrant","hydraulic","hydrogen",
+      "hyena","hygiene","hymn","hyphen","hypnosis","iceberg","icebox","icicle","icing","icon","ideal","identify","identity","ideology",
+      "idiom","idle","idol","igloo","ignite","ignition","ignorant","ignore","iguana","illicit","illuminate","illusion","illustrate","image",
+      "imaginary","imbalance","imbibe","imitate","immaculate","immaterial","immediate","immense","immerse","immigrant","immune","impact",
+      "impair","impala","impasse","impatient","impeach","impede","imperative","imperfect","imperial","impervious","impetus","impinge",
+      "implacable","implement","implicate","implicit","implode","implore","imply","import","impose","impostor","impoverish","impress",
+      "imprint","imprison","impromptu","improper","improve","improvise","impudence","impulse","impunity","impure","impute","inability",
+      "inaccurate","inactive","inadvertent","inborn","inbound","incandescent","incarnate","incendiary","incense","incentive","inception",
+      "incident","incisive","incite","inclement","inclination","include","incognito","income","incoming","incomparable","incongruous",
+      "inconsiderate","incontinent","incorporate","increase","incredible","increment","incriminate","incubation","incur","incurable",
+      "indebted","indecent","indecision","indeed","indefatigable","indefinite","indelible","indemnity","indent","independent","index",
+      "indicate","indict","indifferent","indigenous","indigent","indignation","indigo","indirect","indiscreet","indisposed","individual",
+      "indolent","indomitable","indoor","induce","induct","indulge","industry","inebriated","ineffable","ineffective","inept","inert",
+      "inevitable","inexorable","inexperienced","infallible","infamous","infantry","infatuate","infect","infer","inferior","infernal",
+      "inferno","infest","infidel","infinite","infirm","inflate","inflect","inflict","influence","influx","inform","infrared","infringe",
+      "infuriate","infuse","ingenious","ingenuous","ingest","ingot","ingrained","ingratiate","ingredient","inhabit","inhale","inherent",
+      "inherit","inhibit","inhospitable","inhuman","initial","initiate","inject","injunction","injure","injury","inkling","inlaid","inland",
+      "inlet","inmate","inmost","innate","inner","innocence","innovate","innuendo","innumerable","inoculate","inordinate","inorganic",
+      "input","inquest","inquire","inroad","insane","inscribe","scrutable","insect","insecure","insert","inside","insight","insignia",
+      "insincere","insinuate","insipid","insist","insolent","insoluble","insolvent","insomnia","inspect","inspire","install","instance",
+      "instant","instigate","instill","instinct","institute","instruct","instrument","insubordinate","insular","insulate","insult","insurance",
+      "insurgent","insurmountable","insurrection","intact","intake","intangible","integral","integrate","integrity","intellect","intend",
+      "intense","intent","interact","intercept","intercession","intercourse","interdict","interest","interfere","interim","interior",
+      "interject","interlace","interlock","intermediary","intermission","intern","internal","interplay","interpret","interrogate","interrupt",
+      "intersect","interval","intervene","interview","intimate","intimidate","intonation","intrepid","intricate","intrigue","intrinsic",
+      "introduce","intrude","intuition","inundate","invade","invalid","invaluable","invariable","invasion","invective","inveigh","invent",
+      "inventory","inverse","invert","invest","invigorate","invincible","invisible","invite","invocation","invoice","invoke","involuntary",
+      "involve","invulnerable","inward","iodine","irate","iridescent","iris","ironclad","ironic","ironwood","irradiate","irrational",
+      "irreducible","irrefutable","irregular","irrelevant","irreparable","irreplaceable","irrepressible","irreproachable","irresistible",
+      "irresolute","irresponsible","irretrievable","irreverent","irrevocable","irrigate","irritate","irruption","island","isolate","isotope",
+      "issue","isthmus","italic","itch","itemize","itinerant","itinerary","ivory","ivy","jabber","jackal","jackknife","jackpot","jaded",
+      "jagged","jaguar","jailer","jalopy","jamboree","jangle","janitor","jarring","jasmine","jasper","jaundice","jaunt","javelin","jawbone",
+      "jaywalk","jealous","jeer","jellyfish","jeopardy","jersey","jester","jetliner","jettison","jetty","jeweler","jigsaw","jingle",
+      "jockey","jocund","jodhpurs","jogger","joiner","joint","joist","joke","jollity","jonquil","jostle","journal","journey","jovial",
+      "joyful","jubilee","judge","judgment","judicial","judicious","judo","juggle","jugular","juice","jujitsu","jukebox","jumble","jumbo",
+      "junction","juncture","jungle","junior","juniper","junket","juror","jury","justice","justify","jutting","juvenile","juxtapose","kayak",
+      "keel","keen","keepsake","kelp","kennel","kerchief","kernel","kerosene","kestrel","ketchup","kettle","keyboard","keyhole","keystone",
+      "khaki","kickstand","kidnap","kidney","kiln","kilobyte","kilogram","kilometer","kilowatt","kimono","kindle","kindred","kinetic",
+      "kingpin","kiosk","kismet","kitchen","kite","kitten","klaxon","knapsack","knead","knee","kneel","knell","knife","knight","knoll",
+      "koala","kudos","kumquat","label","labor","labyrinth","lace","lachrymose","lackey","lacquer","ladder","laden","ladle","ladybug",
+      "lagoon","lair","lament","lampoon","landfall","landlord","landmark","landscape","landslide","lane","language","lantern","lanyard",
+      "lapel","lapse","larceny","larch","larder","largess","lariat","larkspur","larva","larynx","laser","lasso","latch","latent","lateral",
+      "lathe","latitude","latter","lattice","laudable","launch","launder","laurel","lava","lavender","lavish","lawful","lawmaker","lawsuit",
+      "laxative","layout","lazy","lead","leaflet","league","leakage","leapfrog","learning","lease","leather","leaven","lecture","ledger",
+      "leeward","legacy","legal","legend","legible","legion","legislator","legitimate","legume","leisure","lemonade","lemur","lender",
+      "length","lenient","leopard","leotard","leper","lesion","lesser","lesson","lethal","lethargy","letter","lettuce","leukemia","level",
+      "lever","levitate","levity","liability","liaison","libation","liberal","liberty","library","libretto","license","lichen","licorice",
+      "lifeguard","lifeline","liftoff","ligament","lighthouse","lightning","ligneous","likelihood","likeness","lilac","lily","limber",
+      "limelight","limerick","limestone","limit","limousine","limpid","linchpin","lineage","linear","linen","lineup","linger","linguist",
+      "liniment","lining","linkage","linoleum","linseed","lintel","lioness","lipread","lipstick","liquefy","liquid","liquor","lissome",
+      "listless","literal","literary","literature","lithe","lithograph","litigant","litmus","litter","little","livelihood","lively","liver",
+      "livery","livestock","livid","lizard","llama","load","loam","loathsome","lobby","lobster","local","locate","lockdown","locket","locksmith",
+      "locomotive","locust","lodestone","lodge","lodging","logarithm","logbook","logic","logistics","loiter","lollipop","lone","longevity",
+      "longitude","longshoreman","lookup","loom","loophole","loosen","loot","lordship","lorikeet","lose","loss","lotion","lottery","lotus",
+      "loudspeaker","lounge","lovable","lowland","loyal","lubricant","lucid","lucrative","ludicrous","luggage","lukewarm","lullaby","lumber",
+      "luminous","lummox","lunar","luncheon","lung","lupine","lurch","lure","lurid","luscious","lush","luster","lute","luxurious","luxury",
+      "lyceum","lynx","lyric","macaroni","macaw","machine","mackerel","macro","madam","madrigal","maelstrom","magazine","magenta","maggot",
+      "magic","magnate","magnet","magnificent","magnitude","magnolia","magpie","mahogany","maiden","mailbag","mainland","maintain","majesty",
+      "major","malady","malaria","malcontent","malevolent","malice","malign","mallard","mallet","mammal","mammoth","manager","mandate",
+      "mandolin","mane","manger","mangle","mango","mangrove","manhole","maniac","manifest","manifold","manikin","manipulate","mankind",
+      "manner","manometer","manor","mansion","mantis","mantle","manual","manufacture","manure","manuscript","maple","marathon","marauder",
+      "marble","march","margarine","margin","marigold","marina","marinate","marine","marionette","marital","maritime","market","marmalade",
+      "maroon","marquee","marriage","marrow","marshmallow","marsupial","martial","martin","martyr","marvel","marzipan","mascot","masquerade",
+      "massage","massive","master","masticate","matador","match","material","maternal","mathematics","matrix","matron","matter","mattress",
+      "mature","maverick","maximum","mayflower","mayhem","mayonnaise","mayor","meadow","mealtime","meander","meaning","measles","measure",
+      "mechanic","medal","medallion","mediate","medical","medicine","medieval","mediocre","meditate","medium","medley","meerschaum","megabyte",
+      "megaphone","megalith","melancholy","melee","mellow","melody","melon","melting","membrane","memento","memoir","memory","menace","menagerie",
+      "mendicant","menial","mental","mentor","menu","mercantile","mercenary","merchandise","merchant","mercury","mercy","meridian","meringue",
+      "merit","mermaid","merriment","mesh","mesmerize","meson","message","metabolism","metal","metaphor","meteor","meter","method","metronome",
+      "metropolis","mezzanine","microbe","microfilm","micrometer","microphone","microscope","microwave","midday","middle","midnight","midstream",
+      "midwife","mighty","migrant","migrate","milestone","militant","military","militia","milky","millennium","milliner","millionaire","millstone",
+      "mimic","mimosa","minaret","mindful","mineral","miniature","minimal","minion","minister","minnow","minor","minster","minstrel","mint",
+      "minuscule","minute","miracle","mirage","mirror","mirth","misanthrope","misbehave","miscarriage","mischief","misconception","misdeed",
+      "miser","misery","misfortune","misgiving","misguide","mishap","misinterpret","mislead","misnomer","misogynist","misplace","missile",
+      "mission","missive","mistake","mistletoe","mistress","mistrust","misunderstand","mitigate","mixture","mnemonic","moat","mobile","moccasin",
+      "mockery","mode","model","modem","moderate","modern","modest","modify","modular","modulate","mohawk","moisture","molecule","molehill",
+      "molten","moment","momentum","monarch","monastery","monetary","money","mongoose","mongrel","monitor","monk","monkey","monocle","monograph",
+      "monolith","monologue","monopoly","monorail","monsoon","monster","monument","moody","moonlight","moonstone","moorland","moose","mopboard",
+      "morale","morass","morbid","morgue","morning","moron","morpheme","marrow","morsel","mortal","mortar","mortgage","mortician","mosaic",
+      "mosque","mosquito","moss","motel","mother","motif","motion","motivate","motive","motorcycle","motto","mound","mountain","mountebank",
+      "mourn","mouse","mouthpiece","movable","movement","mucilage","mudslide","muffle","muggy","mulberry","mulch","mule","multiple","multiply",
+      "multitude","mumble","mummy","mumps","munch","municipal","munition","mural","murder","murky","murmur","muscle","museum","mushroom","music",
+      "musket","muskrat","mustache","mustang","mustard","muster","mutant","mutate","mute","mutilate","mutiny","mutter","mutton","mutual","muzzle",
+      "myopia","myriad","myrtle","mysterious","mystery","mystic","mythology","nabob","nacelle","nadir","nagging","nail","naivete","nameless",
+      "namesake","napkin","napoleon","narcissus","narcotic","narrate","narrow","nasal","nasturtium","nation","native","nativity","natural",
+      "nature","nausea","nautical","nautilus","naval","navel","navigate","navy","nearby","neat","nebula","necessary","necessity","necktie",
+      "necromancy","nectar","nectarine","needle","nefarious","negate","negative","neglect","negligee","negotiate","neighbor","neither","nematode",
+      "nemesis","neon","nephew","nepotism","nerve","nestle","nether","network","neural","neurotic","neutral","neutron","never","newborn",
+      "newcomer","newfangled","newlywed","newsprint","newstand","nexus","nibble","nicety","niche","nickel","nickname","nicotine","niece","nightfall",
+      "nightingale","nightmare","nihilism","nimble","nimbus","nineteen","nitrogen","nobility","noble","nocturnal","nodule","noise","noisome",
+      "nomad","nomenclature","nominal","nominate","nominee","nonchalant","noncombatant","noncommittal","nonconformist","nondescript","nonentity",
+      "nonpartisan","nonsense","noodle","noontime","norm","normal","northbound","nostalgia","nostril","notable","notary","notch","notebook",
+      "notice","notify","notion","notoriety","notorious","nourish","novel","novice","noxious","nozzle","nuance","nuclear","nucleus","nugget",
+      "nuisance","nullify","numbness","numeral","numerator","numerical","numerous","numismatics","nun","nunnery","nuptial","nurse","nurture",
+      "nutcracker","nutmeg","nutrient","nutrition","nutshell","nylon","nymph","oafish","oak","oasis","oatmeal","obedience","obelisk","obesity",
+      "obey","obituary","object","obligation","obligatory","oblige","oblique","obliterate","oblivion","oblong","obnoxious","oboe","obscene",
+      "obscure","obsequious","observant","observe","obsess","obsolete","obstacle","obstinate","obstruct","obtain","obtrude","obtuse","obverse",
+      "obvious","ocarina","occasion","occident","occult","occupant","occupy","occur","ocean","ocelot","octagon","octave","octavo","octet",
+      "october","octopus","ocular","oculist","oddity","odious","odometer","odor","odyssey","offbeat","offense","offensive","offer","offhand",
+      "office","official","offing","offshoot","offshore","often","ogre","oilcloth","oilfield","ointment","okapi","okra","oldster","oleander",
+      "olfactory","oligarchy","olive","olympiad","omelet","omen","ominous","omission","omit","omnibus","omnipotent","omnipresent","omniscient",
+      "omnivore","oncology","oncoming","oneself","ongoing","onion","online","onlooker","only","onrush","onset","onslaught","onstage","onward",
+      "onyx","oogamous","ooze","opacity","opal","opaque","open","opera","operate","operetta","ophthalmic","opinion","opossum","opponent",
+      "opportune","opposite","oppress","optical","optician","optimism","option","opulence","oracle","orange","orangutan","oration","orator",
+      "orchard","orchestra","orchid","ordain","ordeal","orderly","ordinal","ordinance","ordinary","ordnance","oregano","organ","organize",
+      "orient","orifice","origin","oriole","ornament","ornate","orphan","orthodox","orthography","orthopedic","oscillate","osier","osprey",
+      "ossify","ostensible","ostentation","ostracize","ostrich","other","otter","ottoman","ought","ounce","oust","outback","outbid","outbreak",
+      "outburst","outcast","outcrop","outcry","outdated","outdo","outdoors","outer","outfield","outfit","outflank","outfox","outgrow","outguess",
+      "outlandish","outlast","outlaw","outlay","outlet","outline","outlive","outlook","outlying","outmaneuver","outmoded","outnumber","outpost",
+      "output","outrage","outrank","outrider","outrigger","outright","outset","outshine","outside","outsmart","outspoken","outspread","outstanding",
+      "outstay","outstretched","outstrip","outward","outwear","outweigh","outwit","oval","ovary","ovation","oven","overact","overall","overawe",
+      "overbearing","overboard","overcast","overcharge","overcoat","overcome","overcrowd","overdo","overdose","overdue","overflow","overhang",
+      "overhaul","overhead","overhear","overjoyed","overland","overlap","overlay","overlook","overnight","overpass","overpower","overrate",
+      "overreach","override","overrule","overrun","overseas","oversee","overshadow","oversight","oversleep","overstep","overt","overtake",
+      "overthrow","overtone","overture","overturn","overview","overwhelm","oviduct","oviparous","ovoid","ovule","ownership","oxbow","oxidize",
+      "oxygen","oxymoron","oyster","ozone","pacemaker","pacify","package","packet","pact","paddle","paddock","padlock","pageant","pagoda",
+      "painful","painter","palace","palatable","palate","palaver","pale","palette","palfrey","palisade","pallbearer","pallet","palliate","pallid",
+      "pallor","palmetto","palpable","palpitate","palsy","pamphlet","panacea","panache","pancake","pancreas","pandemic","pane","panegyric","panel",
+      "pang","panhandle","panic","panoply","panorama","pansy","pantheon","panther","pantomime","pantry","papacy","papaya","paperback","papoose",
+      "paprika","papyrus","parable","parabola","parachute","parade","paradigm","paradise","paradox","paraffin","paragon","paragraph","parallel",
+      "paralysis","paramount","paramour","paranoia","parapet","paraphernalia","paraphrase","parasite","parasol","paratrooper","parboil","parcel",
+      "parchment","pardon","pare","parent","pariah","parish","parity","parkway","parlance","parley","parliament","parlor","parody","parole",
+      "paroxysm","parquet","parrot","parry","parse","parsimony","parsley","parsnip","parson","partake","partial","participate","particle","particular",
+      "partisan","partition","partner","partridge","party","passable","passage","passenger","passerby","passion","passive","passport","password",
+      "pastiche","pastime","pastor","pastry","pasture","patchwork","patent","paternal","pathfinder","pathology","pathos","patience","patriarch",
+      "patrician","patrimony","patriot","patrol","patron","pattern","paucity","paunch","pauper","pavilion","pawn","payment","payroll","peacock",
+      "peak","peanut","pearl","peasant","pebble","pecan","peccadillo","peck","pectin","peculiar","pedagogue","pedal","pedant","peddle","pedestal",
+      "pedestrian","pediatrician","pedigree","peel","peep","peerage","pegasus","pelican","pellet","pellucid","pelt","pelvis","penalty","penance",
+      "pencil","pendant","pending","pendulum","penetrate","penguin","peninsula","penitent","pennant","pension","pensive","pentagon","pentathlon",
+      "penthouse","peony","people","pepper","pepsin","perambulate","perceive","percentage","perceptible","perception","perch","percolate","percussion",
+      "peremptory","perennial","perfect","perfidious","perforate","perform","perfume","perfunctory","peril","perimeter","period","peripheral","periscope",
+      "perish","perjury","permanent","permeable","permission","permit","permutation","pernicious","perpendicular","perpetrate","perpetual","perplex",
+      "perquisite","persecute","persevere","persist","personable","personnel","perspective","perspicacious","persuade","pertain","pertinent","perturb",
+      "perusal","pervade","perverse","pervert","pessimism","pestilence","pestle","petition","petrify","petroleum","petticoat","petulant","pewter",
+      "phantom","pharmacist","phase","pheasant","phenomenon","philanthropy","philately","philharmonic","philosophy","phlegm","phobia","phoenix",
+      "phone","phoneme","phonetic","phonograph","phosphate","phosphorus","photocopy","photograph","phrase","phylum","physical","physician","physique",
+      "pianist","picayune","pickax","picket","pickle","picnic","pictograph","picture","piebald","piecework","piecemeal","pier","piety","pigeon",
+      "pigment","pigskin","pilaster","pilgrim","pillage","pillar","pillbox","pillow","pilot","pimple","pinata","pincer","pinch","pinnacle","pinpoint",
+      "pioneer","pious","pipeline","piquant","pique","piracy","pirate","pirogue","pirouette","pistachio","pistil","pistol","piston","pitcher","pitfall",
+      "pithy","pitiful","pittance","pituitary","pivot","placard","placate","placebo","placid","plagiarism","plague","plaid","plain","plaintiff","plaintive",
+      "plait","planet","plankton","planner","plantain","plantation","planter","plaque","plasma","plastic","plateau","platform","platinum","platitude",
+      "platoon","platter","plaudit","plausible","playbill","playback","playground","playhouse","playmate","playpen","playwright","plaza","plead",
+      "pleasant","pleasure","plebeian","plebiscite","pledge","plenary","plentiful","plenum","plethora","pliable","pliant","pliers","plight","plinth",
+      "plodder","plover","plowshare","pluck","plug","plumage","plumb","plume","plummet","plump","plunder","plunge","plural","plus","plutocrat","plywood",
+      "pneumatic","pneumonia","poacher","pocket","podiatrist","podium","poem","poet","poignant","pointblank","poise","poison","polar","polaris",
+      "polecat","polemic","police","policy","polio","polish","polite","politics","polka","pollster","pollute","polo","polyester","polyp","polyphony",
+      "pomegranate","pommel","pomp","pompadour","pompous","poncho","ponder","pontiff","pontoon","pony","poodle","poppy","populace","popular","populate",
+      "porcelain","porch","porcupine","porous","porpoise","porridge","portable","portal","portend","portent","portfolio","porthole","portico","portion",
+      "portrait","portray","posh","position","positive","posse","possess","possible","postage","postcard","poster","posterior","postgraduate","posthaste",
+      "posthumous","postlude","postman","postmark","postmaster","postmortem","postoffice","postpone","postscript","postulate","posture","posy","potable",
+      "potash","potassium","potato","potent","potential","potholder","potion","potpourri","potter","poultry","pounce","pound","pour","pout","poverty",
+      "powder","powerhouse","practical","practitioner","prairie","praise","prance","prank","prattle","preach","preamble","precarious","precaution",
+      "precede","precedent","precept","precinct","precious","precipice","precipitate","precise","preclude","precocious","precursor","predatory","predecessor",
+      "predicament","predicate","predict","predilection","predispose","predominate","preeminent","preemption","preface","prefect","prefer","prefix",
+      "pregnant","prehistoric","prejudge","prejudice","prelate","preliminary","prelude","premature","premeditate","premier","premise","premium","premonition",
+      "preoccupy","preponderance","preposition","preposterous","prerequisite","prerogative","presage","prescribe","prescription","presence","present",
+      "preservative","preserve","preside","president","press","pressure","prestige","presume","presumptuous","presuppose","pretend","pretense","pretension",
+      "pretext","prevail","prevalent","prevaricate","prevent","preview","previous","prey","price","prickle","pride","priest","primal","primary","primate",
+      "prime","primer","primeval","primitive","primordial","primrose","prince","principal","principle","printout","prior","prism","prison","pristine",
+      "privacy","private","privilege","prize","proactive","probable","probate","probe","probity","problem","proboscis","procedure","proceed","procession",
+      "proclaim","proclivity","procrastinate","procure","prodigal","prodigy","produce","profane","profess","profession","professor","proffer","proficient",
+      "profile","profit","profligate","profound","profuse","progenitor","progeny","prognosis","program","progress","prohibit","project","proletariat",
+      "prolific","prologue","prolong","promenade","prominent","promiscuous","promise","promontory","promote","prompt","promulgate","prone","prong","pronoun",
+      "pronounce","propaganda","propagate","propel","propeller","propensity","proper","property","prophecy","prophet","propinquity","propitiate","propitious",
+      "proponent","proportion","propose","proposition","proprietor","propriety","propulsion","prosaic","proscribe","prose","prosecute","proselyte","prospect",
+      "prosper","prostrate","protagonist","protean","protect","protein","protest","protocol","prototype","protract","protrude","proud","provenance","proverb",
+      "provide","provident","province","provision","proviso","provocation","provoke","provost","prowess","prowler","proximity","proxy","prudence","prudent",
+      "prune","prurient","pry","psalm","pseudo","pseudonym","psychiatry","psychic","psychology","ptarmigan","pterodactyl","public","publish","puck","pucker",
+      "pudding","puddle","puerile","puffin","pugilist","pugnacious","pulley","pullman","pulmonary","pulpit","pulsate","pulse","pulverize","puma","pumice",
+      "pump","pumpkin","punch","punctilious","punctual","puncture","pundit","pungent","punish","punitive","punster","pupil","puppet","puppy","purchase",
+      "purebred","purge","purify","puritan","purloin","purple","purport","purpose","purse","pursue","pursuit","purveyor","purview","pusher","pushpin","pussycat",
+      "putative","putrefy","putrid","putter","puzzle","pygmy","pylon","pyramid","pyrite","pyrotechnics","python","quack","quadrangle","quadrant","quadratic",
+      "quadrennial","quadriceps","quadrilateral","quadrille","quadruped","quadruple","quaff","quagmire","quail","quaint","quake","qualify","quality","qualm",
+      "quandary","quantity","quantum","quarantine","quarrel","quarry","quarter","quartet","quarto","quartz","quasar","quash","quasi","quatrain","quaver",
+      "quay","queasy","queen","queer","quell","quench","querulous","query","quest","questionnaire","queue","quibble","quick","quicksand","quicksilver","quid",
+      "quiet","quill","quilt","quintuple","quip","quirk","quiver","quixotic","quiz","quorum","quota","quotation","quotient","rabbi","rabbit","rabble","rabid",
+      "raccoon","racer","racial","radiance","radiant","radiate","radical","radicchio","radio","radish","radium","radius","raffle","rafter","ragamuffin",
+      "ragout","ragtime","raider","railroad","rainbow","raincoat","rainstorm","raisin","raja","rakish","rally","ramble","ramification","rampant","rampart",
+      "ramrod","ranch","rancid","rancor","random","ranger","rankle","ransom","rant","rapier","rapids","rapport","rapprochement","rapt","rapture","rarebit",
+      "rascal","rashness","raspberry","raster","ratchet","ratify","ratio","ration","rationale","rattle","raucous","ravage","raven","ravine","ravish","rawhide",
+      "rayon","razor","reactant","reaction","reactive","reactor","reader","ready","reaffirm","reagent","realism","reality","realtor","reap","reappear","rearm",
+      "rearrange","reason","reassure","rebate","rebel","rebound","rebuff","rebuild","rebuke","rebuttal","recalcitrant","recall","recant","recapitulate","recede",
+      "receipt","receive","recent","receptacle","receptive","receptor","recess","recipe","recipient","reciprocal","recite","reckless","reckon","reclaim","recline",
+      "recluse","recognize","recoil","recollect","recommend","recompense","reconcile","recondite","reconnaissance","reconstruct","record","recount","recoup",
+      "recourse","recover","recreation","recruit","rectangle","rectify","rector","rectory","recumbent","recuperate","recur","redbreast","redcoat","redden",
+      "redeem","redolent","redoubt","redound","redress","reduce","redundant","redwood","reed","reef","reek","referee","reference","referendum","refill","refine",
+      "reflect","reflex","reflux","reform","refract","refrain","refresh","refrigerate","refuge","refund","refurbish","refusal","refute","regal","regale","regalia",
+      "regard","regatta","regenerate","regent","regime","regiment","region","register","regnant","regress","regret","regular","regulate","regurgitate","rehabilitate",
+      "rehearsal","reign","reimburse","rein","reincarnate","reindeer","reinforce","reinstate","reiterate","reject","rejoice","rejoin","rejuvenate","relapse","relate",
+      "relative","relax","relay","release","relegate","relentless","relevant","reliable","reliance","relic","relief","relieve","religion","relinquish","relish",
+      "relocate","reluctant","remain","remainder","remark","remedy","remember","remind","reminisce","remiss","remit","remnant","remodel","remonstrate","remorse",
+      "remote","removal","renaissance","render","rendezvous","renegade","renew","renounce","renovate","renown","rental","renunciation","reorganize","repair",
+      "reparable","reparation","repartee","repast","repeal","repeat","repel","repent","repercussion","repertoire","repertory","repetition","replace","replenish",
+      "replete","replica","reply","report","repose","repository","reprehensible","represent","repress","reprieve","reprimand","reprisal","reproach","reprobate",
+      "reproduce","reproof","reprove","reptile","republic","repudiate","repugnant","repulse","repute","request","requiem","require","requisite","requite","rescind",
+      "rescue","research","resemblance","resent","reservation","reserve","reservoir","reset","reside","resident","residual","residue","resign","resilient","resin",
+      "resist","resolute","resolve","resonance","resort","resound","resource","respect","respire","respite","resplendent","respond","response","responsible",
+      "restaurant","restitution","restive","restoration","restrain","restrict","result","resume","resurgent","resurrect","retail","retain","retaliate","retard",
+      "retention","reticent","retina","retinue","retire","retort","retract","retreat","retribution","retrieve","retroactive","retrograde","retrospect","return",
+      "reunion","reunite","reveal","reveille","revelation","revenge","revenue","reverberate","revere","reverie","reverse","revert","review","revile","revise",
+      "revival","revoke","revolt","revolution","revolve","revue","reward","rhapsody","rhetoric","rheumatism","rhinestone","rhinoceros","rhododendron","rhombus",
+      "rhubarb","rhyme","rhythm","ribald","ribbon","rice","riches","rickety","ricochet","riddle","ridge","ridicule","rife","riffraff","rifleman","rift","righteous",
+      "rigid","rigmarole","rigor","rim","rind","ringlet","ringmaster","ringside","rinse","riot","ripcord","ripen","ripple","risk","rite","ritual","rival","riverbank",
+      "rivet","rivulet","roadbed","roadblock","roadrunner","roadside","roadway","roamer","roan","roaring","roast","robbery","robin","robot","robust","rococo",
+      "rocker","rocket","rodent","rodeo","roguish","roller","romance","romantic","roofing","rookie","roost","rootstock","rosette","rosin","roster","rotary",
+      "rotate","rotor","roulette","roundabout","roundup","rouse","rout","routine","rover","rowboat","royal","rubella","rubicon","rubric","ruby","rudder","ruddy",
+      "rudiment","rueful","ruffle","rugged","ruin","ruler","ruminate","rummage","rumor","runaway","rung","runner","runway","rupee","rupture","rural","ruse","rush",
+      "russet","rustic","rustle","rutabaga","ruthless","sabbatical","saber","sabotage","sachet","sackcloth","sacrament","sacred","sacrifice","sacrilege","sadness",
+      "saddle","safari","safeguard","safety","saffron","sagacious","sagebrush","sailboard","sailboat","sailor","saint","salad","salamander","salary","salient",
+      "saliva","salmon","salon","saloon","salsa","saltcellar","salubrious","salutary","salutation","salute","salvage","salvation","salve","salvo","sampler",
+      "sanctify","sanction","sanctuary","sandbar","sandblast","sandcastle","sandlot","sandstone","sandwich","sanguine","sanitary","sapling","sapphire","sarcasm",
+      "sarcophagus","sardine","sardonic","sari","sartorial","sash","satchel","satellite","satiate","satin","satire","satisfy","saturate","saucepan","saucer",
+      "sauna","saunter","sausage","savage","savanna","savant","save","savory","sawdust","sawhorse","sawmill","saxophone","scabbard","scaffold","scallop","scalpel",
+      "scamp","scamper","scandal","scanner","scansion","scant","scapula","scarab","scarce","scarecrow","scarf","scenic","scepter","schedule","schematic","scheme",
+      "schism","scholar","schooner","sciatica","science","scimitar","scintillate","scion","scissors","scoff","scold","sconce","scoop","scooter","scope","scorch",
+      "scoreboard","scorn","scorpion","scotch","scoundrel","scourge","scout","scramble","scrapbook","scraper","scratch","scream","screed","screenplay","scribble",
+      "scribe","scrimmage","scrip","scripture","scrivener","scroll","scrooge","scruple","scrutinize","sculptor","scuttle","seabed","seacoast","seafarer","seafood",
+      "sealant","seamstress","seance","seaplane","seaport","searchlight","seashore","season","seaward","secession","seclude","second","secretary","secrete",
+      "secretive","sectarian","sectional","secular","secure","sedan","sedate","sediment","sedition","seduce","seedling","segment","segregate","seismic","seizure",
+      "seldom","selection","selector","semaphore","semicircle","semicolon","semiconductor","seminar","seminary","senate","senator","sender","senescent","senile",
+      "seniority","sensation","sensible","sensitive","sensor","sensual","sentence","sentient","sentiment","sentinel","sentry","separate","sepia","sepsis","september",
+      "sepulcher","sequel","sequence","sequoia","serenade","serendipity","serene","serf","sergeant","serial","series","sermon","serpent","serum","servant","service",
+      "servile","servitude","session","setback","settlement","sever","several","severe","sewerage","sextant","shabby","shackle","shadow","shaft","shaggy","shale",
+      "shallow","shaman","shamble","shamrock","shanty","shape","shareholder","shark","sharp","shatter","sheaf","sheath","shed","sheepskin","sheer","sheet",
+      "shelf","shellac","shelter","shepherd","sherbet","sheriff","shield","shift","shilling","shimmer","shin","shingle","shipboard","shipmate","shipment","shipwreck",
+      "shipyard","shirt","shiver","shoal","shock","shoelace","shophouse","shoreline","shortage","shortbread","shortcut","shorthand","shorthorn","shortstop",
+      "shoulder","shout","shovel","showcase","showdown","shower","showpiece","shrapnel","shrewd","shriek","shrine","shrinkage","shroud","shrubbery","shrug",
+      "shuffle","shutter","shuttle","sibilant","sibling","sickle","sidewalk","sideways","siege","siesta","sieve","sightseer","signal","signboard","signet",
+      "signify","silence","silhouette","silica","silicon","silkworm","sill","silver","silversmith","similar","simile","simmer","simple","simulate","simultaneous",
+      "sincere","sinecure","sinew","singlet","singular","sinister","sinkhole","siphon","siren","sister","sitcom","situated","skeleton","skeptic","sketch",
+      "skew","skiff","skillet","skirmish","skylark","skylight","skyline","skyrocket","skyscraper","slack","slalom","slang","slapstick","slate","slaughter",
+      "slavery","slender","sleight","slicker","sliver","slogan","sloop","sloth","slumber","smart","smear","smelt","smirk","smolder","smooth","smuggle","snack",
+      "snare","snapshot","snarl","snicker","snorkel","snowbound","snowdrift","snowdrop","snowfall","snowplow","snowshoe","snowstorm","snuggle","social","society",
+      "socket","soda","sodium","soffit","software","sojourn","solace","solar","soldier","solemn","solicit","solicitor","solidarity","solitary","solitude","soloist",
+      "solstice","solution","solvent","somber","somersault","sonar","sonata","sonnet","soot","soothsayer","sorbet","sorcerer","sorority","sorrel","sorrow","soulmate",
+      "soundproof","soup","source","sourwood","southbound","souvenir","sovereign","soybean","spacecraft","spaceship","spacious","spade","spaghetti","spaniel",
+      "spank","sparerib","sparkle","sparrow","sparse","spartan","spatula","spavin","spawn","speaker","spearmint","specimen","speckle","spectacle","specter",
+      "spectrogram","spectrum","speculate","speedboat","speedometer","spellbound","spelunker","spendthrift","spherical","spicewood","spider","spigot","spinach",
+      "spindle","spine","spinster","spiral","spire","spiritual","spite","splash","spleen","splendid","splice","splint","splinter","spokesman","spoliation","sponge",
+      "sponsor","spontaneous","spoonful","sporadic","sport","spotlight","spouse","spout","sprawl","springboard","springtime","sprinkle","sprint","sprocket","spruce",
+      "spurious","spurn","sputter","squadron","squall","squander","square","squawk","squeamish","squeeze","squid","squirrel","stabilize","stable","staccato",
+      "stadium","staff","stagecoach","stagger","staircase","stakeout","stalactite","stalagmite","stale","stalk","stallion","stalwart","stamina","stammer","stampede",
+      "stance","standby","standoff","standpoint","standstill","stapler","starboard","starfish","starlight","starling","startle","starvation","statement","static",
+      "statue","stature","status","statute","steadfast","stealth","steamboat","steamroller","steed","steeplechase","steersman","stellar","stemware","stencil",
+      "stenography","stepchild","stepfather","stepladder","steppes","stereoscope","sterling","sternum","steward","stickler","stiff","stifle","stigma","stile",
+      "stillness","stimulate","stimulus","stingy","stipend","stipulate","stirrup","stitch","stockade","stockbroker","stockholder","stockpile","stockyard","stoic",
+      "stoke","stole","stolid","stomach","stoneware","stonework","stoplight","stopwatch","storage","storekeeper","stormy","storyteller","stout","stovepipe",
+      "straddle","straightforward","strait","strand","stranger","strangle","strap","stratagem","strategic","strategy","stratosphere","stratum","straw","strawberry",
+      "streambed","streetcar","strength","strenuous","stress","stretch","stretcher","strict","strife","strike","stringent","strip","stripe","strive","strobe",
+      "stroke","structure","struggle","stubborn","student","studio","studious","stumble","stump","stupendous","stupor","sturdy","sturgeon","subaltern","subdivide",
+      "subdue","subjective","subjugate","subjunctive","sublime","submarine","submerge","submit","subordinate","suborn","subpoena","subscribe","subscript","subsequent",
+      "subside","subsidy","subsist","subsoil","substance","substandard","substantial","substantiate","substantive","substitute","substrate","subterfuge","subterranean",
+      "subtitle","subtle","subtraction","subtropical","suburb","subvert","subway","succeed","success","succinct","succor","succulent","succumb","sucker","sudden",
+      "suede","suffer","sufficient","suffix","suffocate","suffrage","suffuse","sugar","suggest","suicide","suitable","suite","suitor","sulfate","sulfur","sulk",
+      "sullen","sultan","summary","summation","summit","summon","sunbeam","sunbonnet","sundial","sundown","sunfish","sunflower","sunglasses","sunlight","sunlit",
+      "sunny","sunrise","sunset","sunshade","sunshine","sunstroke","superb","supercharge","supercilious","superficial","superfluous","superhighway","superhuman",
+      "superimpose","superintend","superior","superlative","supermarket","supernatural","supernova","supersede","supersonic","superstition","superstructure","supervise",
+      "supine","supper","supplant","supple","supplement","suppliant","supplicate","supply","support","suppose","suppress","supreme","surcharge","surety","surfboard",
+      "surface","surfeit","surgeon","surgery","surmise","surmount","surname","surpass","surplus","surprise","surrender","surreptitious","surrogate","surround",
+      "surtax","surveillance","survey","surveyor","survival","survivor","susceptible","suspect","suspend","suspense","suspicion","sustain","sustenance","suture",
+      "svelte","swallow","swamp","swan","swarm","swarthy","swatch","swath","swatter","sweatshirt","sweepstake","sweetheart","sweetmeat","sweetpea","swell",
+      "swelter","swift","swimwear","swindle","swineherd","swing","switchboard","switchblade","swivel","swordfish","swordplay","sycamore","sycophant","syllable",
+      "syllabus","symbol","symmetry","sympathy","symphony","symposium","symptom","synagogue","synapse","synchronize","syncopate","syndicate","syndrome","synod",
+      "synonym","synopsis","syntax","synthesis","syringe","systematic","tabernacle","tablecloth","tablespoon","tablet","tableware","taboo","tacit","taciturn",
+      "tack","tackle","tactful","tactics","tactile","tadpole","taffeta","taffy","tailgate","tailor","tailwind","takeoff","talcum","talent","talisman","tallow",
+      "talon","tamarind","tambourine","tandem","tangent","tangerine","tangible","tangle","tango","tankard","tanker","tannery","tantalize","tantrum","taper",
+      "tapestry","tapioca","tarantula","tardy","target","tariff","tarmac","tarnish","tarpaulin","tarragon","tartar","taskmaster","tassel","tasteful","tatter",
+      "tattle","taunt","taut","tavern","taxation","taxicab","taxidermy","taxonomy","teacup","teamwork","teapot","tearful","teaspoon","technical","technique",
+      "technology","tedious","teeter","teetotaler","telecast","telegram","telegraph","telemetry","telepathy","telephone","telephoto","telescope","telethon",
+      "television","teleworker","temper","temperament","temperance","temperature","tempest","tempo","temporal","temporary","temptation","tenacity","tenant",
+      "tendency","tenderfoot","tenderloin","tendon","tenement","tenet","tennis","tenor","tense","tentacle","tentative","tenuous","tenure","tepee","tepid","terminal",
+      "terminate","terminus","termite","terrace","terrapin","terrarium","terrazzo","terrestrial","terrier","terrific","territory","terror","terse","testament",
+      "testify","testimonial","testimony","tether","tetrahedron","textbook","textile","texture","theater","theft","theme","theology","theorem","theoretic","theory",
+      "therapeutic","therapist","therapy","thermal","thermodynamic","thermometer","thermostat","thesaurus","thesis","thicket","thimble","thistle","thorax",
+      "thoroughfare","thoughtful","thousand","threshold","thrift","thrill","thrive","throat","throne","throng","throttle","throughout","thunderbolt","thundercloud",
+      "thunderstorm","thwart","tiara","ticket","tickle","tidbit","tidewater","tidiness","tidings","tier","tiger","tightrope","tile","timber","timekeeper","timeline",
+      "timepiece","timetable","timid","timothy","tinderbox","tinfoil","tinkle","tinseled","tintype","tiresome","tissue","titanic","titleholder","toadstool","toaster",
+      "toboggan","today","toddler","toggle","toilette","token","tolerance","tomahawk","tomato","tombstone","tomcat","tome","tomorrow","tonality","tongs","tongue",
+      "tonight","tonsil","toolmaker","topaz","topcoat","topic","topography","topology","topple","topsoil","torchlight","torment","tornado","torpedo","torpid","torque",
+      "torrent","tortoise","tortuous","total","totem","toucan","touchdown","tough","tourist","tournament","towboat","towel","tower","townfolk","township","toxicity",
+      "trackball","tract","tradecraft","traditional","trafficker","traffic","tragedy","trainee","trajectory","trammel","tramp","trampoline","tranquil","transaction",
+      "transcribe","transcript","transducer","transfer","transfix","transform","transfuse","transgress","transistor","transit","translate","translucent","transmit",
+      "transmute","transom","transonic","transpire","transport","transpose","transverse","trapdoor","trapeze","trapezoid","trashcan","traveler","traverse","travesty",
+      "treachery","treadmill","treasure","treasury","treatment","treaty","treble","treetop","trellis","tremble","tremendous","tremor","trenchant","trepidation",
+      "trespass","trestle","triangle","tribal","tribulation","tribunal","tributary","tribute","trickle","trickster","tricycle","trident","trifle","trigger","trilogy",
+      "trimaran","trinket","triplicate","tripod","triptych","triumph","trophy","tropical","troposphere","trot","troubadour","trouser","trowel","truant","truce",
+      "truckload","truculent","trudge","truly","trumpet","truncate","truncheon","trunk","truss","trustworthy","tubercle","tuberose","tuck","tuition","tulip","tumbleweed",
+      "tumult","tundra","tune","tungsten","tunic","tunnel","turban","turbine","turbulence","tureen","turf","turgid","turmeric","turnaround","turncoat","turnkey","turnout",
+      "turnpike","turnstile","turnstone","turntable","turpentine","turquoise","turret","turtleneck","tutorial","tuxedo","twilight","twinkle","twirl","twisted","typeface",
+      "typesetter","typewriter","typhoon","typical","typography","tyrant","ukulele","ulcer","ultimate","ultimatum","ultramarine","umbrella","umiak","umpire","unabashed",
+      "unaffected","unanimous","unassuming","unaware","unbending","unbridled","uncanny","uncertain","unclouded","uncommon","undaunted","underbrush","undercurrent",
+      "underdog","underfoot","undergraduate","undergrowth","underhand","underline","undermine","underneath","underpants","underpass","underrate","underscore","undersea",
+      "understand","undertake","undertow","underwater","underwrite","undulate","unearthly","uneasy","unequal","unfailing","unfurl","ungainly","unicorn","uniform",
+      "unify","unilateral","union","unique","unison","universal","universe","university","unjust","unknown","unlawful","unleash","unload","unlock","unmask","unnerve",
+      "unnoticed","unravel","unrest","unruffled","unruly","unscathed","unseen","unsettle","unshakable","unsteady","unswerving","untangle","untie","untold","untoward",
+      "unusual","unveil","unwary","unwind","unwitting","upbeat","upbraid","upcoming","update","updraft","upgrade","upheaval","uphill","uphold","upholstery","upkeep",
+      "upland","uplink","upload","upmarket","upon","upperclass","uppercut","uppermost","upright","uprising","uproar","uproot","upscale","upset","upshot","upside",
+      "upstage","upstairs","upstanding","upstart","upstream","upsurge","upswing","uptake","upthrust","uptown","uptrend","upturn","upward","uranium","urban","urbane",
+      "urchin","urgent","urinalysis","urn","uroscopy","ursine","useful","usher","usual","usurper","utensil","utility","utilize","utmost","utopia","utterance","uvula",
+      "vacant","vacation","vaccine","vacillate","vacuum","vagabond","vagrant","valance","vale","valedictory","valet","valiant","valid","valise","valley","valor",
+      "valuable","valve","vampire","vanadium","vanguard","vanilla","vanish","vanity","vanquish","vantage","vapor","variable","variant","variegated","varnish","varsity",
+      "vascular","vassal","vaudeville","vaulting","vector","vegetable","vehicle","veil","veldt","velocity","velour","velvet","vendetta","vendor","veneer","venerable",
+      "venison","venom","ventilation","ventral","ventricle","venture","venue","veranda","verbal","verbatim","verbiage","verdant","verdict","verification","verisimilitude",
+      "verity","vermicelli","vermilion","vermin","vernacular","vernal","versatile","version","vertebra","vertical","vertigo","verve","vesicle","vesper","vessel","vestige",
+      "veteran","veterinarian","viaduct","vibrant","vicarage","vicarious","vicegerent","vicinity","vicious","viceroy","victor","victrola","videocassette","videophone",
+      "vigilant","vignette","vigorous","vilify","village","villain","vindicate","vinegar","vineyard","vintage","violator","violin","viper","virago","virgin","virtual",
+      "virtue","virulent","visage","viscount","viscosity","visible","visionary","visitation","visitor","visor","visual","vitality","vitamin","vitiate","viticulture",
+      "vitreous","vitriol","vivacious","vivid","vixen","vocabulary","vocalist","vocation","vociferous","vodka","vogue","voiceprint","void","volatile","volcano","volition",
+      "volley","voltage","voluble","volume","volumetric","volunteer","voluptuous","vortex","votary","voucher","voyager","vulcanize","vulnerable","vulture","waffle",
+      "wager","wagonload","wainscot","waistband","waistcoat","walkout","walkway","wallaby","wallboard","wallet","wallflower","wallpaper","walnut","walrus","wandering",
+      "warlock","warmth","warn","warrant","warranty","warrior","warship","washboard","watchband","watchdog","watchmaker","watchman","watchtower","watchword","waterbed",
+      "watercress","waterfall","waterfront","waterlogged","watermark","waterproof","watershed","waterspout","watertight","waterway","waveguide","wavelength","waxwing",
+      "wayfarer","waylay","wayside","wayward","weakling","wealth","weathercock","weatherman","weaver","webbing","webmaster","wedge","weedkiller","weekday","weekender",
+      "weightlifter","welcome","welfare","wellspring","whaleboat","wharfinger","whatsoever","wheat","wheelbarrow","wheelbase","wheelchair","wheelhouse","whereabouts",
+      "wherefore","whereupon","whichever","whimsical","whinny","whipcord","whiplash","whirlpool","whirlwind","whiskbroom","whisper","whistle","whitecap","whitefish",
+      "wholesaler","wholesome","wicket","wildcat","wilderness","wildfire","wildflower","wildwood","willing","willow","windmill","windowpane","windpipe","windshield",
+      "windswept","windward","winegrower","winery","wintergreen","wirehair","wireless","wiretap","wiseacre","wisecrack","wisteria","witchcraft","withdrawn","withhold",
+      "withstand","witness","wolverine","woodcarver","woodchuck","woodcraft","woodcutter","woodlander","woodpecker","woodshed","woodwind","woodwork","workbench",
+      "workbook","workforce","workhorse","workhouse","workmanship","workshop","worldview","worldwide","wormwood","worship","worthwhile","wrangler","wrapper","wrestler",
+      "wristwatch","writing","wrongdoer","wrought","xenon","xylophone","yacht","yardarm","yardstick","yarn","yeoman","yesterday","yield","yodel","yokel","youngster",
+      "youthful","yucca","zany","zealot","zealous","zebra","zenith","zephyr","zeppelin","zigzag","zillion","zinc","zipper","zircon","zodiac","zombielike","zookeeper","zoology"
+    ];
+
+    // UI Elements & State
+    const wordCountSelect = document.getElementById("wordCount");
+    const delimiterSelect = document.getElementById("delimiterSelect");
+    const casingSelect = document.getElementById("casingSelect");
+    const includeNumberCheck = document.getElementById("includeNumber");
+    const includeSpecialCheck = document.getElementById("includeSpecial");
+    const btnRoll = document.getElementById("btnRoll");
+    const btnCopy = document.getElementById("btnCopy");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaEntropy = document.getElementById("metaEntropy");
+    const passphraseDisplay = document.getElementById("passphraseDisplay");
+    const diceBreakdownBody = document.getElementById("diceBreakdownBody");
+
+    let currentRolls = [];
+    let extraDigit = "7";
+    let extraSymbol = "!";
+
+    function pickRandomModifiers() {
+      const numArr = new Uint8Array(1);
+      crypto.getRandomValues(numArr);
+      extraDigit = (numArr[0] % 10).toString();
+
+      const symbols = ["!", "@", "#", "$", "%", "^", "&", "*", "?", "+"];
+      const symArr = new Uint8Array(1);
+      crypto.getRandomValues(symArr);
+      extraSymbol = symbols[symArr[0] % symbols.length];
+    }
+
+    // Formats and displays the current words without re-rolling
+    function renderCurrentPassphrase() {
+      if (!currentRolls.length) return;
+
+      const delimiter = delimiterSelect.value;
+      const casing = casingSelect.value;
+      const addNum = includeNumberCheck.checked;
+      const addSpecial = includeSpecialCheck.checked;
+
+      const formattedWords = currentRolls.map(r => {
+        let w = r.rawWord;
+        if (casing === "titlecase") {
+          return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        } else if (casing === "uppercase") {
+          return w.toUpperCase();
+        }
+        return w.toLowerCase();
+      });
+
+      if (addNum && formattedWords.length > 0) {
+        formattedWords[formattedWords.length - 1] += extraDigit;
+      }
+      if (addSpecial && formattedWords.length > 0) {
+        const targetIdx = Math.max(0, formattedWords.length - 2);
+        formattedWords[targetIdx] += extraSymbol;
+      }
+
+      passphraseDisplay.textContent = formattedWords.join(delimiter);
+
+      let totalEntropy = currentRolls.length * 12.92;
+      if (addNum) totalEntropy += 3.32;
+      if (addSpecial) totalEntropy += 3.32;
+      metaEntropy.textContent = `~${totalEntropy.toFixed(1)} bits`;
+
+      diceBreakdownBody.innerHTML = "";
+      currentRolls.forEach(r => {
+        let displayWord = r.rawWord;
+        if (casing === "titlecase") {
+          displayWord = displayWord.charAt(0).toUpperCase() + displayWord.slice(1).toLowerCase();
+        } else if (casing === "uppercase") {
+          displayWord = displayWord.toUpperCase();
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>Word #${r.index}</td>
+          <td class="roll-code">${r.code.split("").join(" ")}</td>
+          <td><code>${r.code}</code></td>
+          <td class="roll-word">${displayWord}</td>
+        `;
+        diceBreakdownBody.appendChild(tr);
+      });
+
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = `<span>✓ Generated ${currentRolls.length}-Word Diceware Passphrase (${totalEntropy.toFixed(1)} bits)</span> <span>Complete</span>`;
+    }
+
+    // Rolls new dice and selects fresh words from the dictionary
+    function generateNewPassphrase() {
+      const numWords = parseInt(wordCountSelect.value, 10);
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Generating cryptographically secure entropy...</span> <span>Rolling Dice</span>";
+
+      try {
+        currentRolls = [];
+        pickRandomModifiers();
+
+        for (let i = 0; i < numWords; i++) {
+          const code = rollFiveDice();
+          const index = codeToIndex(code);
+          const word = VOCABULARY_A_Z[index % VOCABULARY_A_Z.length];
+          currentRolls.push({
+            index: i + 1,
+            code: code,
+            rawWord: word
+          });
+        }
+
+        renderCurrentPassphrase();
+      } catch (err) {
+        statusBanner.className = "status-banner status-safe";
+        passphraseDisplay.textContent = "Error during generation: " + err.message;
+      }
+    }
+
+    // "Roll Dice & Generate" and changing word count generate new rolls
+    btnRoll.addEventListener("click", generateNewPassphrase);
+    wordCountSelect.addEventListener("change", generateNewPassphrase);
+
+    // Delimiter, Casing, and Modifier changes re-render without re-rolling words
+    delimiterSelect.addEventListener("change", renderCurrentPassphrase);
+    casingSelect.addEventListener("change", renderCurrentPassphrase);
+    includeNumberCheck.addEventListener("change", renderCurrentPassphrase);
+    includeSpecialCheck.addEventListener("change", renderCurrentPassphrase);
+
+    btnCopy.addEventListener("click", async () => {
+      const text = passphraseDisplay.textContent.trim();
+      if (!text || text.startsWith("Generating") || text.startsWith("Error")) return;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = btnCopy.textContent;
+        btnCopy.textContent = "Copied!";
+        setTimeout(() => { btnCopy.textContent = originalText; }, 1500);
+      } catch {
+        alert("Clipboard copy failed. Please highlight and copy manually.");
+      }
+    });
+
+    // Run automatically on initial load
+    window.addEventListener("DOMContentLoaded", () => {
+      generateNewPassphrase();
+    });
+  </script>
+</body>
+</html>
