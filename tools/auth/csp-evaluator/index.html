@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Content Security Policy (CSP) Evaluator — Free Offline Security Tool | BitDark</title>
+  <meta name="title" content="Content Security Policy (CSP) Evaluator — Free Offline Security Tool | BitDark" />
+  <meta name="description" content="Audit, evaluate, and identify bypasses or misconfigurations in Content Security Policy (CSP) directives locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="csp evaluator, content security policy checker, test csp directives, xss defense audit, local csp validator, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/csp-evaluator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .form-group textarea:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .presets-label {
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .btn-preset {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-preset:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .findings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .finding-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .finding-card.severity-high { border-left: 4px solid var(--atom-coral); }
+    .finding-card.severity-medium { border-left: 4px solid var(--atom-amber); }
+    .finding-card.severity-low { border-left: 4px solid var(--atom-cyan); }
+    .finding-card.severity-pass { border-left: 4px solid var(--atom-green); }
+
+    .finding-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 4px;
+    }
+    .finding-desc {
+      color: var(--atom-text);
+      line-height: 1.5;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">Authentication &amp; Hardening</a> / csp-evaluator
+    </nav>
+
+    <div class="tool-header">
+      <h1>Content Security Policy (CSP) Evaluator</h1>
+      <p>Analyze HTTP Content-Security-Policy headers for cross-site scripting (XSS) defense effectiveness, wildcard permissions, missing fallback directives, and clickjacking protections entirely within your browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="presets-row">
+        <span class="presets-label">Load Sample:</span>
+        <button class="btn-preset" onclick="loadSample('strict')">Strict Nonce-Based</button>
+        <button class="btn-preset" onclick="loadSample('lax')">Permissive Legacy (Risky)</button>
+        <button class="btn-preset" onclick="loadSample('blank')">Empty Policy</button>
+      </div>
+
+      <div class="form-group">
+        <label for="cspInput">Content-Security-Policy Directive String</label>
+        <textarea id="cspInput" placeholder="default-src 'self'; script-src 'self' https://trustedscripts.com; object-src 'none'; base-uri 'self';" spellcheck="false"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnEvaluate">Evaluate Policy</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Total Directives Parsed</div>
+            <div class="meta-val" id="metaDirectives">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Overall Posture Rating</div>
+            <div class="meta-val" id="metaRating">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Script Execution Policy</div>
+            <div class="meta-val" id="metaScriptPosture">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Clickjacking Guard</div>
+            <div class="meta-val" id="metaFramePosture">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Directive Diagnostics &amp; Risk Findings:</div>
+        <div class="findings-list" id="findingsContainer"></div>
+
+        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Normalized JSON Directives Map:</div>
+        <div class="viewer-box" id="jsonViewer">Parsed AST will appear here...</div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, misconfigured security headers, bypasses overlooked by heuristic parsing, or downstream application vulnerabilities. Static CSP analysis evaluates structural directives and known anti-patterns; it does not test server-side dynamic nonce injection or endpoint-specific DOM sinks. Verify production headers across all supported user agents and standard compliance linters. All parsing runs exclusively in your local browser runtime without network transmission.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Content Security Policy Protects Web Applications</h2>
+      <p>Content Security Policy (CSP) is a declarative HTTP response header mechanism defined by W3C that restricts the origins and resources (scripts, images, stylesheets, frame embeddings) a web browser is permitted to execute:</p>
+      <ul>
+        <li><strong>XSS Mitigation:</strong> Restricting <code>script-src</code> prevents untrusted remote script injections and neutralizes reflected/stored Cross-Site Scripting vectors when unsafe evaluation primitives are prohibited.</li>
+        <li><strong>Framing &amp; Clickjacking Protection:</strong> The <code>frame-ancestors</code> directive supersedes legacy <code>X-Frame-Options</code> headers to define which parent origins can embed the page inside <code>&lt;iframe&gt;</code> elements.</li>
+        <li><strong>Base Tag Injection Defense:</strong> Setting <code>base-uri 'none'</code> or <code>'self'</code> neutralizes HTML injection attacks that alter the document's relative URL resolution root via <code>&lt;base href="..."&gt;</code> tags.</li>
+        <li><strong>Object &amp; Plugin Blocking:</strong> Enforcing <code>object-src 'none'</code> blocks Flash, Silverlight, and Java applet execution surfaces completely.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Evaluating sensitive internal policies on remote auditing services leaks deployment topologies, private hostnames, and CDN paths. BitDark processes CSP strings completely client-side in browser memory. Zero directive data leaves your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // CSP Parsing & Evaluation Engine
+    const cspInput = document.getElementById("cspInput");
+    const btnEvaluate = document.getElementById("btnEvaluate");
+    const btnClear = document.getElementById("btnClear");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaDirectives = document.getElementById("metaDirectives");
+    const metaRating = document.getElementById("metaRating");
+    const metaScriptPosture = document.getElementById("metaScriptPosture");
+    const metaFramePosture = document.getElementById("metaFramePosture");
+    const findingsContainer = document.getElementById("findingsContainer");
+    const jsonViewer = document.getElementById("jsonViewer");
+
+    const samplePolicies = {
+      strict: "default-src 'none'; script-src 'nonce-r4nd0m123' 'strict-dynamic' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self';",
+      lax: "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval' http:; style-src * 'unsafe-inline';",
+      blank: ""
+    };
+
+    function loadSample(key) {
+      if (key === "blank") {
+        cspInput.value = "";
+        resultsArea.style.display = "none";
+        findingsContainer.innerHTML = "";
+        return;
+      }
+      cspInput.value = samplePolicies[key] || "";
+      if (cspInput.value) evaluateCSP();
+    }
+
+    function parseCSP(policyStr) {
+      const directives = {};
+      const tokens = policyStr.split(";");
+      tokens.forEach(rawToken => {
+        const token = rawToken.trim();
+        if (!token) return;
+        const parts = token.split(/\s+/);
+        const name = parts[0].toLowerCase();
+        const values = parts.slice(1);
+        directives[name] = values;
+      });
+      return directives;
+    }
+
+    function evaluateCSP() {
+      // If user clicks evaluate while textarea is empty, adopt placeholder text as value
+      let raw = cspInput.value.trim();
+      if (!raw && cspInput.placeholder) {
+        cspInput.value = cspInput.placeholder;
+        raw = cspInput.value.trim();
+      }
+
+      if (!raw) {
+        resultsArea.style.display = "none";
+        return;
+      }
+
+      resultsArea.style.display = "block";
+      findingsContainer.innerHTML = "";
+
+      const directives = parseCSP(raw);
+      const directiveKeys = Object.keys(directives);
+      metaDirectives.textContent = `${directiveKeys.length} Directives`;
+
+      const findings = [];
+
+      // 1. Script-src / Default-src evaluation
+      const hasScriptSrc = "script-src" in directives;
+      const hasDefaultSrc = "default-src" in directives;
+      const scriptVals = directives["script-src"] || directives["default-src"] || [];
+
+      const hasNonceOrHash = scriptVals.some(v => 
+        v.startsWith("'nonce-") || 
+        v.startsWith("'sha256-") || 
+        v.startsWith("'sha384-") || 
+        v.startsWith("'sha512-")
+      );
+      const hasStrictDynamic = scriptVals.includes("'strict-dynamic'");
+
+      if (!hasScriptSrc && !hasDefaultSrc) {
+        findings.push({
+          severity: "high",
+          title: "Missing script-src & default-src",
+          desc: "Neither script-src nor default-src is defined. Arbitrary scripts and inline code can execute without restriction."
+        });
+      }
+
+      if (scriptVals.includes("'unsafe-inline'") && !hasNonceOrHash) {
+        findings.push({
+          severity: "high",
+          title: "Unrestricted 'unsafe-inline' in Script Source",
+          desc: "'unsafe-inline' allows execution of injected inline scripts, rendering the application susceptible to cross-site scripting (XSS) attacks."
+        });
+      }
+
+      if (scriptVals.includes("'unsafe-eval'")) {
+        findings.push({
+          severity: "medium",
+          title: "'unsafe-eval' Permitted",
+          desc: "Allows execution of strings via eval(), setTimeout(String), and new Function(), creating code execution paths from user-controlled strings."
+        });
+      }
+
+      // Check wildcards and generic schemes with CSP3 strict-dynamic context awareness
+      if (scriptVals.includes("*")) {
+        findings.push({
+          severity: "high",
+          title: "Wildcard '*' in Script Execution",
+          desc: "Using '*' allows loading arbitrary script files from any remote domain or origin."
+        });
+      } else if (scriptVals.includes("https:") || scriptVals.includes("http:")) {
+        if (hasStrictDynamic && hasNonceOrHash) {
+          findings.push({
+            severity: "pass",
+            title: "CSP3 'strict-dynamic' Active with Legacy Fallback",
+            desc: "Generic schemes ('https:' / 'http:') are present but will be safely ignored by modern CSP Level 3 engines in favor of nonces and 'strict-dynamic'."
+          });
+        } else {
+          findings.push({
+            severity: "high",
+            title: "Generic Scheme in Script Execution",
+            desc: "Using generic schemes ('https:', 'http:') without 'strict-dynamic' allows loading scripts from any remote server over that transport protocol."
+          });
+        }
+      }
+
+      if (hasNonceOrHash) {
+        findings.push({
+          severity: "pass",
+          title: "Cryptographic Nonce/Hash Present",
+          desc: "Script execution is restricted to cryptographically signed scripts or dynamic nonces, conforming to modern CSP best practices."
+        });
+      }
+
+      // 2. Object-src evaluation
+      const objectVals = directives["object-src"] || directives["default-src"] || [];
+      if (!objectVals.includes("'none'")) {
+        findings.push({
+          severity: "high",
+          title: "object-src is Not Set to 'none'",
+          desc: "Failure to restrict object-src enables legacy plugin vulnerabilities and Flash/Java/Silverlight object execution."
+        });
+      } else {
+        findings.push({
+          severity: "pass",
+          title: "object-src Set to 'none'",
+          desc: "Embedded plugin execution surfaces are strictly disabled."
+        });
+      }
+
+      // 3. Base-uri evaluation
+      const baseVals = directives["base-uri"] || [];
+      if (baseVals.length === 0) {
+        findings.push({
+          severity: "medium",
+          title: "Missing base-uri Directive",
+          desc: "Without base-uri restrictions, an attacker injecting a <base href='...'> tag can redirect relative resource imports to an external malicious server."
+        });
+      } else if (baseVals.includes("'none'") || baseVals.includes("'self'")) {
+        findings.push({
+          severity: "pass",
+          title: "Secure base-uri Configured",
+          desc: "Base tag injection attacks are prevented by explicit origin scoping."
+        });
+      }
+
+      // 4. Frame-ancestors (Clickjacking)
+      const frameVals = directives["frame-ancestors"] || [];
+      if (frameVals.length === 0) {
+        findings.push({
+          severity: "medium",
+          title: "Missing frame-ancestors Directive",
+          desc: "The policy does not prevent unauthorized framing. The site may be vulnerable to UI redressing (clickjacking) unless X-Frame-Options is independently deployed."
+        });
+        metaFramePosture.textContent = "Exposed (No framing controls)";
+      } else if (frameVals.includes("'none'")) {
+        findings.push({
+          severity: "pass",
+          title: "Complete Frame Blocking",
+          desc: "frame-ancestors is set to 'none', completely neutralizing iframe embedding and clickjacking."
+        });
+        metaFramePosture.textContent = "Protected ('none')";
+      } else {
+        metaFramePosture.textContent = `Restricted (${frameVals.join(", ")})`;
+      }
+
+      // Overall Score Calculation
+      const hasHigh = findings.some(f => f.severity === "high");
+      const hasMedium = findings.some(f => f.severity === "medium");
+
+      if (hasHigh) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = "<span>✕ High Severity Vulnerabilities Detected</span> <span>Bypass Identified</span>";
+        metaRating.textContent = "Poor / High Risk";
+      } else if (hasMedium) {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = "<span>⚠️ Moderate Hardening Deficiencies Located</span> <span>Review Recommended</span>";
+        metaRating.textContent = "Moderate Hardening";
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ Robust CSP Architecture</span> <span>Compliant</span>";
+        metaRating.textContent = "Strict / Strong";
+      }
+
+      metaScriptPosture.textContent = scriptVals.length > 0 ? scriptVals.join(" ") : "Unspecified";
+
+      // Render Findings Cards
+      findings.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `finding-card severity-${item.severity}`;
+        card.innerHTML = `
+          <div class="finding-title">
+            <span>${item.title}</span>
+            <span style="font-size:0.72rem; text-transform:uppercase; color: var(--atom-${item.severity === 'high' ? 'coral' : item.severity === 'medium' ? 'amber' : 'green'});">${item.severity}</span>
+          </div>
+          <div class="finding-desc">${item.desc}</div>
+        `;
+        findingsContainer.appendChild(card);
+      });
+
+      jsonViewer.textContent = JSON.stringify(directives, null, 2);
+    }
+
+    btnEvaluate.addEventListener("click", evaluateCSP);
+
+    btnClear.addEventListener("click", () => {
+      cspInput.value = "";
+      resultsArea.style.display = "none";
+      findingsContainer.innerHTML = "";
+    });
+  </script>
+</body>
+</html>
