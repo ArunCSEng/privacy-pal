@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Subresource Integrity (SRI) Hash Generator — Free Offline Tool | BitDark</title>
+  <meta name="title" content="Subresource Integrity (SRI) Hash Generator — Free Offline Tool | BitDark" />
+  <meta name="description" content="Generate cryptographic Subresource Integrity (SRI) hashes (SHA-256, SHA-384, SHA-512) for scripts and stylesheets locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="sri hash generator, subresource integrity online, sha384 sri generator, sha512 integrity attribute, cdn security hash, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/sri-generator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .panel-section { display: none; }
+    .panel-section.active { display: block; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .form-group textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+      margin-bottom: 16px;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 4px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .file-input-hidden { display: none; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .viewer-group {
+      margin-bottom: 14px;
+    }
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .viewer-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .copy-pill {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+    .copy-pill:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--atom-heading);
+      line-height: 1.5;
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">Authentication &amp; Web Security</a> / sri-generator
+    </nav>
+
+    <div class="tool-header">
+      <h1>Subresource Integrity (SRI) Hash Generator</h1>
+      <p>Generate cryptographic integrity hashes and HTML tags (&lt;script&gt; and &lt;link&gt;) locally using the native Web Cryptography API to guard against third-party CDN compromises and arbitrary script injections.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabText" onclick="switchMode('text')">Raw Text / Code</button>
+        <button class="tab-btn" id="tabFile" onclick="switchMode('file')">Local File</button>
+        <button class="tab-btn" id="tabUrl" onclick="switchMode('url')">Remote URL (Fetch)</button>
+      </div>
+
+      <!-- Text Input Panel -->
+      <div class="panel-section active" id="panelText">
+        <div class="form-group">
+          <label for="textInput">Source Payload (JS, CSS, or plain text)</label>
+          <textarea id="textInput" placeholder="Paste script or stylesheet contents here..."></textarea>
+        </div>
+      </div>
+
+      <!-- File Upload Panel -->
+      <div class="panel-section" id="panelFile">
+        <div class="dropzone" id="dropArea">
+          <span class="dropzone-icon">📁</span>
+          <p><strong>Click to choose a file</strong> or drag & drop a JS / CSS file here</p>
+          <span class="dropzone-hint">Processes strictly in browser memory without upload</span>
+          <input type="file" id="filePicker" class="file-input-hidden" />
+        </div>
+        <div id="fileInfo" style="font-family: var(--font-code); font-size: 0.8rem; color: var(--atom-cyan); margin-bottom: 12px;"></div>
+      </div>
+
+      <!-- URL Fetch Panel -->
+      <div class="panel-section" id="panelUrl">
+        <div class="form-group">
+          <label for="urlInput">Target CDN Asset URL</label>
+          <input type="url" id="urlInput" placeholder="https://cdn.jsdelivr.net/npm/example@1.0.0/dist/example.min.js" />
+        </div>
+        <div style="font-size: 0.76rem; color: var(--atom-muted); margin-bottom: 12px; font-family: var(--font-code);">
+          Note: Remote URLs must serve CORS headers (<code>Access-Control-Allow-Origin: *</code>) to allow browser fetch access.
+        </div>
+      </div>
+
+      <!-- Common Settings -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="resourceType">Target Resource Element</label>
+          <select id="resourceType">
+            <option value="script" selected>&lt;script&gt; (JavaScript)</option>
+            <option value="style">&lt;link rel="stylesheet"&gt; (CSS)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="urlReference">Resource URL Reference (for HTML snippet)</label>
+          <input type="text" id="urlReference" placeholder="https://example.com/asset.js" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom" id="btnCalculate">Generate SRI Hashes</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <!-- Results Workspace -->
+      <div class="results-area">
+        <div id="statusBanner" class="status-banner status-safe">
+          <span>WebCrypto digest engine initialized</span>
+          <span>Ready</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Payload Size</div>
+            <div class="meta-val" id="metaSize">0 bytes</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Recommended Digest</div>
+            <div class="meta-val" id="metaRecommended">SHA-384 (W3C Standard)</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">CORS Requirement</div>
+            <div class="meta-val">crossorigin="anonymous"</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Execution Environment</div>
+            <div class="meta-val">100% Client-Side Sandbox</div>
+          </div>
+        </div>
+
+        <!-- SHA-384 (Recommended) -->
+        <div class="viewer-group">
+          <div class="viewer-header">
+            <span class="viewer-label">SHA-384 Integrity Attribute (Recommended by W3C)</span>
+            <button class="copy-pill" onclick="copyValue('resSha384')">Copy Attribute</button>
+          </div>
+          <div class="viewer-box" id="resSha384">-</div>
+        </div>
+
+        <!-- SHA-512 -->
+        <div class="viewer-group">
+          <div class="viewer-header">
+            <span class="viewer-label">SHA-512 Integrity Attribute</span>
+            <button class="copy-pill" onclick="copyValue('resSha512')">Copy Attribute</button>
+          </div>
+          <div class="viewer-box" id="resSha512">-</div>
+        </div>
+
+        <!-- SHA-256 -->
+        <div class="viewer-group">
+          <div class="viewer-header">
+            <span class="viewer-label">SHA-256 Integrity Attribute</span>
+            <button class="copy-pill" onclick="copyValue('resSha256')">Copy Attribute</button>
+          </div>
+          <div class="viewer-box" id="resSha256">-</div>
+        </div>
+
+        <!-- HTML Snippet -->
+        <div class="viewer-group">
+          <div class="viewer-header">
+            <span class="viewer-label">Ready-to-Use HTML Tag</span>
+            <button class="copy-pill" onclick="copyValue('resSnippet')">Copy HTML</button>
+          </div>
+          <div class="viewer-box" id="resSnippet">&lt;script src="https://example.com/asset.js" integrity="..." crossorigin="anonymous"&gt;&lt;/script&gt;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Boundaries & Disclaimer Callout -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, service interruptions caused by hash mismatches, or security compromises arising from improperly configured resource policies. Subresource Integrity (SRI) relies on strict byte-for-byte fidelity; any dynamic mutation, compression difference, encoding transformation, or cache alteration will cause client browsers to reject the resource completely. Always pair SRI declarations with appropriate Content Security Policy (CSP) headers. All hash computations are performed strictly in local browser memory without network logging or external transmissions.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Understanding Subresource Integrity (SRI)</h2>
+      <p>Subresource Integrity is a security feature standard defined by the W3C that allows web browsers to verify that resources fetched from third-party CDNs or external servers have not been manipulated, corrupted, or maliciously injected with unauthorized modifications.</p>
+      <ul>
+        <li><strong>Verification Mechanism:</strong> The browser calculates the cryptographic digest of the received file payload and compares it against the base64-encoded digest provided within the <code>integrity</code> attribute.</li>
+        <li><strong>Execution Blocking:</strong> If the calculated digest does not match the attribute exactly, the browser discards the payload and refuses to execute scripts or apply stylesheets.</li>
+        <li><strong>Mandatory CORS Header:</strong> When loading cross-origin assets with SRI, the asset must be served with appropriate CORS headers (<code>Access-Control-Allow-Origin</code>) and requested with <code>crossorigin="anonymous"</code>.</li>
+      </ul>
+
+      <h2>Choosing Between SHA-256, SHA-384, and SHA-512</h2>
+      <p>While the SRI specification permits SHA-256, SHA-384, and SHA-512, the W3C working group strongly recommends <strong>SHA-384</strong> as the optimal balance between collision resistance, resistance against length-extension attacks, and performance overhead on low-power devices.</p>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Third-party integrity calculators frequently send source scripts and proprietary code to backend web servers for hashing. BitDark executes all digest routines using the native browser <code>crypto.subtle.digest</code> API. Zero bytes of your asset code or scripts leave your workstation.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Mode Switching
+    let activeMode = "text";
+    let selectedFileBuffer = null;
+    let selectedFileName = "";
+
+    const tabText = document.getElementById("tabText");
+    const tabFile = document.getElementById("tabFile");
+    const tabUrl = document.getElementById("tabUrl");
+    const panelText = document.getElementById("panelText");
+    const panelFile = document.getElementById("panelFile");
+    const panelUrl = document.getElementById("panelUrl");
+
+    const textInput = document.getElementById("textInput");
+    const urlInput = document.getElementById("urlInput");
+    const urlReference = document.getElementById("urlReference");
+    const resourceType = document.getElementById("resourceType");
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const fileInfo = document.getElementById("fileInfo");
+
+    const btnCalculate = document.getElementById("btnCalculate");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaSize = document.getElementById("metaSize");
+
+    const resSha256 = document.getElementById("resSha256");
+    const resSha384 = document.getElementById("resSha384");
+    const resSha512 = document.getElementById("resSha512");
+    const resSnippet = document.getElementById("resSnippet");
+
+    function switchMode(mode) {
+      activeMode = mode;
+      [tabText, tabFile, tabUrl].forEach(t => t.classList.remove("active"));
+      [panelText, panelFile, panelUrl].forEach(p => p.classList.remove("active"));
+
+      if (mode === "text") {
+        tabText.classList.add("active");
+        panelText.classList.add("active");
+      } else if (mode === "file") {
+        tabFile.classList.add("active");
+        panelFile.classList.add("active");
+      } else if (mode === "url") {
+        tabUrl.classList.add("active");
+        panelUrl.classList.add("active");
+      }
+    }
+
+    // Drag & Drop Setup
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", async (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    async function handleFileSelection(file) {
+      selectedFileName = file.name;
+      fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+      selectedFileBuffer = await file.arrayBuffer();
+
+      if (!urlReference.value) {
+        urlReference.value = file.name;
+      }
+      if (file.name.endsWith(".css")) {
+        resourceType.value = "style";
+      } else if (file.name.endsWith(".js")) {
+        resourceType.value = "script";
+      }
+    }
+
+    // ArrayBuffer to Base64
+    function bufferToBase64(buffer) {
+      let binary = "";
+      const bytes = new Uint8Array(buffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return window.btoa(binary);
+    }
+
+    async function computeHashes(buffer) {
+      const [h256, h384, h512] = await Promise.all([
+        crypto.subtle.digest("SHA-256", buffer),
+        crypto.subtle.digest("SHA-384", buffer),
+        crypto.subtle.digest("SHA-512", buffer)
+      ]);
+
+      return {
+        sha256: `sha256-${bufferToBase64(h256)}`,
+        sha384: `sha384-${bufferToBase64(h384)}`,
+        sha512: `sha512-${bufferToBase64(h512)}`
+      };
+    }
+
+    btnCalculate.addEventListener("click", async () => {
+      let buffer = null;
+
+      try {
+        if (activeMode === "text") {
+          const text = textInput.value;
+          if (!text) throw new Error("Please enter text or code into the payload editor.");
+          buffer = new TextEncoder().encode(text).buffer;
+        } else if (activeMode === "file") {
+          if (!selectedFileBuffer) throw new Error("Please select or drop a file first.");
+          buffer = selectedFileBuffer;
+        } else if (activeMode === "url") {
+          const url = urlInput.value.trim();
+          if (!url) throw new Error("Please specify a valid URL to fetch.");
+          
+          statusBanner.className = "status-banner status-safe";
+          statusBanner.innerHTML = "<span>Fetching remote resource via CORS...</span> <span>Connecting</span>";
+          
+          const resp = await fetch(url, { cache: "no-store" });
+          if (!resp.ok) throw new Error(`HTTP Error: ${resp.status} ${resp.statusText}`);
+          buffer = await resp.arrayBuffer();
+          if (!urlReference.value) {
+            urlReference.value = url;
+          }
+        }
+
+        metaSize.textContent = `${buffer.byteLength.toLocaleString()} bytes`;
+
+        const hashes = await computeHashes(buffer);
+
+        resSha256.textContent = hashes.sha256;
+        resSha384.textContent = hashes.sha384;
+        resSha512.textContent = hashes.sha512;
+
+        // Auto-sanitize Markdown bracket formatting if pasted into the reference box
+        let rawRef = urlReference.value.trim();
+        const mdMatch = rawRef.match(/\((https?:\/\/[^\s)]+)\)/);
+        if (mdMatch) {
+          rawRef = mdMatch[1];
+        } else {
+          rawRef = rawRef.replace(/[\[\]]/g, "");
+        }
+
+        const targetUrl = rawRef || (activeMode === "url" ? urlInput.value.trim() : "https://example.com/asset.js");
+        const isScript = resourceType.value === "script";
+
+        if (isScript) {
+          resSnippet.textContent = `<script src="${targetUrl}" integrity="${hashes.sha384}" crossorigin="anonymous"><\/script>`;
+        } else {
+          resSnippet.textContent = `<link rel="stylesheet" href="${targetUrl}" integrity="${hashes.sha384}" crossorigin="anonymous">`;
+        }
+
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ Cryptographic SRI Hashes Generated Successfully</span> <span>Active</span>";
+
+      } catch (err) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Calculation Error: ${err.message}</span> <span>Failed</span>`;
+        resSha256.textContent = "-";
+        resSha384.textContent = "-";
+        resSha512.textContent = "-";
+        resSnippet.textContent = `Error: ${err.message}`;
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      textInput.value = "";
+      urlInput.value = "";
+      urlReference.value = "";
+      filePicker.value = "";
+      fileInfo.textContent = "";
+      selectedFileBuffer = null;
+      selectedFileName = "";
+      metaSize.textContent = "0 bytes";
+      resSha256.textContent = "-";
+      resSha384.textContent = "-";
+      resSha512.textContent = "-";
+      resSnippet.textContent = '<script src="https://example.com/asset.js" integrity="..." crossorigin="anonymous"><\/script>';
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+    });
+
+    function copyValue(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el || el.textContent === "-" || el.textContent.startsWith("Error")) return;
+      navigator.clipboard.writeText(el.textContent).then(() => {
+        const banner = document.getElementById("statusBanner");
+        banner.className = "status-banner status-safe";
+        banner.innerHTML = "<span>✓ Value copied to clipboard</span> <span>Copied</span>";
+      });
+    }
+  </script>
+</body>
+</html>
