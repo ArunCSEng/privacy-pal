@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SSL/TLS Cipher Suite Decoder & Analyzer — BitDark</title>
+  <meta name="title" content="SSL/TLS Cipher Suite Decoder & Analyzer — BitDark" />
+  <meta name="description" content="Decode, parse, and analyze IANA and OpenSSL TLS cipher suite hex strings locally. Inspect Key Exchange, Authentication, Bulk Ciphers, and MAC integrity in browser RAM." />
+  <meta name="keywords" content="tls cipher decoder, ssl cipher suite analyzer, iana tls cipher list, openssl cipher name converter, aead cipher audit, tls 1.3 ciphers, forward secrecy" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/tls-ciphers" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Bar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Frame */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Inputs */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .quick-samples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .quick-label {
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .btn-sample {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-cyan);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-sample:hover {
+      border-color: var(--atom-cyan);
+      color: #fff;
+    }
+
+    .input-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 650px) {
+      .input-group { flex-direction: column; }
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-weight: 600;
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; display: none; }
+
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warning {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .badge-secure { color: var(--atom-green); }
+    .badge-warn { color: var(--atom-amber); }
+    .badge-insecure { color: var(--atom-coral); }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / tls-ciphers
+    </nav>
+
+    <div class="tool-header">
+      <h1>SSL/TLS Cipher Suite Decoder</h1>
+      <p>Deconstruct, translate, and assess cryptographic parameters inside TLS 1.2 and TLS 1.3 cipher suites locally in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="quick-samples">
+        <span class="quick-label">Preset Suites:</span>
+        <button class="btn-sample" data-cipher="0x13,0x01">TLS 1.3 (0x1301)</button>
+        <button class="btn-sample" data-cipher="ECDHE-RSA-AES128-GCM-SHA256">ECDHE-RSA-AES128-GCM-SHA256</button>
+        <button class="btn-sample" data-cipher="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256">ECDSA ChaCha20</button>
+        <button class="btn-sample" data-cipher="0x00,0x2F">RSA-AES128-CBC (Legacy)</button>
+        <button class="btn-sample" data-cipher="0x00,0x0A">3DES (Deprecated 0x000A)</button>
+      </div>
+
+      <div class="input-label">
+        <span>Enter IANA Name, OpenSSL Name, or Hex Code (e.g., 0x1301 or 0x00,0x9E):</span>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="cipherInput" placeholder="e.g. TLS_AES_256_GCM_SHA384 or 0xC02F or ECDHE-RSA-AES128-SHA" autocomplete="off" spellcheck="false" />
+        <button class="btn-atom" id="btnAnalyze">Analyze Cipher</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid" id="metaGrid">
+          <div class="meta-item">
+            <div class="meta-label">IANA Standard Name</div>
+            <div class="meta-val" id="metaIana">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">OpenSSL Name</div>
+            <div class="meta-val" id="metaOpenSsl">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Hex ID (Wire Bytes)</div>
+            <div class="meta-val" id="metaHex">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Protocol Version Scope</div>
+            <div class="meta-val" id="metaProtocol">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Key Exchange (Kx)</div>
+            <div class="meta-val" id="metaKx">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Authentication (Au)</div>
+            <div class="meta-val" id="metaAu">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Encryption (Enc & Bits)</div>
+            <div class="meta-val" id="metaEnc">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">MAC / PRF Hash Algorithm</div>
+            <div class="meta-val" id="metaMac">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Forward Secrecy (PFS)</div>
+            <div class="meta-val" id="metaPfs">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Security Grade</div>
+            <div class="meta-val" id="metaGrade">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Detailed Primitive Evaluation:</div>
+        <div class="viewer-box" id="rawViewer">Parameters will render here...</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadJson">Export Parsed JSON</button>
+          <button class="btn-atom btn-secondary" id="btnCopyJson">Copy JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal & Operational Boundaries Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Boundary Disclaimer: bitdark.net Not Responsible
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible for any configuration flaws, regulatory non-compliance, cipher downgrade attacks, or data breaches resulting from the use of this tool.</strong> This client-side analyzer assesses static cipher suite identifiers against known cryptographic criteria (such as AEAD enforcement, forward secrecy, and legacy algorithm deprecation); it does not audit live TLS handshake negotiations, renegotiation bugs, downgrade protection flags, or server implementation vulnerabilities. Reliance on this tool for infrastructure hardening, PCI-DSS compliance, or FIPS validation is strictly at your own risk. Always verify your web servers and endpoints using authoritative live scanning tools like OpenSSL CLI, testssl.sh, or Qualys SSL Labs.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Documentation -->
+    <article class="doc-section">
+      <h2>Deconstructing SSL/TLS Cipher Suites</h2>
+      <p>A cipher suite defines the exact combination of cryptographic algorithms an endpoint will use to negotiate keys, authenticate peers, and protect network sessions.</p>
+      <ul>
+        <li><strong>Key Exchange:</strong> Dictates how symmetric session keys are established. Modern suites strictly mandate Ephemeral Diffie-Hellman (ECDHE or DHE) to ensure Perfect Forward Secrecy (PFS). Static RSA key exchanges are broken because compromising the server's private key retroactively decrypts all past recorded traffic.</li>
+        <li><strong>Authentication:</strong> Verifies server authenticity via certificates signed using RSA, ECDSA, or Ed25519.</li>
+        <li><strong>Symmetric Bulk Encryption:</strong> Encrypts payload traffic. AEAD (Authenticated Encryption with Associated Data) ciphers like AES-GCM and ChaCha20-Poly1305 provide simultaneous encryption and integrity verification, avoiding the padding oracle flaws of CBC mode (such as POODLE and Lucky Thirteen).</li>
+        <li><strong>TLS 1.3 Architectural Redesign:</strong> In TLS 1.3, the cipher naming syntax is radically simplified (e.g., <code>TLS_AES_256_GCM_SHA384</code>). Key exchange and authentication mechanisms are separated into independent negotiation extensions.</li>
+      </ul>
+
+      <h2>Zero Telemetry & Offline Guarantee</h2>
+      <p>All evaluations, hexadecimal conversions, and database lookups execute entirely inside client browser RAM using local JavaScript data structures. No network requests or telemetry payloads are transmitted to any backend.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Localhost)";
+        ipv6El.textContent = "::1 (Localhost)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      // IPv4 Resolution
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("IPv4 primary failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline / Blocked";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline / Blocked";
+        }
+      })();
+
+      // IPv6 Resolution
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("IPv6 primary failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Embedded Offline Cipher Database
+    const CIPHER_DB = [
+      // TLS 1.3 Ciphers
+      { hex: "0x13,0x01", hexShort: "0x1301", iana: "TLS_AES_128_GCM_SHA256", openssl: "TLS_AES_128_GCM_SHA256", protocol: "TLS 1.3", kx: "ECDHE / DHE", au: "Any TLS 1.3 Sig", enc: "AES-GCM (128-bit)", mac: "AEAD (SHA-256 PRF)", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x13,0x02", hexShort: "0x1302", iana: "TLS_AES_256_GCM_SHA384", openssl: "TLS_AES_256_GCM_SHA384", protocol: "TLS 1.3", kx: "ECDHE / DHE", au: "Any TLS 1.3 Sig", enc: "AES-GCM (256-bit)", mac: "AEAD (SHA-384 PRF)", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x13,0x03", hexShort: "0x1303", iana: "TLS_CHACHA20_POLY1305_SHA256", openssl: "TLS_CHACHA20_POLY1305_SHA256", protocol: "TLS 1.3", kx: "ECDHE / DHE", au: "Any TLS 1.3 Sig", enc: "ChaCha20 (256-bit)", mac: "Poly1305 AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x13,0x04", hexShort: "0x1304", iana: "TLS_AES_128_CCM_SHA256", openssl: "TLS_AES_128_CCM_SHA256", protocol: "TLS 1.3", kx: "ECDHE / DHE", au: "Any TLS 1.3 Sig", enc: "AES-CCM (128-bit)", mac: "AEAD (SHA-256 PRF)", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x13,0x05", hexShort: "0x1305", iana: "TLS_AES_128_CCM_8_SHA256", openssl: "TLS_AES_128_CCM_8_SHA256", protocol: "TLS 1.3", kx: "ECDHE / DHE", au: "Any TLS 1.3 Sig", enc: "AES-CCM-8 (128-bit)", mac: "AEAD (SHA-256 PRF)", pfs: true, aead: true, grade: "SECURE" },
+
+      // TLS 1.2 ECDHE AEAD Suites (Recommended)
+      { hex: "0xC0,0x2F", hexShort: "0xC02F", iana: "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", openssl: "ECDHE-RSA-AES128-GCM-SHA256", protocol: "TLS 1.2", kx: "ECDHE", au: "RSA", enc: "AES-GCM (128-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0xC0,0x30", hexShort: "0xC030", iana: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", openssl: "ECDHE-RSA-AES256-GCM-SHA384", protocol: "TLS 1.2", kx: "ECDHE", au: "RSA", enc: "AES-GCM (256-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0xC0,0x2B", hexShort: "0xC02B", iana: "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", openssl: "ECDHE-ECDSA-AES128-GCM-SHA256", protocol: "TLS 1.2", kx: "ECDHE", au: "ECDSA", enc: "AES-GCM (128-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0xC0,0x2C", hexShort: "0xC02C", iana: "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", openssl: "ECDHE-ECDSA-AES256-GCM-SHA384", protocol: "TLS 1.2", kx: "ECDHE", au: "ECDSA", enc: "AES-GCM (256-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0xCC,0xA8", hexShort: "0xCCA8", iana: "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256", openssl: "ECDHE-RSA-CHACHA20-POLY1305", protocol: "TLS 1.2", kx: "ECDHE", au: "RSA", enc: "ChaCha20 (256-bit)", mac: "Poly1305 AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0xCC,0xA9", hexShort: "0xCCA9", iana: "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256", openssl: "ECDHE-ECDSA-CHACHA20-POLY1305", protocol: "TLS 1.2", kx: "ECDHE", au: "ECDSA", enc: "ChaCha20 (256-bit)", mac: "Poly1305 AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x00,0x9E", hexShort: "0x009E", iana: "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", openssl: "DHE-RSA-AES128-GCM-SHA256", protocol: "TLS 1.2", kx: "DHE", au: "RSA", enc: "AES-GCM (128-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+      { hex: "0x00,0x9F", hexShort: "0x009F", iana: "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", openssl: "DHE-RSA-AES256-GCM-SHA384", protocol: "TLS 1.2", kx: "DHE", au: "RSA", enc: "AES-GCM (256-bit)", mac: "AEAD", pfs: true, aead: true, grade: "SECURE" },
+
+      // TLS 1.2 CBC Suites (Weak/Tolerated)
+      { hex: "0xC0,0x13", hexShort: "0xC013", iana: "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", openssl: "ECDHE-RSA-AES128-SHA", protocol: "TLS 1.0 - 1.2", kx: "ECDHE", au: "RSA", enc: "AES-CBC (128-bit)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "WEAK" },
+      { hex: "0xC0,0x14", hexShort: "0xC014", iana: "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", openssl: "ECDHE-RSA-AES256-SHA", protocol: "TLS 1.0 - 1.2", kx: "ECDHE", au: "RSA", enc: "AES-CBC (256-bit)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "WEAK" },
+      { hex: "0xC0,0x09", hexShort: "0xC009", iana: "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", openssl: "ECDHE-ECDSA-AES128-SHA", protocol: "TLS 1.0 - 1.2", kx: "ECDHE", au: "ECDSA", enc: "AES-CBC (128-bit)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "WEAK" },
+      { hex: "0xC0,0x0A", hexShort: "0xC00A", iana: "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", openssl: "ECDHE-ECDSA-AES256-SHA", protocol: "TLS 1.0 - 1.2", kx: "ECDHE", au: "ECDSA", enc: "AES-CBC (256-bit)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "WEAK" },
+      { hex: "0xC0,0x27", hexShort: "0xC027", iana: "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", openssl: "ECDHE-RSA-AES128-SHA256", protocol: "TLS 1.2", kx: "ECDHE", au: "RSA", enc: "AES-CBC (128-bit)", mac: "HMAC-SHA256", pfs: true, aead: false, grade: "WEAK" },
+      { hex: "0xC0,0x28", hexShort: "0xC028", iana: "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", openssl: "ECDHE-RSA-AES256-SHA384", protocol: "TLS 1.2", kx: "ECDHE", au: "RSA", enc: "AES-CBC (256-bit)", mac: "HMAC-SHA384", pfs: true, aead: false, grade: "WEAK" },
+
+      // Legacy Non-PFS Static RSA Suites (Insecure)
+      { hex: "0x00,0x9C", hexShort: "0x009C", iana: "TLS_RSA_WITH_AES_128_GCM_SHA256", openssl: "AES128-GCM-SHA256", protocol: "TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-GCM (128-bit)", mac: "AEAD", pfs: false, aead: true, grade: "INSECURE" },
+      { hex: "0x00,0x9D", hexShort: "0x009D", iana: "TLS_RSA_WITH_AES_256_GCM_SHA384", openssl: "AES256-GCM-SHA384", protocol: "TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-GCM (256-bit)", mac: "AEAD", pfs: false, aead: true, grade: "INSECURE" },
+      { hex: "0x00,0x2F", hexShort: "0x002F", iana: "TLS_RSA_WITH_AES_128_CBC_SHA", openssl: "AES128-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-CBC (128-bit)", mac: "HMAC-SHA1", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x35", hexShort: "0x0035", iana: "TLS_RSA_WITH_AES_256_CBC_SHA", openssl: "AES256-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-CBC (256-bit)", mac: "HMAC-SHA1", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x3C", hexShort: "0x003C", iana: "TLS_RSA_WITH_AES_128_CBC_SHA256", openssl: "AES128-SHA256", protocol: "TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-CBC (128-bit)", mac: "HMAC-SHA256", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x3D", hexShort: "0x003D", iana: "TLS_RSA_WITH_AES_256_CBC_SHA256", openssl: "AES256-SHA256", protocol: "TLS 1.2", kx: "Static RSA", au: "RSA", enc: "AES-CBC (256-bit)", mac: "HMAC-SHA256", pfs: false, aead: false, grade: "INSECURE" },
+
+      // Severely Deprecated / Vulnerable Suites
+      { hex: "0x00,0x0A", hexShort: "0x000A", iana: "TLS_RSA_WITH_3DES_EDE_CBC_SHA", openssl: "DES-CBC3-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "3DES EDE (112/168-bit)", mac: "HMAC-SHA1", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0xC0,0x12", hexShort: "0xC012", iana: "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA", openssl: "ECDHE-RSA-DES-CBC3-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "ECDHE", au: "RSA", enc: "3DES EDE (112/168-bit)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x04", hexShort: "0x0004", iana: "TLS_RSA_WITH_RC4_128_MD5", openssl: "RC4-MD5", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "RC4 (128-bit Stream)", mac: "HMAC-MD5", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x05", hexShort: "0x0005", iana: "TLS_RSA_WITH_RC4_128_SHA", openssl: "RC4-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "RC4 (128-bit Stream)", mac: "HMAC-SHA1", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0xC0,0x11", hexShort: "0xC011", iana: "TLS_ECDHE_RSA_WITH_RC4_128_SHA", openssl: "ECDHE-RSA-RC4-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "ECDHE", au: "RSA", enc: "RC4 (128-bit Stream)", mac: "HMAC-SHA1", pfs: true, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x02", hexShort: "0x0002", iana: "TLS_RSA_WITH_NULL_SHA", openssl: "NULL-SHA", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "None (NULL)", mac: "HMAC-SHA1", pfs: false, aead: false, grade: "INSECURE" },
+      { hex: "0x00,0x01", hexShort: "0x0001", iana: "TLS_RSA_WITH_NULL_MD5", openssl: "NULL-MD5", protocol: "SSL 3.0 - TLS 1.2", kx: "Static RSA", au: "RSA", enc: "None (NULL)", mac: "HMAC-MD5", pfs: false, aead: false, grade: "INSECURE" }
+    ];
+
+    // DOM Elements
+    const cipherInput = document.getElementById("cipherInput");
+    const btnAnalyze = document.getElementById("btnAnalyze");
+    const btnClear = document.getElementById("btnClear");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+
+    const metaIana = document.getElementById("metaIana");
+    const metaOpenSsl = document.getElementById("metaOpenSsl");
+    const metaHex = document.getElementById("metaHex");
+    const metaProtocol = document.getElementById("metaProtocol");
+    const metaKx = document.getElementById("metaKx");
+    const metaAu = document.getElementById("metaAu");
+    const metaEnc = document.getElementById("metaEnc");
+    const metaMac = document.getElementById("metaMac");
+    const metaPfs = document.getElementById("metaPfs");
+    const metaGrade = document.getElementById("metaGrade");
+    const rawViewer = document.getElementById("rawViewer");
+    const btnDownloadJson = document.getElementById("btnDownloadJson");
+    const btnCopyJson = document.getElementById("btnCopyJson");
+
+    let activeScanResult = null;
+
+    // Normalization & Lookup Logic
+    function normalizeHexQuery(q) {
+      let s = q.trim();
+      s = s.replace(/^[{\[\(]/, "").replace(/[}\]\)]$/, "").trim();
+
+      // Handle comma-separated wire byte notation: "0x13,0x01", "0x00, 0x2F", "13, 01"
+      if (s.includes(",")) {
+        const parts = s.split(",").map(p => p.trim());
+        if (parts.length === 2) {
+          const b1 = parts[0].replace(/^0x/i, "").replace(/[^0-9A-Fa-f]/g, "").padStart(2, "0").slice(-2);
+          const b2 = parts[1].replace(/^0x/i, "").replace(/[^0-9A-Fa-f]/g, "").padStart(2, "0").slice(-2);
+          if (b1 && b2) {
+            return "0x" + (b1 + b2).toUpperCase();
+          }
+        }
+      }
+
+      // Handle single continuous hex string: "0x1301", "1301", "0xC02F", "0x2F", "2F"
+      let clean = s.replace(/^0x/i, "").replace(/[^0-9A-Fa-f]/g, "");
+      if (clean.length > 0 && clean.length <= 4) {
+        clean = clean.padStart(4, "0");
+        return "0x" + clean.toUpperCase();
+      }
+
+      return null;
+    }
+
+    function searchCipher(query) {
+      const q = query.trim();
+      if (!q) return null;
+
+      // 1. Direct Hex ID lookup (handles wire byte strings and short hex codes)
+      const hexNorm = normalizeHexQuery(q);
+      if (hexNorm) {
+        const found = CIPHER_DB.find(c => c.hexShort.toUpperCase() === hexNorm);
+        if (found) return found;
+      }
+
+      // 2. Direct Wire Bytes match (e.g. "0x13,0x01")
+      const qNoSpace = q.replace(/\s+/g, "").toUpperCase();
+      const wireMatch = CIPHER_DB.find(c => c.hex.replace(/\s+/g, "").toUpperCase() === qNoSpace);
+      if (wireMatch) return wireMatch;
+
+      // 3. Exact match against IANA or OpenSSL strings
+      const qUpper = q.toUpperCase();
+      const exact = CIPHER_DB.find(c => c.iana.toUpperCase() === qUpper || c.openssl.toUpperCase() === qUpper);
+      if (exact) return exact;
+
+      // 4. Fallback Heuristic Parser for unindexed standard suites
+      if (qUpper.startsWith("TLS_") || qUpper.includes("WITH_") || qUpper.includes("-")) {
+        return parseHeuristicCipher(q);
+      }
+
+      return null;
+    }
+
+    function parseHeuristicCipher(name) {
+      const u = name.toUpperCase().replace(/^TLS_/, "");
+      const isAead = u.includes("GCM") || u.includes("POLY1305") || u.includes("CCM");
+      const hasPfs = u.includes("ECDHE") || u.includes("DHE");
+
+      let kx = "Unknown";
+      if (u.includes("ECDHE")) kx = "ECDHE";
+      else if (u.includes("DHE")) kx = "DHE";
+      else if (u.startsWith("RSA") || u.includes("_RSA_")) kx = "Static RSA";
+
+      let enc = "Unknown Bulk Cipher";
+      if (u.includes("AES_128_GCM") || u.includes("AES128-GCM")) enc = "AES-GCM (128-bit)";
+      else if (u.includes("AES_256_GCM") || u.includes("AES256-GCM")) enc = "AES-GCM (256-bit)";
+      else if (u.includes("CHACHA20")) enc = "ChaCha20 (256-bit)";
+      else if (u.includes("AES_128_CBC") || u.includes("AES128-SHA")) enc = "AES-CBC (128-bit)";
+      else if (u.includes("AES_256_CBC") || u.includes("AES256-SHA")) enc = "AES-CBC (256-bit)";
+      else if (u.includes("3DES")) enc = "3DES (168-bit)";
+
+      let grade = "SECURE";
+      if (enc.includes("3DES") || enc.includes("RC4") || !hasPfs) grade = "INSECURE";
+      else if (!isAead) grade = "WEAK";
+
+      return {
+        hex: "Custom / Unindexed",
+        hexShort: "N/A",
+        iana: name.startsWith("TLS_") ? name : `TLS_${name.replace(/-/g, "_")}`,
+        openssl: name,
+        protocol: hasPfs && isAead ? "TLS 1.2 / TLS 1.3" : "TLS 1.0 - 1.2",
+        kx: kx,
+        au: u.includes("ECDSA") ? "ECDSA" : "RSA",
+        enc: enc,
+        mac: isAead ? "AEAD Integrated" : (u.includes("SHA384") ? "HMAC-SHA384" : (u.includes("SHA256") ? "HMAC-SHA256" : "HMAC-SHA1")),
+        pfs: hasPfs,
+        aead: isAead,
+        grade: grade
+      };
+    }
+
+    function resetMetaGrid() {
+      metaIana.textContent = "-";
+      metaOpenSsl.textContent = "-";
+      metaHex.textContent = "-";
+      metaProtocol.textContent = "-";
+      metaKx.textContent = "-";
+      metaAu.textContent = "-";
+      metaEnc.textContent = "-";
+      metaMac.textContent = "-";
+      metaPfs.textContent = "-";
+      metaGrade.textContent = "-";
+    }
+
+    function evaluateCipher(suite) {
+      resultsArea.style.display = "block";
+      activeScanResult = suite;
+
+      metaIana.textContent = suite.iana;
+      metaOpenSsl.textContent = suite.openssl;
+      metaHex.textContent = `${suite.hex} (${suite.hexShort})`;
+      metaProtocol.textContent = suite.protocol;
+      metaKx.textContent = suite.kx;
+      metaAu.textContent = suite.au;
+      metaEnc.textContent = suite.enc;
+      metaMac.textContent = suite.mac;
+
+      metaPfs.innerHTML = suite.pfs
+        ? `<span class="badge-secure">✓ Yes (Forward Secret)</span>`
+        : `<span class="badge-insecure">✕ No (Static Key Exchange)</span>`;
+
+      if (suite.grade === "SECURE") {
+        metaGrade.innerHTML = `<span class="badge-secure">A+ (Modern AEAD / High Security)</span>`;
+        statusBanner.className = "status-banner status-success";
+        statusBanner.innerHTML = `<span>✓ Cryptographically Strong Cipher Suite</span> <span>Compliant with Modern TLS Standards</span>`;
+      } else if (suite.grade === "WEAK") {
+        metaGrade.innerHTML = `<span class="badge-warn">B (Tolerated / CBC Mode Warning)</span>`;
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ Legacy CBC / Non-AEAD Mode</span> <span>Vulnerable to Padding Oracle Side-Channels</span>`;
+      } else {
+        metaGrade.innerHTML = `<span class="badge-insecure">F (Insecure / Deprecated)</span>`;
+        statusBanner.className = "status-banner status-error";
+        statusBanner.innerHTML = `<span>✕ Insecure or Deprecated Suite</span> <span>Static RSA or Legacy Cipher (POODLE / SWEET32 / DROWN)</span>`;
+      }
+
+      const report = {
+        iana_name: suite.iana,
+        openssl_name: suite.openssl,
+        hex_identifier: suite.hexShort,
+        wire_bytes: suite.hex,
+        supported_protocol: suite.protocol,
+        cryptographic_primitives: {
+          key_exchange: suite.kx,
+          authentication: suite.au,
+          bulk_encryption: suite.enc,
+          integrity_mac: suite.mac,
+          authenticated_encryption_aead: suite.aead,
+          perfect_forward_secrecy: suite.pfs
+        },
+        security_evaluation: {
+          grade: suite.grade,
+          production_recommended: suite.grade === "SECURE",
+          compliance_notes: suite.grade === "SECURE"
+            ? "Suitable for strict TLS 1.3/1.2 enterprise configurations."
+            : (suite.grade === "WEAK" ? "Avoid CBC mode to prevent timing side-channel padding attacks." : "Severely deprecated. Must be disabled to prevent passive traffic interception.")
+        },
+        disclaimer: "bitdark.net is not responsible for live configuration audits or TLS implementation flaws."
+      };
+
+      rawViewer.textContent = JSON.stringify(report, null, 2);
+    }
+
+    // Event Listeners
+    btnAnalyze.addEventListener("click", () => {
+      const q = cipherInput.value.trim();
+      if (!q) {
+        alert("Please enter a cipher name or hex value.");
+        return;
+      }
+      const match = searchCipher(q);
+      if (match) {
+        evaluateCipher(match);
+      } else {
+        resultsArea.style.display = "block";
+        resetMetaGrid();
+        statusBanner.className = "status-banner status-error";
+        statusBanner.innerHTML = "<span>✕ Unknown or Unparseable Cipher Suite</span>";
+        rawViewer.textContent = "Could not correlate identifier: " + q + "\nSupply a valid IANA identifier (e.g. TLS_AES_128_GCM_SHA256), OpenSSL name (e.g. ECDHE-RSA-AES128-GCM-SHA256), or Hex code (e.g. 0x1301 or 0x00,0x2F).";
+        activeScanResult = null;
+      }
+    });
+
+    cipherInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") btnAnalyze.click();
+    });
+
+    btnClear.addEventListener("click", () => {
+      cipherInput.value = "";
+      resultsArea.style.display = "none";
+      resetMetaGrid();
+      activeScanResult = null;
+    });
+
+    document.querySelectorAll(".btn-sample").forEach(btn => {
+      btn.addEventListener("click", () => {
+        cipherInput.value = btn.dataset.cipher;
+        btnAnalyze.click();
+      });
+    });
+
+    // Copy & Export Actions
+    btnCopyJson.addEventListener("click", () => {
+      if (!activeScanResult) return;
+      navigator.clipboard.writeText(rawViewer.textContent);
+      const orig = btnCopyJson.textContent;
+      btnCopyJson.textContent = "Copied!";
+      setTimeout(() => { btnCopyJson.textContent = orig; }, 1500);
+    });
+
+    btnDownloadJson.addEventListener("click", () => {
+      if (!activeScanResult) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(rawViewer.textContent);
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `tls-cipher-${(activeScanResult.hexShort || "audit").replace(/[^a-zA-Z0-9]/g, "")}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    });
+  </script>
+</body>
+</html>
