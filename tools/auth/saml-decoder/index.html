@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SAML Token &amp; Assertion Decoder — Free Offline Security Tool | BitDark</title>
+  <meta name="title" content="SAML Token &amp; Assertion Decoder — Free Offline Security Tool | BitDark" />
+  <meta name="description" content="Inspect, parse, and evaluate SAML 2.0 and 1.1 requests, responses, and assertions entirely inside browser memory with zero network telemetry." />
+  <meta name="keywords" content="saml decoder, saml token inspector, saml response viewer, client-side saml, decode saml token offline" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/saml-decoder" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Bar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Wrapper */
+    .wrapper { max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.95rem;
+      max-width: 1050px;
+    }
+
+    /* Single Console Card */
+    .console-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      margin-bottom: 28px;
+    }
+
+    /* Embedded Dropzone */
+    .dropzone {
+      border: 1px dashed var(--atom-border);
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: rgba(33, 37, 43, 0.6);
+      transition: border-color 0.2s, background-color 0.2s;
+      margin-bottom: 18px;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+    }
+    .dropzone-icon { color: var(--atom-amber); }
+    .file-input-hidden { display: none; }
+
+    /* Input Field */
+    .field-label {
+      font-size: 0.72rem;
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    .console-input {
+      width: 100%;
+      height: 180px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.83rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+    .console-input:focus { border-color: var(--atom-border-focus); }
+
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn-primary {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 20px;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-family: var(--font-ui);
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-text);
+      color: #fff;
+    }
+
+    /* Diagnostics Banner */
+    .diag-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .diag-error {
+      background-color: rgba(224, 108, 117, 0.1);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+    .diag-success {
+      background-color: rgba(152, 195, 121, 0.1);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .diag-warn {
+      background-color: rgba(229, 192, 123, 0.1);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    /* Diagnostics Grid */
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 900px) {
+      .diag-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 550px) {
+      .diag-grid { grid-template-columns: 1fr; }
+    }
+    .diag-cell {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px 14px;
+      border-radius: 4px;
+    }
+    .diag-cell-label {
+      font-size: 0.68rem;
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+    }
+    .diag-cell-val {
+      font-size: 0.82rem;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    /* Attributes Table */
+    .claims-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+    }
+    .claims-table th, .claims-table td {
+      border: 1px solid var(--atom-border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .claims-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    .claims-table tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+
+    /* Results Terminal Box */
+    .terminal-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 16px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 420px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">127.0.0.1 (Local)</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">::1 (Local)</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <div class="tool-header">
+      <h1>SAML Token &amp; Assertion Decoder</h1>
+      <p>Inspect, parse, and evaluate SAML 2.0 / 1.1 assertions, AuthnRequests, and Response containers entirely inside browser memory. Extract Subject, Issuer, Validity periods, Claims, and Signatures with zero network telemetry.</p>
+    </div>
+
+    <!-- Active Single-Console Workspace -->
+    <section class="console-card">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-label">
+          <span class="dropzone-icon">📁</span> Click or Drag &amp; Drop a SAML file (.xml, .txt, .saml)
+        </span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept=".xml,.txt,.saml" />
+      </div>
+
+      <div class="field-label">SAML XML / Base64 / URL-Encoded Block</div>
+      <textarea id="samlInput" class="console-input" placeholder="Paste SAMLResponse=... or Base64 PHNhbWxwOlJlc3BvbnNl... or raw XML &lt;samlp:Response..."></textarea>
+
+      <div class="action-bar">
+        <button class="btn-primary" id="btnDecode">Decode Token</button>
+        <button class="btn-secondary" id="btnSampleResponse">Load Sample Response</button>
+        <button class="btn-secondary" id="btnSampleRequest">Load Sample AuthnRequest</button>
+        <button class="btn-secondary" id="btnExportJson">Copy Decoded JSON</button>
+        <button class="btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div id="statusBanner" class="diag-banner" style="display: none;"></div>
+
+      <div class="diag-grid" id="diagGrid">
+        <div class="diag-cell">
+          <div class="diag-cell-label">Subject Common Name (NameID)</div>
+          <div class="diag-cell-val" id="metaSubject">-</div>
+        </div>
+        <div class="diag-cell">
+          <div class="diag-cell-label">Issuer EntityID</div>
+          <div class="diag-cell-val" id="metaIssuer">-</div>
+        </div>
+        <div class="diag-cell">
+          <div class="diag-cell-label">Validity Window</div>
+          <div class="diag-cell-val" id="metaValidity">-</div>
+        </div>
+        <div class="diag-cell">
+          <div class="diag-cell-label">XML Digital Signature</div>
+          <div class="diag-cell-val" id="metaSignature">-</div>
+        </div>
+      </div>
+
+      <div class="field-label" id="claimsHeader" style="display: none;">Extracted SAML Attributes &amp; Claims:</div>
+      <div id="attributesContainer"></div>
+
+      <div class="field-label">Parsed Fields &amp; Formatted XML Elements:</div>
+      <div class="terminal-box" id="rawViewer">SAML assertion structure or decoded XML will appear here after evaluation.</div>
+    </section>
+
+    <!-- Operational Boundaries & Legal Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal &amp; Operational Boundary Disclaimer: bitdark.net Not Responsible
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible for any security incidents, authentication bypasses, SAML signature wrapping (XSW) vulnerabilities, or trust misconfigurations resulting from the use of this tool.</strong> This utility parses XML nodes and extracts assertions locally in memory. It does not perform authoritative cryptographic signature verification or certificate path validation. Always rely on hardened, server-side authentication modules for production authorization decisions.
+      </p>
+    </aside>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // IP Telemetry Engine
+    (function initTelemetry() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3000) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (e) {
+          clearTimeout(timer);
+          throw e;
+        }
+      };
+
+      // IPv4 Resolution
+      (async () => {
+        try {
+          const res = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res.ok) {
+            const data = await res.json();
+            ipv4El.textContent = data.ip;
+            return;
+          }
+          throw new Error();
+        } catch {
+          try {
+            const fb = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb.ok) {
+              const ip = (await fb.text()).trim();
+              ipv4El.textContent = ip || "Offline";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline";
+        }
+      })();
+
+      // IPv6 Resolution
+      (async () => {
+        try {
+          const res = await fetchWithTimeout("https://api64.ipify.org?format=json");
+          if (res.ok) {
+            const data = await res.json();
+            ipv6El.textContent = data.ip.includes(":") ? data.ip : "Not Supported";
+            return;
+          }
+          throw new Error();
+        } catch {
+          try {
+            const fb = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb.ok) {
+              const ip = (await fb.text()).trim();
+              ipv6El.textContent = ip.includes(":") ? ip : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    })();
+
+    // Decompression & Safe Decoding Engine
+    const SamlEngine = {
+      async decompressDeflate(bytes) {
+        for (const format of ["deflate-raw", "deflate"]) {
+          try {
+            const ds = new DecompressionStream(format);
+            const writer = ds.writable.getWriter();
+            writer.write(bytes);
+            writer.close();
+            const text = await new Response(ds.readable).text();
+            if (text && text.includes("<")) return text;
+          } catch (e) {}
+        }
+        return null;
+      },
+
+      async normalizeInput(raw) {
+        let input = raw.trim();
+
+        const match = input.match(/(?:SAMLResponse|SAMLRequest)=([^&]+)/i);
+        if (match) {
+          input = decodeURIComponent(match[1]);
+        } else if (input.includes("%")) {
+          try { input = decodeURIComponent(input); } catch (e) {}
+        }
+
+        if (input.startsWith("<")) {
+          return input;
+        }
+
+        const cleanB64 = input.replace(/[^A-Za-z0-9+/=]/g, "");
+        if (!cleanB64) {
+          throw new Error("No readable Base64 or XML found in input buffer.");
+        }
+
+        const binStr = atob(cleanB64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) {
+          bytes[i] = binStr.charCodeAt(i);
+        }
+
+        const directText = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+        if (directText.includes("<") && (
+          directText.includes("Response") ||
+          directText.includes("Request") ||
+          directText.includes("Assertion")
+        )) {
+          return directText;
+        }
+
+        const decompressed = await this.decompressDeflate(bytes);
+        if (decompressed && decompressed.includes("<")) {
+          return decompressed;
+        }
+
+        return directText;
+      },
+
+      // Removes namespace prefixes to eliminate undeclared prefix errors entirely
+      stripPrefixes(xml) {
+        return xml
+          .replace(/<(\/?)[a-zA-Z0-9_-]+:([a-zA-Z0-9_-]+)/g, "<$1$2")
+          .replace(/\sxmlns:[a-zA-Z0-9_-]+="[^"]*"/g, "")
+          .replace(/\sxmlns:[a-zA-Z0-9_-]+='[^']*'/g, "");
+      },
+
+      parseXmlSafely(rawXml) {
+        const cleanRaw = rawXml.trim().replace(/^[\uFEFF\xA0]+/, "");
+        const parser = new DOMParser();
+
+        // 1. Direct standard parse
+        let doc = parser.parseFromString(cleanRaw, "application/xml");
+        let parseErr = doc.querySelector("parsererror");
+        if (!parseErr) {
+          return { doc, xml: cleanRaw };
+        }
+
+        // 2. Namespace-neutral fallback
+        const sanitizedXml = this.stripPrefixes(cleanRaw);
+        doc = parser.parseFromString(sanitizedXml, "application/xml");
+        parseErr = doc.querySelector("parsererror");
+        if (!parseErr) {
+          return { doc, xml: cleanRaw };
+        }
+
+        throw new Error(parseErr.textContent.split("\n")[0] || "Invalid XML Structure");
+      },
+
+      findFirst(root, name) {
+        if (!root) return null;
+        if (root.localName === name || root.nodeName === name) return root;
+        const byNS = root.getElementsByTagNameNS("*", name);
+        if (byNS.length > 0) return byNS[0];
+        const byTag = root.getElementsByTagName(name);
+        return byTag.length > 0 ? byTag[0] : null;
+      },
+
+      findAll(root, name) {
+        if (!root) return [];
+        const byNS = root.getElementsByTagNameNS("*", name);
+        if (byNS.length > 0) return Array.from(byNS);
+        return Array.from(root.getElementsByTagName(name));
+      },
+
+      formatXml(xml) {
+        let formatted = "";
+        let indent = "";
+        const tab = "  ";
+        const nodes = xml.replace(/(>)(<)(\/*)/g, "$1\r\n$2$3").split("\r\n");
+
+        for (let i = 0; i < nodes.length; i++) {
+          const line = nodes[i].trim();
+          if (!line) continue;
+
+          if (line.match(/^<\/\w/)) {
+            indent = indent.substring(tab.length);
+          }
+
+          formatted += indent + line + "\r\n";
+
+          if (line.match(/^<[^!\?\/][^>]*[^\/]>$/)) {
+            indent += tab;
+          }
+        }
+        return formatted.trim();
+      }
+    };
+
+    // UI Controller
+    (function initUI() {
+      const samlInput = document.getElementById("samlInput");
+      const btnDecode = document.getElementById("btnDecode");
+      const btnSampleResponse = document.getElementById("btnSampleResponse");
+      const btnSampleRequest = document.getElementById("btnSampleRequest");
+      const btnExportJson = document.getElementById("btnExportJson");
+      const btnClear = document.getElementById("btnClear");
+      const statusBanner = document.getElementById("statusBanner");
+
+      const dropArea = document.getElementById("dropArea");
+      const filePicker = document.getElementById("filePicker");
+
+      const metaSubject = document.getElementById("metaSubject");
+      const metaIssuer = document.getElementById("metaIssuer");
+      const metaValidity = document.getElementById("metaValidity");
+      const metaSignature = document.getElementById("metaSignature");
+
+      const claimsHeader = document.getElementById("claimsHeader");
+      const attributesContainer = document.getElementById("attributesContainer");
+      const rawViewer = document.getElementById("rawViewer");
+
+      let activeJsonPayload = null;
+
+      async function processDecode() {
+        const raw = samlInput.value.trim();
+        if (!raw) {
+          statusBanner.style.display = "flex";
+          statusBanner.className = "diag-banner diag-error";
+          statusBanner.innerHTML = "<span>✕ Input Error: SAML payload is empty</span> <span>Empty Input</span>";
+          return;
+        }
+
+        try {
+          const normalized = await SamlEngine.normalizeInput(raw);
+          const { doc, xml } = SamlEngine.parseXmlSafely(normalized);
+          const root = doc.documentElement;
+
+          // 1. Issuer
+          const issuerNode = SamlEngine.findFirst(root, "Issuer");
+          const issuer = issuerNode ? issuerNode.textContent.trim() : "Not Specified";
+
+          // 2. Subject NameID
+          const nameIdNode = SamlEngine.findFirst(root, "NameID");
+          const nameId = nameIdNode ? nameIdNode.textContent.trim() : "N/A (Request or Unspecified)";
+
+          // 3. Conditions Window
+          const condNode = SamlEngine.findFirst(root, "Conditions");
+          let validity = "No Conditions Stated";
+          let isExpired = false;
+
+          if (condNode) {
+            const notBefore = condNode.getAttribute("NotBefore") || "-";
+            const notOnOrAfter = condNode.getAttribute("NotOnOrAfter") || "-";
+            validity = `${notBefore} to ${notOnOrAfter}`;
+            if (notOnOrAfter !== "-" && new Date() > new Date(notOnOrAfter)) {
+              isExpired = true;
+              validity += " [EXPIRED]";
+            }
+          }
+
+          // 4. Digital Signature
+          const sigNode = SamlEngine.findFirst(root, "Signature");
+          let sigStatus = "Unsigned (No ds:Signature)";
+          if (sigNode) {
+            const methodNode = SamlEngine.findFirst(sigNode, "SignatureMethod");
+            const algo = methodNode ? (methodNode.getAttribute("Algorithm") || "").split("#").pop() : "Present";
+            sigStatus = `Signed (${algo})`;
+          }
+
+          // 5. Attributes
+          const attributes = {};
+          const attrNodes = SamlEngine.findAll(root, "Attribute");
+          attrNodes.forEach(node => {
+            const key = node.getAttribute("Name") || node.getAttribute("FriendlyName") || "Attribute";
+            const valNodes = SamlEngine.findAll(node, "AttributeValue");
+            const values = valNodes.map(v => v.textContent.trim()).filter(Boolean);
+            attributes[key] = values.length <= 1 ? (values[0] || "") : values;
+          });
+
+          // Render Status Cards
+          metaSubject.textContent = nameId;
+          metaIssuer.textContent = issuer;
+          metaValidity.textContent = validity;
+          metaSignature.textContent = sigStatus;
+
+          statusBanner.style.display = "flex";
+          if (isExpired) {
+            statusBanner.className = "diag-banner diag-error";
+            statusBanner.innerHTML = "<span>✕ SAML Condition Warning: Assertion expired</span> <span>Expired Token</span>";
+          } else if (sigNode) {
+            statusBanner.className = "diag-banner diag-success";
+            statusBanner.innerHTML = "<span>✓ SAML Payload &amp; Digital Signature Envelope Parsed</span> <span>Valid Envelope</span>";
+          } else {
+            statusBanner.className = "diag-banner diag-warn";
+            statusBanner.innerHTML = "<span>⚠️ Unsigned SAML Structure: Assertion does not contain ds:Signature</span> <span>Unsigned Token</span>";
+          }
+
+          // Render Attributes Table
+          const keys = Object.keys(attributes);
+          if (keys.length > 0) {
+            claimsHeader.style.display = "block";
+            let html = `<table class="claims-table"><thead><tr><th>Attribute Name</th><th>Decoded Value</th></tr></thead><tbody>`;
+            keys.forEach(k => {
+              const val = Array.isArray(attributes[k]) ? attributes[k].join(", ") : attributes[k];
+              html += `<tr><td>${k}</td><td>${val}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            attributesContainer.innerHTML = html;
+          } else {
+            claimsHeader.style.display = "none";
+            attributesContainer.innerHTML = "";
+          }
+
+          // Render Formatted XML
+          rawViewer.textContent = SamlEngine.formatXml(xml);
+
+          activeJsonPayload = {
+            subject: nameId,
+            issuer: issuer,
+            validity: validity,
+            is_expired: isExpired,
+            signature: sigStatus,
+            attributes: attributes,
+            disclaimer: "bitdark.net is not responsible for authentication decisions or security misconfigurations."
+          };
+
+        } catch (err) {
+          statusBanner.style.display = "flex";
+          statusBanner.className = "diag-banner diag-error";
+          statusBanner.innerHTML = `<span>✕ SAML Parsing Error: ${err.message}</span> <span>Malformed Token</span>`;
+          metaSubject.textContent = "Error";
+          metaIssuer.textContent = "Error";
+          metaValidity.textContent = "Error";
+          metaSignature.textContent = "-";
+          claimsHeader.style.display = "none";
+          attributesContainer.innerHTML = "";
+          rawViewer.textContent = `Failed to parse SAML payload:\n${err.message}\n\nEnsure the input is a valid Base64 SAMLResponse, Deflated SAMLRequest, or XML block.`;
+          activeJsonPayload = null;
+        }
+      }
+
+      btnDecode.addEventListener("click", processDecode);
+
+      btnClear.addEventListener("click", () => {
+        samlInput.value = "";
+        statusBanner.style.display = "none";
+        metaSubject.textContent = "-";
+        metaIssuer.textContent = "-";
+        metaValidity.textContent = "-";
+        metaSignature.textContent = "-";
+        claimsHeader.style.display = "none";
+        attributesContainer.innerHTML = "";
+        rawViewer.textContent = "SAML assertion structure or decoded XML will appear here after evaluation.";
+        activeJsonPayload = null;
+      });
+
+      // Sample Payloads
+      btnSampleResponse.addEventListener("click", () => {
+        samlInput.value = `PHNhbWxwOlJlc3BvbnNlIHhtbG5zOnNhbWxwPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6cHJvdG9jb2wiIHhtbG5zOnNhbWw9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphc3NlcnRpb24iIElEPSJfY2E3YTE2MzgtNWEwMi00YmNmLWE1OTAtNmY5MjBlYjYyMDc0IiBWZXJzaW9uPSIyLjAiIElzc3VlSW5zdGFudD0iMjAyNi0wMS0xNVQxMDozMDowMFoiIERlc3RpbmF0aW9uPSJodHRwczovL2FwcC5iaXRkYXJrLm5ldC9zYW1sL3Nzb2FjcyI+CiAgPHNhbWw6SXNzdWVyPmh0dHBzOi8vaWRwLmJpdGRhcmsubmV0L2F1dGgvaWRwL21ldGFkYXRhPC9zYW1sOklzc3Vlcj4KICA8c2FtcGxwOlN0YXR1cz4KICAgIDxzYW1scDpTdGF0dXNDb2RlIFZhbHVlPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6c3RhdHVzOlN1Y2Nlc3MiIC8+CiAgPC9zYW1scDpTdGF0dXM+CiAgPHNhbWw6QXNzZXJ0aW9uIElEPSJfZDFhM2ViODAtMmUwMi00NTY4LThlMzYtZjYxZjRkNDE3YmVmIiBWZXJzaW9uPSIyLjAiIElzc3VlSW5zdGFudD0iMjAyNi0wMS0xNVQxMDozMDowMFoiPgogICAgPHNhbWw6SXNzdWVyPmh0dHBzOi8vaWRwLmJpdGRhcmsubmV0L2F1dGgvaWRwL21ldGFkYXRhPC9zYW1sOklzc3Vlcj4KICAgIDxkczpTaWduYXR1cmUgeG1sbnM6ZHM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyMiPgogICAgICA8ZHM6U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8wNC94bWxkc2lnLW1vcmUjcnNhLXNoYTI1NiIgLz4KICAgIDwvZHM6U2lnbmF0dXJlPgogICAgPHNhbWw6U3ViamVjdD4KICAgIDxzYW1sOk5hbWVJRCAgRm9ybWF0PSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoxLjE6bmFtZWlkLWZvcm1hdDplbWFpbEFkZHJlc3MiPnNlY3VyaXR5LmF1ZGl0QGJpdGRhcmsubmV0PC9zYW1sOk5hbWVJRD4KICAgIDwvc2FtbDpTdWJqZWN0PgogICAgPHNhbWw6Q29uZGl0aW9ucyBOb3RCZWZvcmU9IjIwMjYtMDEtMTVUMTA6MjU6MDBaIiBOb3RPbk9yQWZ0ZXI9IjIwMjktMDEtMTVUMTE6MzA6MDBaIj4KICAgICAgPHNhbWw6QXVkaWVuY2VSZXN0cmljdGlvbj4KICAgICAgICA8c2FtbDpBdWRpZW5jZT5odHRwczovL2FwcC5iaXRkYXJrLm5ldC9zc288L3NhbWw6QXVkaWVuY2U+CiAgICAgIDwvc2FtbDpBdWRpZW5jZVJlc3RyaWN0aW9uPgogICAgPC9zYW1sOkNvbmRpdGlvbnM+CiAgICA8c2FtbDpBdHRyaWJ1dGVTdGF0ZW1lbnQ+CiAgICAgIDxzYW1sOkF0dHJpYnV0ZSBOYW1lPSJlbWFpbCI+CiAgICAgICAgPHNhbWw6QXR0cmlidXRlVmFsdWU+c2VjdXJpdHkuYXVkaXRAYml0ZGFyay5uZXQ8L3NhbWw6QXR0cmlidXRlVmFsdWU+CiAgICAgIDwvc2FtbDpBdHRyaWJ1dGU+CiAgICAgIDxzYW1sOkF0dHJpYnV0ZSBOYW1lPSJyb2xlIj4KICAgICAgICA8c2FtbDpBdHRyaWJ1dGVWYWx1ZT5TZWN1cml0eUVuZ2luZWVyPC9zYW1sOkF0dHJpYnV0ZVZhbHVlPgogICAgICAgIDxzYW1sOkF0dHJpYnV0ZVZhbHVlPkFkbWluPC9zYW1sOkF0dHJpYnV0ZVZhbHVlPgogICAgICA8L3NhbWw6QXR0cmlidXRlPgogICAgPC9zYW1sOkF0dHJpYnV0ZVN0YXRlbWVudD4KICA8L3NhbWw6QXNzZXJ0aW9uPgo8L3NhbWxwOlJlc3BvbnNlPg==`;
+        processDecode();
+      });
+
+      btnSampleRequest.addEventListener("click", () => {
+        samlInput.value = `<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+  ID="_f6b7c93e-2b1a-4d43-85b9-4a92c4f80164"
+  Version="2.0"
+  IssueInstant="2026-02-01T08:00:00Z"
+  Destination="https://idp.bitdark.net/auth/sso"
+  AssertionConsumerServiceURL="https://app.bitdark.net/saml/ssoacs">
+  <saml:Issuer>https://app.bitdark.net/sp/metadata</saml:Issuer>
+  <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress" AllowCreate="true" />
+</samlp:AuthnRequest>`;
+        processDecode();
+      });
+
+      btnExportJson.addEventListener("click", () => {
+        if (!activeJsonPayload) return;
+        navigator.clipboard.writeText(JSON.stringify(activeJsonPayload, null, 2));
+        const originalText = btnExportJson.textContent;
+        btnExportJson.textContent = "Copied JSON!";
+        setTimeout(() => { btnExportJson.textContent = originalText; }, 1500);
+      });
+
+      // Drag and Drop
+      dropArea.addEventListener("click", () => filePicker.click());
+      ["dragenter", "dragover"].forEach(evt => {
+        dropArea.addEventListener(evt, (e) => { e.preventDefault(); dropArea.classList.add("dragover"); });
+      });
+      ["dragleave", "drop"].forEach(evt => {
+        dropArea.addEventListener(evt, (e) => { e.preventDefault(); dropArea.classList.remove("dragover"); });
+      });
+      dropArea.addEventListener("drop", (e) => {
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          readFile(e.dataTransfer.files[0]);
+        }
+      });
+      filePicker.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          readFile(e.target.files[0]);
+        }
+      });
+
+      function readFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          samlInput.value = e.target.result;
+          processDecode();
+        };
+        reader.readAsText(file);
+      }
+    })();
+  </script>
+</body>
+</html>
