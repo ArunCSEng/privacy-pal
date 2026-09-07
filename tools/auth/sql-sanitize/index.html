@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SQL Injection Sanitizer & Query Escaper — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="SQL Injection Sanitizer & Query Escaper — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Sanitize dynamic strings, inspect parameterized query bindings, and escape SQL inputs across MySQL, PostgreSQL, SQLite, and SQL Server entirely in browser memory." />
+  <meta name="keywords" content="sql injection sanitizer, sqli escaper, parameterized queries generator, mysql escape string, postgres dollar quote, sqlite sanitize, appsec tools, offline cybersecurity tools" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/sql-sanitize" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Cockpit Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Frame */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .text-input {
+      width: 100%;
+      height: 110px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      outline: none;
+      resize: vertical;
+    }
+    .text-input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Attack Payload Preset Chips */
+    .sample-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+    }
+    .sample-btn {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-cyan);
+      padding: 5px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      transition: all 0.15s ease;
+    }
+    .sample-btn:hover {
+      border-color: var(--atom-cyan);
+      color: #fff;
+    }
+    .sample-btn.active {
+      border-color: var(--atom-cyan);
+      background-color: rgba(86, 182, 194, 0.12);
+      color: #fff;
+    }
+
+    /* Output Panels */
+    .context-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .context-block {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+    }
+    .context-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .context-title {
+      font-size: 0.82rem;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-badge {
+      font-size: 0.7rem;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-muted);
+      font-weight: normal;
+    }
+    .btn-copy {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover {
+      border-color: var(--atom-amber);
+      color: #fff;
+    }
+    .output-pre {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 180px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .context-desc {
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      margin-top: 6px;
+      font-family: var(--font-code);
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Documentation Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / sql-sanitize
+    </nav>
+
+    <div class="tool-header">
+      <h1>SQL Injection Sanitizer & Query Escaper</h1>
+      <p>Evaluate, escape, and parameterize untrusted dynamic user inputs across major SQL engines to neutralize SQL injection vectors.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="rawInput">RAW USER INPUT / SQL PAYLOAD</label>
+        <textarea id="rawInput" class="text-input" placeholder="Type or paste payload (e.g., admin' OR '1'='1' -- or '; DROP TABLE users; --)..."></textarea>
+      </div>
+
+      <div class="sample-bar">
+        <span style="color: var(--atom-muted);">Load Attack Payload:</span>
+        <button type="button" class="sample-btn active" data-sample="admin' OR '1'='1' --">Classic Auth Bypass</button>
+        <button type="button" class="sample-btn" data-sample="1'; DROP TABLE users; --">Stacked Query</button>
+        <button type="button" class="sample-btn" data-sample="' UNION SELECT null, username, password FROM users --">UNION Based</button>
+        <button type="button" class="sample-btn" data-sample="1' AND SLEEP(5) #">Time-Based Blind</button>
+        <button type="button" class="sample-btn" data-sample="test\0' OR 1=1 --">Null Byte & Slashes</button>
+      </div>
+
+      <div class="context-stack">
+        <!-- 1. Parameterized Query -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              1. Parameterized Query Pattern (Gold Standard)
+              <span class="context-badge">Prepared Statements</span>
+            </div>
+            <button class="btn-copy" data-target="outParam">Copy</button>
+          </div>
+          <pre class="output-pre" id="outParam">-</pre>
+          <div class="context-desc">Separates query logic from untrusted user data. Parameters are treated strictly as data literals at the protocol level.</div>
+        </div>
+
+        <!-- 2. ANSI / SQLite Quoting -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              2. ANSI SQL & SQLite Quoting
+              <span class="context-badge">Single Quote Doubling</span>
+            </div>
+            <button class="btn-copy" data-target="outAnsi">Copy</button>
+          </div>
+          <pre class="output-pre" id="outAnsi">-</pre>
+          <div class="context-desc">Doubles all internal single quotes ('') and strips null bytes. Standard SQL string literal escaping format.</div>
+        </div>
+
+        <!-- 3. MySQL / MariaDB Escaping -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              3. MySQL / MariaDB Escaping
+              <span class="context-badge">C-Style Sequences</span>
+            </div>
+            <button class="btn-copy" data-target="outMysql">Copy</button>
+          </div>
+          <pre class="output-pre" id="outMysql">-</pre>
+          <div class="context-desc">Conforms with standard MySQL escaping rules: backslash prefixes for slashes, quotes, and control chars without quote boundary collisions.</div>
+        </div>
+
+        <!-- 4. PostgreSQL Escaping & Dollar Quoting -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              4. PostgreSQL Escaping & Dollar Quoting
+              <span class="context-badge">E'...' & $$...$$</span>
+            </div>
+            <button class="btn-copy" data-target="outPostgres">Copy</button>
+          </div>
+          <pre class="output-pre" id="outPostgres">-</pre>
+          <div class="context-desc">Demonstrates both PostgreSQL C-style string escape literals (E'...') and dynamic non-colliding dollar-quoted strings ($tag$...$tag$).</div>
+        </div>
+
+        <!-- 5. SQL Identifier Escaping -->
+        <div class="context-block">
+          <div class="context-header">
+            <div class="context-title">
+              5. SQL Identifier / Column Name Escaping
+              <span class="context-badge">Schema & Column Names</span>
+            </div>
+            <button class="btn-copy" data-target="outIdentifier">Copy</button>
+          </div>
+          <pre class="output-pre" id="outIdentifier">-</pre>
+          <div class="context-desc">Demonstrates proper identifier boundary enclosing and character escaping (`ident`, "ident", [ident]) to stop dynamic identifier injection.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicit Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational & Legal Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible for database compromises, data corruption, query execution failures, or security breaches resulting from the use of this tool.</strong> Manual string escaping and concatenation are inherently brittle defensive practices that can be bypassed by multi-byte encoding mismatches, second-order injections, or unquoted numeric contexts. Developers must utilize native parameterized queries and prepared statements rather than relying solely on string manipulation.
+      </p>
+    </aside>
+
+    <!-- Technical & Architecture Documentation -->
+    <article class="doc-section">
+      <h2>Why Parameterized Prepared Statements Supersede Escaping</h2>
+      <p>SQL injection occurs when data provided by a client is parsed as relational algebra commands by the SQL parser. String escaping attempts to neutralize structural characters, but minor syntax variations across database engines can leave applications vulnerable.</p>
+      <ul>
+        <li><strong>Prepared Statements (Parameterization):</strong> The database engine compiles the query template before receiving input values. Bound parameters are handled as passive scalar values, entirely neutralizing SQL injection risk.</li>
+        <li><strong>ANSI SQL Standard Quoting:</strong> According to the ISO/IEC 9075 SQL standard, a single quote literal within a string must be represented by two consecutive single quotes (<code>''</code>), not a backslash.</li>
+        <li><strong>Dynamic Identifiers:</strong> Identifiers (such as table names, column names, or sort order expressions) cannot be parameterized using standard placeholders. They must be validated against strict server-side whitelists or wrapped in engine-specific identifier delimiters.</li>
+      </ul>
+
+      <h2>Zero Egress Guarantee</h2>
+      <p>All sanitization, regex transformations, and query generations execute solely within browser runtime memory. No input strings or database fragments are transmitted to external servers or logged remotely.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      // IPv4 Resolution
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("IPv4 primary failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline";
+        }
+      })();
+
+      // IPv6 Resolution
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("IPv6 primary failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // SQL Injection Sanitization & Escaping Engine
+    const rawInput = document.getElementById("rawInput");
+    const outParam = document.getElementById("outParam");
+    const outAnsi = document.getElementById("outAnsi");
+    const outMysql = document.getElementById("outMysql");
+    const outPostgres = document.getElementById("outPostgres");
+    const outIdentifier = document.getElementById("outIdentifier");
+    const sampleButtons = document.querySelectorAll(".sample-btn");
+
+    function escapeAnsiSql(str) {
+      const cleaned = str.replace(/\0/g, "");
+      return "'" + cleaned.replace(/'/g, "''") + "'";
+    }
+
+    function escapeMysql(str) {
+      // First escape backslashes so later replacements do not double-escape
+      let s = str.replace(/\\/g, "\\\\");
+      s = s.replace(/\0/g, "\\0")
+           .replace(/\n/g, "\\n")
+           .replace(/\r/g, "\\r")
+           .replace(/'/g, "\\'")
+           .replace(/"/g, '\\"')
+           .replace(/\x1a/g, "\\Z");
+      return "'" + s + "'";
+    }
+
+    function escapePostgres(str) {
+      const cleaned = str.replace(/\0/g, "");
+      // E'...' syntax: escape backslashes then escape single quotes
+      let eStr = cleaned.replace(/\\/g, "\\\\").replace(/'/g, "''");
+      const eFormat = "E'" + eStr + "'";
+      
+      // PostgreSQL Dollar Quoting with collision-free randomized tags
+      let tag = "body";
+      while (cleaned.includes(`$${tag}$`)) {
+        tag = "_" + Math.random().toString(36).substring(2, 6);
+      }
+      const dollarFormat = `$${tag}$${cleaned}$${tag}$`;
+
+      return `-- Escape String Syntax (E'...'):\n${eFormat}\n\n-- Dollar-Quoted Literal:\n${dollarFormat}`;
+    }
+
+    function generateParameterized(str) {
+      return `-- 1. Positional Parameter (PostgreSQL / SQLite):\nSELECT * FROM accounts WHERE username = $1 AND status = 'active';\n-- Bound Parameter 1: ${JSON.stringify(str)}\n\n-- 2. Anonymous Placeholder (?):\nSELECT * FROM accounts WHERE username = ? AND status = 'active';\n-- Bound Parameter 1: ${JSON.stringify(str)}\n\n-- 3. Named Parameter (PDO / MSSQL / ORMs):\nSELECT * FROM accounts WHERE username = :username AND status = 'active';\n-- Params: { ":username": ${JSON.stringify(str)} }`;
+    }
+
+    function escapeIdentifiers(str) {
+      const clean = str.replace(/\0/g, "").trim();
+      // Double the respective boundary quotes to prevent identifier injection
+      const ansiIdent = '"' + clean.replace(/"/g, '""') + '"';
+      const mysqlIdent = "`" + clean.replace(/`/g, "``") + "`";
+      const mssqlIdent = "[" + clean.replace(/\]/g, "]]") + "]";
+
+      return `-- ANSI / PostgreSQL / SQLite:\nSELECT ${ansiIdent} FROM "user_records";\n\n-- MySQL / MariaDB:\nSELECT ${mysqlIdent} FROM \`user_records\`;\n\n-- Microsoft SQL Server:\nSELECT ${mssqlIdent} FROM [user_records];`;
+    }
+
+    function runSqlSanitizer() {
+      const val = rawInput.value;
+      if (!val) {
+        outParam.textContent = "-";
+        outAnsi.textContent = "-";
+        outMysql.textContent = "-";
+        outPostgres.textContent = "-";
+        outIdentifier.textContent = "-";
+        return;
+      }
+
+      outParam.textContent = generateParameterized(val);
+      outAnsi.textContent = escapeAnsiSql(val);
+      outMysql.textContent = escapeMysql(val);
+      outPostgres.textContent = escapePostgres(val);
+      outIdentifier.textContent = escapeIdentifiers(val);
+    }
+
+    rawInput.addEventListener("input", () => {
+      sampleButtons.forEach(b => {
+        if (b.dataset.sample !== rawInput.value) {
+          b.classList.remove("active");
+        }
+      });
+      runSqlSanitizer();
+    });
+
+    sampleButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        sampleButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        rawInput.value = btn.dataset.sample;
+        runSqlSanitizer();
+      });
+    });
+
+    document.querySelectorAll(".btn-copy").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const el = document.getElementById(targetId);
+        if (!el || el.textContent === "-") return;
+
+        navigator.clipboard.writeText(el.textContent);
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1400);
+      });
+    });
+
+    const initialPreset = document.querySelector(".sample-btn.active");
+    if (initialPreset) {
+      rawInput.value = initialPreset.dataset.sample;
+    }
+    runSqlSanitizer();
+  </script>
+</body>
+</html>
