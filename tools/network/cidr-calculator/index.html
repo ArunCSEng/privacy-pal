@@ -243,6 +243,7 @@
       color: #fff;
     }
 
+    /* Fixed Monospace Alignment for Binary Topologies */
     .binary-block {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
@@ -251,12 +252,13 @@
       font-family: var(--font-code);
       font-size: 0.82rem;
       color: var(--atom-cyan);
-      white-space: pre-wrap;
-      word-break: break-all;
-      line-height: 1.6;
+      white-space: pre;
+      word-break: normal;
+      overflow-x: auto;
+      line-height: 1.7;
     }
 
-    /* Disclaimer Callout */
+    /* Operational Boundaries Disclaimer */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
@@ -387,10 +389,10 @@
     <!-- Operational Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal & Operational Boundary Disclaimer
+        <span>⚠️</span> Legal & Operational Boundary Disclaimer: bitdark.net Not Responsible
       </div>
       <p>
-        <strong>BitDark.net is not responsible</strong> for any network configuration errors, production routing collisions, CIDR design issues, subnet overlapping faults, routing blackholes, or infrastructure downtime resulting from the use of this calculation engine. Subnet properties and boundary outputs are calculated purely on a best-effort client-side mathematical model. Network engineers and system administrators must independently verify routing configurations against upstream ISP routing registries, Autonomous System boundaries, and RFC specifications prior to updating routing tables or production firewall policies.
+        <strong>bitdark.net is not responsible</strong> for any network configuration errors, production routing collisions, CIDR design issues, subnet overlapping faults, routing blackholes, or infrastructure downtime resulting from the use of this calculation engine. Subnet properties and boundary outputs are calculated purely on a best-effort client-side mathematical model. Network engineers and system administrators must independently verify routing configurations against upstream ISP routing registries, Autonomous System boundaries, and RFC specifications prior to updating routing tables or production firewall policies.
       </p>
     </aside>
 
@@ -426,7 +428,7 @@
   </main>
 
   <script>
-    // Robust IP Telemetry Resolver
+    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
@@ -476,7 +478,7 @@
       // 2. Resolve IPv6
       (async () => {
         try {
-          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
           if (res6.ok) {
             const data6 = await res6.json();
             ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
@@ -626,7 +628,7 @@
       let lastHost = "-";
 
       if (prefix === 31) {
-        usableHosts = 2; // RFC 3021 point-to-point
+        usableHosts = 2; // RFC 3021 point-to-point links
         firstHost = toDotted(netNum);
         lastHost = toDotted(bcastNum);
       } else if (prefix === 32) {
@@ -639,7 +641,6 @@
         lastHost = toDotted(bcastNum - 1);
       }
 
-      // Class type and scope
       let ipScope = "Public Internet";
       if ((octets[0] === 10) ||
           (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
@@ -670,7 +671,7 @@
 
       renderRows(rows);
 
-      // Binary Display
+      // Binary Display Formatter
       const toBinStr = (num) => num.toString(2).padStart(32, "0").match(/.{8}/g).join(" . ");
       binaryDisplay.textContent = 
         `IP:      ${toBinStr(ipNum)}\n` +
@@ -722,6 +723,7 @@
 
         renderRows(rows);
 
+        // Binary Display Formatter for 128-bit fields
         const binStr = fullBigInt.toString(2).padStart(128, "0").match(/.{16}/g).join(" : ");
         const maskStr = maskBig.toString(2).padStart(128, "0").match(/.{16}/g).join(" : ");
         binaryDisplay.textContent = 
@@ -780,7 +782,6 @@
       }
 
       let fullStr = hexBlocks.join(":");
-      // Compress longest streak of zeroes
       return fullStr.replace(/(^|:)0(:0)+(:|$)/, "::");
     }
 
@@ -813,7 +814,7 @@
       setTimeout(() => { btn.textContent = original; }, 1200);
     };
 
-    // Initial calculation trigger
+    // Initial load
     populatePrefixes();
     calculate();
   </script>
