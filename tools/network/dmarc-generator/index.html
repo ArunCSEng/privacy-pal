@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>DMARC Record Generator &amp; Policy Builder — Free Offline Tool | BitDark</title>
+  <meta name="title" content="DMARC Record Generator &amp; Policy Builder — Free Offline Tool | BitDark" />
+  <meta name="description" content="Generate, validate, and inspect RFC 7489 compliant DMARC TXT records client-side in browser memory. Configure policy alignment, aggregate reporting URIs, and forensic alerts offline. Zero tracking, zero network egress." />
+  <meta name="keywords" content="dmarc generator, dmarc policy builder, dmarc record maker, rfc 7489, email authentication, spf dkim dmarc, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/dmarc-generator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .form-group label .lbl-title {
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--atom-heading);
+    }
+    .form-group label .lbl-hint {
+      color: var(--atom-cyan);
+      font-size: 0.72rem;
+      text-transform: none;
+    }
+    .form-group select, .form-group input {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      outline: none;
+      width: 100%;
+    }
+    .form-group select:focus, .form-group input:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    /* Output Boxes */
+    .output-section {
+      margin-bottom: 20px;
+    }
+    .output-label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .output-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      color: var(--atom-heading);
+      word-break: break-all;
+      line-height: 1.6;
+      user-select: all;
+      cursor: pointer;
+      position: relative;
+    }
+    .output-box:hover {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Breakdown Table */
+    .table-container {
+      margin-bottom: 8px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .results-table th, .results-table td {
+      border-bottom: 1px solid var(--atom-border);
+      border-right: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th:last-child, .results-table td:last-child {
+      border-right: none;
+    }
+    .results-table tr:last-child td {
+      border-bottom: none;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / dmarc-generator
+    </nav>
+
+    <div class="tool-header">
+      <h1>DMARC Record Generator &amp; Policy Builder</h1>
+      <p>Construct RFC 7489 compliant Domain-based Message Authentication, Reporting, and Conformance (DMARC) DNS TXT records offline in local browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="domainInput">
+            <span class="lbl-title">Domain Name</span>
+            <span class="lbl-hint">(e.g. example.com)</span>
+          </label>
+          <input type="text" id="domainInput" placeholder="example.com" value="example.com" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="policySelect">
+            <span class="lbl-title">Primary Policy (p=)</span>
+            <span class="lbl-hint">Receiver Action</span>
+          </label>
+          <select id="policySelect">
+            <option value="none" selected>none — Monitoring Only (Deliver normally)</option>
+            <option value="quarantine">quarantine — Mark as Spam / Junk</option>
+            <option value="reject">reject — Outright Bounce / Block</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="subdomainPolicySelect">
+            <span class="lbl-title">Subdomain Policy (sp=)</span>
+            <span class="lbl-hint">Inherited if unselected</span>
+          </label>
+          <select id="subdomainPolicySelect">
+            <option value="" selected>Inherit from Primary Policy</option>
+            <option value="none">none — Subdomains Monitor Only</option>
+            <option value="quarantine">quarantine — Quarantine Subdomains</option>
+            <option value="reject">reject — Reject Subdomains</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="pctInput">
+            <span class="lbl-title">Policy Percentage (pct=)</span>
+            <span class="lbl-hint">1 - 100%</span>
+          </label>
+          <input type="number" id="pctInput" min="1" max="100" value="100" />
+        </div>
+
+        <div class="form-group">
+          <label for="ruaInput">
+            <span class="lbl-title">Aggregate Reports (rua=)</span>
+            <span class="lbl-hint">mailto: separated by commas</span>
+          </label>
+          <input type="text" id="ruaInput" placeholder="mailto:dmarc-reports@example.com" value="mailto:dmarc-reports@example.com" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="rufInput">
+            <span class="lbl-title">Forensic Reports (ruf=)</span>
+            <span class="lbl-hint">Optional failure inboxes</span>
+          </label>
+          <input type="text" id="rufInput" placeholder="mailto:dmarc-failures@example.com" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="adkimSelect">
+            <span class="lbl-title">DKIM Alignment (adkim=)</span>
+            <span class="lbl-hint">Identifier Mode</span>
+          </label>
+          <select id="adkimSelect">
+            <option value="r" selected>r — Relaxed (Permits organizational subdomains)</option>
+            <option value="s">s — Strict (Exact domain match required)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="aspfSelect">
+            <span class="lbl-title">SPF Alignment (aspf=)</span>
+            <span class="lbl-hint">Identifier Mode</span>
+          </label>
+          <select id="aspfSelect">
+            <option value="r" selected>r — Relaxed (Permits organizational subdomains)</option>
+            <option value="s">s — Strict (Exact domain match required)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="foSelect">
+            <span class="lbl-title">Forensic Options (fo=)</span>
+            <span class="lbl-hint">Failure Triggers</span>
+          </label>
+          <select id="foSelect">
+            <option value="0" selected>0 — Generate report if all auth mechanisms fail</option>
+            <option value="1">1 — Generate report if any auth mechanism fails</option>
+            <option value="d">d — Generate report on DKIM evaluation failure</option>
+            <option value="s">s — Generate report on SPF evaluation failure</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="riInput">
+            <span class="lbl-title">Report Interval (ri=)</span>
+            <span class="lbl-hint">Seconds (Default: 86400 = 24h)</span>
+          </label>
+          <input type="number" id="riInput" min="3600" step="3600" value="86400" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnCopyRecord">Copy DMARC TXT Record</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnPresetReject">Strict Enforce (reject)</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnPresetQuarantine">Soft Enforce (quarantine)</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnReset">Reset Defaults</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>DMARC Record Syntax Valid</span>
+        <span id="statusPolicyBadge">Policy: MONITORING (p=none)</span>
+      </div>
+
+      <div class="output-section">
+        <div class="output-label">
+          <span>DNS Hostname / Target Subdomain</span>
+          <span>Record Location</span>
+        </div>
+        <div class="output-box" id="dnsHostBox">_dmarc.example.com</div>
+      </div>
+
+      <div class="output-section">
+        <div class="output-label">
+          <span>Formatted DNS TXT Record Value</span>
+          <span>Click to copy</span>
+        </div>
+        <div class="output-box" id="txtOutputBox">v=DMARC1; p=none; pct=100; rua=mailto:dmarc-reports@example.com; adkim=r; aspf=r; ri=86400;</div>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table" id="tagsTable">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Tag</th>
+              <th style="width: 26%;">Value</th>
+              <th style="width: 60%;">RFC 7489 Semantic Description</th>
+            </tr>
+          </thead>
+          <tbody id="tagsBody">
+            <!-- Dynamic Breakdown populated by buildDMARC() -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, legitimate email delivery failures, transactional bounce-backs, false authentication rejects, domain spoofing incidents, or misconfigured DNS zone configurations. Deploying an overly aggressive policy (such as <code>p=reject</code>) before confirming complete SPF alignment and DKIM cryptographic signing across all third-party transactional mail services (e.g., SendGrid, Mailgun, Amazon SES, Google Workspace) can cause immediate loss of inbound or outbound corporate communications. All evaluations and TXT record formatting routines execute strictly client-side in local browser memory without network telemetry or external server egress. Mail administrators must thoroughly analyze <code>rua</code> aggregate telemetry reports during a preliminary <code>p=none</code> monitoring window prior to activating quarantine or reject policies.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>DMARC Deployment Phasing &amp; Policy Alignment</h2>
+      <p>DMARC (Domain-based Message Authentication, Reporting, and Conformance) prevents email spoofing by verifying that the author's visible <code>From:</code> domain aligns with underlying SPF and DKIM authentication domains:</p>
+      <ul>
+        <li><strong>Phase 1: Monitoring (<code>p=none</code>):</strong> No incoming mail is blocked or quarantined. Mailbox providers (such as Gmail, Microsoft 365, and Yahoo) send XML aggregate performance telemetry reports to your <code>rua</code> inbox detailing all sending IP addresses using your domain.</li>
+        <li><strong>Phase 2: Soft Enforcement (<code>p=quarantine</code>):</strong> Messages failing authentication alignment are redirected into the recipient's spam, junk, or quarantine folder. You can enforce this on a subset using <code>pct=25</code> or <code>pct=50</code> to mitigate delivery risks.</li>
+        <li><strong>Phase 3: Full Enforcement (<code>p=reject</code>):</strong> Mail receivers reject and drop non-compliant messages outright at the SMTP boundary transfer phase, neutralizing direct domain impersonation attacks.</li>
+      </ul>
+
+      <h2>Strict vs. Relaxed Identifier Alignment</h2>
+      <p>By default, relaxed alignment (<code>adkim=r</code>, <code>aspf=r</code>) allows subdomains (e.g., <code>marketing.example.com</code>) to pass alignment against an organizational root domain (<code>example.com</code>). In strict alignment (<code>adkim=s</code>, <code>aspf=s</code>), the exact domain in the visible <code>From</code> header must match the DKIM signing domain (<code>d=</code>) and the SPF Return-Path envelope domain.</p>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>All DNS record formatting, tag validation, and string sanitization tasks are performed entirely within your client's web browser JavaScript execution context. Zero domain names or administrator reporting inboxes are transmitted over external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM References
+    const domainInput = document.getElementById("domainInput");
+    const policySelect = document.getElementById("policySelect");
+    const subdomainPolicySelect = document.getElementById("subdomainPolicySelect");
+    const pctInput = document.getElementById("pctInput");
+    const ruaInput = document.getElementById("ruaInput");
+    const rufInput = document.getElementById("rufInput");
+    const adkimSelect = document.getElementById("adkimSelect");
+    const aspfSelect = document.getElementById("aspfSelect");
+    const foSelect = document.getElementById("foSelect");
+    const riInput = document.getElementById("riInput");
+
+    const btnCopyRecord = document.getElementById("btnCopyRecord");
+    const btnPresetReject = document.getElementById("btnPresetReject");
+    const btnPresetQuarantine = document.getElementById("btnPresetQuarantine");
+    const btnReset = document.getElementById("btnReset");
+
+    const statusBanner = document.getElementById("statusBanner");
+    const statusPolicyBadge = document.getElementById("statusPolicyBadge");
+    const dnsHostBox = document.getElementById("dnsHostBox");
+    const txtOutputBox = document.getElementById("txtOutputBox");
+    const tagsBody = document.getElementById("tagsBody");
+
+    function cleanDomain(d) {
+      return d.trim().toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, "")
+        .replace(/^_dmarc\./, "")
+        .replace(/^\.+|\.+$/g, "");
+    }
+
+    function formatMailto(str) {
+      return str.split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(s => s.startsWith("mailto:") ? s : `mailto:${s}`)
+        .join(",");
+    }
+
+    function buildDMARC() {
+      const rawDomain = domainInput.value;
+      const domain = cleanDomain(rawDomain) || "example.com";
+      dnsHostBox.textContent = `_dmarc.${domain}`;
+
+      const policy = policySelect.value;
+      const subPolicy = subdomainPolicySelect.value;
+      
+      let pct = parseInt(pctInput.value, 10);
+      if (isNaN(pct) || pct < 1) pct = 100;
+      if (pct > 100) pct = 100;
+
+      const rua = formatMailto(ruaInput.value);
+      const ruf = formatMailto(rufInput.value);
+      const adkim = adkimSelect.value;
+      const aspf = aspfSelect.value;
+      const fo = foSelect.value;
+      
+      let ri = parseInt(riInput.value, 10);
+      if (isNaN(ri) || ri < 1) ri = 86400;
+
+      const tags = [];
+      const tableData = [];
+
+      // 1. Tag: v (Must be first)
+      tags.push("v=DMARC1");
+      tableData.push({ tag: "v", val: "DMARC1", desc: "Protocol version specification. Must be the first tag in the record." });
+
+      // 2. Tag: p (Must be second)
+      tags.push(`p=${policy}`);
+      let pDesc = "Receiver policy: Monitoring mode only; unaligned messages are delivered normally.";
+      let badgeClass = "badge-safe";
+      let statusText = "Policy: MONITORING (p=none)";
+
+      if (policy === "quarantine") {
+        pDesc = "Receiver policy: Treat unaligned messages with suspicion, delivering them to Spam/Junk folders.";
+        badgeClass = "badge-warn";
+        statusText = "Policy: QUARANTINE (p=quarantine)";
+      } else if (policy === "reject") {
+        pDesc = "Receiver policy: Reject and drop unaligned messages outright at the SMTP boundary.";
+        badgeClass = "badge-strict";
+        statusText = "Policy: STRICT REJECT (p=reject)";
+      }
+      tableData.push({ tag: "p", val: policy, desc: pDesc });
+
+      // 3. Tag: sp (Optional subdomain policy override)
+      if (subPolicy) {
+        tags.push(`sp=${subPolicy}`);
+        tableData.push({ tag: "sp", val: subPolicy, desc: `Subdomain policy override. Applied to all subdomains under ${domain}.` });
+      }
+
+      // 4. Tag: pct (Percentage of messages subjected to policy)
+      tags.push(`pct=${pct}`);
+      tableData.push({
+        tag: "pct",
+        val: `${pct}`,
+        desc: pct === 100
+          ? "Percentage of unaligned messages subjected to the policy (100% full coverage)."
+          : `Partial policy enforcement: applies to ${pct}% of unaligned messages. The remaining ${100 - pct}% fall back to the next less restrictive action.`
+      });
+
+      // 5. Tag: rua (Aggregate reporting inboxes)
+      if (rua) {
+        tags.push(`rua=${rua}`);
+        tableData.push({ tag: "rua", val: rua, desc: "Destination URI(s) where receiving MTAs send XML aggregate daily telemetry reports." });
+      }
+
+      // 6. Tag: ruf (Failure / Forensic reporting inboxes)
+      if (ruf) {
+        tags.push(`ruf=${ruf}`);
+        tableData.push({ tag: "ruf", val: ruf, desc: "Destination URI(s) where receiving MTAs send immediate redacting forensic failure reports." });
+      }
+
+      // 7. Tag: adkim (DKIM alignment)
+      tags.push(`adkim=${adkim}`);
+      tableData.push({
+        tag: "adkim",
+        val: adkim,
+        desc: adkim === "s"
+          ? "Strict DKIM alignment: The d= signing domain in the cryptographic signature must match the visible From domain exactly."
+          : "Relaxed DKIM alignment: Permits subdomains sharing a common parent organizational root domain."
+      });
+
+      // 8. Tag: aspf (SPF alignment)
+      tags.push(`aspf=${aspf}`);
+      tableData.push({
+        tag: "aspf",
+        val: aspf,
+        desc: aspf === "s"
+          ? "Strict SPF alignment: The envelope Return-Path (Mail From) domain must match the visible From domain exactly."
+          : "Relaxed SPF alignment: Permits subdomains sharing a common parent organizational root domain."
+      });
+
+      // 9. Tag: fo (Forensic reporting options - included when ruf is configured or explicitly set)
+      if (ruf || fo !== "0") {
+        tags.push(`fo=${fo}`);
+        let foDesc = "Generate forensic reports if all underlying authentication mechanisms fail.";
+        if (fo === "1") foDesc = "Generate forensic reports if any underlying authentication mechanism (SPF or DKIM) fails.";
+        else if (fo === "d") foDesc = "Generate forensic reports exclusively on DKIM cryptographic evaluation failures.";
+        else if (fo === "s") foDesc = "Generate forensic reports exclusively on SPF evaluation failures.";
+        tableData.push({ tag: "fo", val: fo, desc: foDesc });
+      }
+
+      // 10. Tag: ri (Report interval in seconds)
+      tags.push(`ri=${ri}`);
+      tableData.push({
+        tag: "ri",
+        val: `${ri}`,
+        desc: `Aggregate report transmission interval: ${ri} seconds (${(ri / 3600).toFixed(1)} hours). Default is 86400 (24h).`
+      });
+
+      // Format clean DMARC TXT record
+      const generatedString = tags.join("; ") + ";";
+      txtOutputBox.textContent = generatedString;
+
+      // Status diagnostics and advice
+      if (!rua && policy !== "none") {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = `<span>⚠️ Warning: Enforcing policy without an aggregate reporting inbox (rua)</span> <span>${statusText}</span>`;
+      } else if (badgeClass === "badge-strict") {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>DMARC Record Syntax Valid (Active Enforcement)</span> <span>${statusText}</span>`;
+      } else if (badgeClass === "badge-warn") {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = `<span>DMARC Record Syntax Valid (Soft Enforcement)</span> <span>${statusText}</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>DMARC Record Syntax Valid</span> <span>${statusText}</span>`;
+      }
+      statusPolicyBadge.textContent = statusText;
+
+      // Render Dynamic RFC Breakdown Table
+      tagsBody.innerHTML = tableData.map(row => `
+        <tr>
+          <td><strong style="color: var(--atom-amber);">${escapeHtml(row.tag)}</strong></td>
+          <td><code>${escapeHtml(row.val)}</code></td>
+          <td>${escapeHtml(row.desc)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/[&<>"']/g, (m) => {
+        switch (m) {
+          case "&": return "&amp;";
+          case "<": return "&lt;";
+          case ">": return "&gt;";
+          case '"': return "&quot;";
+          case "'": return "&#039;";
+          default: return m;
+        }
+      });
+    }
+
+    // Attach Listeners
+    [domainInput, pctInput, ruaInput, rufInput, riInput].forEach(el => el.addEventListener("input", buildDMARC));
+    [policySelect, subdomainPolicySelect, adkimSelect, aspfSelect, foSelect].forEach(el => el.addEventListener("change", buildDMARC));
+
+    btnPresetReject.addEventListener("click", () => {
+      policySelect.value = "reject";
+      subdomainPolicySelect.value = "reject";
+      pctInput.value = "100";
+      adkimSelect.value = "s";
+      aspfSelect.value = "s";
+      buildDMARC();
+    });
+
+    btnPresetQuarantine.addEventListener("click", () => {
+      policySelect.value = "quarantine";
+      subdomainPolicySelect.value = "quarantine";
+      pctInput.value = "100";
+      adkimSelect.value = "r";
+      aspfSelect.value = "r";
+      buildDMARC();
+    });
+
+    btnReset.addEventListener("click", () => {
+      domainInput.value = "example.com";
+      policySelect.value = "none";
+      subdomainPolicySelect.value = "";
+      pctInput.value = "100";
+      ruaInput.value = "mailto:dmarc-reports@example.com";
+      rufInput.value = "";
+      adkimSelect.value = "r";
+      aspfSelect.value = "r";
+      foSelect.value = "0";
+      riInput.value = "86400";
+      buildDMARC();
+    });
+
+    async function copyToClipboard(text, targetButton) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = targetButton.textContent;
+        targetButton.textContent = "Copied TXT Record!";
+        setTimeout(() => { targetButton.textContent = original; }, 1500);
+      } catch {
+        alert("Clipboard copy failed. Please select and copy the text manually.");
+      }
+    }
+
+    btnCopyRecord.addEventListener("click", () => {
+      copyToClipboard(txtOutputBox.textContent.trim(), btnCopyRecord);
+    });
+
+    txtOutputBox.addEventListener("click", () => {
+      copyToClipboard(txtOutputBox.textContent.trim(), btnCopyRecord);
+    });
+
+    // Initial load
+    window.addEventListener("DOMContentLoaded", buildDMARC);
+  </script>
+</body>
+</html>
