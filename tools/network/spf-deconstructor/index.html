@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>SPF Record Deconstructor &amp; Validator — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="SPF Record Deconstructor &amp; Validator — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Deconstruct, parse, and validate Sender Policy Framework (RFC 7208) TXT records in local browser memory. Calculate DNS lookup limits, mechanism costs, and security qualifiers without network egress." />
+  <meta name="keywords" content="spf deconstructor, spf validator, parse spf record, rfc 7208 parser, spf lookup limit counter, email security analyzer, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/spf-deconstructor" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .presets-label {
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .btn-preset {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-preset:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .findings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .finding-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .finding-card.severity-high { border-left: 4px solid var(--atom-coral); }
+    .finding-card.severity-medium { border-left: 4px solid var(--atom-amber); }
+    .finding-card.severity-low { border-left: 4px solid var(--atom-cyan); }
+    .finding-card.severity-pass { border-left: 4px solid var(--atom-green); }
+
+    .finding-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 4px;
+    }
+    .finding-desc {
+      color: var(--atom-text);
+      line-height: 1.5;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+    }
+    .badge-pass { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+    .badge-fail { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-softfail { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-neutral { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
+    .badge-lookup { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); border: 1px solid var(--atom-purple); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / spf-deconstructor
+    </nav>
+
+    <div class="tool-header">
+      <h1>SPF Record Deconstructor &amp; Validator</h1>
+      <p>Audit and deconstruct RFC 7208 Sender Policy Framework TXT records, quantify direct DNS query limits, inspect mechanism qualifiers, and flag structural vulnerabilities locally in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="presets-row">
+        <span class="presets-label">Load Preset:</span>
+        <button class="btn-preset" onclick="loadSample('google')">Google Workspace</button>
+        <button class="btn-preset" onclick="loadSample('m365')">Microsoft 365</button>
+        <button class="btn-preset" onclick="loadSample('hybrid')">Complex Enterprise Hybrid</button>
+        <button class="btn-preset" onclick="loadSample('risky')">Over-Permissive (+all)</button>
+      </div>
+
+      <div class="form-group">
+        <label for="spfInput">
+          SPF TXT Record String
+          <span>Enter raw string beginning with v=spf1</span>
+        </label>
+        <textarea id="spfInput" placeholder="v=spf1 include:_spf.google.com ip4:198.51.100.0/24 ip6:2001:db8::/32 mx ~all" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnDeconstruct">Deconstruct SPF</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear</button>
+        </div>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>SPF Deconstructor Initialized</span>
+        <span>Ready</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Protocol Version</div>
+          <div class="meta-val" id="metaVersion">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Direct DNS Lookups</div>
+          <div class="meta-val" id="metaLookups">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Mechanisms &amp; Modifiers</div>
+          <div class="meta-val" id="metaCount">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Default Policy Qualifier</div>
+          <div class="meta-val" id="metaQualifier">—</div>
+        </div>
+      </div>
+
+      <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">RFC Compliance &amp; Security Findings:</div>
+      <div class="findings-list" id="findingsContainer">
+        <div class="finding-card severity-pass">
+          <div class="finding-title"><span>Awaiting Record Input</span><span>IDLE</span></div>
+          <div class="finding-desc">Paste an SPF record or select a preset to evaluate RFC 7208 syntax, lookup limits, and enforcement posture.</div>
+        </div>
+      </div>
+
+      <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Deconstructed Mechanisms Breakdown:</div>
+      <div class="table-container">
+        <table class="results-table" id="mechanismsTable">
+          <thead>
+            <tr>
+              <th style="width: 10%;">Prefix</th>
+              <th style="width: 15%;">Qualifier</th>
+              <th style="width: 15%;">Mechanism</th>
+              <th style="width: 28%;">Value / Scope</th>
+              <th style="width: 12%; text-align: center;">DNS Cost</th>
+              <th style="width: 20%;">Operational Intent</th>
+            </tr>
+          </thead>
+          <tbody id="mechanismsBody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No SPF record evaluated.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, email deliverability failures, spoofing incidents, mail rejection, or SPF misconfigurations. RFC 7208 evaluation runs strictly client-side in local browser memory without querying live DNS servers. Independent verification via recursive DNS lookup and DMARC monitoring reports is recommended prior to updating production DNS zones.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>RFC 7208 Sender Policy Framework Syntax Architecture</h2>
+      <p>Sender Policy Framework (SPF) allows an administrative domain to specify which outbound hosts and IP subnets are authorized to send email on its behalf:</p>
+      <ul>
+        <li><strong>Qualifiers:</strong> Control the verdict returned when a sending host matches a mechanism. <code>+</code> (Pass - default), <code>-</code> (Fail/HardFail), <code>~</code> (SoftFail), and <code>?</code> (Neutral).</li>
+        <li><strong>IP Directives:</strong> <code>ip4:</code> and <code>ip6:</code> specify exact IPs or CIDR blocks. These authorize hosts directly and consume zero DNS queries.</li>
+        <li><strong>DNS-Dependent Directives:</strong> <code>a</code>, <code>mx</code>, <code>ptr</code>, <code>include:</code>, and <code>exists:</code> trigger active DNS resolution.</li>
+        <li><strong>10-Lookup Limit:</strong> RFC 7208 §4.6.4 dictates that the total count of mechanisms and modifiers that trigger DNS lookups must not exceed 10 across the entire evaluation chain, including nested <code>include:</code> and <code>redirect=</code> directives. Exceeding 10 results in an immediate <code>PermError</code> verdict.</li>
+        <li><strong>Deprecated Directives:</strong> The <code>ptr</code> mechanism is officially discouraged due to excessive reverse DNS lookups, reliability failures, and caching overhead.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>SPF records often map internal mail infrastructure, third-party transactional gateways, and relay IPs. BitDark deconstructs and validates syntax entirely inside your browser execution thread. No hostnames, domains, or DNS strings are transmitted externally.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Preset configurations
+    const PRESETS = {
+      google: "v=spf1 include:_spf.google.com ~all",
+      m365: "v=spf1 include:spf.protection.outlook.com -all",
+      hybrid: "v=spf1 mx include:_spf.google.com include:sendgrid.net ip4:198.51.100.0/24 ip6:2001:db8:85a3::/48 -all",
+      risky: "v=spf1 a mx ptr:relay.example.com +all"
+    };
+
+    function loadSample(key) {
+      if (PRESETS[key]) {
+        document.getElementById("spfInput").value = PRESETS[key];
+        deconstructSPF();
+      }
+    }
+
+    const spfInput = document.getElementById("spfInput");
+    const btnDeconstruct = document.getElementById("btnDeconstruct");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaVersion = document.getElementById("metaVersion");
+    const metaLookups = document.getElementById("metaLookups");
+    const metaCount = document.getElementById("metaCount");
+    const metaQualifier = document.getElementById("metaQualifier");
+    const findingsContainer = document.getElementById("findingsContainer");
+    const mechanismsBody = document.getElementById("mechanismsBody");
+
+    const QUALIFIER_MAP = {
+      "+": { name: "Pass", badge: "badge-pass", desc: "Explicitly authorize sender" },
+      "-": { name: "Fail (HardFail)", badge: "badge-fail", desc: "Explicitly reject unauthorized senders" },
+      "~": { name: "SoftFail", badge: "badge-softfail", desc: "Accept but flag/tag non-compliant senders" },
+      "?": { name: "Neutral", badge: "badge-neutral", desc: "Explicitly state no assertion" }
+    };
+
+    const LOOKUP_MECHANISMS = new Set(["include", "a", "mx", "ptr", "exists", "redirect"]);
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function deconstructSPF() {
+      const raw = spfInput.value.trim();
+      if (!raw) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>No Record Loaded</span> <span>Idle</span>";
+        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">Please enter an SPF string.</td></tr>`;
+        return;
+      }
+
+      const tokens = raw.split(/\s+/).filter(Boolean);
+      const findings = [];
+      const parsedItems = [];
+      let directDnsLookups = 0;
+      let hasVersion = false;
+      let defaultAllQualifier = null;
+      let allCount = 0;
+      let redirectFound = false;
+
+      // Validate v=spf1 prefix
+      if (tokens.length > 0 && tokens[0].toLowerCase() === "v=spf1") {
+        hasVersion = true;
+        metaVersion.textContent = "SPFv1 (RFC 7208)";
+      } else {
+        metaVersion.textContent = "Invalid / Missing";
+        findings.push({
+          severity: "high",
+          title: "Missing or Misplaced v=spf1 Identifier",
+          desc: "An SPF record must start strictly with the 'v=spf1' version tag. Without it, mail transfer agents (MTAs) will ignore the record."
+        });
+      }
+
+      // Process tokens
+      for (let i = (hasVersion ? 1 : 0); i < tokens.length; i++) {
+        const token = tokens[i];
+        let qualifier = "+";
+        let expression = token;
+
+        if (/^[+\-~?]/.test(token)) {
+          qualifier = token.charAt(0);
+          expression = token.substring(1);
+        }
+
+        let mechName = "";
+        let mechVal = "";
+
+        if (expression.includes(":") || expression.includes("=")) {
+          const sepIdx = expression.search(/[:=]/);
+          mechName = expression.substring(0, sepIdx).toLowerCase();
+          mechVal = expression.substring(sepIdx + 1);
+        } else {
+          mechName = expression.toLowerCase();
+        }
+
+        let dnsCost = 0;
+        let isModifier = false;
+        let intent = "";
+
+        if (LOOKUP_MECHANISMS.has(mechName)) {
+          dnsCost = 1;
+          directDnsLookups += 1;
+        }
+
+        switch (mechName) {
+          case "include":
+            intent = `Delegates policy evaluation to external domain '${escapeHtml(mechVal)}'`;
+            break;
+          case "ip4":
+            intent = `Authorizes IPv4 host or subnet '${escapeHtml(mechVal)}' directly`;
+            break;
+          case "ip6":
+            intent = `Authorizes IPv6 host or subnet '${escapeHtml(mechVal)}' directly`;
+            break;
+          case "a":
+            intent = mechVal ? `Authorizes A/AAAA records of host '${escapeHtml(mechVal)}'` : "Authorizes current domain's A/AAAA records";
+            break;
+          case "mx":
+            intent = mechVal ? `Authorizes inbound MX servers of '${escapeHtml(mechVal)}'` : "Authorizes current domain's MX servers";
+            break;
+          case "ptr":
+            intent = "DEPRECATED: Performs reverse DNS lookups on client IP";
+            findings.push({
+              severity: "medium",
+              title: "Deprecated 'ptr' Mechanism In Use",
+              desc: "RFC 7208 explicitly discourages use of the 'ptr' mechanism due to excessive DNS query loads, slow round-trips, and reliability issues."
+            });
+            break;
+          case "exists":
+            intent = `Authorizes senders if DNS A record for '${escapeHtml(mechVal)}' resolves`;
+            break;
+          case "all":
+            allCount++;
+            defaultAllQualifier = qualifier;
+            intent = `Catch-all terminator asserting default '${QUALIFIER_MAP[qualifier].name}' verdict`;
+            if (i !== tokens.length - 1) {
+              findings.push({
+                severity: "medium",
+                title: "Premature 'all' Terminator",
+                desc: "The 'all' mechanism is placed before subsequent directives. Rules placed after 'all' will never be evaluated by compliant MTAs."
+              });
+            }
+            if (qualifier === "+") {
+              findings.push({
+                severity: "high",
+                title: "Critically Permissive Default Qualifier (+all)",
+                desc: "'+all' explicitly permits the entire internet to send email on behalf of your domain without restriction, completely neutralizing spoofing defense."
+              });
+            } else if (qualifier === "?") {
+              findings.push({
+                severity: "medium",
+                title: "Neutral Default Policy (?all)",
+                desc: "A neutral '?all' policy instructs recipient MTAs that no assertion is made, leaving your domain vulnerable to impersonation."
+              });
+            }
+            break;
+          case "redirect":
+            isModifier = true;
+            redirectFound = true;
+            intent = `Transfers SPF evaluation completely to target domain '${escapeHtml(mechVal)}'`;
+            break;
+          case "exp":
+            isModifier = true;
+            intent = `Provides explanation TXT record at '${escapeHtml(mechVal)}' upon HardFail`;
+            break;
+          default:
+            intent = "Unknown or vendor-specific mechanism/modifier";
+            findings.push({
+              severity: "low",
+              title: `Unrecognized Directive: ${escapeHtml(token)}`,
+              desc: `The mechanism or modifier '${escapeHtml(mechName)}' is not standard RFC 7208 syntax.`
+            });
+        }
+
+        parsedItems.push({
+          token,
+          qualifier,
+          mechName,
+          mechVal,
+          dnsCost,
+          isModifier,
+          intent
+        });
+      }
+
+      // Check all existence and redirect
+      if (allCount === 0 && !redirectFound) {
+        findings.push({
+          severity: "medium",
+          title: "Missing Default Terminator (~all or -all)",
+          desc: "Without an explicit 'all' terminator or 'redirect' modifier, unspecified sender IPs default to a neutral (?all) verdict."
+        });
+      }
+      if (allCount > 1) {
+        findings.push({
+          severity: "high",
+          title: "Multiple 'all' Directives",
+          desc: "Only one 'all' mechanism should be defined. Multiple definitions cause ambiguous policy interpretation."
+        });
+      }
+
+      // 10 DNS Lookup Limit check
+      if (directDnsLookups > 10) {
+        findings.push({
+          severity: "high",
+          title: `Direct DNS Lookup Limit Exceeded (${directDnsLookups} > 10)`,
+          desc: "RFC 7208 limits total DNS lookups to 10. Direct lookups already exceed 10, which will trigger an automatic PermError on receiving MTAs."
+        });
+      } else if (directDnsLookups >= 8) {
+        findings.push({
+          severity: "medium",
+          title: `High DNS Lookup Count (${directDnsLookups}/10)`,
+          desc: "Direct lookups are close to the hard limit of 10. If nested 'include' domains perform subsequent lookups, PermErrors will occur."
+        });
+      }
+
+      // Update Summary Metas
+      metaLookups.textContent = `${directDnsLookups} of 10 Direct Lookups`;
+      metaCount.textContent = `${parsedItems.length} Element${parsedItems.length === 1 ? "" : "s"}`;
+      metaQualifier.textContent = defaultAllQualifier ? `${defaultAllQualifier}all (${QUALIFIER_MAP[defaultAllQualifier].name})` : (redirectFound ? "Redirected" : "None Defined");
+
+      // Update Banner
+      const hasHigh = findings.some(f => f.severity === "high");
+      const hasMed = findings.some(f => f.severity === "medium");
+
+      if (hasHigh) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>✕ Critical Issues Detected</span> <span>${findings.filter(f=>f.severity==="high").length} High Risk</span>`;
+      } else if (hasMed) {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = `<span>⚠️ Hardening Warnings Located</span> <span>Review Recommended</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Valid RFC 7208 Syntax</span> <span>${directDnsLookups}/10 Lookups</span>`;
+        if (findings.length === 0) {
+          findings.push({
+            severity: "pass",
+            title: "Strict & Compliant Record Architecture",
+            desc: "The SPF record adheres cleanly to RFC 7208, maintains conservative DNS lookup costs, and enforces strict boundary qualifiers."
+          });
+        }
+      }
+
+      // Render Findings
+      findingsContainer.innerHTML = findings.map(f => `
+        <div class="finding-card severity-${f.severity}">
+          <div class="finding-title">
+            <span>${f.title}</span>
+            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--atom-${f.severity === 'high' ? 'coral' : f.severity === 'medium' ? 'amber' : 'green'});">${f.severity}</span>
+          </div>
+          <div class="finding-desc">${f.desc}</div>
+        </div>
+      `).join("");
+
+      // Render Table
+      if (parsedItems.length === 0) {
+        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No mechanisms parsed.</td></tr>`;
+      } else {
+        mechanismsBody.innerHTML = parsedItems.map(item => {
+          const qObj = QUALIFIER_MAP[item.qualifier] || { name: "Default", badge: "badge-pass" };
+          const qualifierBadge = item.isModifier 
+            ? `<span class="badge badge-neutral">MODIFIER</span>` 
+            : `<span class="badge ${qObj.badge}">${item.qualifier} (${qObj.name})</span>`;
+          const lookupBadge = item.dnsCost > 0 
+            ? `<span class="badge badge-lookup">+1 Lookup</span>` 
+            : `<span style="color: var(--atom-muted); font-size: 0.78rem;">0</span>`;
+
+          return `
+            <tr>
+              <td><code>${escapeHtml(item.token)}</code></td>
+              <td>${qualifierBadge}</td>
+              <td><strong>${escapeHtml(item.mechName)}</strong></td>
+              <td>${item.mechVal ? `<code>${escapeHtml(item.mechVal)}</code>` : "<span style='color:var(--atom-muted);'>—</span>"}</td>
+              <td style="text-align: center;">${lookupBadge}</td>
+              <td style="font-size: 0.8rem; color: var(--atom-text);">${item.intent}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    btnDeconstruct.addEventListener("click", deconstructSPF);
+
+    btnClear.addEventListener("click", () => {
+      spfInput.value = "";
+      metaVersion.textContent = "—";
+      metaLookups.textContent = "—";
+      metaCount.textContent = "—";
+      metaQualifier.textContent = "—";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+      findingsContainer.innerHTML = `
+        <div class="finding-card severity-pass">
+          <div class="finding-title"><span>Workspace Cleared</span><span>READY</span></div>
+          <div class="finding-desc">Enter an SPF record above to perform deconstruction and RFC compliance auditing.</div>
+        </div>
+      `;
+      mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No SPF record evaluated.</td></tr>`;
+    });
+  </script>
+</body>
+</html>
