@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>IPv4/IPv6 Subnet & CIDR Calculator — BitDark</title>
+  <meta name="title" content="IPv4/IPv6 Subnet & CIDR Calculator — BitDark" />
+  <meta name="description" content="Calculate IPv4 and IPv6 network boundaries, broadcast addresses, usable host ranges, wildcard masks, and route properties entirely client-side." />
+  <meta name="keywords" content="cidr calculator, subnet calculator, ipv4 subnetting, ipv6 prefix calculator, netmask calculator, network boundaries" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/cidr-calculator" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .ip-mode-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 12px;
+    }
+    .mode-tab {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-tab.active {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+      background-color: var(--atom-gutter);
+    }
+
+    .calc-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 680px) {
+      .calc-form { grid-template-columns: 1fr; }
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+    }
+    .form-group input, .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      height: 42px;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Results Workspace */
+    .results-area {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 20px;
+      display: block;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      width: 25%;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+    .copy-inline-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-cyan);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 8px;
+      cursor: pointer;
+      float: right;
+    }
+    .copy-inline-btn:hover {
+      border-color: var(--atom-cyan);
+      color: #fff;
+    }
+
+    .binary-block {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-cyan);
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+    }
+    .footer-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      color: var(--atom-muted);
+    }
+    .footer-nav a { color: var(--atom-text); text-decoration: none; transition: color 0.15s; }
+    .footer-nav a:hover { color: var(--atom-amber); }
+    .footer-sep { color: var(--atom-border); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav" id="ipTracker">
+        <span>IPv4: <strong id="ipv4Display">Detecting...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Detecting...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network & Infra</a> / cidr-calculator
+    </nav>
+
+    <div class="tool-header">
+      <h1>IPv4/IPv6 Subnet & CIDR Calculator</h1>
+      <p>Compute CIDR route blocks, netmasks, broadcast targets, wildcards, and usable host scopes purely in memory.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="ip-mode-selector">
+        <button type="button" class="mode-tab active" id="btnModeIpv4">IPv4 Subnetting</button>
+        <button type="button" class="mode-tab" id="btnModeIpv6">IPv6 Prefix Blocks</button>
+      </div>
+
+      <div class="calc-form">
+        <div class="form-group">
+          <label for="ipInput">IP Address / CIDR Notation</label>
+          <input type="text" id="ipInput" value="192.168.1.50/24" placeholder="e.g. 10.0.0.1/16 or 2001:db8::1/64" spellcheck="false" />
+        </div>
+        <div class="form-group">
+          <label for="prefixSelect">Mask / Prefix Length</label>
+          <select id="prefixSelect"></select>
+        </div>
+        <div>
+          <button type="button" class="btn-atom" id="btnCalculate">Calculate</button>
+        </div>
+      </div>
+
+      <div class="results-area" id="resultsBlock">
+        <table class="results-table">
+          <tbody id="resultsTbody"></tbody>
+        </table>
+        
+        <div class="form-group">
+          <label>Binary Representation / Subnet Topology</label>
+          <div class="binary-block" id="binaryDisplay">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Boundary Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any network configuration errors, production routing collisions, CIDR design issues, subnet overlapping faults, routing blackholes, or infrastructure downtime resulting from the use of this calculation engine. Subnet properties and boundary outputs are calculated purely on a best-effort client-side mathematical model. Network engineers and system administrators must independently verify routing configurations against upstream ISP routing registries, Autonomous System boundaries, and RFC specifications prior to updating routing tables or production firewall policies.
+      </p>
+    </aside>
+
+    <!-- Technical Guide -->
+    <article class="doc-section">
+      <h2>Classless Inter-Domain Routing (CIDR) Overview</h2>
+      <p>CIDR represents IP addresses using a base network address appended by a prefix length specifying the quantity of significant bits constituting the network routing identity.</p>
+      <ul>
+        <li><strong>IPv4 Routing Allocations:</strong> Based on 32-bit addresses divided into network and host bits. A <code>/24</code> subnet reserves 24 bits for the network segment and 8 bits for host addresses, yielding 256 addresses (254 usable hosts minus the network identifier and the broadcast boundary).</li>
+        <li><strong>IPv6 Global Unicast Prefixes:</strong> Utilizes a 128-bit address space. Typical allocations assign a <code>/48</code> or <code>/56</code> prefix to end-sites, leaving individual subnets at a standard <code>/64</code> bit boundary to maintain stateless address autoconfiguration (SLAAC) compatibility.</li>
+      </ul>
+
+      <h2>Zero Egress Client-Side Execution</h2>
+      <p>Calculations execute locally within your browser using native JavaScript bitwise operators and <code>BigInt</code> structures. Zero network requests or telemetry packets containing your infrastructure IP architecture are transmitted off your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav class="footer-nav">
+        <a href="/blog">Blog</a>
+        <span class="footer-sep">·</span>
+        <a href="/about">About</a>
+        <span class="footer-sep">·</span>
+        <a href="/privacy">Privacy</a>
+        <span class="footer-sep">·</span>
+        <a href="/terms">Terms</a>
+        <span class="footer-sep">·</span>
+        <a href="/faq">FAQ</a>
+        <span class="footer-sep">·</span>
+        <span>© 2026 BitDark.NET</span>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry Resolver
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Localhost)";
+        ipv6El.textContent = "::1 (Localhost)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      };
+
+      // 1. Resolve IPv4
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("Primary IPv4 failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline / Blocked";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline / Blocked";
+        }
+      })();
+
+      // 2. Resolve IPv6
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("Primary IPv6 failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // CIDR Calculation Core Engine
+    let activeMode = "ipv4";
+
+    const btnModeIpv4 = document.getElementById("btnModeIpv4");
+    const btnModeIpv6 = document.getElementById("btnModeIpv6");
+    const ipInput = document.getElementById("ipInput");
+    const prefixSelect = document.getElementById("prefixSelect");
+    const btnCalculate = document.getElementById("btnCalculate");
+    const resultsTbody = document.getElementById("resultsTbody");
+    const binaryDisplay = document.getElementById("binaryDisplay");
+
+    function populatePrefixes() {
+      prefixSelect.innerHTML = "";
+      if (activeMode === "ipv4") {
+        for (let i = 32; i >= 0; i--) {
+          const opt = document.createElement("option");
+          opt.value = i;
+          const mask = getIpv4MaskFromPrefix(i);
+          opt.textContent = `/${i} — ${mask}`;
+          if (i === 24) opt.selected = true;
+          prefixSelect.appendChild(opt);
+        }
+      } else {
+        const commonPrefixes = [128, 126, 120, 112, 96, 64, 60, 56, 48, 40, 32, 28, 24, 16];
+        for (let i = 128; i >= 1; i--) {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = `/${i}${commonPrefixes.includes(i) ? " (Standard allocation)" : ""}`;
+          if (i === 64) opt.selected = true;
+          prefixSelect.appendChild(opt);
+        }
+      }
+    }
+
+    btnModeIpv4.addEventListener("click", () => {
+      activeMode = "ipv4";
+      btnModeIpv4.classList.add("active");
+      btnModeIpv6.classList.remove("active");
+      ipInput.value = "192.168.1.50/24";
+      populatePrefixes();
+      calculate();
+    });
+
+    btnModeIpv6.addEventListener("click", () => {
+      activeMode = "ipv6";
+      btnModeIpv6.classList.add("active");
+      btnModeIpv4.classList.remove("active");
+      ipInput.value = "2001:db8:85a3::8a2e:370:7334/64";
+      populatePrefixes();
+      calculate();
+    });
+
+    btnCalculate.addEventListener("click", calculate);
+    ipInput.addEventListener("keydown", (e) => { if (e.key === "Enter") calculate(); });
+
+    prefixSelect.addEventListener("change", () => {
+      let val = ipInput.value.trim();
+      if (val.includes("/")) {
+        val = val.split("/")[0] + "/" + prefixSelect.value;
+        ipInput.value = val;
+      }
+      calculate();
+    });
+
+    function getIpv4MaskFromPrefix(prefix) {
+      const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+      return [
+        (mask >>> 24) & 255,
+        (mask >>> 16) & 255,
+        (mask >>> 8) & 255,
+        mask & 255
+      ].join(".");
+    }
+
+    function calculate() {
+      const rawInput = ipInput.value.trim();
+      let ipStr = rawInput;
+      let prefix = parseInt(prefixSelect.value, 10);
+
+      if (rawInput.includes("/")) {
+        const parts = rawInput.split("/");
+        ipStr = parts[0].trim();
+        const pParsed = parseInt(parts[1], 10);
+        if (!isNaN(pParsed)) {
+          prefix = pParsed;
+          if ((activeMode === "ipv4" && prefix >= 0 && prefix <= 32) ||
+              (activeMode === "ipv6" && prefix >= 0 && prefix <= 128)) {
+            prefixSelect.value = prefix;
+          }
+        }
+      }
+
+      if (activeMode === "ipv4") {
+        calculateIPv4(ipStr, prefix);
+      } else {
+        calculateIPv6(ipStr, prefix);
+      }
+    }
+
+    function calculateIPv4(ipStr, prefix) {
+      const ipMatch = ipStr.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+      if (!ipMatch) {
+        renderError("Invalid IPv4 address format. Use format e.g. 192.168.1.1 or 10.0.0.1/24");
+        return;
+      }
+
+      const octets = [parseInt(ipMatch[1], 10), parseInt(ipMatch[2], 10), parseInt(ipMatch[3], 10), parseInt(ipMatch[4], 10)];
+      for (const oct of octets) {
+        if (oct < 0 || oct > 255) {
+          renderError(`Octet ${oct} out of range (0-255).`);
+          return;
+        }
+      }
+
+      const ipNum = ((octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]) >>> 0;
+      const maskNum = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+      const wildcardNum = (~maskNum) >>> 0;
+      const netNum = (ipNum & maskNum) >>> 0;
+      const bcastNum = (netNum | wildcardNum) >>> 0;
+
+      const toDotted = (num) => [ (num >>> 24) & 255, (num >>> 16) & 255, (num >>> 8) & 255, num & 255 ].join(".");
+
+      const totalAddresses = Math.pow(2, 32 - prefix);
+      let usableHosts = 0;
+      let firstHost = "-";
+      let lastHost = "-";
+
+      if (prefix === 31) {
+        usableHosts = 2; // RFC 3021 point-to-point
+        firstHost = toDotted(netNum);
+        lastHost = toDotted(bcastNum);
+      } else if (prefix === 32) {
+        usableHosts = 1;
+        firstHost = toDotted(netNum);
+        lastHost = toDotted(netNum);
+      } else {
+        usableHosts = totalAddresses - 2;
+        firstHost = toDotted(netNum + 1);
+        lastHost = toDotted(bcastNum - 1);
+      }
+
+      // Class type and scope
+      let ipScope = "Public Internet";
+      if ((octets[0] === 10) ||
+          (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+          (octets[0] === 192 && octets[1] === 168)) {
+        ipScope = "Private Network (RFC 1918)";
+      } else if (octets[0] === 127) {
+        ipScope = "Loopback Address (RFC 1122)";
+      } else if (octets[0] === 169 && octets[1] === 254) {
+        ipScope = "Link-Local / APIPA (RFC 3927)";
+      } else if (octets[0] >= 224 && octets[0] <= 239) {
+        ipScope = "Multicast Group (RFC 5771)";
+      } else if (octets[0] >= 240) {
+        ipScope = "Reserved / Future Use (RFC 1112)";
+      }
+
+      const rows = [
+        ["IP Address", `${toDotted(ipNum)}`],
+        ["Subnet Mask", `${toDotted(maskNum)}`],
+        ["Wildcard Mask", `${toDotted(wildcardNum)}`],
+        ["CIDR Prefix", `/${prefix}`],
+        ["Network Address", `${toDotted(netNum)}`],
+        ["Broadcast Address", `${prefix >= 31 ? "N/A (RFC 3021/32)" : toDotted(bcastNum)}`],
+        ["Usable Host Range", `${firstHost} — ${lastHost}`],
+        ["Usable Hosts", usableHosts.toLocaleString()],
+        ["Total Addresses", totalAddresses.toLocaleString()],
+        ["Address Scope / Type", ipScope]
+      ];
+
+      renderRows(rows);
+
+      // Binary Display
+      const toBinStr = (num) => num.toString(2).padStart(32, "0").match(/.{8}/g).join(" . ");
+      binaryDisplay.textContent = 
+        `IP:      ${toBinStr(ipNum)}\n` +
+        `Mask:    ${toBinStr(maskNum)}\n` +
+        `Network: ${toBinStr(netNum)}\n` +
+        `Bcast:   ${toBinStr(bcastNum)}`;
+    }
+
+    function calculateIPv6(ipStr, prefix) {
+      try {
+        const fullBigInt = parseIPv6ToBigInt(ipStr);
+        const totalBits = 128n;
+        const pBig = BigInt(prefix);
+
+        const maskBig = pBig === 0n ? 0n : ((1n << 128n) - 1n) ^ ((1n << (totalBits - pBig)) - 1n);
+        const netBig = fullBigInt & maskBig;
+        const lastBig = netBig | (((1n << (totalBits - pBig)) - 1n));
+
+        const totalAddresses = 2n ** (totalBits - pBig);
+
+        const netStr = bigIntToIPv6(netBig);
+        const lastStr = bigIntToIPv6(lastBig);
+        const expandedInput = bigIntToIPv6(fullBigInt, false);
+
+        let scope = "Global Unicast (2000::/3)";
+        if ((fullBigInt >> 120n) === 0xfen && ((fullBigInt >> 116n) & 0x0fn) === 0x08n) {
+          scope = "Link-Local Unicast (fe80::/10)";
+        } else if ((fullBigInt >> 121n) === 0x7dn) {
+          scope = "Unique Local Address (fc00::/7)";
+        } else if (fullBigInt === 1n) {
+          scope = "Loopback Address (::1/128)";
+        } else if (fullBigInt === 0n) {
+          scope = "Unspecified Address (::/128)";
+        } else if ((fullBigInt >> 120n) === 0xffn) {
+          scope = "Multicast Address (ff00::/8)";
+        }
+
+        const rows = [
+          ["IPv6 Address", ipStr],
+          ["Full Expanded", expandedInput],
+          ["Compressed Prefix", `${netStr}/${prefix}`],
+          ["Prefix Length", `/${prefix}`],
+          ["Network Start", netStr],
+          ["Network End", lastStr],
+          ["Number of /64 Subnets", prefix <= 64 ? (2n ** BigInt(64 - prefix)).toLocaleString() : "1 (Sub-delegated)"],
+          ["Total Addresses", totalAddresses > 1000000000000n ? `2^${128 - prefix} (~${totalAddresses.toString().slice(0, 5)}...)` : totalAddresses.toString()],
+          ["Address Scope / Type", scope]
+        ];
+
+        renderRows(rows);
+
+        const binStr = fullBigInt.toString(2).padStart(128, "0").match(/.{16}/g).join(" : ");
+        const maskStr = maskBig.toString(2).padStart(128, "0").match(/.{16}/g).join(" : ");
+        binaryDisplay.textContent = 
+          `IPv6 (Bin): ${binStr}\n` +
+          `Mask (Bin): ${maskStr}`;
+
+      } catch (err) {
+        renderError("Invalid IPv6 Address syntax. Format e.g. 2001:db8::1 or fe80::1/64: " + err.message);
+      }
+    }
+
+    function parseIPv6ToBigInt(ip) {
+      let str = ip.trim().toLowerCase();
+      if (str.includes("/")) str = str.split("/")[0];
+
+      if (str === "::") return 0n;
+
+      let parts = str.split("::");
+      if (parts.length > 2) throw new Error("Only one '::' wild compression is permitted.");
+
+      let head = parts[0] ? parts[0].split(":") : [];
+      let tail = parts.length === 2 && parts[1] ? parts[1].split(":") : [];
+
+      const totalHextets = head.length + tail.length;
+      if (totalHextets > 8) throw new Error("Too many hextets in IPv6 structure.");
+
+      const missing = 8 - totalHextets;
+      const fullList = [];
+
+      for (const h of head) fullList.push(h);
+      if (parts.length === 2) {
+        for (let i = 0; i < missing; i++) fullList.push("0");
+      }
+      for (const t of tail) fullList.push(t);
+
+      let bigResult = 0n;
+      for (let i = 0; i < 8; i++) {
+        const val = parseInt(fullList[i] || "0", 16);
+        if (isNaN(val) || val < 0 || val > 0xffff) throw new Error("Invalid hexadecimal value in hextet.");
+        bigResult = (bigResult << 16n) | BigInt(val);
+      }
+      return bigResult;
+    }
+
+    function bigIntToIPv6(bigIntVal, compress = true) {
+      let hexBlocks = [];
+      let temp = bigIntVal;
+      for (let i = 0; i < 8; i++) {
+        const hextet = Number(temp & 0xffffn);
+        hexBlocks.unshift(hextet.toString(16));
+        temp = temp >> 16n;
+      }
+
+      if (!compress) {
+        return hexBlocks.map(b => b.padStart(4, "0")).join(":");
+      }
+
+      let fullStr = hexBlocks.join(":");
+      // Compress longest streak of zeroes
+      return fullStr.replace(/(^|:)0(:0)+(:|$)/, "::");
+    }
+
+    function renderRows(data) {
+      resultsTbody.innerHTML = data.map(([label, val]) => `
+        <tr>
+          <th>${label}</th>
+          <td>
+            <span>${val}</span>
+            <button type="button" class="copy-inline-btn" onclick="copyVal(this, '${val}')">Copy</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function renderError(msg) {
+      resultsTbody.innerHTML = `
+        <tr>
+          <th style="color: var(--atom-coral);">Error</th>
+          <td style="color: var(--atom-coral);">${msg}</td>
+        </tr>
+      `;
+      binaryDisplay.textContent = "-";
+    }
+
+    window.copyVal = (btn, text) => {
+      navigator.clipboard.writeText(text);
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = original; }, 1200);
+    };
+
+    // Initial calculation trigger
+    populatePrefixes();
+    calculate();
+  </script>
+</body>
+</html>
