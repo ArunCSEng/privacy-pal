@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>IP Address Converter &amp; Notation Transformer — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="IP Address Converter &amp; Notation Transformer — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Convert IPv4 and IPv6 addresses between decimal, hexadecimal, binary, octal, integer, compressed, expanded, and reverse DNS PTR notations in local browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="ip converter, ipv4 converter, ipv6 converter, ip to decimal, ip to hex, ip to binary, ipv6 expander, ipv6 compress, reverse dns ptr, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/ip-converter" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.92rem;
+      color: var(--atom-heading);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    .copy-pill {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      cursor: pointer;
+      float: right;
+      transition: all 0.15s;
+    }
+    .copy-pill:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / ip-converter
+    </nav>
+
+    <div class="tool-header">
+      <h1>IP Address Format Converter</h1>
+      <p>Transform IPv4 and IPv6 addresses across binary, hexadecimal, decimal integer, octal, expanded, compressed RFC 5952, and reverse DNS PTR formats entirely in client-side memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="ipInput">
+          Target IP Address or Integer
+          <span>Accepts IPv4 (standard, hex, integer), IPv6, or raw 32/128-bit numbers</span>
+        </label>
+        <div class="input-row">
+          <input type="text" id="ipInput" placeholder="e.g. 192.0.2.1 or 2001:db8::1 or 3221225985" spellcheck="false" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnConvert">Convert IP</button>
+          <button type="button" class="btn-atom btn-secondary" onclick="loadSample('192.168.1.1')">IPv4 Sample</button>
+          <button type="button" class="btn-atom btn-secondary" onclick="loadSample('2001:db8:85a3::8a2e:370:7334')">IPv6 Sample</button>
+          <button type="button" class="btn-atom btn-secondary" onclick="loadSample('2130706433')">Integer Sample</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>IP Converter Initialized</span>
+        <span>Ready</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Protocol Version</div>
+          <div class="meta-val" id="metaVersion">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Address Scope</div>
+          <div class="meta-val" id="metaScope">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Bit Length</div>
+          <div class="meta-val" id="metaBits">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Integer Value (BigInt)</div>
+          <div class="meta-val" id="metaInt">—</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Notation Format</th>
+              <th style="width: 63%;">Represented Value</th>
+              <th style="width: 12%; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 20px;">Enter an IP address or numeric representation above to inspect notations.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, network reconfiguration errors, routing table corruptions, ACL security bypasses, or reverse DNS misresolutions. Format conversions are evaluated purely via mathematical bit shifting and native BigInt algorithms in local browser memory. Network administrators must verify converted representation compatibility against specific firewall engines, web servers, and IPAM registries prior to operational deployment.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>IP Address Representations &amp; Alternate Notations</h2>
+      <p>IP addresses are fundamentally fixed-length binary integers (32 bits for IPv4, 128 bits for IPv6). Because systems display and parse addresses in various notations, understanding each representation is vital for network programming, firewall configuration, and vulnerability auditing:</p>
+      <ul>
+        <li><strong>Dotted-Decimal (IPv4 standard):</strong> Four 8-bit octets separated by dots (e.g., <code>192.168.1.1</code>).</li>
+        <li><strong>Decimal Integer (Dword):</strong> The direct 32-bit or 128-bit unsigned integer value. Many operating systems, URL parsers, and command-line utilities natively resolve single decimal values to valid IPs (e.g., <code>http://3232235777</code> routes to <code>192.168.1.1</code>).</li>
+        <li><strong>Hexadecimal &amp; Octal:</strong> Web browsers and HTTP libraries historically permit octal (prefixed with <code>0</code>) and hexadecimal (prefixed with <code>0x</code>) notation. Attackers occasionally employ these alternate formats to bypass URL filter blacklists and Web Application Firewalls (WAFs).</li>
+        <li><strong>RFC 5952 IPv6 Compression:</strong> Dictates modern IPv6 canonical representation: all hexadecimal characters must be lowercase, leading zeros inside hextets must be suppressed, and the longest contiguous run of two or more zero hextets must be replaced with a single <code>::</code>.</li>
+        <li><strong>Reverse DNS (PTR):</strong> The hierarchical domain name assigned to an IP under <code>in-addr.arpa</code> (for IPv4) or <code>ip6.arpa</code> (for IPv6) used for reverse lookup validation.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>All parsing, string transformations, BigInt manipulations, and format conversions are performed strictly inside your browser thread. No queries, hostnames, or address structures are ever transmitted over external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Converter Engine
+    const ipInput = document.getElementById("ipInput");
+    const btnConvert = document.getElementById("btnConvert");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaVersion = document.getElementById("metaVersion");
+    const metaScope = document.getElementById("metaScope");
+    const metaBits = document.getElementById("metaBits");
+    const metaInt = document.getElementById("metaInt");
+    const resultsBody = document.getElementById("resultsBody");
+
+    function loadSample(val) {
+      ipInput.value = val;
+      convertIP();
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ Copied to clipboard</span> <span>Buffer updated</span>";
+      });
+    }
+
+    // IPv4 classification
+    function classifyIPv4(n) {
+      const b0 = Number((n >> 24n) & 0xffn);
+      const b1 = Number((n >> 16n) & 0xffn);
+      if (b0 === 10) return "Private (RFC 1918 Class A)";
+      if (b0 === 172 && b1 >= 16 && b1 <= 31) return "Private (RFC 1918 Class B)";
+      if (b0 === 192 && b1 === 168) return "Private (RFC 1918 Class C)";
+      if (b0 === 127) return "Loopback (RFC 1122)";
+      if (b0 === 169 && b1 === 254) return "Link-Local / APIPA (RFC 3927)";
+      if (b0 === 100 && b1 >= 64 && b1 <= 127) return "Carrier-Grade NAT (RFC 6598)";
+      if (b0 >= 224 && b0 <= 239) return "Multicast (Class D, RFC 5771)";
+      if (b0 >= 240) return "Reserved / Future Use (Class E)";
+      if (n === 0n) return "Current Network / This Host (RFC 1122)";
+      if (n === 0xffffffffn) return "Limited Broadcast (RFC 919)";
+      return "Global Unicast (Public)";
+    }
+
+    // IPv6 classification
+    function classifyIPv6(n) {
+      if (n === 0n) return "Unspecified Address (::, RFC 4291)";
+      if (n === 1n) return "Loopback (::1, RFC 4291)";
+      const high16 = Number((n >> 112n) & 0xffffn);
+      if ((high16 & 0xfe00) === 0xfc00) return "Unique Local Address (ULA, RFC 4193)";
+      if ((high16 & 0xffc0) === 0xfe80) return "Link-Local Unicast (RFC 4291)";
+      if ((high16 & 0xff00) === 0xff00) return "Multicast (RFC 4291)";
+      if (high16 === 0x2001) {
+        const next16 = Number((n >> 96n) & 0xffffn);
+        if (next16 === 0x0db8) return "Documentation (RFC 3849)";
+      }
+      if ((n >> 32n) === 0xffffn) return "IPv4-mapped IPv6 (RFC 4291)";
+      if ((high16 & 0xe000) === 0x2000) return "Global Unicast (Public, RFC 4291)";
+      return "Reserved / Unassigned";
+    }
+
+    function parseIPv4(str) {
+      const parts = str.split(".");
+      if (parts.length !== 4) return null;
+      let num = 0n;
+      for (let i = 0; i < 4; i++) {
+        const octet = Number(parts[i]);
+        if (isNaN(octet) || octet < 0 || octet > 255 || parts[i].trim() === "" || !/^\d+$/.test(parts[i].trim())) {
+          return null;
+        }
+        num = (num << 8n) | BigInt(octet);
+      }
+      return num;
+    }
+
+    function parseIPv6(str) {
+      let clean = str.trim().toLowerCase();
+      if (!clean.includes(":")) return null;
+      if (clean === "::") return 0n;
+
+      const splitDouble = clean.split("::");
+      if (splitDouble.length > 2) return null;
+
+      let left = splitDouble[0] ? splitDouble[0].split(":") : [];
+      let right = splitDouble.length === 2 && splitDouble[1] ? splitDouble[1].split(":") : [];
+
+      // Check for IPv4 embedded at the end
+      if (right.length > 0 && right[right.length - 1].includes(".")) {
+        const v4Part = parseIPv4(right.pop());
+        if (v4Part === null) return null;
+        right.push(((v4Part >> 16n) & 0xffffn).toString(16));
+        right.push((v4Part & 0xffffn).toString(16));
+      } else if (splitDouble.length === 1 && left.length > 0 && left[left.length - 1].includes(".")) {
+        const v4Part = parseIPv4(left.pop());
+        if (v4Part === null) return null;
+        left.push(((v4Part >> 16n) & 0xffffn).toString(16));
+        left.push((v4Part & 0xffffn).toString(16));
+      }
+
+      const totalBlocks = left.length + right.length;
+      if (splitDouble.length === 1 && totalBlocks !== 8) return null;
+      if (totalBlocks > 8) return null;
+
+      const zeros = new Array(8 - totalBlocks).fill("0");
+      const hextets = [...left, ...(splitDouble.length === 2 ? zeros : []), ...right];
+
+      let num = 0n;
+      for (let i = 0; i < 8; i++) {
+        const val = parseInt(hextets[i] || "0", 16);
+        if (isNaN(val) || val < 0 || val > 0xffff) return null;
+        num = (num << 16n) | BigInt(val);
+      }
+      return num;
+    }
+
+    function intToIPv4(n) {
+      const b0 = Number((n >> 24n) & 0xffn);
+      const b1 = Number((n >> 16n) & 0xffn);
+      const b2 = Number((n >> 8n) & 0xffn);
+      const b3 = Number(n & 0xffn);
+      return `${b0}.${b1}.${b2}.${b3}`;
+    }
+
+    function intToIPv6Expanded(n) {
+      const hextets = [];
+      for (let i = 7; i >= 0; i--) {
+        const h = Number((n >> BigInt(i * 16)) & 0xffffn);
+        hextets.push(h.toString(16).padStart(4, "0"));
+      }
+      return hextets.join(":");
+    }
+
+    function intToIPv6Compressed(n) {
+      const hextets = [];
+      for (let i = 7; i >= 0; i--) {
+        const h = Number((n >> BigInt(i * 16)) & 0xffffn);
+        hextets.push(h.toString(16));
+      }
+
+      // Find longest sequence of zeroes according to RFC 5952
+      let bestStart = -1, bestLen = 0;
+      let curStart = -1, curLen = 0;
+
+      for (let i = 0; i < 8; i++) {
+        if (hextets[i] === "0") {
+          if (curStart === -1) curStart = i;
+          curLen++;
+          if (curLen > bestLen) {
+            bestStart = curStart;
+            bestLen = curLen;
+          }
+        } else {
+          curStart = -1;
+          curLen = 0;
+        }
+      }
+
+      if (bestLen > 1) {
+        const left = hextets.slice(0, bestStart).join(":");
+        const right = hextets.slice(bestStart + bestLen).join(":");
+        return `${left}::${right}`;
+      }
+      return hextets.join(":");
+    }
+
+    function convertIP() {
+      const raw = ipInput.value.trim();
+      if (!raw) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+        metaVersion.textContent = "—";
+        metaScope.textContent = "—";
+        metaBits.textContent = "—";
+        metaInt.textContent = "—";
+        resultsBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 20px;">Enter an IP address or numeric representation above to inspect notations.</td></tr>`;
+        return;
+      }
+
+      let version = null;
+      let ipInt = null;
+
+      // Check for raw integer
+      if (/^\d+$/.test(raw)) {
+        try {
+          const parsedBig = BigInt(raw);
+          if (parsedBig <= 0xffffffffn) {
+            version = 4;
+            ipInt = parsedBig;
+          } else if (parsedBig <= ((1n << 128n) - 1n)) {
+            version = 6;
+            ipInt = parsedBig;
+          }
+        } catch {}
+      }
+
+      // Check for raw hex integer
+      if (version === null && /^0x[0-9a-fA-F]+$/i.test(raw)) {
+        try {
+          const parsedHex = BigInt(raw);
+          if (parsedHex <= 0xffffffffn) {
+            version = 4;
+            ipInt = parsedHex;
+          } else if (parsedHex <= ((1n << 128n) - 1n)) {
+            version = 6;
+            ipInt = parsedHex;
+          }
+        } catch {}
+      }
+
+      // Check standard dot-decimal IPv4
+      if (version === null && raw.includes(".") && !raw.includes(":")) {
+        const v4Val = parseIPv4(raw);
+        if (v4Val !== null) {
+          version = 4;
+          ipInt = v4Val;
+        }
+      }
+
+      // Check IPv6
+      if (version === null && raw.includes(":")) {
+        const v6Val = parseIPv6(raw);
+        if (v6Val !== null) {
+          version = 6;
+          ipInt = v6Val;
+        }
+      }
+
+      if (version === null || ipInt === null) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = "<span>✕ Invalid Address Format</span> <span>Parser Error</span>";
+        metaVersion.textContent = "Invalid";
+        metaScope.textContent = "Unrecognized";
+        metaBits.textContent = "0";
+        metaInt.textContent = "—";
+        resultsBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--atom-coral); padding: 20px;">Unable to parse '${escapeHtml(raw)}'. Please provide a valid IPv4, IPv6, or 32/128-bit integer.</td></tr>`;
+        return;
+      }
+
+      const rows = [];
+
+      if (version === 4) {
+        const dotted = intToIPv4(ipInt);
+        const b0 = Number((ipInt >> 24n) & 0xffn);
+        const b1 = Number((ipInt >> 16n) & 0xffn);
+        const b2 = Number((ipInt >> 8n) & 0xffn);
+        const b3 = Number(ipInt & 0xffn);
+
+        const hexDotted = `0x${b0.toString(16).padStart(2, "0")}.0x${b1.toString(16).padStart(2, "0")}.0x${b2.toString(16).padStart(2, "0")}.0x${b3.toString(16).padStart(2, "0")}`;
+        const octalDotted = `0${b0.toString(8).padStart(3, "0")}.0${b1.toString(8).padStart(3, "0")}.0${b2.toString(8).padStart(3, "0")}.0${b3.toString(8).padStart(3, "0")}`;
+        const binaryDotted = `${b0.toString(2).padStart(8, "0")}.${b1.toString(2).padStart(8, "0")}.${b2.toString(2).padStart(8, "0")}.${b3.toString(2).padStart(8, "0")}`;
+        const hexFlat = `0x${ipInt.toString(16).padStart(8, "0")}`;
+        const ptr = `${b3}.${b2}.${b1}.${b0}.in-addr.arpa`;
+        const v6Mapped = `::ffff:${dotted}`;
+        const v6MappedExpanded = `0000:0000:0000:0000:0000:ffff:${b0.toString(16).padStart(2, "0")}${b1.toString(16).padStart(2, "0")}:${b2.toString(16).padStart(2, "0")}${b3.toString(16).padStart(2, "0")}`;
+
+        metaVersion.textContent = "IPv4 (32-bit)";
+        metaScope.textContent = classifyIPv4(ipInt);
+        metaBits.textContent = "32 bits";
+        metaInt.textContent = ipInt.toString();
+
+        rows.push({ label: "Canonical Dotted Decimal", val: dotted });
+        rows.push({ label: "Decimal Integer (Dword)", val: ipInt.toString() });
+        rows.push({ label: "Hexadecimal (Flat Integer)", val: hexFlat });
+        rows.push({ label: "Hexadecimal (Dotted)", val: hexDotted });
+        rows.push({ label: "Octal (Dotted)", val: octalDotted });
+        rows.push({ label: "Binary (8-bit Octets)", val: binaryDotted });
+        rows.push({ label: "IPv6-Mapped IPv4 (Compressed)", val: v6Mapped });
+        rows.push({ label: "IPv6-Mapped IPv4 (Expanded)", val: v6MappedExpanded });
+        rows.push({ label: "Reverse DNS PTR Record", val: ptr });
+      } else {
+        const expanded = intToIPv6Expanded(ipInt);
+        const compressed = intToIPv6Compressed(ipInt);
+        const hexFlat = `0x${ipInt.toString(16).padStart(32, "0")}`;
+        
+        let binaryStr = "";
+        for (let i = 7; i >= 0; i--) {
+          const h = Number((ipInt >> BigInt(i * 16)) & 0xffffn);
+          binaryStr += h.toString(2).padStart(16, "0") + (i > 0 ? ":" : "");
+        }
+
+        const hexPure = ipInt.toString(16).padStart(32, "0");
+        const ptr = hexPure.split("").reverse().join(".") + ".ip6.arpa";
+
+        metaVersion.textContent = "IPv6 (128-bit)";
+        metaScope.textContent = classifyIPv6(ipInt);
+        metaBits.textContent = "128 bits";
+        metaInt.textContent = ipInt.toString();
+
+        rows.push({ label: "Canonical RFC 5952 (Compressed)", val: compressed });
+        rows.push({ label: "Fully Expanded (Zero-Padded)", val: expanded });
+        rows.push({ label: "Decimal Integer (128-bit BigInt)", val: ipInt.toString() });
+        rows.push({ label: "Hexadecimal (128-bit Integer)", val: hexFlat });
+        rows.push({ label: "Binary (16-bit Hextets)", val: binaryStr });
+        rows.push({ label: "Reverse DNS PTR Record", val: ptr });
+      }
+
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = `<span>✓ Successfully Converted ${metaVersion.textContent}</span> <span>Parsed</span>`;
+
+      resultsBody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.label}</strong></td>
+          <td><code>${escapeHtml(r.val)}</code></td>
+          <td style="text-align: right;">
+            <button class="copy-pill" onclick="copyToClipboard('${escapeHtml(r.val)}')">Copy</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    btnConvert.addEventListener("click", convertIP);
+    ipInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") convertIP();
+    });
+
+    btnClear.addEventListener("click", () => {
+      ipInput.value = "";
+      convertIP();
+    });
+  </script>
+</body>
+</html>
