@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Calculate maximum transmission unit (MTU), maximum segment size (MSS), and tunnel encapsulation overhead across IPv4, IPv6, WireGuard, IPsec, GRE, and VXLAN." />
+  <meta name="keywords" content="mtu calculator, mss calculator, wireguard overhead, ipsec mtu, gre tunnel mtu, vxlan overhead, pppoe mtu, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/mtu-overhead" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span {
+      color: var(--atom-cyan);
+      text-transform: none;
+    }
+    .form-group input, .form-group select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Checkbox Group */
+    .checkbox-panel {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+    .panel-label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      cursor: pointer;
+    }
+    .checkbox-item input[type="checkbox"] {
+      cursor: pointer;
+      accent-color: var(--atom-amber);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+    }
+
+    /* Visual Breakdown Bar */
+    .bar-section { margin-bottom: 20px; }
+    .bar-container {
+      display: flex;
+      height: 28px;
+      border-radius: 4px;
+      overflow: hidden;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      margin-bottom: 10px;
+    }
+    .bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: #1e2227;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 4px;
+      transition: width 0.25s ease;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border-bottom: 1px solid var(--atom-border);
+      border-right: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th:last-child, .results-table td:last-child { border-right: none; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+    }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / mtu-overhead
+    </nav>
+
+    <div class="tool-header">
+      <h1>MTU &amp; TCP MSS Overhead Calculator</h1>
+      <p>Compute effective payload limits, header encapsulation penalties, and optimal TCP MSS clamping boundaries across IPv4, IPv6, VPNs, overlay networks, and VLAN tags.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="baseMtuInput">Base Physical MTU (Bytes) <span>Standard Ethernet: 1500</span></label>
+          <input type="number" id="baseMtuInput" value="1500" min="576" max="9216" step="1" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="ipVersionSelect">Outer IP Version <span>Network Layer</span></label>
+          <select id="ipVersionSelect">
+            <option value="ipv4" selected>IPv4 (20 Bytes Header)</option>
+            <option value="ipv6">IPv6 (40 Bytes Header)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="innerIpSelect">Inner Tunnel IP Version <span>If Encapsulating</span></label>
+          <select id="innerIpSelect">
+            <option value="same" selected>Match Outer Layer</option>
+            <option value="ipv4">IPv4 (20 Bytes)</option>
+            <option value="ipv6">IPv6 (40 Bytes)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tcpOptionsSelect">TCP Header &amp; Options <span>Transport Layer</span></label>
+          <select id="tcpOptionsSelect">
+            <option value="20" selected>Standard TCP (20 Bytes)</option>
+            <option value="32">TCP + Timestamps / SACK (32 Bytes)</option>
+            <option value="40">Maximum Permitted TCP (40 Bytes)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tunnel & Encapsulation Overheads -->
+      <div class="checkbox-panel">
+        <span class="panel-label">Encapsulation &amp; Tunnel Protocols</span>
+        <div class="checkbox-grid">
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkPppoe" />
+            <span>PPPoE (8 Bytes)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkVlan" />
+            <span>802.1Q VLAN Tag (4 Bytes)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkQinQ" />
+            <span>802.1ad QinQ Tag (8 Bytes)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkWireguard" />
+            <span>WireGuard VPN (UDP + 32B)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkGre" />
+            <span>GRE Tunnel (4 Bytes + Inner IP)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkVxlan" />
+            <span>VXLAN Overlay (50 Bytes)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkIpsec" />
+            <span>IPsec ESP Tunnel (AES-GCM ~56B)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="chkGeneve" />
+            <span>GENEVE Overlay (UDP + 8B Base)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnPresetStandard">Standard Ethernet</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnPresetWireguard">WireGuard / IPv4</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnPresetPppoe">PPPoE Fiber</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnPresetCloud">Cloud VPC / VXLAN</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnReset">Reset Defaults</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Healthy Packet Boundaries</span>
+        <span id="bannerMss">Optimal MSS: 1460 Bytes</span>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Effective Tunnel MTU</div>
+          <div class="meta-val" id="valTunnelMtu">1500 B</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Optimal TCP MSS</div>
+          <div class="meta-val" id="valOptimalMss">1460 B</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Total Header Overhead</div>
+          <div class="meta-val" id="valTotalOverhead">40 B</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Max UDP Payload</div>
+          <div class="meta-val" id="valUdpPayload">1472 B</div>
+        </div>
+      </div>
+
+      <!-- Visual Packet Allocation -->
+      <div class="bar-section">
+        <div class="panel-label">Frame Allocation Breakdown</div>
+        <div class="bar-container" id="barVisual">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Table -->
+      <div class="table-container">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th style="width: 28%;">Protocol Layer / Header Component</th>
+              <th style="width: 18%;">Overhead Size</th>
+              <th style="width: 20%;">Running Remaining Payload</th>
+              <th style="width: 34%;">Standard Specification / RFC Note</th>
+            </tr>
+          </thead>
+          <tbody id="breakdownBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, packet blackholing, network fragmentation overhead, throughput collapse, Path MTU Discovery (PMTUD) outages, or routing policy failures. Header calculations reflect canonical RFC and standard implementation specifications. Real-world enterprise environments may incur variable padding requirements (e.g., block cipher CBC alignment in IPsec ESP or variable TLV fields in GENEVE). Network engineers must verify actual MTU and MSS clamping configurations against operational edge routers and middleboxes.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Understanding MTU, MSS, and Encapsulation Penalties</h2>
+      <p>The Maximum Transmission Unit (MTU) establishes the largest physical frame payload a network link can transport without IP fragmentation. The Maximum Segment Size (MSS) specifies the largest payload a TCP client or server can accept in a single unfragmented packet:</p>
+      <ul>
+        <li><strong>Standard Ethernet Formula:</strong> On standard Ethernet (1500 MTU) over IPv4 (20-byte header) and standard TCP (20-byte header), the optimal TCP MSS is $1500 - 20 - 20 = 1460\text{ bytes}$.</li>
+        <li><strong>IPv6 Header Penalty:</strong> IPv6 incorporates a fixed 40-byte base header (double IPv4). On a 1500-byte MTU, IPv6 TCP MSS is $1500 - 40 - 20 = 1440\text{ bytes}$.</li>
+        <li><strong>The TCP Clamping Imperative:</strong> If ICMP Type 3 Code 4 ("Fragmentation Needed and DF set") packets are dropped by intermediate firewalls, PMTUD blackholing occurs. Routers resolve this at network edges by rewriting the TCP SYN packet MSS option via MSS clamping.</li>
+        <li><strong>Tunnel Overhead Accumulation:</strong> Modern cloud and VPN architectures stack multiple encapsulations (e.g., Ethernet + VXLAN + IPv4 + WireGuard + Inner IPv6). Each layer deducts available payload space, necessitating precise client MTU adjustments.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>All calculations, layer permutations, and packet boundary simulations are computed locally in your browser thread. No IP addresses, network topologies, or routing parameters are ever transmitted across external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // MTU Engine
+    const baseMtuInput = document.getElementById("baseMtuInput");
+    const ipVersionSelect = document.getElementById("ipVersionSelect");
+    const innerIpSelect = document.getElementById("innerIpSelect");
+    const tcpOptionsSelect = document.getElementById("tcpOptionsSelect");
+
+    const chkPppoe = document.getElementById("chkPppoe");
+    const chkVlan = document.getElementById("chkVlan");
+    const chkQinQ = document.getElementById("chkQinQ");
+    const chkWireguard = document.getElementById("chkWireguard");
+    const chkGre = document.getElementById("chkGre");
+    const chkVxlan = document.getElementById("chkVxlan");
+    const chkIpsec = document.getElementById("chkIpsec");
+    const chkGeneve = document.getElementById("chkGeneve");
+
+    const btnPresetStandard = document.getElementById("btnPresetStandard");
+    const btnPresetWireguard = document.getElementById("btnPresetWireguard");
+    const btnPresetPppoe = document.getElementById("btnPresetPppoe");
+    const btnPresetCloud = document.getElementById("btnPresetCloud");
+    const btnReset = document.getElementById("btnReset");
+
+    const statusBanner = document.getElementById("statusBanner");
+    const bannerMss = document.getElementById("bannerMss");
+    const valTunnelMtu = document.getElementById("valTunnelMtu");
+    const valOptimalMss = document.getElementById("valOptimalMss");
+    const valTotalOverhead = document.getElementById("valTotalOverhead");
+    const valUdpPayload = document.getElementById("valUdpPayload");
+    const barVisual = document.getElementById("barVisual");
+    const breakdownBody = document.getElementById("breakdownBody");
+
+    function calculateMTU() {
+      const baseMtu = parseInt(baseMtuInput.value, 10) || 1500;
+      const isOuterV6 = ipVersionSelect.value === "ipv6";
+      const outerIpBytes = isOuterV6 ? 40 : 20;
+
+      let innerIpBytes = outerIpBytes;
+      if (innerIpSelect.value === "ipv4") innerIpBytes = 20;
+      if (innerIpSelect.value === "ipv6") innerIpBytes = 40;
+
+      const tcpBytes = parseInt(tcpOptionsSelect.value, 10) || 20;
+
+      const items = [];
+      let currentRemaining = baseMtu;
+
+      // Outer Layer
+      items.push({
+        name: isOuterV6 ? "Outer IPv6 Header" : "Outer IPv4 Header",
+        bytes: outerIpBytes,
+        color: "var(--atom-cyan)",
+        note: isOuterV6 ? "Fixed 40-byte base header (RFC 8200)" : "Standard 20-byte header without options (RFC 791)"
+      });
+
+      // Layer 2 modifications / Encap
+      if (chkVlan.checked) {
+        items.push({
+          name: "802.1Q Single VLAN Tag",
+          bytes: 4,
+          color: "var(--atom-purple)",
+          note: "VLAN identifier header inserted into frame (IEEE 802.1Q)"
+        });
+      }
+
+      if (chkQinQ.checked) {
+        items.push({
+          name: "802.1ad QinQ Provider Tag",
+          bytes: 8,
+          color: "var(--atom-purple)",
+          note: "Stacked service provider outer/inner tags (IEEE 802.1ad)"
+        });
+      }
+
+      if (chkPppoe.checked) {
+        items.push({
+          name: "PPPoE Encapsulation",
+          bytes: 8,
+          color: "var(--atom-amber)",
+          note: "6-byte PPPoE header + 2-byte PPP Protocol ID (RFC 2516)"
+        });
+      }
+
+      // Tunnels
+      if (chkWireguard.checked) {
+        // WireGuard uses UDP (8B) + 32-byte WireGuard transport data header = 40B total
+        items.push({
+          name: "WireGuard Tunnel Header",
+          bytes: 40,
+          color: "var(--atom-coral)",
+          note: "8B outer UDP header + 32B WireGuard transport message overhead"
+        });
+      }
+
+      if (chkGre.checked) {
+        // Standard GRE = 4B base header + Inner IP
+        items.push({
+          name: "GRE Base Tunnel Header",
+          bytes: 4,
+          color: "var(--atom-coral)",
+          note: "RFC 2784 Generic Routing Encapsulation fixed header"
+        });
+      }
+
+      if (chkVxlan.checked) {
+        // Outer UDP (8B) + VXLAN (8B) + Inner Ethernet Frame (14B) = 30B (or 50B with standard 20B outer IP + 14B MAC + 8B UDP + 8B VXLAN)
+        items.push({
+          name: "VXLAN L2-over-L4 Overlay",
+          bytes: 50,
+          color: "var(--atom-coral)",
+          note: "Outer IP (20B) + UDP (8B) + VXLAN Header (8B) + Inner Ethernet (14B) [RFC 7348]"
+        });
+      }
+
+      if (chkIpsec.checked) {
+        // IPsec ESP with AES-GCM (approx 56 bytes including SPI, Seq, IV, ICV, and padding)
+        items.push({
+          name: "IPsec ESP (AES-GCM Tunnel Mode)",
+          bytes: 56,
+          color: "var(--atom-coral)",
+          note: "ESP header, 64-bit IV, ICV tag, SPI, and alignment padding (RFC 4303)"
+        });
+      }
+
+      if (chkGeneve.checked) {
+        items.push({
+          name: "GENEVE Generic Overlay",
+          bytes: 16,
+          color: "var(--atom-coral)",
+          note: "Outer UDP header (8B) + Base GENEVE header (8B) [RFC 8926]"
+        });
+      }
+
+      // Inner IP layer if tunneling is active
+      const hasTunnel = chkWireguard.checked || chkGre.checked || chkIpsec.checked;
+      if (hasTunnel) {
+        items.push({
+          name: innerIpBytes === 40 ? "Inner IPv6 Header" : "Inner IPv4 Header",
+          bytes: innerIpBytes,
+          color: "var(--atom-cyan)",
+          note: innerIpBytes === 40 ? "Tunnel encapsulated IPv6 address space" : "Tunnel encapsulated IPv4 address space"
+        });
+      }
+
+      // Transport: TCP
+      items.push({
+        name: "TCP Transport Header",
+        bytes: tcpBytes,
+        color: "var(--atom-green)",
+        note: tcpBytes === 20 ? "Standard TCP header (RFC 9293)" : `TCP header with ${tcpBytes - 20} bytes options (SACK / Timestamps)`
+      });
+
+      // Calculations
+      let totalOverhead = 0;
+      items.forEach(it => { totalOverhead += it.bytes; });
+
+      const optimalMss = Math.max(0, baseMtu - totalOverhead);
+      const effectiveTunnelMtu = Math.max(0, baseMtu - (totalOverhead - tcpBytes - (hasTunnel ? innerIpBytes : 0)));
+      const maxUdpPayload = Math.max(0, baseMtu - (totalOverhead - tcpBytes) - 8);
+
+      valTunnelMtu.textContent = `${effectiveTunnelMtu} B`;
+      valOptimalMss.textContent = `${optimalMss} B`;
+      valTotalOverhead.textContent = `${totalOverhead} B`;
+      valUdpPayload.textContent = `${maxUdpPayload} B`;
+      bannerMss.textContent = `Optimal MSS: ${optimalMss} Bytes`;
+
+      if (optimalMss < 536) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>⚠️ Severely Degraded MSS (&lt; 536 Bytes)</span> <span>High Fragmentation Risk</span>`;
+      } else if (optimalMss < 1200) {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = `<span>Notice: High Tunnel Encapsulation Cost</span> <span>Optimal MSS: ${optimalMss} Bytes</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>Optimal Packet Parameters</span> <span>Optimal MSS: ${optimalMss} Bytes</span>`;
+      }
+
+      // Populate Table
+      let runRemaining = baseMtu;
+      breakdownBody.innerHTML = items.map(item => {
+        runRemaining -= item.bytes;
+        return `
+          <tr>
+            <td><strong>${item.name}</strong></td>
+            <td><code>${item.bytes} Bytes</code></td>
+            <td><code>${Math.max(0, runRemaining)} Bytes</code></td>
+            <td style="color: var(--atom-muted); font-size: 0.78rem;">${item.note}</td>
+          </tr>
+        `;
+      }).join("") + `
+        <tr style="background: rgba(152, 195, 121, 0.08);">
+          <td><strong style="color: var(--atom-green);">Usable TCP Segment Payload (MSS)</strong></td>
+          <td><strong style="color: var(--atom-green);">${optimalMss} Bytes</strong></td>
+          <td><code>0 Bytes</code></td>
+          <td style="color: var(--atom-green); font-size: 0.78rem;">Maximum pure application data transported per segment</td>
+        </tr>
+      `;
+
+      // Render Visual Bar
+      barVisual.innerHTML = "";
+      items.forEach(item => {
+        const pct = ((item.bytes / baseMtu) * 100).toFixed(2);
+        const seg = document.createElement("div");
+        seg.className = "bar-segment";
+        seg.style.width = `${pct}%`;
+        seg.style.backgroundColor = item.color;
+        seg.title = `${item.name}: ${item.bytes}B (${pct}%)`;
+        if (parseFloat(pct) > 4) {
+          seg.textContent = `${item.bytes}B`;
+        }
+        barVisual.appendChild(seg);
+      });
+
+      const mssPct = ((optimalMss / baseMtu) * 100).toFixed(2);
+      if (optimalMss > 0) {
+        const mssSeg = document.createElement("div");
+        mssSeg.className = "bar-segment";
+        mssSeg.style.width = `${mssPct}%`;
+        mssSeg.style.backgroundColor = "var(--atom-amber)";
+        mssSeg.title = `Usable Payload (MSS): ${optimalMss}B (${mssPct}%)`;
+        mssSeg.textContent = `Payload (${optimalMss}B)`;
+        barVisual.appendChild(mssSeg);
+      }
+    }
+
+    // Presets
+    btnPresetStandard.addEventListener("click", () => {
+      baseMtuInput.value = 1500;
+      ipVersionSelect.value = "ipv4";
+      tcpOptionsSelect.value = "20";
+      chkPppoe.checked = false;
+      chkVlan.checked = false;
+      chkQinQ.checked = false;
+      chkWireguard.checked = false;
+      chkGre.checked = false;
+      chkVxlan.checked = false;
+      chkIpsec.checked = false;
+      chkGeneve.checked = false;
+      calculateMTU();
+    });
+
+    btnPresetWireguard.addEventListener("click", () => {
+      baseMtuInput.value = 1500;
+      ipVersionSelect.value = "ipv4";
+      tcpOptionsSelect.value = "20";
+      chkWireguard.checked = true;
+      chkPppoe.checked = false;
+      chkVlan.checked = false;
+      chkQinQ.checked = false;
+      chkGre.checked = false;
+      chkVxlan.checked = false;
+      chkIpsec.checked = false;
+      chkGeneve.checked = false;
+      calculateMTU();
+    });
+
+    btnPresetPppoe.addEventListener("click", () => {
+      baseMtuInput.value = 1500;
+      ipVersionSelect.value = "ipv4";
+      tcpOptionsSelect.value = "20";
+      chkPppoe.checked = true;
+      chkVlan.checked = false;
+      chkQinQ.checked = false;
+      chkWireguard.checked = false;
+      chkGre.checked = false;
+      chkVxlan.checked = false;
+      chkIpsec.checked = false;
+      chkGeneve.checked = false;
+      calculateMTU();
+    });
+
+    btnPresetCloud.addEventListener("click", () => {
+      baseMtuInput.value = 1500;
+      ipVersionSelect.value = "ipv4";
+      chkVxlan.checked = true;
+      tcpOptionsSelect.value = "32";
+      chkPppoe.checked = false;
+      chkVlan.checked = false;
+      chkQinQ.checked = false;
+      chkWireguard.checked = false;
+      chkGre.checked = false;
+      chkIpsec.checked = false;
+      chkGeneve.checked = false;
+      calculateMTU();
+    });
+
+    btnReset.addEventListener("click", () => {
+      baseMtuInput.value = 1500;
+      ipVersionSelect.value = "ipv4";
+      innerIpSelect.value = "same";
+      tcpOptionsSelect.value = "20";
+      document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(c => c.checked = false);
+      calculateMTU();
+    });
+
+    // Event listeners
+    [baseMtuInput, ipVersionSelect, innerIpSelect, tcpOptionsSelect].forEach(el => {
+      el.addEventListener("input", calculateMTU);
+      el.addEventListener("change", calculateMTU);
+    });
+
+    document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(el => {
+      el.addEventListener("change", calculateMTU);
+    });
+
+    window.addEventListener("DOMContentLoaded", calculateMTU);
+  </script>
+</body>
+</html>
