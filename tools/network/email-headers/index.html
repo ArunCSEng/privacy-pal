@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Raw Email MIME Header Tracer &amp; Analyzer — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="Raw Email MIME Header Tracer &amp; Analyzer — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Parse raw RFC 822 / RFC 5322 email headers, trace hop-by-hop relay latency, and inspect SPF, DKIM, and DMARC authentication verdicts offline in local browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="email header analyzer, email tracer, eml parser, spf dkim dmarc analyzer, mail hop delay, offline header analyzer, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/email-headers" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px 14px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 6px;
+    }
+    .meta-val {
+      font-size: 0.78rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      overflow-wrap: anywhere;
+      word-break: break-all;
+      line-height: 1.45;
+    }
+    .meta-subtext {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--atom-muted);
+      margin-top: 4px;
+    }
+
+    .table-container {
+      margin-bottom: 20px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.80rem;
+      table-layout: auto;
+      min-width: 720px;
+    }
+
+    .results-table th, .results-table td {
+      border-bottom: 1px solid var(--atom-border);
+      border-right: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .results-table th:last-child, .results-table td:last-child {
+      border-right: none;
+    }
+    .results-table tr:last-child td {
+      border-bottom: none;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      line-height: 1.45;
+    }
+    .results-table code {
+      font-family: inherit;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+
+    .ip-tag {
+      color: var(--atom-cyan);
+      font-size: 0.74rem;
+      display: block;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+
+    .proto-cipher {
+      display: block;
+      font-size: 0.69rem;
+      color: var(--atom-muted);
+      margin-top: 4px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .timestamp-box {
+      font-size: 0.76rem;
+      line-height: 1.35;
+      white-space: normal;
+    }
+    .timestamp-box span {
+      display: block;
+      color: var(--atom-muted);
+      font-size: 0.70rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      white-space: nowrap;
+    }
+    .badge-pass { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+    .badge-fail { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-neutral { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / email-headers
+    </nav>
+
+    <div class="tool-header">
+      <h1>Raw Email MIME Header Tracer</h1>
+      <p>Deconstruct RFC 5322 MIME headers, trace relay server progression, calculate hop delays, and evaluate SPF, DKIM, and DMARC authentication verdicts entirely in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="headerInput">
+          Raw MIME Email Headers
+          <span>Paste entire header block (.eml or raw text)</span>
+        </label>
+        <textarea id="headerInput" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnParse">Analyze Headers</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSample">Load Sample Header</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>MIME Header Parser Ready</span>
+        <span>Idle</span>
+      </div>
+
+      <!-- Core Envelope Details -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Subject</div>
+          <div class="meta-val" id="metaSubject">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">From</div>
+          <div class="meta-val" id="metaFrom">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">To</div>
+          <div class="meta-val" id="metaTo">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Date (Origin)</div>
+          <div class="meta-val" id="metaDate">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">SPF Verdict</div>
+          <div class="meta-val" id="metaSpf">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">DKIM Verdict</div>
+          <div class="meta-val" id="metaDkim">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">DMARC Verdict</div>
+          <div class="meta-val" id="metaDmarc">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Message-ID</div>
+          <div class="meta-val" id="metaMsgId">—</div>
+        </div>
+      </div>
+
+      <!-- Hop Progression Relay Table -->
+      <div class="table-container">
+        <table class="results-table" id="hopsTable">
+          <thead>
+            <tr>
+              <th style="width: 45px;">Hop</th>
+              <th>Sending Host (From / Client)</th>
+              <th>Receiving Host (By)</th>
+              <th>Protocol / Cipher</th>
+              <th style="min-width: 140px;">Timestamp (UTC)</th>
+              <th style="text-align: center; width: 85px;">Delay</th>
+            </tr>
+          </thead>
+          <tbody id="hopsBody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No email headers loaded.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, false spoofing detections, misconfigured SPF/DKIM/DMARC verdicts, unflagged malicious phishing vectors, or deliverability disruptions. Mail relays can forge arbitrary unauthenticated upstream <code>Received</code> headers prior to hitting your border MX gate. All parsing operations execute strictly client-side in local browser memory without network telemetry or external server egress. Mail administrators must independently verify header provenance using cryptographically verified ARC or DKIM signatures.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How RFC 5322 Received Headers Function</h2>
+      <p>Every Simple Mail Transfer Protocol (SMTP) transfer agent (MTA) handling a message prepends a new <code>Received:</code> header to the top of the header stack. Consequently, email traversal must be evaluated in reverse chronological order:</p>
+      <ul>
+        <li><strong>Hop 1 (Bottom):</strong> The Mail User Agent (MUA) or origin mail submission server that initially accepted the message from the author.</li>
+        <li><strong>Intermediate Hops:</strong> Relay brokers, scanning filters, content inspection nodes, and outgoing smart-hosts.</li>
+        <li><strong>Final Hop (Top):</strong> The destination border MX server delivering the message into the user mailbox store.</li>
+        <li><strong>Header Forgery:</strong> Untrusted senders can prepend arbitrary lines before submission; only hops recorded by your own internal infrastructure can be inherently trusted without cryptographic validation.</li>
+      </ul>
+
+      <h2>Authentication Signatures</h2>
+      <p>The <code>Authentication-Results</code> header records evaluation results performed by the receiving boundary MTA for SPF (Sender Policy Framework), DKIM (DomainKeys Identified Mail), and DMARC (Domain-based Message Authentication, Reporting, and Conformance).</p>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Email headers frequently contain internal network topologies, private gateway IP addresses, user names, and operational metadata. BitDark parses raw headers entirely inside your browser's isolated JavaScript sandbox without transmitting header dumps to external endpoints.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    const headerInput = document.getElementById("headerInput");
+    const btnParse = document.getElementById("btnParse");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+
+    const metaSubject = document.getElementById("metaSubject");
+    const metaFrom = document.getElementById("metaFrom");
+    const metaTo = document.getElementById("metaTo");
+    const metaDate = document.getElementById("metaDate");
+    const metaSpf = document.getElementById("metaSpf");
+    const metaDkim = document.getElementById("metaDkim");
+    const metaDmarc = document.getElementById("metaDmarc");
+    const metaMsgId = document.getElementById("metaMsgId");
+    const hopsBody = document.getElementById("hopsBody");
+
+    const SAMPLE_HEADER = `Delivered-To: admin@target-corp.com
+Received: by 2002:a05:6e02:18c2:b0:372:f7dc:990c with SMTP id h2csp1204044ilu;
+    Tue, 08 Sep 2026 14:10:45 -0700 (PDT)
+X-Received: by 2002:a17:902:d547:b0:1f1:7ca7:3890 with SMTP id e7mr12908298plt.23;
+    Tue, 08 Sep 2026 14:10:44 -0700 (PDT)
+Authentication-Results: mx.google.com;
+    dkim=pass header.i=@legit-sender.org header.s=202401;
+    spf=pass (google.com: domain of alert@legit-sender.org designates 198.51.100.25 as permitted sender) smtp.mailfrom=alert@legit-sender.org;
+    dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=legit-sender.org
+Received: from gateway.relay-out.org (gateway.relay-out.org. [198.51.100.25])
+    by mx.google.com with ESMTPS id o18si2704253plg.549
+    for <admin@target-corp.com>
+    (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+    Tue, 08 Sep 2026 14:10:43 -0700 (PDT)
+Received: from internal-node.legit-sender.org (node-14.internal [10.240.0.14])
+    by gateway.relay-out.org (Postfix) with ESMTPS id 4StQ1w3xRmz302
+    for <admin@target-corp.com>; Tue, 08 Sep 2026 21:10:39 +0000 (UTC)
+From: Security Operations <alert@legit-sender.org>
+To: Infrastructure Team <admin@target-corp.com>
+Subject: Advisory: Core Gateway Patch Compliance Report
+Date: Tue, 08 Sep 2026 21:10:35 +0000
+Message-ID: <84A09B65-927A-4FD1-83EC-78FF6D8841B9@legit-sender.org>`;
+
+    btnSample.addEventListener("click", () => {
+      headerInput.value = SAMPLE_HEADER;
+      parseEmailHeaders();
+    });
+
+    btnClear.addEventListener("click", () => {
+      headerInput.value = "";
+      metaSubject.textContent = "—";
+      metaFrom.textContent = "—";
+      metaTo.textContent = "—";
+      metaDate.textContent = "—";
+      metaSpf.innerHTML = "—";
+      metaDkim.innerHTML = "—";
+      metaDmarc.innerHTML = "—";
+      metaMsgId.textContent = "—";
+      hopsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No email headers loaded.</td></tr>`;
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+    });
+
+    btnParse.addEventListener("click", parseEmailHeaders);
+
+    function unfoldHeaders(raw) {
+      const lines = raw.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+      const unfolded = [];
+      let current = "";
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim() && !current) continue;
+        if (/^[ \t]/.test(line)) {
+          current += " " + line.trim();
+        } else {
+          if (current) unfolded.push(current);
+          current = line;
+        }
+      }
+      if (current) unfolded.push(current);
+      return unfolded;
+    }
+
+    function parseHeaderMap(unfoldedLines) {
+      const map = {};
+      const received = [];
+
+      unfoldedLines.forEach(line => {
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+          const key = line.substring(0, colonIdx).trim().toLowerCase();
+          const val = line.substring(colonIdx + 1).trim();
+
+          if (key === "received") {
+            received.push(val);
+          } else {
+            if (!map[key]) map[key] = [];
+            map[key].push(val);
+          }
+        }
+      });
+
+      return { map, received };
+    }
+
+    function parseAuthVerdict(authHeader, key) {
+      if (!authHeader) return { verdict: null, extra: null };
+      const regex = new RegExp(`${key}=([a-zA-Z0-9_-]+)([^;]*)`, "i");
+      const m = authHeader.match(regex);
+      if (!m) return { verdict: null, extra: null };
+
+      const verdict = m[1].toLowerCase();
+      let extra = null;
+      const details = m[2];
+
+      if (key === "dmarc") {
+        const pMatch = details.match(/\(p=([a-zA-Z0-9_-]+)/i);
+        if (pMatch) extra = `Policy: p=${pMatch[1].toUpperCase()}`;
+      } else if (key === "dkim") {
+        const sMatch = details.match(/header\.s=([a-zA-Z0-9._-]+)/i);
+        if (sMatch) extra = `Selector: ${sMatch[1]}`;
+      } else if (key === "spf") {
+        const ipMatch = details.match(/designates\s+([0-9a-fA-F:.]+)/i);
+        if (ipMatch) extra = `IP: ${ipMatch[1]}`;
+      }
+
+      return { verdict, extra };
+    }
+
+    function renderAuthCard(authObj) {
+      if (!authObj || !authObj.verdict) {
+        return `<span class="badge badge-neutral">Not Present</span>`;
+      }
+      let badgeClass = "badge-neutral";
+      if (authObj.verdict === "pass") badgeClass = "badge-pass";
+      else if (authObj.verdict === "fail" || authObj.verdict === "hardfail") badgeClass = "badge-fail";
+
+      let out = `<span class="badge ${badgeClass}">${authObj.verdict.toUpperCase()}</span>`;
+      if (authObj.extra) {
+        out += `<span class="meta-subtext">${escapeHtml(authObj.extra)}</span>`;
+      }
+      return out;
+    }
+
+    function parseHop(rawReceived) {
+      let fromHost = "";
+      let fromIp = "";
+      let byHost = "Unknown Relay";
+      let proto = "SMTP";
+      let cipherInfo = "";
+      let timestamp = null;
+
+      const fromMatch = rawReceived.match(/from\s+([^\s;]+(?:\s*\([^)]+\))?)/i);
+      if (fromMatch) {
+        fromHost = fromMatch[1].trim();
+        const ipBracket = fromHost.match(/\[([0-9a-fA-F:.]+)\]/);
+        if (ipBracket) {
+          fromIp = ipBracket[1];
+          fromHost = fromHost.replace(/\s*\[[0-9a-fA-F:.]+\]\s*/, "").replace(/\(\s*\)/, "").trim();
+        }
+      } else {
+        fromHost = "Local Submission / Storage Gate";
+      }
+
+      const byMatch = rawReceived.match(/by\s+([^\s;]+(?:\s*\([^)]+\))?)/i);
+      if (byMatch) byHost = byMatch[1].trim();
+
+      const withMatch = rawReceived.match(/with\s+([^\s;]+)/i);
+      if (withMatch) proto = withMatch[1].trim();
+
+      const cipherMatch = rawReceived.match(/\((?:version=([^)]+?)\s+)?cipher=([^)]+?)(?:\s+bits=[^)]+?)?\)/i);
+      if (cipherMatch) {
+        const ver = cipherMatch[1] ? cipherMatch[1].replace(/_/g, ".").replace("TLS", "TLS ") : "";
+        const ciph = cipherMatch[2] ? cipherMatch[2].replace(/_/g, "-") : "";
+        cipherInfo = [ver, ciph].filter(Boolean).join(" · ");
+      }
+
+      const semicolonIdx = rawReceived.lastIndexOf(";");
+      if (semicolonIdx !== -1) {
+        const dateStr = rawReceived.substring(semicolonIdx + 1).trim();
+        const parsedDate = new Date(dateStr);
+        if (!isNaN(parsedDate.getTime())) {
+          timestamp = parsedDate;
+        }
+      }
+
+      return { fromHost, fromIp, byHost, proto, cipherInfo, timestamp };
+    }
+
+    function formatUtcTimestamp(dateObj) {
+      if (!dateObj) return "<span style='color: var(--atom-muted);'>Missing</span>";
+      const iso = dateObj.toISOString();
+      const datePart = iso.substring(0, 10);
+      const timePart = iso.substring(11, 19) + " UTC";
+      return `<div class="timestamp-box"><strong>${datePart}</strong><span>${timePart}</span></div>`;
+    }
+
+    function parseEmailHeaders() {
+      const raw = headerInput.value.trim();
+      if (!raw) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>No input detected</span> <span>Awaiting Headers</span>";
+        return;
+      }
+
+      const unfolded = unfoldHeaders(raw);
+      const { map, received } = parseHeaderMap(unfolded);
+
+      metaSubject.textContent = (map["subject"] && map["subject"][0]) || "—";
+      metaFrom.textContent = (map["from"] && map["from"][0]) || "—";
+      metaTo.textContent = (map["to"] && map["to"][0]) || "—";
+      metaDate.textContent = (map["date"] && map["date"][0]) || "—";
+      metaMsgId.textContent = (map["message-id"] && map["message-id"][0]) || "—";
+
+      const authResults = (map["authentication-results"] && map["authentication-results"].join(" ")) || "";
+      const receivedSpf = (map["received-spf"] && map["received-spf"].join(" ")) || "";
+
+      let spfObj = parseAuthVerdict(authResults, "spf");
+      if (!spfObj.verdict && receivedSpf) {
+        const sm = receivedSpf.match(/^([a-zA-Z]+)/);
+        const ipm = receivedSpf.match(/client-ip=([0-9a-fA-F:.]+)/i);
+        if (sm) spfObj = { verdict: sm[1].toLowerCase(), extra: ipm ? `IP: ${ipm[1]}` : null };
+      }
+      const dkimObj = parseAuthVerdict(authResults, "dkim");
+      const dmarcObj = parseAuthVerdict(authResults, "dmarc");
+
+      metaSpf.innerHTML = renderAuthCard(spfObj);
+      metaDkim.innerHTML = renderAuthCard(dkimObj);
+      metaDmarc.innerHTML = renderAuthCard(dmarcObj);
+
+      const chronologicalHops = received.slice().reverse().map(parseHop);
+
+      if (chronologicalHops.length === 0) {
+        hopsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-coral); padding: 20px;">No 'Received:' clauses found in provided headers.</td></tr>`;
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = "<span>Missing Received Clauses</span> <span>Incomplete</span>";
+        return;
+      }
+
+      let tableHtml = "";
+      let previousTime = null;
+
+      chronologicalHops.forEach((hop, idx) => {
+        let delayStr = "0s";
+        if (hop.timestamp && previousTime) {
+          const diffMs = hop.timestamp.getTime() - previousTime.getTime();
+          if (diffMs >= 0) {
+            const diffSec = Math.floor(diffMs / 1000);
+            if (diffSec >= 60) {
+              delayStr = `${Math.floor(diffSec / 60)}m ${diffSec % 60}s`;
+            } else {
+              delayStr = `${diffSec}s`;
+            }
+          } else {
+            delayStr = "Skew";
+          }
+        }
+        if (hop.timestamp) previousTime = hop.timestamp;
+
+        tableHtml += `
+          <tr>
+            <td><strong style="color: var(--atom-amber);">#${idx + 1}</strong></td>
+            <td>
+              <code>${escapeHtml(hop.fromHost)}</code>
+              ${hop.fromIp ? `<span class="ip-tag">IP: ${escapeHtml(hop.fromIp)}</span>` : ""}
+            </td>
+            <td><code>${escapeHtml(hop.byHost)}</code></td>
+            <td>
+              <code>${escapeHtml(hop.proto)}</code>
+              ${hop.cipherInfo ? `<span class="proto-cipher">${escapeHtml(hop.cipherInfo)}</span>` : ""}
+            </td>
+            <td>${formatUtcTimestamp(hop.timestamp)}</td>
+            <td style="text-align: center;"><span class="badge ${delayStr === "Skew" ? "badge-neutral" : "badge-pass"}">${delayStr}</span></td>
+          </tr>
+        `;
+      });
+
+      hopsBody.innerHTML = tableHtml;
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = `<span>✓ Parsed ${chronologicalHops.length} Traversal Hop${chronologicalHops.length > 1 ? "s" : ""}</span> <span>Done</span>`;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/[&<>"']/g, (m) => {
+        switch (m) {
+          case "&": return "&amp;";
+          case "<": return "&lt;";
+          case ">": return "&gt;";
+          case '"': return "&quot;";
+          case "'": return "&#039;";
+          default: return m;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
