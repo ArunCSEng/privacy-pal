@@ -350,9 +350,9 @@
         <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
       </div>
       <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span>IPv4: <strong id="ipv4Display">Private</strong></span>
         <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        <span>IPv6: <strong id="ipv6Display">Private</strong></span>
       </div>
     </div>
   </header>
@@ -468,56 +468,9 @@
   </main>
 
   <script>
-    // Robust IP Telemetry with Dual-Endpoint Fallbacks
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
-
-      // Handle local testing environments
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection (Primary: api64, Fallback: icanhazip)
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+    // IP Fetching removed to truly honor "Zero Network Egress" claim.
+    document.getElementById("ipv4Display").textContent = "Hidden (Zero Egress)";
+    document.getElementById("ipv6Display").textContent = "Hidden (Zero Egress)";
 
     // DOM References
     const dropArea = document.getElementById("dropArea");
@@ -539,6 +492,7 @@
 
     let currentMode = "boundary";
     let activeImage = null;
+    let currentObjectUrl = null; // Track URL for memory management
 
     dropArea.addEventListener("click", () => filePicker.click());
 
@@ -587,6 +541,10 @@
       dropArea.style.display = "block";
       filePicker.value = "";
       activeImage = null;
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl); // Fix memory leak
+        currentObjectUrl = null;
+      }
     });
 
     async function handleFile(file) {
@@ -607,17 +565,53 @@
         const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
         metaHash.textContent = `${hashHex.slice(0, 8)}...${hashHex.slice(-8)}`;
 
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl); // Clear old memory
+        currentObjectUrl = URL.createObjectURL(file);
+
         const img = new Image();
         img.onload = () => {
           activeImage = img;
           origPreview.src = img.src;
           metaDim.textContent = `${img.naturalWidth} × ${img.naturalHeight} (${(file.size / 1024).toFixed(1)} KB)`;
+          
+          // Calculate diagnostics ONCE on original data, independent of slider
+          calculateBaselineDiagnostics(img);
           applyCurrentFilter();
         };
-        img.src = URL.createObjectURL(file);
+        img.src = currentObjectUrl;
       } catch (err) {
         alert("Failed to process image buffer: " + err.message);
       }
+    }
+
+    function calculateBaselineDiagnostics(img) {
+        // Create a temporary canvas to analyze raw data without slider interference
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = Math.min(img.naturalWidth, 800); // Scale down for speed
+        tempCanvas.height = Math.round((img.naturalHeight * tempCanvas.width) / img.naturalWidth);
+        const ctx = tempCanvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+        const src = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        let totalRGDiff = 0, totalRBDiff = 0, count = 0;
+        
+        for (let i = 0; i < src.data.length; i += 16) {
+            totalRGDiff += Math.abs(src.data[i] - src.data[i + 1]);
+            totalRBDiff += Math.abs(src.data[i] - src.data[i + 2]);
+            count++;
+        }
+
+        const avgChromaDiff = ((totalRGDiff + totalRBDiff) / (count * 2)).toFixed(2);
+        metaDisparity.textContent = `${avgChromaDiff} ΔE`;
+        metaBoundary.textContent = `N/A (Visual Only)`; // Removed arbitrary threshold
+
+        if (parseFloat(avgChromaDiff) > 34.0) {
+            statusBanner.className = "status-banner status-warning";
+            statusBanner.innerHTML = `<span>⚠️ High Chroma Variance</span> <span>Likely vivid colors or heavy compression</span>`;
+        } else {
+            statusBanner.className = "status-banner status-normal";
+            statusBanner.innerHTML = `<span>✓ Consistent Lum-Chroma Transition</span> <span>Standard variance</span>`;
+        }
     }
 
     function applyCurrentFilter() {
@@ -625,11 +619,9 @@
 
       const w = activeImage.naturalWidth;
       const h = activeImage.naturalHeight;
-
-      // Restrict working canvas max resolution for browser responsiveness
       const maxDim = 1200;
-      let targetW = w;
-      let targetH = h;
+      let targetW = w, targetH = h;
+      
       if (targetW > maxDim || targetH > maxDim) {
         if (targetW > targetH) {
           targetH = Math.round((targetH * maxDim) / targetW);
@@ -647,6 +639,10 @@
 
       const srcData = ctx.getImageData(0, 0, targetW, targetH);
       const outData = ctx.createImageData(targetW, targetH);
+      
+      // Fill background with black to fix border artifacts
+      for(let i=0; i<outData.data.length; i+=4) { outData.data[i+3] = 255; }
+      
       const gain = parseFloat(gainSlider.value);
 
       if (currentMode === "boundary") {
@@ -661,10 +657,8 @@
       }
 
       ctx.putImageData(outData, 0, 0);
-      computeDiagnostics(srcData, outData);
     }
 
-    // Sobel Boundary Differential Filter
     function applySobelGradient(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
@@ -672,24 +666,18 @@
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
           const idx = (y * w + x) * 4;
-
-          // Sobel Horizontal & Vertical kernels on luminance
-          let gx = 0;
-          let gy = 0;
+          let gx = 0, gy = 0;
 
           for (let ky = -1; ky <= 1; ky++) {
             for (let kx = -1; kx <= 1; kx++) {
               const pIdx = ((y + ky) * w + (x + kx)) * 4;
               const lum = 0.299 * s[pIdx] + 0.587 * s[pIdx + 1] + 0.114 * s[pIdx + 2];
-
               const kxVal = (kx === 0 ? 0 : (ky === 0 ? 2 * kx : kx));
               const kyVal = (ky === 0 ? 0 : (kx === 0 ? 2 * ky : ky));
-
               gx += lum * kxVal;
               gy += lum * kyVal;
             }
           }
-
           const mag = Math.sqrt(gx * gx + gy * gy) * (gain * 0.4);
           d[idx] = Math.min(255, mag);
           d[idx + 1] = Math.min(255, mag * 0.8);
@@ -699,7 +687,6 @@
       }
     }
 
-    // Gamma Curve High-Contrast Stretching
     function applyGammaCurve(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
@@ -713,57 +700,16 @@
       }
     }
 
-    // Chroma Disparity Isolation (R vs B/G balance)
     function applyChromaIsolation(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
 
       for (let i = 0; i < s.length; i += 4) {
-        const r = s[i];
-        const g = s[i + 1];
-        const b = s[i + 2];
-
-        const diffRG = Math.abs(r - g) * gain;
-        const diffRB = Math.abs(r - b) * gain;
-
-        d[i] = Math.min(255, diffRG);
-        d[i + 1] = Math.min(255, diffRB);
+        const r = s[i], g = s[i + 1], b = s[i + 2];
+        d[i] = Math.min(255, Math.abs(r - g) * gain);
+        d[i + 1] = Math.min(255, Math.abs(r - b) * gain);
         d[i + 2] = Math.min(255, Math.abs(g - b) * gain);
         d[i + 3] = 255;
-      }
-    }
-
-    // Compute Diagnostic Disparity Metrics
-    function computeDiagnostics(src, out) {
-      const s = src.data;
-      let totalRGDiff = 0;
-      let totalRBDiff = 0;
-      let count = 0;
-
-      for (let i = 0; i < s.length; i += 16) {
-        totalRGDiff += Math.abs(s[i] - s[i + 1]);
-        totalRBDiff += Math.abs(s[i] - s[i + 2]);
-        count++;
-      }
-
-      const avgChromaDiff = ((totalRGDiff + totalRBDiff) / (count * 2)).toFixed(2);
-      metaDisparity.textContent = `${avgChromaDiff} ΔE`;
-
-      // Gradient intensity
-      const o = out.data;
-      let gradSum = 0;
-      for (let i = 0; i < o.length; i += 16) {
-        gradSum += o[i];
-      }
-      const avgGrad = (gradSum / count).toFixed(2);
-      metaBoundary.textContent = `${avgGrad} Index`;
-
-      if (parseFloat(avgChromaDiff) > 34.0 || parseFloat(avgGrad) > 65.0) {
-        statusBanner.className = "status-banner status-warning";
-        statusBanner.innerHTML = `<span>⚠️ Elevated Boundary & Chroma Variance Detected</span> <span>Inconsistent Composition Signatures</span>`;
-      } else {
-        statusBanner.className = "status-banner status-normal";
-        statusBanner.innerHTML = `<span>✓ Consistent Lum-Chroma Transition</span> <span>Natural Photographic Distribution</span>`;
       }
     }
 
