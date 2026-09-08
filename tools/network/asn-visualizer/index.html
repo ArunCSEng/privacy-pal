@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>BGP ASN Route &amp; Path Visualizer — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="BGP ASN Route &amp; Path Visualizer — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Simulate, analyze, and visualize BGP Autonomous System (AS) routing topologies, AS-Path prepending, tier hierarchy, and loop detection entirely client-side. Zero telemetry." />
+  <meta name="keywords" content="asn visualizer, bgp visualizer, as path graph, autonomous system topology, bgp route path, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/asn-visualizer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics Banner */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    /* Visualizer Graph Canvas */
+    .canvas-container {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+      min-height: 380px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Tables & Badges */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      white-space: nowrap;
+    }
+    .badge-danger { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-warn { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-safe { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / asn-visualizer
+    </nav>
+
+    <div class="tool-header">
+      <h1>BGP ASN Route &amp; Path Visualizer</h1>
+      <p>Simulate, inspect, and visualize BGP Autonomous System (AS) hops, AS-Path prepends, transit tiers, and routing loops entirely inside browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="asPathInput">
+          AS-Path Entries (Space, comma, or arrow separated)
+          <span>One path per line or single sequence</span>
+        </label>
+        <textarea id="asPathInput" placeholder="64512 -> 3356 -> 174 -> 15169&#10;64512 -> 64512 -> 1299 -> 13335&#10;65001 -> 7018 -> 2914 -> 8075 -> 65001" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnVisualize">Visualize Paths</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSample">Load Sample Paths</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Visualizer Ready</span>
+        <span>Awaiting Input</span>
+      </div>
+
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="graphCanvas"></canvas>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th style="width: 10%;">Path ID</th>
+              <th style="width: 25%;">Terminal / Peer AS (Left)</th>
+              <th style="width: 25%;">Origin AS (Right)</th>
+              <th style="width: 12%;">Hop Count</th>
+              <th style="width: 14%;">Prepends</th>
+              <th style="width: 14%;">Loop Status</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No AS-Paths plotted.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, inaccurate routing simulations, BGP route leaks, edge router misconfigurations, AS-Path hijacking, or blackholing events. Path metrics, graph nodes, loop alerts, and organization mappings execute strictly client-side in local browser memory. Network engineers and Autonomous System operators must verify routing policies, prefix filters, and peering arrangements directly against authoritative RIR WHOIS databases (ARIN, RIPE NCC, APNIC, LACNIC, AFRINIC) and operational looking glasses before applying changes to production border routers.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>BGP AS-Path Attribute Mechanics</h2>
+      <p>The <code>AS_PATH</code> attribute is a mandatory well-known BGP path attribute that records every Autonomous System an update traverses:</p>
+      <ul>
+        <li><strong>Directionality &amp; Origin:</strong> The origin network is located at the far right of the sequence. As the route traverses eBGP sessions, each intermediate boundary router prepends its own ASN to the front (left) of the attribute list.</li>
+        <li><strong>Loop Prevention:</strong> When a BGP router receives an update containing its own AS number anywhere in the <code>AS_PATH</code>, it rejects the advertisement to prevent forwarding loops.</li>
+        <li><strong>AS-Path Prepending:</strong> Engineers artificially repeat their own AS number multiple times to make the route appear longer, dissuading adjacent networks from choosing it via the BGP best-path selection algorithm.</li>
+        <li><strong>Tier Hierarchy:</strong> Tier-1 transit backbones (e.g., Lumen AS3356, Arelion AS1299, Cogent AS174, NTT AS2914) peer settlement-free and form the core transit fabric of the global Internet.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>All topologies, private Autonomous Systems (RFC 6996 ranges 64512–65534 and 4200000000–4294967294), and transit routes are computed purely inside local browser memory. No route policies, ASNs, or peering configurations are ever transmitted across external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Detection Routine
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Known Major Autonomous Systems Directory
+    const KNOWN_ASNS = {
+      174: "Cogent",
+      701: "Verizon",
+      1299: "Arelion (Telia)",
+      2914: "NTT Communications",
+      3320: "Deutsche Telekom",
+      3356: "Lumen (Level 3)",
+      6453: "Tata Communications",
+      6461: "Zayo Group",
+      6762: "Sparkle",
+      7018: "AT&T",
+      1273: "Vodafone",
+      15169: "Google",
+      13335: "Cloudflare",
+      16509: "Amazon AWS",
+      8075: "Microsoft",
+      32934: "Meta",
+      20940: "Akamai",
+      24940: "Hetzner"
+    };
+
+    function isPrivateASN(asn) {
+      return (asn >= 64512 && asn <= 65534) || (asn >= 4200000000 && asn <= 4294967294);
+    }
+
+    // Canvas Visualizer & Topology State
+    const asPathInput = document.getElementById("asPathInput");
+    const btnVisualize = document.getElementById("btnVisualize");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const resultsBody = document.getElementById("resultsBody");
+    const canvasContainer = document.getElementById("canvasContainer");
+    const canvas = document.getElementById("graphCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas(customHeight) {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = customHeight || Math.max(380, rect.height);
+    }
+
+    btnSample.addEventListener("click", () => {
+      asPathInput.value = [
+        "64512 -> 3356 -> 174 -> 15169",
+        "64512 -> 64512 -> 1299 -> 13335",
+        "65001 -> 7018 -> 2914 -> 8075 -> 65001"
+      ].join("\n");
+      renderVisualizer();
+    });
+
+    btnClear.addEventListener("click", () => {
+      asPathInput.value = "";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+      resultsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No AS-Paths plotted.</td></tr>`;
+      clearCanvas();
+    });
+
+    btnVisualize.addEventListener("click", renderVisualizer);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function parsePaths() {
+      const rawLines = asPathInput.value.split("\n").map(l => l.trim()).filter(Boolean);
+      const parsedPaths = [];
+
+      rawLines.forEach((line, pIdx) => {
+        // Robust tokenization: normalize arrows to whitespace, then split by whitespace or comma
+        const tokens = line.replace(/->|=>|>/g, " ").split(/[\s,]+/).filter(Boolean);
+        const asns = [];
+        let valid = true;
+
+        for (const tok of tokens) {
+          const cleanTok = tok.toUpperCase().replace(/^AS/, "");
+          const num = parseInt(cleanTok, 10);
+          if (isNaN(num) || num < 0 || num > 4294967295) {
+            valid = false;
+            break;
+          }
+          asns.push(num);
+        }
+
+        if (valid && asns.length > 0) {
+          // Count consecutive identical ASNs as prepends
+          let prepends = 0;
+          for (let i = 1; i < asns.length; i++) {
+            if (asns[i] === asns[i - 1]) prepends++;
+          }
+
+          // Detect BGP loop: duplicate non-consecutive ASNs
+          const seen = new Set();
+          let hasLoop = false;
+          let prev = null;
+          for (const a of asns) {
+            if (seen.has(a) && a !== prev) {
+              hasLoop = true;
+              break;
+            }
+            seen.add(a);
+            prev = a;
+          }
+
+          parsedPaths.push({
+            id: pIdx + 1,
+            raw: line,
+            asns,
+            prepends,
+            hasLoop,
+            origin: asns[asns.length - 1],
+            terminal: asns[0],
+            hopCount: asns.length
+          });
+        }
+      });
+
+      return parsedPaths;
+    }
+
+    function renderVisualizer() {
+      const paths = parsePaths();
+
+      if (paths.length === 0) {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = "<span>No valid AS-Paths provided</span> <span>Input format: '64512 -> 3356 -> 15169'</span>";
+        resultsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-coral); padding: 20px;">Please enter valid AS numbers.</td></tr>`;
+        resizeCanvas(380);
+        clearCanvas();
+        return;
+      }
+
+      // Dynamic canvas height based on path count
+      const computedHeight = Math.max(380, paths.length * 95 + 40);
+      resizeCanvas(computedHeight);
+      clearCanvas();
+
+      let loopCount = 0;
+      paths.forEach(p => { if (p.hasLoop) loopCount++; });
+
+      if (loopCount > 0) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>⚠️ ${loopCount} BGP Routing Loop${loopCount > 1 ? "s" : ""} Detected</span> <span>Loop Avoidance Triggered</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Parsed ${paths.length} AS-Path${paths.length > 1 ? "s" : ""}</span> <span>All Routes Loop-Free</span>`;
+      }
+
+      // Build Table
+      resultsBody.innerHTML = paths.map(p => {
+        const originName = KNOWN_ASNS[p.origin] ? ` (${KNOWN_ASNS[p.origin]})` : (isPrivateASN(p.origin) ? " (Private)" : "");
+        const termName = KNOWN_ASNS[p.terminal] ? ` (${KNOWN_ASNS[p.terminal]})` : (isPrivateASN(p.terminal) ? " (Private)" : "");
+        
+        return `
+          <tr>
+            <td><strong>#${p.id}</strong></td>
+            <td>AS${p.terminal}${termName}</td>
+            <td>AS${p.origin}${originName}</td>
+            <td>${p.hopCount} Hops</td>
+            <td>${p.prepends > 0 ? `<span class="badge badge-warn">${p.prepends} Prepend${p.prepends > 1 ? "s" : ""}</span>` : `<span class="badge badge-safe">0</span>`}</td>
+            <td>${p.hasLoop ? `<span class="badge badge-danger">LOOP DETECTED</span>` : `<span class="badge badge-safe">Loop-Free</span>`}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // Draw Topologies
+      drawPathsGraph(paths);
+    }
+
+    function drawArrowhead(fromX, fromY, toX, toY, color) {
+      const headlen = 8;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawPathsGraph(paths) {
+      const paddingX = 85;
+      const countPaths = paths.length;
+      const rowHeight = (canvas.height - 60) / Math.max(countPaths, 1);
+
+      paths.forEach((p, idx) => {
+        const y = 50 + idx * rowHeight;
+        const count = p.asns.length;
+        const stepX = count > 1 ? (canvas.width - paddingX * 2) / (count - 1) : 0;
+
+        // Path Identifier tag on left margin
+        ctx.fillStyle = "var(--atom-muted)";
+        ctx.font = "bold 11px SFMono-Regular, Consolas, Menlo, monospace";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`Path #${p.id}`, paddingX - 35, y);
+
+        // Path connector lines
+        const lineColor = p.hasLoop ? "#e06c75" : "#528bff";
+        ctx.beginPath();
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 2;
+        if (p.hasLoop) ctx.setLineDash([5, 4]);
+        else ctx.setLineDash([]);
+
+        for (let i = 0; i < count; i++) {
+          const x = count === 1 ? canvas.width / 2 : paddingX + i * stepX;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Directional arrowheads between nodes
+        for (let i = 0; i < count - 1; i++) {
+          const x1 = paddingX + i * stepX;
+          const x2 = paddingX + (i + 1) * stepX;
+          const midX = (x1 + x2) / 2;
+          drawArrowhead(x1, y, midX + 4, y, lineColor);
+        }
+
+        // Draw Nodes
+        for (let i = 0; i < count; i++) {
+          const asn = p.asns[i];
+          const x = count === 1 ? canvas.width / 2 : paddingX + i * stepX;
+          const isKnown = Boolean(KNOWN_ASNS[asn]);
+          const isPriv = isPrivateASN(asn);
+
+          // Node Circle
+          ctx.beginPath();
+          ctx.arc(x, y, 15, 0, Math.PI * 2);
+          ctx.fillStyle = isPriv ? "#e5c07b" : (isKnown ? "#56b6c2" : "#353b45");
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = "#1e2227";
+          ctx.stroke();
+
+          // AS Number text
+          ctx.fillStyle = "#d7dae0";
+          ctx.font = "bold 11px SFMono-Regular, Consolas, Menlo, monospace";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`AS${asn}`, x, y - 24);
+
+          // Subtitle (Entity / Role)
+          let label = KNOWN_ASNS[asn] || (isPriv ? "Private AS" : `Hop ${i + 1}`);
+          if (i === count - 1) label += " (Origin)";
+          if (i === 0 && count > 1) label += " (Peer)";
+
+          ctx.fillStyle = isKnown ? "#56b6c2" : (isPriv ? "#e5c07b" : "#abb2bf");
+          ctx.font = "10px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+          ctx.fillText(label, x, y + 24);
+        }
+      });
+    }
+
+    // Auto-load sample paths on first boot
+    window.addEventListener("DOMContentLoaded", () => {
+      btnSample.click();
+    });
+
+    window.addEventListener("resize", () => {
+      renderVisualizer();
+    });
+  </script>
+</body>
+</html>
