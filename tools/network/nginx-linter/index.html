@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark</title>
+  <meta name="title" content="Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark" />
+  <meta name="description" content="Lint, validate, and audit Nginx configuration files for syntax errors, missing semicolons, unbalanced braces, proxy_pass trailing slash pitfalls, alias traversal bugs, and TLS security misconfigurations locally." />
+  <meta name="keywords" content="nginx linter, nginx config validator, nginx security audit, nginx syntax checker, offline nginx analyzer, proxy_pass trailing slash, alias traversal, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/nginx-linter" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 280px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-word;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+    }
+    .badge-danger { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-warn { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-info { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
+    .badge-safe { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / nginx-linter
+    </nav>
+
+    <div class="tool-header">
+      <h1>Nginx Configuration Linter &amp; Security Auditor</h1>
+      <p>Audit Nginx configuration files locally for syntax issues, structural brace balance, missing directive semicolons, dangerous alias traversals, proxy forwarding pitfalls, and insecure TLS configurations.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="nginxConfigInput">
+          Nginx Configuration Payload
+          <span>Paste nginx.conf, vhost, or site-enabled block</span>
+        </label>
+        <textarea id="nginxConfigInput" placeholder="server {&#10;    listen 80;&#10;    server_name example.com;&#10;&#10;    location /api {&#10;        proxy_pass http://backend:8080/;&#10;    }&#10;}" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnLint">Lint &amp; Audit Config</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSampleInsecure">Load Vulnerable Sample</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSampleHardened">Load Hardened Sample</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Workspace Ready</span>
+        <span>Awaiting Input</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Total Errors</div>
+          <div class="meta-val" id="metaErrors">0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Security Warnings</div>
+          <div class="meta-val" id="metaWarnings">0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Optimizations &amp; Notices</div>
+          <div class="meta-val" id="metaNotices">0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Brace Balance</div>
+          <div class="meta-val" id="metaBraces">Balanced</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th style="width: 12%;">Severity</th>
+              <th style="width: 10%;">Line</th>
+              <th style="width: 26%;">Issue Category</th>
+              <th style="width: 52%;">Diagnostic Details &amp; Remediation</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration analyzed yet. Click "Lint &amp; Audit Config" or load a sample.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, service downtime, broken reverse proxy routings, security bypasses, or server crashes caused by deploying configurations inspected here. This tool performs client-side static analysis, heuristic validation, and token inspection entirely in your browser sandbox. It does not replace running <code>nginx -t</code> inside your exact server environment with loaded dynamic modules, environment variables, and external upstream dependencies.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Common Nginx Configuration Pitfalls &amp; Vulnerabilities</h2>
+      <p>Nginx configurations often contain subtle syntax and architecture pitfalls that pass casual reviews while opening critical security flaws or breaking routing rules:</p>
+      <ul>
+        <li><strong>Insecure Alias Traversal:</strong> Declaring <code>location /files { alias /var/data/; }</code> without a trailing slash on the location path permits path traversal attacks (e.g. <code>/files../secret</code> resolves to <code>/var/secret</code>).</li>
+        <li><strong>Proxy_Pass Trailing Slash Stripping:</strong> Adding or omitting a trailing slash on <code>proxy_pass</code> fundamentally alters URI rewriting behavior. For instance, <code>location /api/ { proxy_pass http://backend/; }</code> strips <code>/api/</code> from the forwarded request, whereas omitting the trailing slash forwards the full original request path.</li>
+        <li><strong>Missing Semicolons &amp; Unbalanced Braces:</strong> Nginx treats every block as a nested directive scope. A single omitted semicolon merges consecutive directives, causing parsing crashes during service reloads.</li>
+        <li><strong>Information Disclosure:</strong> Omitting <code>server_tokens off;</code> exposes specific Nginx version headers to remote clients, aiding reconnaissance during automated vulnerability scans.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Configuration snippets, internal hostnames, and reverse-proxy route rules are parsed entirely within your client browser using local JavaScript regular expressions and syntax tokenizers. No data is transmitted over external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+        if (res6.ok) {
+          const text6 = (await res6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+          if (fb6.ok) {
+            const d6 = await fb6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+          } else {
+            ipv6El.textContent = "Not Supported";
+          }
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // UI Bindings
+    const configInput = document.getElementById("nginxConfigInput");
+    const btnLint = document.getElementById("btnLint");
+    const btnSampleInsecure = document.getElementById("btnSampleInsecure");
+    const btnSampleHardened = document.getElementById("btnSampleHardened");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const resultsBody = document.getElementById("resultsBody");
+
+    const metaErrors = document.getElementById("metaErrors");
+    const metaWarnings = document.getElementById("metaWarnings");
+    const metaNotices = document.getElementById("metaNotices");
+    const metaBraces = document.getElementById("metaBraces");
+
+    btnSampleInsecure.addEventListener("click", () => {
+      configInput.value = `server {
+    listen 80;
+    server_name insecure.internal;
+
+    # Information leak: server_tokens enabled by default
+    # Missing SSL redirection
+
+    location /files {
+        # Critical alias traversal risk (missing trailing slash on location)
+        alias /var/www/uploads/;
+    }
+
+    location /api/ {
+        # Trailing slash inconsistency
+        proxy_pass http://internal-cluster;
+    }
+
+    location /admin {
+        # Missing closing semicolon
+        proxy_pass http://127.0.0.1:9090
+    }
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM;
+}`;
+      lintNginxConfig();
+    });
+
+    btnSampleHardened.addEventListener("click", () => {
+      configInput.value = `server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name example.com;
+
+    server_tokens off;
+
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location /static/ {
+        alias /var/www/static/;
+        expires 30d;
+        access_log off;
+    }
+
+    location /api/ {
+        proxy_pass http://backend_cluster/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}`;
+      lintNginxConfig();
+    });
+
+    btnClear.addEventListener("click", () => {
+      configInput.value = "";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+      metaErrors.textContent = "0";
+      metaWarnings.textContent = "0";
+      metaNotices.textContent = "0";
+      metaBraces.textContent = "Balanced";
+      resultsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration loaded.</td></tr>`;
+    });
+
+    btnLint.addEventListener("click", lintNginxConfig);
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function lintNginxConfig() {
+      const rawText = configInput.value;
+      if (!rawText.trim()) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>Input is empty</span> <span>Idle</span>";
+        metaErrors.textContent = "0";
+        metaWarnings.textContent = "0";
+        metaNotices.textContent = "0";
+        metaBraces.textContent = "Empty";
+        resultsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-coral); padding: 20px;">Please enter or paste an Nginx configuration snippet.</td></tr>`;
+        return;
+      }
+
+      const lines = rawText.split("\n");
+      const findings = [];
+
+      let openBraces = 0;
+      let hasServerTokensOff = false;
+      let hasSslListen = false;
+      let hasSecurityHeaders = false;
+      let currentLocation = null;
+      let currentLocationLine = 0;
+
+      // Scan lines
+      lines.forEach((rawLine, index) => {
+        const lineNum = index + 1;
+        const line = rawLine.trim();
+
+        // Skip blank lines and pure comments
+        if (!line || line.startsWith("#")) return;
+
+        // Strip inline comments for syntactic inspection
+        const codeOnly = line.split("#")[0].trim();
+
+        // 1. Brace balancing
+        const opens = (codeOnly.match(/\{/g) || []).length;
+        const closes = (codeOnly.match(/\}/g) || []).length;
+        openBraces += (opens - closes);
+
+        // Track location context
+        const locationMatch = codeOnly.match(/^location\s+([^{]+)\{?/);
+        if (locationMatch) {
+          currentLocation = locationMatch[1].trim();
+          currentLocationLine = lineNum;
+        }
+
+        // 2. Missing Semicolon Check
+        // Directives must end with semicolon unless opening a block '{' or closing '}'
+        if (!codeOnly.endsWith(";") && !codeOnly.endsWith("{") && !codeOnly.endsWith("}")) {
+          // Verify if it is not just an empty closing structure
+          if (!codeOnly.startsWith("if") && !codeOnly.startsWith("events") && !codeOnly.startsWith("http") && !codeOnly.startsWith("server") && !codeOnly.startsWith("location")) {
+            findings.push({
+              severity: "error",
+              line: lineNum,
+              category: "Syntax Error (Missing Semicolon)",
+              details: `Directive appears to terminate without a closing semicolon: <code>${escapeHtml(codeOnly)}</code>`
+            });
+          }
+        }
+
+        // 3. Insecure Alias Traversal (Off-by-slash)
+        if (codeOnly.startsWith("alias ")) {
+          if (currentLocation && !currentLocation.endsWith("/") && !currentLocation.startsWith("~") && !currentLocation.startsWith("=")) {
+            const aliasPath = codeOnly.replace(/^alias\s+/, "").replace(/;$/, "").trim();
+            if (aliasPath.endsWith("/")) {
+              findings.push({
+                severity: "warning",
+                line: lineNum,
+                category: "Insecure Alias Path Traversal",
+                details: `Location <code>${escapeHtml(currentLocation)}</code> at line ${currentLocationLine} does not end with a trailing slash, but the <code>alias</code> does. This allows directory traversal reading parent directory contents.`
+              });
+            }
+          }
+        }
+
+        // 4. Proxy_Pass Trailing Slash Mismatch
+        if (codeOnly.startsWith("proxy_pass ")) {
+          const targetUrl = codeOnly.replace(/^proxy_pass\s+/, "").replace(/;$/, "").trim();
+          if (currentLocation) {
+            const locHasSlash = currentLocation.endsWith("/");
+            const targetHasUri = /^https?:\/\/[^\/]+\/.*$/.test(targetUrl);
+
+            if (locHasSlash && !targetHasUri && !targetUrl.includes("$")) {
+              findings.push({
+                severity: "notice",
+                line: lineNum,
+                category: "Proxy URI Forwarding Pitfall",
+                details: `Location has trailing slash (<code>${escapeHtml(currentLocation)}</code>), but <code>proxy_pass</code> does not specify a URI path. Nginx forwards the complete original request URI.`
+              });
+            }
+          }
+        }
+
+        // 5. Insecure SSL Protocols
+        if (codeOnly.startsWith("ssl_protocols")) {
+          if (codeOnly.includes("TLSv1.0") || codeOnly.includes("TLSv1.1") || codeOnly.includes("TLSv1 ") || codeOnly.endsWith("TLSv1;")) {
+            findings.push({
+              severity: "warning",
+              line: lineNum,
+              category: "Deprecated TLS Version",
+              details: "Configuration permits TLSv1.0 or TLSv1.1, which are vulnerable and deprecated by RFC 8996. Restrict to <code>TLSv1.2 TLSv1.3</code>."
+            });
+          }
+          if (codeOnly.includes("SSLv2") || codeOnly.includes("SSLv3")) {
+            findings.push({
+              severity: "error",
+              line: lineNum,
+              category: "Obsolete & Broken SSL Version",
+              details: "Configuration specifies SSLv2 or SSLv3, which are completely compromised (POODLE / DROWN). Remove immediately."
+            });
+          }
+        }
+
+        // 6. Weak Ciphers Check
+        if (codeOnly.startsWith("ssl_ciphers")) {
+          if (codeOnly.includes("RC4") || codeOnly.includes("MD5") || codeOnly.includes("3DES") || codeOnly.includes("DES")) {
+            findings.push({
+              severity: "warning",
+              line: lineNum,
+              category: "Insecure Cipher Suite",
+              details: "Legacy ciphers (RC4, MD5, or 3DES/DES) detected. Use modern AEAD ciphers like ECDHE-RSA-AES128-GCM-SHA256."
+            });
+          }
+        }
+
+        // 7. Autoindex enabled check
+        if (codeOnly.startsWith("autoindex on;")) {
+          findings.push({
+            severity: "warning",
+            line: lineNum,
+            category: "Directory Listing Enabled",
+            details: "<code>autoindex on;</code> allows visitors to browse folder contents. Ensure this is intentional and not exposing private assets."
+          });
+        }
+
+        // 8. Track hardening directives
+        if (codeOnly.includes("server_tokens off;")) {
+          hasServerTokensOff = true;
+        }
+        if (codeOnly.includes("ssl")) {
+          hasSslListen = true;
+        }
+        if (codeOnly.includes("add_header X-Frame-Options") || codeOnly.includes("add_header X-Content-Type-Options")) {
+          hasSecurityHeaders = true;
+        }
+
+        // Reset location if brace closes
+        if (codeOnly.includes("}")) {
+          currentLocation = null;
+        }
+      });
+
+      // 9. Brace Balance Diagnostic
+      if (openBraces !== 0) {
+        metaBraces.textContent = openBraces > 0 ? `Unclosed (${openBraces})` : `Excess Closing (${Math.abs(openBraces)})`;
+        findings.unshift({
+          severity: "error",
+          line: "Global",
+          category: "Unbalanced Block Braces",
+          details: `Configuration contains mismatched curly braces (net balance: ${openBraces}). This will trigger a critical syntax error upon server reload.`
+        });
+      } else {
+        metaBraces.textContent = "Balanced (OK)";
+      }
+
+      // 10. Global Hardening Audits
+      if (!hasServerTokensOff) {
+        findings.push({
+          severity: "notice",
+          line: "Global",
+          category: "Information Disclosure",
+          details: "<code>server_tokens off;</code> is missing. Nginx will leak exact version numbers in default HTTP Server header responses."
+        });
+      }
+
+      if (hasSslListen && !hasSecurityHeaders) {
+        findings.push({
+          severity: "notice",
+          line: "Global",
+          category: "Missing Hardening Headers",
+          details: "HTTPS block detected without standard security headers (e.g. <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options</code>)."
+        });
+      }
+
+      // Render Metrics
+      const errorCount = findings.filter(f => f.severity === "error").length;
+      const warnCount = findings.filter(f => f.severity === "warning").length;
+      const noticeCount = findings.filter(f => f.severity === "notice").length;
+
+      metaErrors.textContent = errorCount;
+      metaWarnings.textContent = warnCount;
+      metaNotices.textContent = noticeCount;
+
+      if (errorCount > 0) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>⚠️ ${errorCount} Critical Error${errorCount > 1 ? "s" : ""} Found</span> <span>Reload Will Fail</span>`;
+      } else if (warnCount > 0) {
+        statusBanner.className = "status-banner status-warn";
+        statusBanner.innerHTML = `<span>⚠️ Syntax Valid — ${warnCount} Security Warning${warnCount > 1 ? "s" : ""}</span> <span>Review Required</span>`;
+      } else if (noticeCount > 0) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Valid Configuration — ${noticeCount} Hardening Notice${noticeCount > 1 ? "s" : ""}</span> <span>Good State</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Perfectly Hardened &amp; Formatted</span> <span>Clean Pass</span>`;
+      }
+
+      // Render Findings
+      if (findings.length === 0) {
+        resultsBody.innerHTML = `
+          <tr>
+            <td><span class="badge badge-safe">Pass</span></td>
+            <td>-</td>
+            <td>No Issues Detected</td>
+            <td style="color: var(--atom-green);">All syntax rules, brace boundaries, and security heuristics passed cleanly.</td>
+          </tr>
+        `;
+      } else {
+        resultsBody.innerHTML = findings.map(f => {
+          const badgeClass = f.severity === "error" ? "badge-danger" : (f.severity === "warning" ? "badge-warn" : "badge-info");
+          return `
+            <tr>
+              <td><span class="badge ${badgeClass}">${f.severity}</span></td>
+              <td>${f.line}</td>
+              <td><strong>${escapeHtml(f.category)}</strong></td>
+              <td>${f.details}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    // Default sample on load
+    window.addEventListener("DOMContentLoaded", () => {
+      btnSampleInsecure.click();
+    });
+  </script>
+</body>
+</html>
