@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>CIDR Overlap &amp; Collision Resolver — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="CIDR Overlap &amp; Collision Resolver — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Detect overlapping subnets, route containment collisions, and IP boundary conflicts across IPv4 and IPv6 routing tables entirely in local browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="cidr overlap, cidr collision resolver, subnet overlap finder, route collision detector, ipv4 overlap, ipv6 overlap, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/cidr-overlap" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+    }
+    .badge-danger { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-warn { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-safe { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / cidr-overlap
+    </nav>
+
+    <div class="tool-header">
+      <h1>CIDR Overlap &amp; Collision Resolver</h1>
+      <p>Audit routing tables, cloud VPC allocations, and firewall policies for intersecting address spaces, nested subnet containment, and exact duplicate blocks across IPv4 and IPv6.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="cidrListInput">
+          CIDR Prefixes to Audit
+          <span>One entry per line (IPv4 or IPv6)</span>
+        </label>
+        <textarea id="cidrListInput" placeholder="10.0.0.0/16&#10;10.0.1.0/24&#10;192.168.1.0/24&#10;192.168.1.128/25&#10;2001:db8::/32&#10;2001:db8:85a3::/48" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnAnalyze">Analyze Collisions</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSample">Load Sample Conflict</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Workspace Cleared</span>
+        <span>Ready</span>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th style="width: 12%;">Status</th>
+              <th style="width: 22%;">Primary Subnet (A)</th>
+              <th style="width: 22%;">Conflicting Subnet (B)</th>
+              <th style="width: 20%;">Conflict Type</th>
+              <th style="width: 24%;">Details &amp; Topology</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--atom-muted); padding: 20px;">No CIDR prefixes loaded.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, network routing failures, cloud infrastructure deployment collisions, VPC peering outages, overlapping route table corruption, or security policy bypasses. Subnet overlap detection evaluates numeric interval boundaries strictly client-side in local browser memory. Network engineers and administrators must independently verify prefix assignments against upstream cloud provider VPC quotas, BGP route filters, and enterprise IPAM systems prior to provisioning production route tables.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>CIDR Interval Mathematics &amp; Collision Types</h2>
+      <p>Subnet overlap detection evaluates whether the numeric range defined by two CIDR blocks intersects along any bit boundaries:</p>
+      <ul>
+        <li><strong>Exact Duplicate:</strong> Both CIDR blocks define identical start and end numeric boundaries (e.g., <code>10.0.0.0/24</code> vs <code>10.0.0.0/24</code>). This introduces routing asymmetry or route-table rejection.</li>
+        <li><strong>Containment (Parent / Subnet):</strong> One CIDR block's range is entirely enveloped within another wider prefix (e.g., <code>10.0.1.0/24</code> inside <code>10.0.0.0/16</code>). In longest-prefix-match (LPM) routing engines, traffic prefers the more specific route, potentially shadowing parent security policies.</li>
+        <li><strong>Partial Cross-Boundary Intersections:</strong> Standard CIDR subnets cleanly nest or remain disjoint; irregular wildcards or malformed netmasks that fail prefix alignment can result in irregular segment collisions.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>CIDR ranges, private VPC subnets, and corporate IP architectures are parsed entirely in local memory using native bitwise calculations and <code>BigInt</code> arithmetic. No IP addresses or route tables are ever transmitted over external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // CIDR Analysis Engine
+    const cidrListInput = document.getElementById("cidrListInput");
+    const btnAnalyze = document.getElementById("btnAnalyze");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const resultsBody = document.getElementById("resultsBody");
+
+    btnSample.addEventListener("click", () => {
+      cidrListInput.value = [
+        "10.0.0.0/16",
+        "10.0.1.0/24",
+        "10.0.2.0/24",
+        "192.168.1.0/24",
+        "192.168.1.128/25",
+        "172.16.0.0/12",
+        "172.16.0.0/12",
+        "2001:db8::/32",
+        "2001:db8:1::/48",
+        "2001:db8:2::/48"
+      ].join("\n");
+      analyzeCIDRs();
+    });
+
+    btnClear.addEventListener("click", () => {
+      cidrListInput.value = "";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+      resultsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--atom-muted); padding: 20px;">No CIDR prefixes loaded.</td></tr>`;
+    });
+
+    btnAnalyze.addEventListener("click", analyzeCIDRs);
+
+    function parseIPv4CIDR(str) {
+      const parts = str.trim().split("/");
+      if (parts.length !== 2) throw new Error("Missing prefix length (e.g. /24)");
+      const ip = parts[0].trim();
+      const prefix = parseInt(parts[1].trim(), 10);
+      if (isNaN(prefix) || prefix < 0 || prefix > 32) throw new Error("Invalid IPv4 prefix length (0-32)");
+
+      const octets = ip.split(".").map(Number);
+      if (octets.length !== 4 || octets.some(o => isNaN(o) || o < 0 || o > 255)) {
+        throw new Error("Invalid IPv4 octets");
+      }
+
+      const ipNum = ((BigInt(octets[0]) << 24n) | (BigInt(octets[1]) << 16n) | (BigInt(octets[2]) << 8n) | BigInt(octets[3]));
+      const mask = prefix === 0 ? 0n : ((0xffffffffn << BigInt(32 - prefix)) & 0xffffffffn);
+      const start = ipNum & mask;
+      const end = start | (~mask & 0xffffffffn);
+
+      return { version: 4, raw: str.trim(), start, end, prefix };
+    }
+
+    function parseIPv6CIDR(str) {
+      const parts = str.trim().split("/");
+      if (parts.length !== 2) throw new Error("Missing prefix length (e.g. /64)");
+      const ipStr = parts[0].trim().toLowerCase();
+      const prefix = parseInt(parts[1].trim(), 10);
+      if (isNaN(prefix) || prefix < 0 || prefix > 128) throw new Error("Invalid IPv6 prefix length (0-128)");
+
+      let hextets = [];
+      if (ipStr === "::") {
+        hextets = new Array(8).fill("0");
+      } else {
+        const splitDouble = ipStr.split("::");
+        if (splitDouble.length > 2) throw new Error("Multiple '::' expansions found");
+
+        const left = splitDouble[0] ? splitDouble[0].split(":") : [];
+        const right = splitDouble.length === 2 && splitDouble[1] ? splitDouble[1].split(":") : [];
+
+        const totalBlocks = left.length + right.length;
+        if (totalBlocks > 8) throw new Error("Exceeded 8 hextets");
+
+        const missing = 8 - totalBlocks;
+        const zeros = new Array(missing).fill("0");
+        hextets = [...left, ...(splitDouble.length === 2 ? zeros : []), ...right];
+      }
+
+      let bigVal = 0n;
+      for (let i = 0; i < 8; i++) {
+        const val = parseInt(hextets[i] || "0", 16);
+        if (isNaN(val) || val < 0 || val > 0xffff) throw new Error("Invalid hextet value");
+        bigVal = (bigVal << 16n) | BigInt(val);
+      }
+
+      const totalBits = 128n;
+      const pBig = BigInt(prefix);
+      const mask = pBig === 0n ? 0n : ((1n << 128n) - 1n) ^ ((1n << (totalBits - pBig)) - 1n);
+      const start = bigVal & mask;
+      const end = start | (((1n << (totalBits - pBig)) - 1n));
+
+      return { version: 6, raw: str.trim(), start, end, prefix };
+    }
+
+    function parseCIDR(line) {
+      const clean = line.trim();
+      if (!clean) return null;
+      if (clean.includes(".")) return parseIPv4CIDR(clean);
+      if (clean.includes(":")) return parseIPv6CIDR(clean);
+      throw new Error("Unrecognized IP format");
+    }
+
+    function analyzeCIDRs() {
+      const lines = cidrListInput.value.split("\n").map(l => l.trim()).filter(Boolean);
+      if (lines.length === 0) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>No CIDR entries</span> <span>0 checked</span>";
+        resultsBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--atom-coral); padding: 20px;">Please enter at least one CIDR block.</td></tr>`;
+        return;
+      }
+
+      const parsedList = [];
+      const errors = [];
+
+      lines.forEach((line, idx) => {
+        try {
+          const item = parseCIDR(line);
+          if (item) {
+            item.index = idx + 1;
+            parsedList.push(item);
+          }
+        } catch (e) {
+          errors.push(`Line ${idx + 1} (${line}): ${e.message}`);
+        }
+      });
+
+      if (errors.length > 0) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>Validation errors detected</span> <span>${errors.length} failed</span>`;
+        resultsBody.innerHTML = errors.map(err => `
+          <tr>
+            <td><span class="badge badge-danger">Syntax Error</span></td>
+            <td colspan="4" style="color: var(--atom-coral);">${err}</td>
+          </tr>
+        `).join("");
+        return;
+      }
+
+      const conflicts = [];
+
+      for (let i = 0; i < parsedList.length; i++) {
+        for (let j = i + 1; j < parsedList.length; j++) {
+          const a = parsedList[i];
+          const b = parsedList[j];
+
+          if (a.version !== b.version) continue;
+
+          // Check interval overlap: [startA, endA] intersects [startB, endB]
+          const overlaps = (a.start <= b.end) && (b.start <= a.end);
+
+          if (overlaps) {
+            let conflictType = "";
+            let details = "";
+
+            if (a.start === b.start && a.end === b.end) {
+              conflictType = "EXACT DUPLICATE";
+              details = "Both prefixes declare the identical host range.";
+            } else if (a.start <= b.start && a.end >= b.end) {
+              conflictType = "CONTAINMENT (A COVERS B)";
+              details = "Prefix B is fully nested within the scope of Prefix A.";
+            } else if (b.start <= a.start && b.end >= a.end) {
+              conflictType = "CONTAINMENT (B COVERS A)";
+              details = "Prefix A is fully nested within the scope of Prefix B.";
+            } else {
+              conflictType = "PARTIAL OVERLAP";
+              details = "Boundary mismatch creates cross-subnet collision.";
+            }
+
+            conflicts.push({ a, b, conflictType, details });
+          }
+        }
+      }
+
+      if (conflicts.length === 0) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Zero Collisions Detected</span> <span>${parsedList.length} Prefixes Disjoint</span>`;
+        resultsBody.innerHTML = `
+          <tr>
+            <td><span class="badge badge-safe">Isolated</span></td>
+            <td colspan="4" style="color: var(--atom-green); padding: 16px;">All ${parsedList.length} evaluated CIDR ranges are mathematically disjoint and safe to route.</td>
+          </tr>
+        `;
+      } else {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>⚠️ ${conflicts.length} Overlap Collision${conflicts.length > 1 ? "s" : ""} Detected</span> <span>Action Required</span>`;
+        resultsBody.innerHTML = conflicts.map(c => `
+          <tr>
+            <td><span class="badge badge-danger">CONFLICT</span></td>
+            <td><strong>${c.a.raw}</strong></td>
+            <td><strong>${c.b.raw}</strong></td>
+            <td><span class="badge badge-warn">${c.conflictType}</span></td>
+            <td>${c.details}</td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    // Default initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      // Allow workspace to load cleanly, empty state.
+      // The user can press "Load Sample Conflict" to see data.
+    });
+  </script>
+</body>
+</html>
