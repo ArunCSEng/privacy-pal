@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>DNS Wire Format Hex Visualizer &amp; Parser — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="DNS Wire Format Hex Visualizer &amp; Parser — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Encode, decode, and visually dissect binary RFC 1035 DNS wire-format packets, headers, flags, QNAME labels, and resource records in local browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="dns wire format, dns packet parser, rfc 1035, dns hex visualizer, dns query builder, dns response deconstruct, network packet inspection, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/dns-wire-format" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span {
+      color: var(--atom-cyan);
+      text-transform: none;
+    }
+    .form-group input, .form-group select, textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, textarea:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Hex Dump Viewer */
+    .output-section { margin-bottom: 20px; }
+    .output-label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .hex-display-container {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+
+    .hex-byte {
+      display: inline-block;
+      padding: 1px 3px;
+      margin: 1px;
+      border-radius: 2px;
+      cursor: default;
+    }
+    .byte-id { background: rgba(86, 182, 194, 0.2); color: var(--atom-cyan); }
+    .byte-flags { background: rgba(198, 120, 221, 0.2); color: var(--atom-purple); }
+    .byte-counts { background: rgba(229, 192, 123, 0.2); color: var(--atom-amber); }
+    .byte-qname { background: rgba(152, 195, 121, 0.2); color: var(--atom-green); }
+    .byte-qmeta { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); }
+    .byte-answer { background: rgba(82, 139, 255, 0.2); color: var(--atom-border-focus); }
+
+    /* Legend */
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .results-table th, .results-table td {
+      border-bottom: 1px solid var(--atom-border);
+      border-right: 1px solid var(--atom-border);
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th:last-child, .results-table td:last-child { border-right: none; }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.70rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+    }
+    .badge-query { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
+    .badge-resp { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / dns-wire-format
+    </nav>
+
+    <div class="tool-header">
+      <h1>DNS Wire Format Hex Visualizer &amp; Parser</h1>
+      <p>Encode, inspect, and deconstruct raw binary RFC 1035 Domain Name System UDP/TCP wire-format query and response frames entirely inside browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="qnameInput">Query Domain (QNAME) <span>FQDN format</span></label>
+          <input type="text" id="qnameInput" placeholder="example.com" value="example.com" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="qtypeSelect">Record Type (QTYPE) <span>RFC 1035 / 3596</span></label>
+          <select id="qtypeSelect">
+            <option value="1" selected>A (IPv4 Address - 1)</option>
+            <option value="28">AAAA (IPv6 Address - 28)</option>
+            <option value="15">MX (Mail Exchange - 15)</option>
+            <option value="16">TXT (Text Record - 16)</option>
+            <option value="2">NS (Authoritative Name Server - 2)</option>
+            <option value="5">CNAME (Canonical Name - 5)</option>
+            <option value="12">PTR (Domain Pointer - 12)</option>
+            <option value="6">SOA (Start of Authority - 6)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="txidInput">Transaction ID (TXID) <span>16-bit Hex</span></label>
+          <input type="text" id="txidInput" placeholder="a1b2" value="1337" maxlength="4" spellcheck="false" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="rdSelect">Recursion Desired (RD Flag)</label>
+          <select id="rdSelect">
+            <option value="1" selected>Enabled (+rd, 0x0100)</option>
+            <option value="0">Disabled (Iterative, 0x0000)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="rawHexInput">
+          Raw Wire-Format Hex String <span>Paste pre-captured packet hex to parse</span>
+        </label>
+        <textarea id="rawHexInput" placeholder="Enter continuous or space-separated hex bytes, e.g. 13 37 01 00 00 01 00 00 00 00 00 00 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 00 01 00 01" spellcheck="false"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnBuild">Construct Wire Query</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnParseHex">Deconstruct Hex</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSampleResp">Load Sample Response (A)</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnCopyHex">Copy Hex Dump</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>RFC 1035 Engine Ready</span>
+        <span id="bannerTypeBadge">Wire Frame Loaded</span>
+      </div>
+
+      <!-- Metadata summary -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Transaction ID</div>
+          <div class="meta-val" id="metaTxid">0x1337</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Message Type</div>
+          <div class="meta-val" id="metaQr">Query (0)</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Opcode &amp; Flags</div>
+          <div class="meta-val" id="metaFlags">RD=1, RA=0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Questions (QDCOUNT)</div>
+          <div class="meta-val" id="metaQd">1</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Answers (ANCOUNT)</div>
+          <div class="meta-val" id="metaAn">0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Total Wire Length</div>
+          <div class="meta-val" id="metaLen">29 Bytes</div>
+        </div>
+      </div>
+
+      <!-- Color Legend -->
+      <div class="legend-row">
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-cyan);"></div> Transaction ID</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-purple);"></div> Flags</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-amber);"></div> Section Counts</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-green);"></div> Domain Labels (QNAME)</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-coral);"></div> Type &amp; Class</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--atom-border-focus);"></div> Resource Records (RDATA)</div>
+      </div>
+
+      <!-- Hex Colorized Display -->
+      <div class="output-section">
+        <div class="output-label">
+          <span>Byte-Annotated Hex Stream</span>
+          <span id="hexByteCount">0 Bytes</span>
+        </div>
+        <div class="hex-display-container" id="hexDisplay"></div>
+      </div>
+
+      <!-- Deconstructed Breakdown Table -->
+      <div class="table-container">
+        <table class="results-table" id="structureTable">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Offset (Hex)</th>
+              <th style="width: 18%;">Field</th>
+              <th style="width: 24%;">Hex Sequence</th>
+              <th style="width: 44%;">Decoded Value &amp; Semantics</th>
+            </tr>
+          </thead>
+          <tbody id="structureBody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, malformed DNS payload injection, recursive resolver cache corruption, DNS amplification vulnerabilities, or network packet transmission errors. Wire format representations and byte alignments are evaluated entirely client-side in local browser memory according to standard RFC 1035 and RFC 3596 specifications. Network engineers must independently verify payload structures using RFC-compliant packet captures (e.g., Wireshark, tcpdump) prior to injecting binary frames into production name servers.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>RFC 1035 Domain Name System Wire Framing</h2>
+      <p>A standard DNS message transmitted over UDP or TCP port 53 consists of a fixed 12-byte header followed by variable-length Question, Answer, Authority, and Additional sections:</p>
+      <ul>
+        <li><strong>Fixed 12-Byte Header:</strong> Contains the 16-bit Transaction ID (TXID), 16-bit operational flags (QR bit, Opcode, AA, TC, RD, RA, Z, RCODE), and four 16-bit counters detailing the entries per section (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT).</li>
+        <li><strong>QNAME Length-Octet Encoding:</strong> FQDNs do not use standard ASCII delimiters like dots. Instead, domains are serialized as a sequence of labels where each label is preceded by an 8-bit length octet (e.g., <code>example.com</code> becomes <code>0x07 example 0x03 com 0x00</code>), terminated by a zero byte (<code>0x00</code>).</li>
+        <li><strong>QTYPE &amp; QCLASS:</strong> Every question concludes with a 16-bit type specifier (e.g., <code>0x0001</code> for Type A, <code>0x001c</code> for Type AAAA) and a 16-bit class specifier (virtually always <code>0x0001</code> for Internet/IN).</li>
+        <li><strong>DNS Message Compression:</strong> Resource records often replace redundant domain labels with two-byte compression pointers starting with bit flags <code>11xxxxxx</code> (0xC0), pointing to an earlier byte offset in the packet.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>Packet analysis, byte serialization, and binary dissecting routines execute purely within the client's sandboxed JavaScript runtime. No raw octets or queried domains are transmitted over external networks.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DNS Wire Parser & Builder Engine
+    const qnameInput = document.getElementById("qnameInput");
+    const qtypeSelect = document.getElementById("qtypeSelect");
+    const txidInput = document.getElementById("txidInput");
+    const rdSelect = document.getElementById("rdSelect");
+    const rawHexInput = document.getElementById("rawHexInput");
+
+    const btnBuild = document.getElementById("btnBuild");
+    const btnParseHex = document.getElementById("btnParseHex");
+    const btnSampleResp = document.getElementById("btnSampleResp");
+    const btnCopyHex = document.getElementById("btnCopyHex");
+
+    const statusBanner = document.getElementById("statusBanner");
+    const bannerTypeBadge = document.getElementById("bannerTypeBadge");
+    const metaTxid = document.getElementById("metaTxid");
+    const metaQr = document.getElementById("metaQr");
+    const metaFlags = document.getElementById("metaFlags");
+    const metaQd = document.getElementById("metaQd");
+    const metaAn = document.getElementById("metaAn");
+    const metaLen = document.getElementById("metaLen");
+
+    const hexDisplay = document.getElementById("hexDisplay");
+    const hexByteCount = document.getElementById("hexByteCount");
+    const structureBody = document.getElementById("structureBody");
+
+    const TYPE_NAMES = {
+      1: "A (IPv4)",
+      2: "NS (Name Server)",
+      5: "CNAME (Canonical Name)",
+      6: "SOA (Zone Authority)",
+      12: "PTR (Reverse Pointer)",
+      15: "MX (Mail Exchange)",
+      16: "TXT (Text)",
+      28: "AAAA (IPv6)"
+    };
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function hexToBytes(hex) {
+      const clean = hex.replace(/[^0-9a-fA-F]/g, "");
+      if (clean.length % 2 !== 0) throw new Error("Incomplete hex stream (odd number of nibbles)");
+      const bytes = [];
+      for (let i = 0; i < clean.length; i += 2) {
+        bytes.push(parseInt(clean.substr(i, 2), 16));
+      }
+      return bytes;
+    }
+
+    function bytesToHex(bytes) {
+      return bytes.map(b => b.toString(16).padStart(2, "0")).join(" ");
+    }
+
+    function formatOffset(offset) {
+      return `0x${offset.toString(16).padStart(4, "0")}`;
+    }
+
+    // Build standard query packet
+    function buildDNSQuery() {
+      let domain = qnameInput.value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/\.$/, "");
+      if (!domain) domain = "example.com";
+
+      let txidHex = txidInput.value.trim().replace(/^0x/i, "");
+      let txidNum = parseInt(txidHex, 16);
+      if (isNaN(txidNum)) txidNum = 0x1337;
+      txidNum = txidNum & 0xffff;
+
+      const rd = rdSelect.value === "1" ? 1 : 0;
+      const flags = (rd ? 0x0100 : 0x0000);
+      const qtype = parseInt(qtypeSelect.value, 10);
+      const qclass = 1; // IN (Internet)
+
+      const bytes = [];
+      // 1. Transaction ID (2 bytes)
+      bytes.push((txidNum >> 8) & 0xff, txidNum & 0xff);
+      // 2. Flags (2 bytes)
+      bytes.push((flags >> 8) & 0xff, flags & 0xff);
+      // 3. QDCOUNT (2 bytes) = 1
+      bytes.push(0x00, 0x01);
+      // 4. ANCOUNT (2 bytes) = 0
+      bytes.push(0x00, 0x00);
+      // 5. NSCOUNT (2 bytes) = 0
+      bytes.push(0x00, 0x00);
+      // 6. ARCOUNT (2 bytes) = 0
+      bytes.push(0x00, 0x00);
+
+      // 7. QNAME
+      const labels = domain.split(".");
+      for (const label of labels) {
+        bytes.push(label.length);
+        for (let i = 0; i < label.length; i++) {
+          bytes.push(label.charCodeAt(i));
+        }
+      }
+      bytes.push(0x00); // Terminal null byte
+
+      // 8. QTYPE & QCLASS
+      bytes.push((qtype >> 8) & 0xff, qtype & 0xff);
+      bytes.push((qclass >> 8) & 0xff, qclass & 0xff);
+
+      rawHexInput.value = bytesToHex(bytes);
+      deconstructBytes(bytes);
+    }
+
+    // Deconstruct arbitrary DNS wire frame
+    function deconstructBytes(bytes) {
+      if (bytes.length < 12) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = "<span>Packet Truncated</span> <span>Header requires min 12 bytes</span>";
+        return;
+      }
+
+      const rows = [];
+      const annotations = new Array(bytes.length).fill(null);
+
+      // Parse Header
+      const txid = (bytes[0] << 8) | bytes[1];
+      const flags = (bytes[2] << 8) | bytes[3];
+      const qdcount = (bytes[4] << 8) | bytes[5];
+      const ancount = (bytes[6] << 8) | bytes[7];
+      const nscount = (bytes[8] << 8) | bytes[9];
+      const arcount = (bytes[10] << 8) | bytes[11];
+
+      // Annotate Header
+      annotations[0] = "byte-id"; annotations[1] = "byte-id";
+      annotations[2] = "byte-flags"; annotations[3] = "byte-flags";
+      for (let i = 4; i <= 11; i++) annotations[i] = "byte-counts";
+
+      // Flag details
+      const qr = (flags >> 15) & 1;
+      const opcode = (flags >> 11) & 0xf;
+      const aa = (flags >> 10) & 1;
+      const tc = (flags >> 9) & 1;
+      const rd = (flags >> 8) & 1;
+      const ra = (flags >> 7) & 1;
+      const rcode = flags & 0xf;
+
+      rows.push({
+        offset: formatOffset(0),
+        field: "Transaction ID (TXID)",
+        hex: bytesToHex(bytes.slice(0, 2)),
+        desc: `0x${txid.toString(16).padStart(4, "0")} (${txid})`
+      });
+
+      rows.push({
+        offset: formatOffset(2),
+        field: "Flags",
+        hex: bytesToHex(bytes.slice(2, 4)),
+        desc: `QR=${qr} (${qr ? "Response" : "Query"}), Opcode=${opcode}, AA=${aa}, TC=${tc}, RD=${rd}, RA=${ra}, RCODE=${rcode}`
+      });
+
+      rows.push({
+        offset: formatOffset(4),
+        field: "Section Counters",
+        hex: bytesToHex(bytes.slice(4, 12)),
+        desc: `Questions: ${qdcount}, Answers: ${ancount}, Authority: ${nscount}, Additional: ${arcount}`
+      });
+
+      let ptr = 12;
+
+      // Helper to parse QNAME with compression pointer handling
+      function readName(startOffset) {
+        let p = startOffset;
+        const labels = [];
+        let jumped = false;
+        let bytesConsumed = 0;
+        let hops = 0;
+
+        while (p < bytes.length && hops < 30) {
+          hops++;
+          const len = bytes[p];
+          if (len === 0) {
+            if (!jumped) bytesConsumed = p - startOffset + 1;
+            break;
+          }
+
+          // Check if pointer (top 2 bits set 11)
+          if ((len & 0xc0) === 0xc0) {
+            if (p + 1 >= bytes.length) break;
+            const pointer = ((len & 0x3f) << 8) | bytes[p + 1];
+            if (!jumped) bytesConsumed = p - startOffset + 2;
+            jumped = true;
+            p = pointer;
+            continue;
+          }
+
+          p++;
+          let label = "";
+          for (let i = 0; i < len && p < bytes.length; i++, p++) {
+            label += String.fromCharCode(bytes[p]);
+          }
+          labels.push(label);
+        }
+
+        if (!jumped) bytesConsumed = p - startOffset + 1;
+        return { name: labels.join(".") || ".", bytesConsumed };
+      }
+
+      // Parse Question Section
+      for (let q = 0; q < qdcount && ptr < bytes.length; q++) {
+        const startQ = ptr;
+        const parsedName = readName(ptr);
+        const nameBytes = bytes.slice(ptr, ptr + parsedName.bytesConsumed);
+        for (let i = ptr; i < ptr + parsedName.bytesConsumed; i++) annotations[i] = "byte-qname";
+        ptr += parsedName.bytesConsumed;
+
+        rows.push({
+          offset: formatOffset(startQ),
+          field: `Question #${q + 1} Name`,
+          hex: bytesToHex(nameBytes),
+          desc: `FQDN: <strong>${escapeHtml(parsedName.name)}</strong>`
+        });
+
+        if (ptr + 4 <= bytes.length) {
+          const qtype = (bytes[ptr] << 8) | bytes[ptr + 1];
+          const qclass = (bytes[ptr + 2] << 8) | bytes[ptr + 3];
+          annotations[ptr] = "byte-qmeta"; annotations[ptr + 1] = "byte-qmeta";
+          annotations[ptr + 2] = "byte-qmeta"; annotations[ptr + 3] = "byte-qmeta";
+
+          rows.push({
+            offset: formatOffset(ptr),
+            field: `Question #${q + 1} Type & Class`,
+            hex: bytesToHex(bytes.slice(ptr, ptr + 4)),
+            desc: `Type: ${TYPE_NAMES[qtype] || qtype}, Class: ${qclass === 1 ? "IN (0x0001)" : qclass}`
+          });
+          ptr += 4;
+        }
+      }
+
+      // Parse Answer Section
+      for (let a = 0; a < ancount && ptr < bytes.length; a++) {
+        const startA = ptr;
+        const parsedName = readName(ptr);
+        for (let i = ptr; i < ptr + parsedName.bytesConsumed; i++) annotations[i] = "byte-answer";
+        ptr += parsedName.bytesConsumed;
+
+        if (ptr + 10 <= bytes.length) {
+          const rtype = (bytes[ptr] << 8) | bytes[ptr + 1];
+          const rclass = (bytes[ptr + 2] << 8) | bytes[ptr + 3];
+          const ttl = ((bytes[ptr + 4] << 24) | (bytes[ptr + 5] << 16) | (bytes[ptr + 6] << 8) | bytes[ptr + 7]) >>> 0;
+          const rdlen = (bytes[ptr + 8] << 8) | bytes[ptr + 9];
+
+          for (let i = ptr; i < ptr + 10; i++) annotations[i] = "byte-answer";
+          ptr += 10;
+
+          let rdataDesc = "";
+          if (ptr + rdlen <= bytes.length) {
+            for (let i = ptr; i < ptr + rdlen; i++) annotations[i] = "byte-answer";
+            const rdataBytes = bytes.slice(ptr, ptr + rdlen);
+
+            if (rtype === 1 && rdlen === 4) {
+              rdataDesc = `IPv4 Address: <strong>${rdataBytes.join(".")}</strong>`;
+            } else if (rtype === 28 && rdlen === 16) {
+              const hex16 = [];
+              for (let k = 0; k < 16; k += 2) {
+                hex16.push(((rdataBytes[k] << 8) | rdataBytes[k + 1]).toString(16));
+              }
+              rdataDesc = `IPv6 Address: <strong>${hex16.join(":")}</strong>`;
+            } else if (rtype === 5 || rtype === 2 || rtype === 12) {
+              rdataDesc = `Target Name: <strong>${escapeHtml(readName(ptr).name)}</strong>`;
+            } else {
+              rdataDesc = `Raw Payload (${rdlen} bytes)`;
+            }
+            ptr += rdlen;
+          }
+
+          rows.push({
+            offset: formatOffset(startA),
+            field: `Answer #${a + 1} Record`,
+            hex: bytesToHex(bytes.slice(startA, ptr)),
+            desc: `Name: ${escapeHtml(parsedName.name)}, Type: ${TYPE_NAMES[rtype] || rtype}, TTL: ${ttl}s, ${rdataDesc}`
+          });
+        }
+      }
+
+      // Update Summary Metas
+      metaTxid.textContent = `0x${txid.toString(16).padStart(4, "0")}`;
+      metaQr.textContent = qr ? "Response (1)" : "Query (0)";
+      metaFlags.textContent = `RD=${rd}, RA=${ra}, RCODE=${rcode}`;
+      metaQd.textContent = qdcount.toString();
+      metaAn.textContent = ancount.toString();
+      metaLen.textContent = `${bytes.length} Bytes`;
+
+      statusBanner.className = "status-banner status-safe";
+      bannerTypeBadge.textContent = qr ? `Response (${ancount} Answers)` : "Query Message";
+
+      // Render Hex View
+      hexByteCount.textContent = `${bytes.length} Bytes Dissected`;
+      hexDisplay.innerHTML = bytes.map((b, idx) => {
+        const cls = annotations[idx] || "";
+        return `<span class="hex-byte ${cls}" title="Offset: 0x${idx.toString(16).padStart(2, '0')}">${b.toString(16).padStart(2, "0")}</span>`;
+      }).join(" ");
+
+      // Render Structure Table
+      structureBody.innerHTML = rows.map(r => `
+        <tr>
+          <td><code>${r.offset}</code></td>
+          <td><strong>${r.field}</strong></td>
+          <td><code>${r.hex}</code></td>
+          <td>${r.desc}</td>
+        </tr>
+      `).join("");
+    }
+
+    // Handlers
+    btnBuild.addEventListener("click", buildDNSQuery);
+
+    btnParseHex.addEventListener("click", () => {
+      try {
+        const bytes = hexToBytes(rawHexInput.value);
+        deconstructBytes(bytes);
+      } catch (e) {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>Hex Parse Error</span> <span>${escapeHtml(e.message)}</span>`;
+      }
+    });
+
+    btnSampleResp.addEventListener("click", () => {
+      // Pre-baked wire format response for example.com -> A 93.184.216.34 (TTL 300) with compression pointer
+      const sampleResp = "13 37 81 80 00 01 00 01 00 00 00 00 07 65 78 61 6d 70 6c 65 03 63 6f 6d 00 00 01 00 01 c0 0c 00 01 00 01 00 00 01 2c 00 04 5d b8 d8 22";
+      rawHexInput.value = sampleResp;
+      try {
+        const bytes = hexToBytes(sampleResp);
+        deconstructBytes(bytes);
+      } catch {}
+    });
+
+    btnCopyHex.addEventListener("click", async () => {
+      const hex = rawHexInput.value.trim();
+      if (!hex) return;
+      try {
+        await navigator.clipboard.writeText(hex);
+        const orig = btnCopyHex.textContent;
+        btnCopyHex.textContent = "Copied!";
+        setTimeout(() => { btnCopyHex.textContent = orig; }, 1500);
+      } catch {
+        alert("Clipboard copy failed");
+      }
+    });
+
+    // Initialize
+    window.addEventListener("DOMContentLoaded", () => {
+      buildDNSQuery();
+    });
+  </script>
+</body>
+</html>
