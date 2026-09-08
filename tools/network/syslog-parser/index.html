@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Syslog RFC 3164 &amp; RFC 5424 Message Parser — Free Offline Network Tool | BitDark</title>
+  <meta name="title" content="Syslog RFC 3164 &amp; RFC 5424 Message Parser — Free Offline Network Tool | BitDark" />
+  <meta name="description" content="Parse, dissect, and validate RFC 3164 (BSD) and RFC 5424 (IETF) syslog records in local browser memory. Extract PRI, Facility, Severity, Structured Data, and message payloads with zero network egress." />
+  <meta name="keywords" content="syslog parser, rfc 3164 parser, rfc 5424 parser, syslog severity calculator, syslog facility identifier, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/syslog-parser" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    
+    textarea {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      outline: none;
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus { border-color: var(--atom-border-focus); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+
+    /* Diagnostics & Summary */
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warn {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+    }
+    .results-table th, .results-table td {
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .results-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      font-weight: 600;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+    }
+    .results-table td {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+      word-break: break-all;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      white-space: nowrap;
+    }
+    .badge-emerg { background: rgba(224, 108, 117, 0.25); color: #ff5370; border: 1px solid #ff5370; }
+    .badge-alert { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-crit { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .badge-err { background: rgba(229, 192, 123, 0.2); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-warn { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-notice { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
+    .badge-info { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
+    .badge-debug { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); border: 1px solid var(--atom-purple); }
+    .badge-neutral { background: var(--atom-surface); color: var(--atom-muted); border: 1px solid var(--atom-border); }
+
+    /* Operational Disclaimer */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#network">Network</a> / syslog-parser
+    </nav>
+
+    <div class="tool-header">
+      <h1>Syslog RFC 3164 &amp; RFC 5424 Message Parser</h1>
+      <p>Inspect and deconstruct BSD syslog and IETF syslog log messages into PRI values, facilities, severity levels, timestamps, structured elements, and payloads entirely in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label for="syslogInput">
+          Raw Syslog Message String
+          <span>Accepts RFC 3164 (&lt;34&gt;Oct 11...) or RFC 5424 (&lt;165&gt;1 2003-10-11T...) formats</span>
+        </label>
+        <textarea id="syslogInput" placeholder="<165>1 2026-09-08T22:14:15.003Z border-firewall.corp.net sshd 4920 ID47 [exampleSDID@32473 iut=&quot;3&quot; eventSource=&quot;Application&quot;] Failed publickey authentication for root from 198.51.100.44 port 54122" spellcheck="false" autocomplete="off"></textarea>
+      </div>
+
+      <div class="btn-row">
+        <div class="btn-group">
+          <button type="button" class="btn-atom" id="btnParse">Parse Syslog</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSample5424">Sample RFC 5424</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSample3164">Sample RFC 3164</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnSampleCisco">Sample Cisco Event</button>
+        </div>
+        <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+      </div>
+
+      <div id="statusBanner" class="status-banner status-safe">
+        <span>Syslog Parsing Engine Initialized</span>
+        <span>Ready</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Protocol Standard</div>
+          <div class="meta-val" id="metaStandard">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Facility (Facility = PRI / 8)</div>
+          <div class="meta-val" id="metaFacility">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Severity (Severity = PRI % 8)</div>
+          <div class="meta-val" id="metaSeverity">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">PRI Value (Raw Integer)</div>
+          <div class="meta-val" id="metaPri">—</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th style="width: 22%;">Header / Element Field</th>
+              <th style="width: 53%;">Decoded Content</th>
+              <th style="width: 25%;">RFC Specification</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 20px;">No syslog message parsed yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+      </div>
+      <p>
+        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, false alert interpretations, security monitoring bypasses, SIEM ingestion failures, log pipeline disruptions, or parsing divergences across non-standard syslog vendor dialects. Message dissection executes strictly client-side within local browser memory without network telemetry or server-side egress. Network and security administrators should test log expressions against actual receiver rules (such as rsyslog, syslog-ng, or SIEM pipelines) prior to deploying parsing filters into production environments.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Syslog Architecture: RFC 3164 vs RFC 5424</h2>
+      <p>The Syslog protocol serves as a standard mechanism for sending event notification messages over IP networks:</p>
+      <ul>
+        <li><strong>Priority (PRI):</strong> Contained within angle brackets (e.g. <code>&lt;165&gt;</code>) representing an 8-bit number. The Facility code is calculated as <code>floor(PRI / 8)</code> and the Severity code is <code>PRI mod 8</code>.</li>
+        <li><strong>RFC 3164 (BSD Syslog):</strong> The legacy format consists of a PRI, a local timestamp without timezone offset (e.g. <code>Oct 11 22:14:15</code>), a hostname, and a message body typically prefixed with the process name and PID.</li>
+        <li><strong>RFC 5424 (IETF Syslog):</strong> The modern standard introduces structured headers: <code>PRI VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID STRUCTURED-DATA MSG</code>. Timestamps must follow ISO 8601 / RFC 3339 format with precise UTC offsets, and structured data blocks are enclosed in square brackets (<code>[id key="val"]</code>).</li>
+        <li><strong>Facilities &amp; Severities:</strong> Facilities range from <code>0</code> (kernel) to <code>23</code> (local7). Severities range from <code>0</code> (Emergency) to <code>7</code> (Debug).</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Syslog messages frequently expose internal hostnames, corporate IP subnets, user identifiers, and operational architecture details. BitDark dissects log messages strictly inside your browser thread using client-side JavaScript without transmitting payloads to any remote systems.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4: primary ipify, fallback icanhazip
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary IPv4 failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary IPv6 failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    const FACILITIES = [
+      "kernel messages (0)",
+      "user-level messages (1)",
+      "mail system (2)",
+      "system daemons (3)",
+      "security/authorization messages (4)",
+      "messages generated internally by syslogd (5)",
+      "line printer subsystem (6)",
+      "network news subsystem (7)",
+      "UUCP subsystem (8)",
+      "clock daemon (9)",
+      "security/authorization messages (10)",
+      "FTP daemon (11)",
+      "NTP subsystem (12)",
+      "log audit (13)",
+      "log alert (14)",
+      "clock daemon (note 2) (15)",
+      "local use 0 (local0) (16)",
+      "local use 1 (local1) (17)",
+      "local use 2 (local2) (18)",
+      "local use 3 (local3) (19)",
+      "local use 4 (local4) (20)",
+      "local use 5 (local5) (21)",
+      "local use 6 (local6) (22)",
+      "local use 7 (local7) (23)"
+    ];
+
+    const SEVERITIES = [
+      { code: 0, name: "Emergency", badge: "badge-emerg", desc: "System is unusable" },
+      { code: 1, name: "Alert", badge: "badge-alert", desc: "Action must be taken immediately" },
+      { code: 2, name: "Critical", badge: "badge-crit", desc: "Critical conditions" },
+      { code: 3, name: "Error", badge: "badge-err", desc: "Error conditions" },
+      { code: 4, name: "Warning", badge: "badge-warn", desc: "Warning conditions" },
+      { code: 5, name: "Notice", badge: "badge-notice", desc: "Normal but significant condition" },
+      { code: 6, name: "Informational", badge: "badge-info", desc: "Informational messages" },
+      { code: 7, name: "Debug", badge: "badge-debug", desc: "Debug-level messages" }
+    ];
+
+    const syslogInput = document.getElementById("syslogInput");
+    const btnParse = document.getElementById("btnParse");
+    const btnSample5424 = document.getElementById("btnSample5424");
+    const btnSample3164 = document.getElementById("btnSample3164");
+    const btnSampleCisco = document.getElementById("btnSampleCisco");
+    const btnClear = document.getElementById("btnClear");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaStandard = document.getElementById("metaStandard");
+    const metaFacility = document.getElementById("metaFacility");
+    const metaSeverity = document.getElementById("metaSeverity");
+    const metaPri = document.getElementById("metaPri");
+    const resultsBody = document.getElementById("resultsBody");
+
+    const SAMPLES = {
+      rfc5424: '<165>1 2026-09-08T22:14:15.003Z border-firewall.corp.net sshd 4920 ID47 [exampleSDID@32473 iut="3" eventSource="Application"] Failed publickey authentication for root from 198.51.100.44 port 54122',
+      rfc3164: '<34>Oct 11 22:14:15 mymachine su[2104]: \'su root\' failed for lonvick on /dev/pts/8',
+      cisco: '<189>142: *Mar  1 00:04:32.124: %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to down'
+    };
+
+    btnSample5424.addEventListener("click", () => {
+      syslogInput.value = SAMPLES.rfc5424;
+      parseSyslog();
+    });
+
+    btnSample3164.addEventListener("click", () => {
+      syslogInput.value = SAMPLES.rfc3164;
+      parseSyslog();
+    });
+
+    btnSampleCisco.addEventListener("click", () => {
+      syslogInput.value = SAMPLES.cisco;
+      parseSyslog();
+    });
+
+    btnClear.addEventListener("click", () => {
+      syslogInput.value = "";
+      metaStandard.textContent = "—";
+      metaFacility.textContent = "—";
+      metaSeverity.textContent = "—";
+      metaPri.textContent = "—";
+      statusBanner.className = "status-banner status-safe";
+      statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
+      resultsBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 20px;">No syslog message parsed yet.</td></tr>';
+    });
+
+    btnParse.addEventListener("click", parseSyslog);
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function parseSyslog() {
+      const raw = syslogInput.value.trim();
+      if (!raw) {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>No input detected</span> <span>Awaiting Syslog Message</span>";
+        return;
+      }
+
+      let pri = null;
+      let bodyWithoutPri = raw;
+
+      // Extract PRI <number>
+      const priMatch = raw.match(/^<(\d{1,3})>(.*)$/s);
+      if (priMatch) {
+        pri = parseInt(priMatch[1], 10);
+        bodyWithoutPri = priMatch[2];
+      }
+
+      if (pri === null || isNaN(pri) || pri < 0 || pri > 191) {
+        if (pri !== null && pri > 191) {
+          statusBanner.className = "status-banner status-warn";
+          statusBanner.innerHTML = "<span>Warning: PRI Value Out of Standard Range (0-191)</span> <span>Non-Standard</span>";
+        } else {
+          statusBanner.className = "status-banner status-danger";
+          statusBanner.innerHTML = "<span>✕ Missing or Malformed PRI Tag (&lt;PRI&gt;)</span> <span>Syntax Error</span>";
+          metaStandard.textContent = "Unknown / Malformed";
+          metaFacility.textContent = "Unknown";
+          metaSeverity.textContent = "Unknown";
+          metaPri.textContent = "Missing";
+          resultsBody.innerHTML = `
+            <tr>
+              <td><strong>Raw Payload</strong></td>
+              <td><code>${escapeHtml(raw)}</code></td>
+              <td>Missing <code>&lt;PRI&gt;</code> envelope. Syslog messages must begin with a Priority tag between &lt;0&gt; and &lt;191&gt;.</td>
+            </tr>
+          `;
+          return;
+        }
+      }
+
+      const facilityCode = Math.floor(pri / 8);
+      const severityCode = pri % 8;
+
+      const facilityStr = FACILITIES[facilityCode] || `Unknown Facility (${facilityCode})`;
+      const severityObj = SEVERITIES[severityCode] || { name: `Unknown (${severityCode})`, badge: "badge-neutral", desc: "Non-standard severity" };
+
+      metaPri.textContent = `${pri} (8-bit PRI)`;
+      metaFacility.textContent = facilityStr;
+      metaSeverity.innerHTML = `<span class="badge ${severityObj.badge}">${severityObj.code} - ${severityObj.name.toUpperCase()}</span>`;
+
+      // Check for RFC 5424 (version digit immediately follows PRI)
+      // Format: <PRI>VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID STRUCTURED-DATA MSG
+      const rfc5424Regex = /^(\d+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)(?:\s+(.*))?$/s;
+      const m5424 = bodyWithoutPri.match(rfc5424Regex);
+
+      const rows = [];
+
+      rows.push({
+        field: "Priority (PRI)",
+        val: `<code>&lt;${pri}&gt;</code> (Facility: ${facilityCode}, Severity: ${severityCode})`,
+        spec: "Calculated via PRI = (Facility * 8) + Severity"
+      });
+
+      rows.push({
+        field: "Facility",
+        val: `<strong>${facilityStr}</strong>`,
+        spec: "RFC 5424 §6.2.1 / RFC 3164 §4.1.1"
+      });
+
+      rows.push({
+        field: "Severity Level",
+        val: `<span class="badge ${severityObj.badge}">${severityObj.code} · ${severityObj.name}</span> <span style="font-size:0.8rem; color:var(--atom-muted); margin-left:8px;">(${severityObj.desc})</span>`,
+        spec: "RFC 5424 §6.2.1 / RFC 3164 §4.1.1"
+      });
+
+      if (m5424) {
+        metaStandard.textContent = "RFC 5424 (IETF Standard)";
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ RFC 5424 Structured Syslog Identified</span> <span>Valid Envelope</span>";
+
+        const version = m5424[1];
+        const timestamp = m5424[2];
+        const hostname = m5424[3];
+        const appName = m5424[4];
+        const procId = m5424[5];
+        const msgId = m5424[6];
+        const remaining = m5424[7] || "";
+
+        rows.push({ field: "Syslog Version", val: `<code>${escapeHtml(version)}</code>`, spec: "RFC 5424 Protocol Version" });
+        rows.push({ field: "Timestamp", val: `<code>${escapeHtml(timestamp)}</code>`, spec: "RFC 3339 / ISO 8601 High-Precision Date" });
+        rows.push({ field: "Hostname", val: `<code>${escapeHtml(hostname)}</code>`, spec: "Originating FQDN, Hostname, or IP Address" });
+        rows.push({ field: "App-Name", val: `<code>${escapeHtml(appName)}</code>`, spec: "Device or Application Identifier" });
+        rows.push({ field: "Process ID (PROCID)", val: `<code>${escapeHtml(procId)}</code>`, spec: "Process ID or Subsystem Task Token" });
+        rows.push({ field: "Message ID (MSGID)", val: `<code>${escapeHtml(msgId)}</code>`, spec: "Event Type or Firewall Rule Reference" });
+
+        // Extract Structured Data [id key="value"] or -
+        let sd = "-";
+        let msg = remaining;
+
+        if (remaining.startsWith("-")) {
+          sd = "- (NILVALUE)";
+          msg = remaining.substring(1).trimStart();
+        } else if (remaining.startsWith("[")) {
+          let depth = 0;
+          let inQuotes = false;
+          let sdEnd = -1;
+          for (let i = 0; i < remaining.length; i++) {
+            const char = remaining[i];
+            if (char === '"' && remaining[i - 1] !== '\\') {
+              inQuotes = !inQuotes;
+            } else if (!inQuotes) {
+              if (char === '[') depth++;
+              else if (char === ']') {
+                depth--;
+                if (depth === 0) {
+                  sdEnd = i;
+                  if (remaining[i + 1] !== '[') break;
+                }
+              }
+            }
+          }
+
+          if (sdEnd !== -1) {
+            sd = remaining.substring(0, sdEnd + 1);
+            msg = remaining.substring(sdEnd + 1).trimStart();
+          }
+        }
+
+        rows.push({
+          field: "Structured Data (SD)",
+          val: sd !== "- (NILVALUE)" ? `<code>${escapeHtml(sd)}</code>` : "<span style='color:var(--atom-muted);'>- (None / NILVALUE)</span>",
+          spec: "RFC 5424 §6.3 Parameterized Context Elements"
+        });
+
+        rows.push({
+          field: "Message Payload (MSG)",
+          val: msg ? `<code>${escapeHtml(msg)}</code>` : "<span style='color:var(--atom-muted);'>[Empty Payload]</span>",
+          spec: "RFC 5424 Free-form Text / UTF-8 Event Narrative"
+        });
+
+      } else {
+        // RFC 3164 (BSD Syslog)
+        metaStandard.textContent = "RFC 3164 (BSD Syslog / Legacy)";
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = "<span>✓ RFC 3164 Legacy BSD Syslog Identified</span> <span>Valid Envelope</span>";
+
+        // Typical pattern: Mmm dd hh:mm:ss hostname tag: msg
+        const bsdRegex = /^([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+([^\s:]+)\s+(?:([^:\[\s]+)(?:\[(\d+)\])?:\s*)?(.*)$/s;
+        const mBsd = bodyWithoutPri.match(bsdRegex);
+
+        if (mBsd) {
+          const timestamp = mBsd[1];
+          const hostname = mBsd[2];
+          const tag = mBsd[3] || "—";
+          const pid = mBsd[4] || "—";
+          const content = mBsd[5] || "";
+
+          rows.push({ field: "Timestamp", val: `<code>${escapeHtml(timestamp)}</code>`, spec: "RFC 3164 BSD Timestamp (Local time, no year/offset)" });
+          rows.push({ field: "Hostname", val: `<code>${escapeHtml(hostname)}</code>`, spec: "Originating Host Name or Device Identifier" });
+          rows.push({ field: "TAG / Process", val: `<code>${escapeHtml(tag)}</code>`, spec: "Generating Program or Daemon Name" });
+          rows.push({ field: "Process ID (PID)", val: pid !== "—" ? `<code>${escapeHtml(pid)}</code>` : "<span style='color:var(--atom-muted);'>—</span>", spec: "Optional Process PID enclosed in brackets" });
+          rows.push({ field: "Content Payload", val: `<code>${escapeHtml(content)}</code>`, spec: "RFC 3164 Text Content" });
+        } else {
+          // Non-standard or generic log line
+          metaStandard.textContent = "RFC 3164 Variant / Non-Standard";
+          rows.push({
+            field: "Payload Envelope",
+            val: `<code>${escapeHtml(bodyWithoutPri)}</code>`,
+            spec: "Non-standard timestamp or header structure adhering to RFC 3164 variant syntax"
+          });
+        }
+      }
+
+      resultsBody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${escapeHtml(r.field)}</strong></td>
+          <td>${r.val}</td>
+          <td style="font-size:0.8rem; color:var(--atom-muted);">${r.spec}</td>
+        </tr>
+      `).join("");
+    }
+  </script>
+</body>
+</html>
