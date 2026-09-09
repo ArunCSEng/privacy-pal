@@ -1,0 +1,40 @@
+name: Auto-generate tools sitemap
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-tools-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate tools-sitemap.xml
+        run: |
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > tools-sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> tools-sitemap.xml
+
+          shopt -s globstar nullglob
+          for file in tools/**/*.html; do
+            echo "  <url>" >> tools-sitemap.xml
+            echo "    <loc>https://bitdark.net/$file</loc>" >> tools-sitemap.xml
+            echo "    <lastmod>$(date +%F)</lastmod>" >> tools-sitemap.xml
+            echo "    <changefreq>monthly</changefreq>" >> tools-sitemap.xml
+            echo "  </url>" >> tools-sitemap.xml
+          done
+
+          echo '</urlset>' >> tools-sitemap.xml
+
+      - name: Commit and push tools-sitemap.xml
+        run: |
+          git config user.name "bitdark-bot"
+          git config user.email "bot@bitdark.net"
+          git add tools-sitemap.xml
+          git commit -m "Auto-update tools-sitemap.xml" || exit 0
+          git push
