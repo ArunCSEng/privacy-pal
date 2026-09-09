@@ -350,9 +350,9 @@
         <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
       </div>
       <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Private</strong></span>
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
         <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Private</strong></span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
       </div>
     </div>
   </header>
@@ -441,7 +441,7 @@
         <span>⚠️</span> Forensic Caution & Algorithmic Boundaries
       </div>
       <p>
-        <strong>Visual artifact and gradient inspection is a forensic aid, not definitive verification of authenticity or synthetic fabrication.</strong> Face-swapping architectures and generative inpainting pipelines often leave slight luminance discontinuities, edge-feathering artifacts, or mismatched chroma channels along composite boundaries. However, standard photo editing, uneven lighting, flash photography, makeup, lens vignette, and aggressive multi-pass JPEG compression frequently trigger identical visual anomalies. Never rely solely on visual filters to assert deepfake presence; always correlate findings with cryptographically verifiable provenance records (C2PA) and authentic source camera metadata. BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this tool.
+        <strong>Visual artifact and gradient inspection is a forensic aid, not definitive verification of authenticity or synthetic fabrication.</strong> Face-swapping architectures and generative inpainting pipelines often leave slight luminance discontinuities, edge-feathering artifacts, or mismatched chroma channels along composite boundaries. However, standard photo editing, uneven lighting, flash photography, makeup, lens vignette, and aggressive multi-pass JPEG compression frequently trigger identical visual anomalies. Never rely solely on visual filters to assert deepfake presence; always correlate findings with cryptographically verifiable provenance records (C2PA) and authentic source camera metadata.
       </p>
     </aside>
 
@@ -468,9 +468,55 @@
   </main>
 
   <script>
-    // IP Fetching removed to truly honor "Zero Network Egress" claim.
-    document.getElementById("ipv4Display").textContent = "Hidden (Zero Egress)";
-    document.getElementById("ipv6Display").textContent = "Hidden (Zero Egress)";
+    // Dual-Endpoint Fallback IP Detection
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Fetch
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("ipify v4 error");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Fetch
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("ipify v6 error");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
     // DOM References
     const dropArea = document.getElementById("dropArea");
@@ -492,7 +538,7 @@
 
     let currentMode = "boundary";
     let activeImage = null;
-    let currentObjectUrl = null; // Track URL for memory management
+    let currentObjectUrl = null;
 
     dropArea.addEventListener("click", () => filePicker.click());
 
@@ -542,9 +588,11 @@
       filePicker.value = "";
       activeImage = null;
       if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl); // Fix memory leak
+        URL.revokeObjectURL(currentObjectUrl);
         currentObjectUrl = null;
       }
+      filterCanvas.width = 0;
+      filterCanvas.height = 0;
     });
 
     async function handleFile(file) {
@@ -560,12 +608,7 @@
       metaHash.textContent = "Calculating SHA-256...";
 
       try {
-        const buffer = await file.arrayBuffer();
-        const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
-        const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
-        metaHash.textContent = `${hashHex.slice(0, 8)}...${hashHex.slice(-8)}`;
-
-        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl); // Clear old memory
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
         currentObjectUrl = URL.createObjectURL(file);
 
         const img = new Image();
@@ -574,9 +617,20 @@
           origPreview.src = img.src;
           metaDim.textContent = `${img.naturalWidth} × ${img.naturalHeight} (${(file.size / 1024).toFixed(1)} KB)`;
           
-          // Calculate diagnostics ONCE on original data, independent of slider
           calculateBaselineDiagnostics(img);
           applyCurrentFilter();
+
+          // Defer SHA-256 calculation so image renders without freezing on mobile
+          setTimeout(async () => {
+            try {
+              const buffer = await file.arrayBuffer();
+              const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+              const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+              metaHash.textContent = `${hashHex.slice(0, 8)}...${hashHex.slice(-8)}`;
+            } catch {
+              metaHash.textContent = "Failed";
+            }
+          }, 30);
         };
         img.src = currentObjectUrl;
       } catch (err) {
@@ -585,33 +639,35 @@
     }
 
     function calculateBaselineDiagnostics(img) {
-        // Create a temporary canvas to analyze raw data without slider interference
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = Math.min(img.naturalWidth, 800); // Scale down for speed
-        tempCanvas.height = Math.round((img.naturalHeight * tempCanvas.width) / img.naturalWidth);
-        const ctx = tempCanvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
-        const src = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        let totalRGDiff = 0, totalRBDiff = 0, count = 0;
-        
-        for (let i = 0; i < src.data.length; i += 16) {
-            totalRGDiff += Math.abs(src.data[i] - src.data[i + 1]);
-            totalRBDiff += Math.abs(src.data[i] - src.data[i + 2]);
-            count++;
-        }
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = Math.min(img.naturalWidth, 600);
+      tempCanvas.height = Math.max(1, Math.round((img.naturalHeight * tempCanvas.width) / img.naturalWidth));
+      
+      const ctx = tempCanvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+      const src = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      
+      let totalRGDiff = 0, totalRBDiff = 0, count = 0;
+      for (let i = 0; i < src.data.length; i += 32) {
+        totalRGDiff += Math.abs(src.data[i] - src.data[i + 1]);
+        totalRBDiff += Math.abs(src.data[i] - src.data[i + 2]);
+        count++;
+      }
 
-        const avgChromaDiff = ((totalRGDiff + totalRBDiff) / (count * 2)).toFixed(2);
-        metaDisparity.textContent = `${avgChromaDiff} ΔE`;
-        metaBoundary.textContent = `N/A (Visual Only)`; // Removed arbitrary threshold
+      const avgChromaDiff = ((totalRGDiff + totalRBDiff) / (count * 2)).toFixed(2);
+      metaDisparity.textContent = `${avgChromaDiff} ΔE`;
+      metaBoundary.textContent = "Visual Mode";
 
-        if (parseFloat(avgChromaDiff) > 34.0) {
-            statusBanner.className = "status-banner status-warning";
-            statusBanner.innerHTML = `<span>⚠️ High Chroma Variance</span> <span>Likely vivid colors or heavy compression</span>`;
-        } else {
-            statusBanner.className = "status-banner status-normal";
-            statusBanner.innerHTML = `<span>✓ Consistent Lum-Chroma Transition</span> <span>Standard variance</span>`;
-        }
+      if (parseFloat(avgChromaDiff) > 34.0) {
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ Elevated Chroma Variance</span> <span>Vivid contrast or compression shift</span>`;
+      } else {
+        statusBanner.className = "status-banner status-normal";
+        statusBanner.innerHTML = `<span>✓ Consistent Lum-Chroma Transition</span> <span>Natural photographic variance</span>`;
+      }
+
+      tempCanvas.width = 0;
+      tempCanvas.height = 0;
     }
 
     function applyCurrentFilter() {
@@ -619,15 +675,19 @@
 
       const w = activeImage.naturalWidth;
       const h = activeImage.naturalHeight;
-      const maxDim = 1200;
-      let targetW = w, targetH = h;
-      
+
+      // Mobile adaptive dimension constraint prevents memory overflow
+      const isMobile = window.innerWidth <= 768;
+      const maxDim = isMobile ? 700 : 1200;
+
+      let targetW = w;
+      let targetH = h;
       if (targetW > maxDim || targetH > maxDim) {
         if (targetW > targetH) {
-          targetH = Math.round((targetH * maxDim) / targetW);
+          targetH = Math.max(1, Math.round((targetH * maxDim) / targetW));
           targetW = maxDim;
         } else {
-          targetW = Math.round((targetW * maxDim) / targetH);
+          targetW = Math.max(1, Math.round((targetW * maxDim) / targetH));
           targetH = maxDim;
         }
       }
@@ -639,10 +699,6 @@
 
       const srcData = ctx.getImageData(0, 0, targetW, targetH);
       const outData = ctx.createImageData(targetW, targetH);
-      
-      // Fill background with black to fix border artifacts
-      for(let i=0; i<outData.data.length; i+=4) { outData.data[i+3] = 255; }
-      
       const gain = parseFloat(gainSlider.value);
 
       if (currentMode === "boundary") {
@@ -659,34 +715,52 @@
       ctx.putImageData(outData, 0, 0);
     }
 
+    // High-performance Sobel kernel without nested loop overhead
     function applySobelGradient(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
+      const mult = gain * 0.4;
+
+      for (let i = 3; i < d.length; i += 4) d[i] = 255;
 
       for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-          const idx = (y * w + x) * 4;
-          let gx = 0, gy = 0;
+        const rowPrev = (y - 1) * w;
+        const rowCurr = y * w;
+        const rowNext = (y + 1) * w;
 
-          for (let ky = -1; ky <= 1; ky++) {
-            for (let kx = -1; kx <= 1; kx++) {
-              const pIdx = ((y + ky) * w + (x + kx)) * 4;
-              const lum = 0.299 * s[pIdx] + 0.587 * s[pIdx + 1] + 0.114 * s[pIdx + 2];
-              const kxVal = (kx === 0 ? 0 : (ky === 0 ? 2 * kx : kx));
-              const kyVal = (ky === 0 ? 0 : (kx === 0 ? 2 * ky : ky));
-              gx += lum * kxVal;
-              gy += lum * kyVal;
-            }
-          }
-          const mag = Math.sqrt(gx * gx + gy * gy) * (gain * 0.4);
-          d[idx] = Math.min(255, mag);
-          d[idx + 1] = Math.min(255, mag * 0.8);
-          d[idx + 2] = Math.min(255, mag * 1.2);
-          d[idx + 3] = 255;
+        for (let x = 1; x < w - 1; x++) {
+          const idx = (rowCurr + x) * 4;
+
+          const p00 = (rowPrev + (x - 1)) * 4;
+          const p01 = (rowPrev + x) * 4;
+          const p02 = (rowPrev + (x + 1)) * 4;
+          const p10 = (rowCurr + (x - 1)) * 4;
+          const p12 = (rowCurr + (x + 1)) * 4;
+          const p20 = (rowNext + (x - 1)) * 4;
+          const p21 = (rowNext + x) * 4;
+          const p22 = (rowNext + (x + 1)) * 4;
+
+          const lum00 = 0.299 * s[p00] + 0.587 * s[p00 + 1] + 0.114 * s[p00 + 2];
+          const lum01 = 0.299 * s[p01] + 0.587 * s[p01 + 1] + 0.114 * s[p01 + 2];
+          const lum02 = 0.299 * s[p02] + 0.587 * s[p02 + 1] + 0.114 * s[p02 + 2];
+          const lum10 = 0.299 * s[p10] + 0.587 * s[p10 + 1] + 0.114 * s[p10 + 2];
+          const lum12 = 0.299 * s[p12] + 0.587 * s[p12 + 1] + 0.114 * s[p12 + 2];
+          const lum20 = 0.299 * s[p20] + 0.587 * s[p20 + 1] + 0.114 * s[p20 + 2];
+          const lum21 = 0.299 * s[p21] + 0.587 * s[p21 + 1] + 0.114 * s[p21 + 2];
+          const lum22 = 0.299 * s[p22] + 0.587 * s[p22 + 1] + 0.114 * s[p22 + 2];
+
+          const gx = -lum00 + lum02 - (2 * lum10) + (2 * lum12) - lum20 + lum22;
+          const gy = -lum00 - (2 * lum01) - lum02 + lum20 + (2 * lum21) + lum22;
+
+          const mag = Math.hypot(gx, gy) * mult;
+          d[idx] = mag > 255 ? 255 : mag;
+          d[idx + 1] = mag * 0.8 > 255 ? 255 : mag * 0.8;
+          d[idx + 2] = mag * 1.2 > 255 ? 255 : mag * 1.2;
         }
       }
     }
 
+    // Gamma Curve High-Contrast Stretching
     function applyGammaCurve(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
@@ -700,12 +774,16 @@
       }
     }
 
+    // Chroma Disparity Isolation (R vs B/G balance)
     function applyChromaIsolation(src, dst, w, h, gain) {
       const s = src.data;
       const d = dst.data;
 
       for (let i = 0; i < s.length; i += 4) {
-        const r = s[i], g = s[i + 1], b = s[i + 2];
+        const r = s[i];
+        const g = s[i + 1];
+        const b = s[i + 2];
+
         d[i] = Math.min(255, Math.abs(r - g) * gain);
         d[i + 1] = Math.min(255, Math.abs(r - b) * gain);
         d[i + 2] = Math.min(255, Math.abs(g - b) * gain);
