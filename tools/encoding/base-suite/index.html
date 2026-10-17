@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Universal Base Suite (Base64, Base58, Base32, Hex) — Offline Converter | BitDark</title>
+  <meta name="title" content="Universal Base Suite (Base64, Base58, Base32, Hex) — Offline Converter | BitDark" />
+  <meta name="description" content="Encode and decode payloads simultaneously across Base64, Base64URL, Base58 (Bitcoin), Base32, Hexadecimal (Base16), and Binary in real-time. 100% client-side, zero network egress." />
+  <meta name="keywords" content="base64 encoder, base58 decoder, base32 converter, hex to ascii, binary encoder, base64url tool, offline encoding suite, client side data converter" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/base-suite" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); word-break: break-all; }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+      word-break: break-word;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; line-height: 1.25; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .control-label {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+    .select-atom {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 7px 12px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-atom:focus { border-color: var(--atom-border-focus); }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      font-weight: 600;
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-cyan);
+      color: var(--atom-heading);
+    }
+
+    /* Primary Input Pane */
+    .master-pane {
+      margin-bottom: 22px;
+    }
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pane-title {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--atom-cyan);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mode-pill {
+      background-color: rgba(86, 182, 194, 0.12);
+      border: 1px solid var(--atom-cyan);
+      color: var(--atom-cyan);
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+    }
+    .byte-badge {
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      background-color: var(--atom-gutter);
+      padding: 2px 8px;
+      border-radius: 3px;
+      border: 1px solid var(--atom-border);
+    }
+
+    .code-textarea {
+      width: 100%;
+      min-height: 110px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      word-break: break-all;
+    }
+    .code-textarea:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .code-textarea.input-error {
+      border-color: var(--atom-coral);
+    }
+
+    /* Multi-Base Grid */
+    .base-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .base-box {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 5px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s;
+    }
+    .base-box.active-source {
+      border-color: rgba(86, 182, 194, 0.5);
+    }
+    .base-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .base-name {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--atom-amber);
+    }
+    .base-sub {
+      font-size: 0.7rem;
+      color: var(--atom-muted);
+      font-weight: 400;
+    }
+    .box-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-mini {
+      background-color: var(--atom-surface);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      padding: 3px 8px;
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-mini:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .output-textarea {
+      width: 100%;
+      min-height: 88px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+      word-break: break-all;
+    }
+    .output-textarea:focus {
+      border-color: var(--atom-cyan);
+    }
+
+    .error-msg {
+      margin-top: 8px;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      color: var(--atom-coral);
+      display: none;
+    }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      word-break: break-word;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile & Tablet Responsive Overrides */
+    @media (max-width: 820px) {
+      .navbar { padding: 10px 16px; }
+      .nav-inner {
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+      }
+      .trust-badge {
+        justify-self: end;
+        font-size: 0.68rem;
+        padding: 3px 8px;
+      }
+      .ip-pill-nav {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        justify-content: center;
+        text-align: center;
+      }
+      .base-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .wrapper { padding: 20px 14px 44px; }
+      .tool-header h1 { font-size: 1.45rem; }
+      .tool-card { padding: 16px; }
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .control-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .select-atom {
+        flex: 1;
+      }
+      .btn-atom {
+        flex: 1;
+        text-align: center;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Data Encoding</a> / base-suite
+    </nav>
+
+    <div class="tool-header">
+      <h1>Universal Base Suite (Multi-Radix Encoder & Decoder)</h1>
+      <p>Simultaneously transcode raw UTF-8 strings and byte arrays across Base64, Base64URL, Base58 (Bitcoin), Base32 (RFC 4648), Hexadecimal, and Binary in real-time.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="controls-bar">
+        <div class="control-group">
+          <label for="inputMode" class="control-label">Input Mode:</label>
+          <select id="inputMode" class="select-atom">
+            <option value="utf8">UTF-8 Plaintext</option>
+            <option value="base64">Base64 Standard</option>
+            <option value="base64url">Base64URL (RFC 4648)</option>
+            <option value="base58">Base58 (Bitcoin Alphabet)</option>
+            <option value="base32">Base32 (RFC 4648)</option>
+            <option value="hex">Hexadecimal (Base16)</option>
+            <option value="binary">Binary (8-Bit Stream)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <button type="button" class="btn-atom btn-secondary" id="btnSample">Load Sample</button>
+          <button type="button" class="btn-atom btn-secondary" id="btnClear">Clear All</button>
+        </div>
+      </div>
+
+      <!-- Master Input Area -->
+      <div class="master-pane">
+        <div class="pane-header">
+          <span class="pane-title">
+            <span>▸</span> Source Input Payload
+            <span class="mode-pill" id="activeModeBadge">UTF-8 Plaintext</span>
+          </span>
+          <span class="byte-badge" id="byteCountBadge">0 bytes</span>
+        </div>
+        <textarea id="masterInput" class="code-textarea" placeholder="Type or paste UTF-8 text, Base64, Base58, Hex, or Binary payload here..."></textarea>
+        <div id="inputError" class="error-msg"></div>
+      </div>
+
+      <!-- Live Multi-Radix Output Grid -->
+      <div class="base-grid">
+        <!-- UTF-8 Decoded -->
+        <div class="base-box" data-box-mode="utf8">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">UTF-8 Text</span>
+              <span class="base-sub">(Decoded String)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="utf8" data-source="outUtf8">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outUtf8">Copy</button>
+            </div>
+          </div>
+          <textarea id="outUtf8" class="output-textarea" readonly placeholder="UTF-8 output..."></textarea>
+        </div>
+
+        <!-- Base64 Standard -->
+        <div class="base-box" data-box-mode="base64">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Base64</span>
+              <span class="base-sub">(RFC 4648 Standard)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="base64" data-source="outBase64">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outBase64">Copy</button>
+            </div>
+          </div>
+          <textarea id="outBase64" class="output-textarea" readonly placeholder="Base64 output..."></textarea>
+        </div>
+
+        <!-- Base64URL -->
+        <div class="base-box" data-box-mode="base64url">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Base64URL</span>
+              <span class="base-sub">(JWT / URI Safe, No Padding)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="base64url" data-source="outBase64Url">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outBase64Url">Copy</button>
+            </div>
+          </div>
+          <textarea id="outBase64Url" class="output-textarea" readonly placeholder="Base64URL output..."></textarea>
+        </div>
+
+        <!-- Base58 Bitcoin -->
+        <div class="base-box" data-box-mode="base58">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Base58</span>
+              <span class="base-sub">(Bitcoin / IPFS Alphabet)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="base58" data-source="outBase58">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outBase58">Copy</button>
+            </div>
+          </div>
+          <textarea id="outBase58" class="output-textarea" readonly placeholder="Base58 output..."></textarea>
+        </div>
+
+        <!-- Base32 -->
+        <div class="base-box" data-box-mode="base32">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Base32</span>
+              <span class="base-sub">(RFC 4648 / TOTP Seed)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="base32" data-source="outBase32">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outBase32">Copy</button>
+            </div>
+          </div>
+          <textarea id="outBase32" class="output-textarea" readonly placeholder="Base32 output..."></textarea>
+        </div>
+
+        <!-- Hexadecimal Base16 -->
+        <div class="base-box" data-box-mode="hex">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Hexadecimal</span>
+              <span class="base-sub">(Base16 Byte Stream)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="hex" data-source="outHex">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outHex">Copy</button>
+            </div>
+          </div>
+          <textarea id="outHex" class="output-textarea" readonly placeholder="Hex output..."></textarea>
+        </div>
+
+        <!-- Binary Base2 -->
+        <div class="base-box" data-box-mode="binary" style="grid-column: 1 / -1;">
+          <div class="base-box-header">
+            <div>
+              <span class="base-name">Binary (Base2)</span>
+              <span class="base-sub">(Space-Delimited 8-Bit Octets)</span>
+            </div>
+            <div class="box-actions">
+              <button type="button" class="btn-mini" data-use-mode="binary" data-source="outBinary">Use as Input</button>
+              <button type="button" class="btn-mini" data-copy="outBinary">Copy</button>
+            </div>
+          </div>
+          <textarea id="outBinary" class="output-textarea" style="min-height: 70px;" readonly placeholder="Binary octet stream..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security & Liability Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Operational Notice & Liability Disclaimer
+      </div>
+      <p>
+        <strong>Encoding is not encryption.</strong> Base64, Base58, Base32, and Hexadecimal representations provide data transport compatibility and offer zero cryptographic confidentiality; anyone can reverse encoded strings immediately without a key. Furthermore, all utilities on <strong>BitDark.net</strong> are provided strictly on an "as-is" basis for educational, debugging, and authorized security testing purposes. <strong>BitDark.net and its developers are not responsible or liable</strong> for any data loss, misconfiguration, decoding errors, security incidents, or damages resulting from the use or misuse of this tool. Always verify mission-critical payloads independently.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Radix Encoding Specifications</h2>
+      <p>Binary-to-text encodings translate raw 8-bit byte arrays into printable ASCII characters so payloads survive transmission across text-only protocols such as SMTP, HTTP headers, JSON documents, and blockchain ledgers.</p>
+      <ul>
+        <li><strong>Base64 & Base64URL (RFC 4648):</strong> Maps 6 bits per character across a 64-character alphabet. Base64URL substitutes <code>+</code> and <code>/</code> with <code>-</code> and <code>_</code> and strips <code>=</code> padding so tokens can be placed safely in URLs and JSON Web Tokens (JWTs).</li>
+        <li><strong>Base58 (Bitcoin / IPFS):</strong> Designed by Satoshi Nakamoto to eliminate visually ambiguous characters (<code>0</code>, <code>O</code>, <code>I</code>, <code>l</code>) and non-alphanumeric symbols (<code>+</code>, <code>/</code>), making wallet addresses and cryptographic keys safe to copy via double-click.</li>
+        <li><strong>Base32 (RFC 4648):</strong> Uses a case-insensitive 32-character set (<code>A–Z</code> and <code>2–7</code>), commonly used in Time-based One-Time Password (TOTP) 2FA secret seeds and DNS-compatible identifiers.</li>
+        <li><strong>Hexadecimal (Base16) & Binary:</strong> Directly represents each byte as two 4-bit nibbles (<code>00–ff</code>) or eight individual bits (<code>00000000–11111111</code>).</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Pasting API tokens, TOTP seeds, or session cookies into server-side encoders risks logging sensitive credentials in third-party access logs. BitDark's Universal Base Suite runs strictly in local browser memory using native JavaScript <code>Uint8Array</code> and <code>TextEncoder</code> pipelines. Zero bytes leave your device.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Alphabets & Mode Labels
+    const B58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const B32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    const MODE_LABELS = {
+      utf8: "UTF-8 Plaintext",
+      base64: "Base64 Standard",
+      base64url: "Base64URL (RFC 4648)",
+      base58: "Base58 (Bitcoin)",
+      base32: "Base32 (RFC 4648)",
+      hex: "Hexadecimal (Base16)",
+      binary: "Binary (8-Bit Stream)"
+    };
+    const MODE_PLACEHOLDERS = {
+      utf8: "Type or paste UTF-8 plaintext here (e.g. BitDark.net)...",
+      base64: "Paste standard Base64 payload here (e.g. Qml0RGFyay5uZXQ=)...",
+      base64url: "Paste URL-safe Base64URL payload here (e.g. Qml0RGFyay5uZXQ)...",
+      base58: "Paste Bitcoin Base58 string here (e.g. 5HueCGU8rMjxEXxiPuD5BDku)...",
+      base32: "Paste RFC 4648 Base32 payload here (e.g. IJUXIRDBOJVSA===)...",
+      hex: "Paste Hexadecimal byte string here (e.g. 4269744461726b)...",
+      binary: "Paste 8-bit Binary octets here (e.g. 01000010 01101001)..."
+    };
+
+    // DOM Elements
+    const inputMode = document.getElementById("inputMode");
+    const activeModeBadge = document.getElementById("activeModeBadge");
+    const masterInput = document.getElementById("masterInput");
+    const byteCountBadge = document.getElementById("byteCountBadge");
+    const inputError = document.getElementById("inputError");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+
+    const outUtf8 = document.getElementById("outUtf8");
+    const outBase64 = document.getElementById("outBase64");
+    const outBase64Url = document.getElementById("outBase64Url");
+    const outBase58 = document.getElementById("outBase58");
+    const outBase32 = document.getElementById("outBase32");
+    const outHex = document.getElementById("outHex");
+    const outBinary = document.getElementById("outBinary");
+
+    // Stateful Byte Buffer (Allows seamless switching between Input Modes)
+    let currentBytes = null;
+
+    // --- ENCODERS (Uint8Array -> String) ---
+    function encodeUTF8(bytes) {
+      return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+    }
+
+    function encodeBase64(bytes) {
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    function encodeBase64Url(bytes) {
+      return encodeBase64(bytes)
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    }
+
+    function encodeBase58(bytes) {
+      if (bytes.length === 0) return "";
+      let digits = [0];
+      for (let i = 0; i < bytes.length; i++) {
+        let carry = bytes[i];
+        for (let j = 0; j < digits.length; j++) {
+          carry += digits[j] << 8;
+          digits[j] = carry % 58;
+          carry = (carry / 58) | 0;
+        }
+        while (carry > 0) {
+          digits.push(carry % 58);
+          carry = (carry / 58) | 0;
+        }
+      }
+      let result = "";
+      for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
+        result += B58_ALPHABET[0];
+      }
+      for (let i = digits.length - 1; i >= 0; i--) {
+        result += B58_ALPHABET[digits[i]];
+      }
+      return result;
+    }
+
+    function encodeBase32(bytes) {
+      if (bytes.length === 0) return "";
+      let bits = 0;
+      let value = 0;
+      let output = "";
+      for (let i = 0; i < bytes.length; i++) {
+        value = (value << 8) | bytes[i];
+        bits += 8;
+        while (bits >= 5) {
+          output += B32_ALPHABET[(value >>> (bits - 5)) & 31];
+          bits -= 5;
+        }
+      }
+      if (bits > 0) {
+        output += B32_ALPHABET[(value << (5 - bits)) & 31];
+      }
+      while (output.length % 8 !== 0) {
+        output += "=";
+      }
+      return output;
+    }
+
+    function encodeHex(bytes) {
+      return Array.from(bytes)
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function encodeBinary(bytes) {
+      return Array.from(bytes)
+        .map(b => b.toString(2).padStart(8, "0"))
+        .join(" ");
+    }
+
+    function encodeByMode(bytes, mode) {
+      switch (mode) {
+        case "utf8": return encodeUTF8(bytes);
+        case "base64": return encodeBase64(bytes);
+        case "base64url": return encodeBase64Url(bytes);
+        case "base58": return encodeBase58(bytes);
+        case "base32": return encodeBase32(bytes);
+        case "hex": return encodeHex(bytes);
+        case "binary": return encodeBinary(bytes);
+        default: return encodeUTF8(bytes);
+      }
+    }
+
+    // --- DECODERS (String -> Uint8Array) ---
+    function decodeBase64(str) {
+      const clean = str.trim().replace(/[\r\n\s]/g, "");
+      if (clean.length === 0) return new Uint8Array(0);
+      if (!/^[A-Za-z0-9+/]+={0,2}$/.test(clean) || clean.length % 4 !== 0) {
+        throw new Error("Invalid Base64 string: Must contain only A-Z, a-z, 0-9, +, / and valid '=' padding.");
+      }
+      try {
+        const bin = atob(clean);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+          bytes[i] = bin.charCodeAt(i);
+        }
+        return bytes;
+      } catch {
+        throw new Error("Invalid Base64 sequence: Unable to decode byte stream.");
+      }
+    }
+
+    function decodeBase64Url(str) {
+      let clean = str.trim().replace(/[\r\n\s]/g, "");
+      if (clean.length === 0) return new Uint8Array(0);
+      if (!/^[A-Za-z0-9\-_]+={0,2}$/.test(clean)) {
+        throw new Error("Invalid Base64URL string: Must contain only A-Z, a-z, 0-9, '-', or '_'.");
+      }
+      clean = clean.replace(/-/g, "+").replace(/_/g, "/");
+      while (clean.length % 4 !== 0) {
+        clean += "=";
+      }
+      return decodeBase64(clean);
+    }
+
+    function decodeBase58(str) {
+      const clean = str.trim();
+      if (clean.length === 0) return new Uint8Array(0);
+      let bytes = [0];
+      for (let i = 0; i < clean.length; i++) {
+        const charIndex = B58_ALPHABET.indexOf(clean[i]);
+        if (charIndex === -1) {
+          throw new Error(`Invalid Base58 character '${clean[i]}' (Bitcoin alphabet excludes 0, O, I, l, and symbols).`);
+        }
+        let carry = charIndex;
+        for (let j = 0; j < bytes.length; j++) {
+          carry += bytes[j] * 58;
+          bytes[j] = carry & 0xff;
+          carry >>= 8;
+        }
+        while (carry > 0) {
+          bytes.push(carry & 0xff);
+          carry >>= 8;
+        }
+      }
+      for (let i = 0; i < clean.length && clean[i] === B58_ALPHABET[0]; i++) {
+        bytes.push(0);
+      }
+      return new Uint8Array(bytes.reverse());
+    }
+
+    function decodeBase32(str) {
+      const clean = str.trim().toUpperCase().replace(/=+$/, "").replace(/\s+/g, "");
+      if (clean.length === 0) return new Uint8Array(0);
+      let bits = 0;
+      let value = 0;
+      const out = [];
+      for (let i = 0; i < clean.length; i++) {
+        const idx = B32_ALPHABET.indexOf(clean[i]);
+        if (idx === -1) {
+          throw new Error(`Invalid Base32 character '${clean[i]}' (RFC 4648 allows only A-Z and 2-7).`);
+        }
+        value = (value << 5) | idx;
+        bits += 5;
+        if (bits >= 8) {
+          out.push((value >>> (bits - 8)) & 0xff);
+          bits -= 8;
+        }
+      }
+      return new Uint8Array(out);
+    }
+
+    function decodeHex(str) {
+      const clean = str.trim().replace(/^0x/i, "").replace(/[\s,:;-]/g, "");
+      if (clean.length === 0) return new Uint8Array(0);
+      if (clean.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(clean)) {
+        throw new Error("Invalid Hexadecimal sequence: Must be an even number of hex digits (0-9, a-f).");
+      }
+      const bytes = new Uint8Array(clean.length / 2);
+      for (let i = 0; i < clean.length; i += 2) {
+        bytes[i / 2] = parseInt(clean.substring(i, i + 2), 16);
+      }
+      return bytes;
+    }
+
+    function decodeBinary(str) {
+      const clean = str.trim().replace(/\s+/g, "");
+      if (clean.length === 0) return new Uint8Array(0);
+      if (clean.length % 8 !== 0 || !/^[01]+$/.test(clean)) {
+        throw new Error("Invalid Binary stream: Input must consist of 8-bit octets containing only 0 and 1.");
+      }
+      const bytes = new Uint8Array(clean.length / 8);
+      for (let i = 0; i < clean.length; i += 8) {
+        bytes[i / 8] = parseInt(clean.substring(i, i + 8), 2);
+      }
+      return bytes;
+    }
+
+    function clearOutputs() {
+      byteCountBadge.textContent = "0 bytes";
+      outUtf8.value = "";
+      outBase64.value = "";
+      outBase64Url.value = "";
+      outBase58.value = "";
+      outBase32.value = "";
+      outHex.value = "";
+      outBinary.value = "";
+    }
+
+    function highlightActiveModeCard(mode) {
+      activeModeBadge.textContent = MODE_LABELS[mode] || mode;
+      masterInput.placeholder = MODE_PLACEHOLDERS[mode] || "";
+      document.querySelectorAll(".base-box").forEach(box => {
+        if (box.getAttribute("data-box-mode") === mode) {
+          box.classList.add("active-source");
+        } else {
+          box.classList.remove("active-source");
+        }
+      });
+    }
+
+    // Main Conversion Pipeline
+    function processSuite() {
+      const rawVal = masterInput.value;
+      const mode = inputMode.value;
+
+      inputError.style.display = "none";
+      masterInput.classList.remove("input-error");
+
+      if (!rawVal) {
+        currentBytes = null;
+        clearOutputs();
+        return;
+      }
+
+      try {
+        let bytes;
+        if (mode === "utf8") {
+          bytes = new TextEncoder().encode(rawVal);
+        } else if (mode === "base64") {
+          bytes = decodeBase64(rawVal);
+        } else if (mode === "base64url") {
+          bytes = decodeBase64Url(rawVal);
+        } else if (mode === "base58") {
+          bytes = decodeBase58(rawVal);
+        } else if (mode === "base32") {
+          bytes = decodeBase32(rawVal);
+        } else if (mode === "hex") {
+          bytes = decodeHex(rawVal);
+        } else if (mode === "binary") {
+          bytes = decodeBinary(rawVal);
+        }
+
+        currentBytes = bytes;
+        byteCountBadge.textContent = `${bytes.length} byte${bytes.length === 1 ? "" : "s"}`;
+
+        outUtf8.value = encodeUTF8(bytes);
+        outBase64.value = encodeBase64(bytes);
+        outBase64Url.value = encodeBase64Url(bytes);
+        outBase58.value = encodeBase58(bytes);
+        outBase32.value = encodeBase32(bytes);
+        outHex.value = encodeHex(bytes);
+        outBinary.value = encodeBinary(bytes);
+      } catch (err) {
+        currentBytes = null;
+        clearOutputs();
+        masterInput.classList.add("input-error");
+        inputError.textContent = err.message || "Malformed input for selected base format.";
+        inputError.style.display = "block";
+      }
+    }
+
+    // Listen to manual user typing in source box
+    masterInput.addEventListener("input", processSuite);
+
+    // Auto-convert source input when user switches the Input Mode dropdown
+    inputMode.addEventListener("change", () => {
+      const newMode = inputMode.value;
+      highlightActiveModeCard(newMode);
+
+      if (currentBytes && currentBytes.length > 0) {
+        masterInput.value = encodeByMode(currentBytes, newMode);
+      }
+      processSuite();
+    });
+
+    // Mode-Aware Sample Loader
+    btnSample.addEventListener("click", () => {
+      const sampleBytes = new TextEncoder().encode("BitDark.net :: Zero-Log Client-Side Security Suite [2026]");
+      currentBytes = sampleBytes;
+      const mode = inputMode.value;
+      highlightActiveModeCard(mode);
+      masterInput.value = encodeByMode(sampleBytes, mode);
+      processSuite();
+    });
+
+    btnClear.addEventListener("click", () => {
+      currentBytes = null;
+      masterInput.value = "";
+      processSuite();
+      masterInput.focus();
+    });
+
+    // "Use as Input" Handler on any Output Box
+    document.querySelectorAll("[data-use-mode]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetMode = btn.getAttribute("data-use-mode");
+        const sourceId = btn.getAttribute("data-source");
+        const sourceEl = document.getElementById(sourceId);
+        if (!sourceEl || !sourceEl.value) return;
+
+        inputMode.value = targetMode;
+        highlightActiveModeCard(targetMode);
+        masterInput.value = sourceEl.value;
+        processSuite();
+        masterInput.focus();
+      });
+    });
+
+    // Copy Handler
+    document.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-copy");
+        const targetEl = document.getElementById(targetId);
+        if (!targetEl || !targetEl.value) return;
+
+        navigator.clipboard.writeText(targetEl.value).then(() => {
+          const original = btn.textContent;
+          btn.textContent = "Copied!";
+          btn.style.color = "var(--atom-green)";
+          btn.style.borderColor = "var(--atom-green)";
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.style.color = "";
+            btn.style.borderColor = "";
+          }, 1200);
+        });
+      });
+    });
+
+    // Initialize Active Badge on Load
+    highlightActiveModeCard(inputMode.value);
+  </script>
+</body>
+</html>
