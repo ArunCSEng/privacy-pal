@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>URL Encoder & Decoder — Free Offline Tool | BitDark</title>
+  <meta name="title" content="URL Encoder & Decoder — Free Offline Tool | BitDark" />
+  <meta name="description" content="Encode, decode, parse, and analyze URLs, query strings, and URI components securely in your browser. Zero tracking, zero network egress." />
+  <meta name="keywords" content="url encoder, url decoder, percent encoding, uri component decoder, query string parser, offline url tool" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/url-codec" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      word-wrap: break-word;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+
+    .brand span { color: var(--atom-amber); }
+
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+      width: 100%;
+    }
+
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+    }
+
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.7rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Tool Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .control-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mode-select {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-text);
+    }
+
+    .mode-select select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .mode-select select:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Grid for I/O */
+    .io-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .io-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .io-pane {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+
+    .pane-header span.count {
+      text-transform: none;
+      color: var(--atom-cyan);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      height: 220px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      border-color: var(--atom-border-focus);
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s, background-color 0.15s;
+    }
+
+    .btn-atom:hover { opacity: 0.9; }
+
+    .btn-atom.btn-secondary {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      font-weight: 500;
+    }
+
+    .btn-atom.btn-secondary:hover {
+      background-color: var(--atom-gutter);
+      color: var(--atom-heading);
+    }
+
+    /* Status Banner */
+    .status-msg {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      display: none;
+    }
+
+    .status-msg.error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+      display: block;
+    }
+
+    .status-msg.success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+      display: block;
+    }
+
+    /* URL Inspector Card */
+    .parsed-details {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--atom-border);
+      display: none;
+    }
+
+    .parsed-details.active {
+      display: block;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px;
+      border-radius: 4px;
+      min-width: 0;
+    }
+
+    .meta-label {
+      font-size: 0.7rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+
+    .meta-val {
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Query Params Table */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      background-color: var(--atom-bg);
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      word-break: break-all;
+    }
+
+    th {
+      background-color: var(--atom-surface);
+      color: var(--atom-amber);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 30px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.86rem;
+      line-height: 1.7;
+    }
+
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      word-break: break-all;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+
+    @media (min-width: 600px) {
+      .bottom-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 12px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .ip-pill-nav {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+      .tool-header h1 { font-size: 1.4rem; }
+      .btn-group { width: 100%; }
+      .btn-atom { flex: 1 1 auto; text-align: center; }
+      .mode-select { width: 100%; justify-content: space-between; }
+      .mode-select select { flex: 1; margin-left: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding</a> / url-codec
+    </nav>
+
+    <div class="tool-header">
+      <h1>URL Encoder & Decoder</h1>
+      <p>Convert query parameters, URI components, and entire URLs between standard percent-encoded format and human-readable text entirely in your browser.</p>
+    </div>
+
+    <!-- Tool Workspace -->
+    <div class="tool-card">
+      <div class="control-toolbar">
+        <div class="btn-group">
+          <button class="btn-atom" id="btnEncode">Encode</button>
+          <button class="btn-atom" id="btnDecode">Decode</button>
+          <button class="btn-atom btn-secondary" id="btnSwap">Swap ⇄</button>
+          <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+        </div>
+
+        <div class="mode-select">
+          <label for="codecMode">Encoding Type:</label>
+          <select id="codecMode">
+            <option value="component">encodeURIComponent (Strict / Parameters)</option>
+            <option value="full">encodeURI (Full Address / Preserves ://?#)</option>
+            <option value="form">application/x-www-form-urlencoded (Spaces to +)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="io-grid">
+        <div class="io-pane">
+          <div class="pane-header">
+            <span>Input</span>
+            <span class="count" id="inputCount">0 chars</span>
+          </div>
+          <textarea id="inputText" placeholder="Paste your raw text, query parameters, or URL here..."></textarea>
+        </div>
+
+        <div class="io-pane">
+          <div class="pane-header">
+            <span>Output</span>
+            <span class="count" id="outputCount">0 chars</span>
+          </div>
+          <textarea id="outputText" placeholder="Results will appear here..." readonly></textarea>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <div class="btn-group">
+          <button class="btn-atom btn-secondary" id="btnCopy">Copy Output</button>
+          <button class="btn-atom btn-secondary" id="btnParse">Inspect URL Structure</button>
+        </div>
+      </div>
+
+      <div id="statusMessage" class="status-msg"></div>
+
+      <!-- URL Structural Inspector -->
+      <div class="parsed-details" id="parsedDetails">
+        <div class="meta-label" style="margin-bottom: 8px;">URL Breakdown:</div>
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Protocol</div>
+            <div class="meta-val" id="metaProtocol">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Host / Domain</div>
+            <div class="meta-val" id="metaHost">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Port</div>
+            <div class="meta-val" id="metaPort">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Pathname</div>
+            <div class="meta-val" id="metaPath">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Hash / Anchor</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-top: 14px; margin-bottom: 6px;">Parsed Query Parameters:</div>
+        <div class="table-container">
+          <table id="paramsTable">
+            <thead>
+              <tr>
+                <th style="width: 35%;">Parameter Key</th>
+                <th>Decoded Value</th>
+              </tr>
+            </thead>
+            <tbody id="paramsBody">
+              <tr>
+                <td colspan="2" style="text-align: center; color: var(--atom-muted);">No query parameters found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer Callout -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Notice & Disclaimer
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible</strong> for any errors, malformed strings, corrupted URLs, or unintended application behavior resulting from encoded or decoded payloads processed by this tool. All encoding, decoding, and parsing operations execute entirely within client memory. Users are advised to review and test output strings in their designated staging environments prior to production usage.
+      </p>
+    </aside>
+
+    <!-- Technical Documentation -->
+    <article class="doc-section">
+      <h2>Understanding Percent-Encoding (RFC 3986)</h2>
+      <p>Uniform Resource Identifiers (URIs) reserve specific characters (such as <code>:</code>, <code>/</code>, <code>?</code>, <code>#</code>, <code>[</code>, <code>]</code>, and <code>@</code>) as syntax delimiters. When data characters conflict with these reserved delimiters or contain non-ASCII code points, they are encoded into hexadecimal byte sequences prefixed by the percent sign (<code>%</code>).</p>
+      
+      <h2>Which Mode Should You Choose?</h2>
+      <ul>
+        <li><strong>encodeURIComponent:</strong> Best for query string parameter keys and values. Escapes all characters except <code>A-Z a-z 0-9 - _ . ! ~ * ' ( )</code>.</li>
+        <li><strong>encodeURI:</strong> Best for complete URLs where protocol (<code>https://</code>), slashes, and hash anchors should remain intact while encoding invalid characters.</li>
+        <li><strong>application/x-www-form-urlencoded:</strong> Standard HTML form submission format where space characters are converted to <code>+</code> rather than <code>%20</code>.</li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>This utility runs 100% offline in client browser memory using standard ECMAScript APIs. No inputs, decoded credentials, or query values are sent over the network or recorded to any server.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Distinct IPv4 & IPv6 Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // Explicit IPv4 Detection (api4 enforces A-record IPv4 resolution)
+      try {
+        const res4 = await fetch("https://api4.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // Explicit IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // URL Codec Logic
+    const inputText = document.getElementById("inputText");
+    const outputText = document.getElementById("outputText");
+    const codecMode = document.getElementById("codecMode");
+    const inputCount = document.getElementById("inputCount");
+    const outputCount = document.getElementById("outputCount");
+    const statusMsg = document.getElementById("statusMessage");
+
+    const btnEncode = document.getElementById("btnEncode");
+    const btnDecode = document.getElementById("btnDecode");
+    const btnSwap = document.getElementById("btnSwap");
+    const btnClear = document.getElementById("btnClear");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnParse = document.getElementById("btnParse");
+
+    const parsedDetails = document.getElementById("parsedDetails");
+    const metaProtocol = document.getElementById("metaProtocol");
+    const metaHost = document.getElementById("metaHost");
+    const metaPort = document.getElementById("metaPort");
+    const metaPath = document.getElementById("metaPath");
+    const metaHash = document.getElementById("metaHash");
+    const paramsBody = document.getElementById("paramsBody");
+
+    function showStatus(text, type) {
+      statusMsg.textContent = text;
+      statusMsg.className = `status-msg ${type}`;
+      setTimeout(() => {
+        statusMsg.className = "status-msg";
+        statusMsg.style.display = "none";
+      }, 4000);
+    }
+
+    function updateCounts() {
+      inputCount.textContent = `${inputText.value.length} chars`;
+      outputCount.textContent = `${outputText.value.length} chars`;
+    }
+
+    inputText.addEventListener("input", updateCounts);
+
+    btnEncode.addEventListener("click", () => {
+      const raw = inputText.value;
+      if (!raw) {
+        showStatus("Input is empty.", "error");
+        return;
+      }
+      try {
+        const mode = codecMode.value;
+        let result = "";
+        if (mode === "component") {
+          result = encodeURIComponent(raw);
+        } else if (mode === "full") {
+          result = encodeURI(raw);
+        } else if (mode === "form") {
+          result = encodeURIComponent(raw).replace(/%20/g, "+");
+        }
+        outputText.value = result;
+        updateCounts();
+        showStatus("Successfully encoded.", "success");
+      } catch (err) {
+        showStatus("Encoding error: " + err.message, "error");
+      }
+    });
+
+    btnDecode.addEventListener("click", () => {
+      const raw = inputText.value;
+      if (!raw) {
+        showStatus("Input is empty.", "error");
+        return;
+      }
+      try {
+        const mode = codecMode.value;
+        let prepared = raw;
+        if (mode === "form") {
+          prepared = raw.replace(/\+/g, " ");
+        }
+        let result = "";
+        if (mode === "full") {
+          result = decodeURI(prepared);
+        } else {
+          result = decodeURIComponent(prepared);
+        }
+        outputText.value = result;
+        updateCounts();
+        showStatus("Successfully decoded.", "success");
+      } catch (err) {
+        showStatus("Malformed URI sequence: unable to decode.", "error");
+      }
+    });
+
+    btnSwap.addEventListener("click", () => {
+      const temp = inputText.value;
+      inputText.value = outputText.value;
+      outputText.value = temp;
+      updateCounts();
+    });
+
+    btnClear.addEventListener("click", () => {
+      inputText.value = "";
+      outputText.value = "";
+      parsedDetails.classList.remove("active");
+      updateCounts();
+    });
+
+    btnCopy.addEventListener("click", async () => {
+      if (!outputText.value) {
+        showStatus("Nothing to copy.", "error");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(outputText.value);
+        showStatus("Output copied to clipboard.", "success");
+      } catch {
+        outputText.select();
+        document.execCommand("copy");
+        showStatus("Copied via fallback.", "success");
+      }
+    });
+
+    btnParse.addEventListener("click", () => {
+      let targetStr = (outputText.value || inputText.value).trim();
+      if (!targetStr) {
+        showStatus("Please enter or generate a URL first.", "error");
+        return;
+      }
+
+      try {
+        let urlObj;
+        if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(targetStr)) {
+          urlObj = new URL(targetStr);
+        } else if (targetStr.startsWith("?")) {
+          urlObj = new URL("https://offline.local/" + targetStr);
+        } else if (targetStr.startsWith("/")) {
+          urlObj = new URL(targetStr, "https://offline.local");
+        } else {
+          urlObj = new URL("https://" + targetStr);
+        }
+
+        metaProtocol.textContent = urlObj.protocol || "(none)";
+        metaHost.textContent = urlObj.host || "(none)";
+        metaPort.textContent = urlObj.port || "(default)";
+        metaPath.textContent = urlObj.pathname || "/";
+        metaHash.textContent = urlObj.hash || "(none)";
+
+        paramsBody.innerHTML = "";
+        let paramCount = 0;
+
+        urlObj.searchParams.forEach((val, key) => {
+          paramCount++;
+          const tr = document.createElement("tr");
+          
+          const tdKey = document.createElement("td");
+          tdKey.textContent = key;
+          tdKey.style.color = "var(--atom-cyan)";
+          
+          const tdVal = document.createElement("td");
+          tdVal.textContent = val;
+
+          tr.appendChild(tdKey);
+          tr.appendChild(tdVal);
+          paramsBody.appendChild(tr);
+        });
+
+        if (paramCount === 0) {
+          paramsBody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--atom-muted);">No query parameters found</td></tr>`;
+        }
+
+        parsedDetails.classList.add("active");
+        showStatus("URL breakdown generated.", "success");
+      } catch (e) {
+        showStatus("Could not parse as a structured URL: " + e.message, "error");
+      }
+    });
+  </script>
+</body>
+</html>
