@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Hex Dumper & Binary File Inspector — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="Hex Dumper & Binary File Inspector — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Inspect binary files and raw text in canonical hexadecimal and ASCII columns with magic byte signature detection. 100% client-side, zero logs, zero network egress." />
+  <meta name="keywords" content="hex dumper, online hex viewer, offline hex editor, magic byte detector, binary file inspector, xxd online, hexdump tool, client-side hex analyzer" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/hex-dumper" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 20px;
+      color: var(--atom-muted);
+      word-break: break-all;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; line-height: 1.25; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Mode Tabs & Controls */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tab-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background-color: rgba(86, 182, 194, 0.12);
+      border-color: var(--atom-cyan);
+      color: var(--atom-cyan);
+      font-weight: 600;
+    }
+    .settings-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+    }
+    .select-atom, .input-atom {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      outline: none;
+    }
+    .select-atom:focus, .input-atom:focus { border-color: var(--atom-border-focus); }
+
+    /* Dropzone & Text Input */
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .file-input-hidden { display: none; }
+
+    .text-input-panel { display: none; margin-bottom: 16px; }
+    .textarea-atom {
+      width: 100%;
+      min-height: 110px;
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      resize: vertical;
+      outline: none;
+    }
+    .textarea-atom:focus { border-color: var(--atom-border-focus); }
+
+    /* Results Area */
+    .results-area { margin-top: 20px; display: none; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.7rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.84rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+    .meta-val.highlight { color: var(--atom-cyan); }
+
+    /* Pagination & Search Bar */
+    .inspector-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-bottom: none;
+      padding: 10px 14px;
+      border-radius: 4px 4px 0 0;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-mini {
+      background-color: var(--atom-surface);
+      color: var(--atom-heading);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+    .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-mini:hover:not(:disabled) { border-color: var(--atom-amber); color: var(--atom-amber); }
+
+    /* Hex Viewer Box */
+    .hex-container {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 0 0 4px 4px;
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .hex-header {
+      display: flex;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--atom-amber);
+      background-color: #181a1f;
+      border-bottom: 1px solid var(--atom-border);
+      padding: 8px 14px;
+      position: sticky;
+      top: 0;
+      min-width: max-content;
+      user-select: none;
+    }
+    .hex-dump-pre {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      padding: 12px 14px;
+      color: var(--atom-heading);
+      white-space: pre;
+      min-width: max-content;
+      margin: 0;
+    }
+    .hl-offset { color: var(--atom-muted); user-select: none; }
+    .hl-null { color: #4b5263; }
+    .hl-ascii { color: var(--atom-green); }
+    .hl-nonprint { color: var(--atom-muted); }
+    .hl-match { background-color: rgba(229, 192, 123, 0.35); color: #fff; border-radius: 2px; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 14px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      border: 1px solid var(--atom-border);
+    }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section & Inline Code Badges */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code, .tool-header code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      font-size: 0.84em;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Overrides */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 14px; }
+      .nav-inner {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 8px;
+      }
+      .trust-badge, .ip-pill-nav {
+        justify-self: center;
+        width: 100%;
+        justify-content: center;
+      }
+      .wrapper { padding: 20px 14px 40px; }
+      .tool-header h1 { font-size: 1.4rem; }
+      .tool-card { padding: 16px; }
+      .controls-bar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; }
+      .tab-btn { flex: 1; text-align: center; }
+      .settings-group { width: 100%; justify-content: space-between; }
+      .inspector-toolbar { flex-direction: column; align-items: stretch; }
+      .page-controls { justify-content: space-between; width: 100%; }
+      .page-controls .input-atom { flex: 1; min-width: 120px; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; text-align: center; }
+      .bottom-bar { flex-direction: column; text-align: center; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding & Crypto</a> / hex-dumper
+    </nav>
+
+    <div class="tool-header">
+      <h1>Hex Dumper & Binary File Inspector</h1>
+      <p>Analyze binary files, inspect magic byte headers, and generate canonical <code>xxd</code> / <code>hexdump -C</code> outputs locally in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="controls-bar">
+        <div class="tab-group">
+          <button class="tab-btn active" id="tabFile">📁 File / Binary Drop</button>
+          <button class="tab-btn" id="tabText">⌨️ Live String / UTF-8 Input</button>
+        </div>
+
+        <div class="settings-group">
+          <label for="bytesPerRow">Columns:</label>
+          <select id="bytesPerRow" class="select-atom">
+            <option value="16" selected>16 Bytes / Row</option>
+            <option value="8">8 Bytes / Row (Mobile)</option>
+            <option value="32">32 Bytes / Row</option>
+          </select>
+
+          <label for="hexCase">Case:</label>
+          <select id="hexCase" class="select-atom">
+            <option value="upper" selected>UPPER (0F)</option>
+            <option value="lower">lower (0f)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- File Mode -->
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🧬</span>
+        <p><strong>Click to choose any binary or file</strong> or drag & drop here</p>
+        <span class="dropzone-hint">Supports EXE, ELF, PDF, PNG, ZIP, PCAP, Firmware & Raw Binaries (Zero upload, sliced memory reader)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" />
+      </div>
+
+      <!-- Text Mode -->
+      <div class="text-input-panel" id="textInputPanel">
+        <textarea id="rawTextInput" class="textarea-atom" placeholder="Type or paste UTF-8 text, shellcode strings, or payloads to inspect live byte representation..."></textarea>
+      </div>
+
+      <!-- Results Workspace -->
+      <div class="results-area" id="resultsArea">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Source & Size</div>
+            <div class="meta-val" id="metaSource">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Detected Magic Signature</div>
+            <div class="meta-val highlight" id="metaMagic">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Shannon Entropy (Page)</div>
+            <div class="meta-val" id="metaEntropy">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Digest</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+        </div>
+
+        <div class="inspector-toolbar">
+          <div class="page-controls">
+            <button class="btn-mini" id="btnPrevPage">◀ Prev</button>
+            <span id="pageIndicator">Bytes 0 – 0 of 0</span>
+            <button class="btn-mini" id="btnNextPage">Next ▶</button>
+          </div>
+          <div class="page-controls">
+            <input type="text" id="offsetJump" class="input-atom" placeholder="Jump offset (e.g. 0x1A0)" />
+            <input type="text" id="searchHex" class="input-atom" placeholder="Find ASCII or Hex (4D 5A)" />
+          </div>
+        </div>
+
+        <div class="hex-container">
+          <div class="hex-header" id="hexHeaderRow">OFFSET    00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F   ASCII</div>
+          <pre class="hex-dump-pre" id="hexViewer">Loading binary slice...</pre>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnCopyDump">Copy Canonical Dump</button>
+          <button class="btn-atom btn-secondary" id="btnCopyCArray">Copy as C Byte Array</button>
+          <button class="btn-atom btn-secondary" id="btnDownloadTxt">Download .txt Dump</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal & Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Disclaimer & Limitation of Liability
+      </div>
+      <p>
+        <strong>BitDark.net is provided strictly for lawful educational, debugging, and authorized forensic inspection purposes.</strong> BitDark.net and its contributors are <strong>not responsible</strong> for any misuse, data loss, misinterpretation of binary structures, or damages arising from the use of this utility. All file parsing happens locally within your browser's volatile memory; never execute untrusted binaries on your host operating system based solely on header inspection.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Canonical Hex Dumping & Magic Byte Detection Works</h2>
+      <p>A canonical hexadecimal dump displays the exact byte sequence of a file or memory buffer alongside its printable ASCII representation. Every byte (8 bits) is represented as a two-digit base-16 value ranging from <code>00</code> to <code>FF</code>.</p>
+      <ul>
+        <li><strong>Magic Bytes (File Signatures):</strong> Operating systems and forensic tools identify file formats by reading the first few bytes of a file rather than trusting file extensions. For example, Portable Executables (PE/EXE) begin with <code>4D 5A</code> (<code>MZ</code>), ELF binaries start with <code>7F 45 4C 46</code> (<code>.ELF</code>), and PNG images begin with <code>89 50 4E 47 0D 0A 1A 0A</code>.</li>
+        <li><strong>Shannon Entropy Analysis:</strong> Measures randomness within a byte window on a scale from <code>0.0</code> to <code>8.0</code> bits per byte. Plaintext ASCII typically scores between <code>3.5</code> and <code>5.0</code>, whereas compressed archives, packed malware, or encrypted payloads approach <code>7.9+</code>.</li>
+      </ul>
+
+      <h2>Zero Network Egress & Sliced Memory Architecture</h2>
+      <p>Uploading proprietary firmware, memory dumps, or sensitive documents to cloud-based hex viewers exposes confidential data. BitDark's Hex Dumper utilizes the native <code>Blob.slice()</code> and <code>FileReader</code> Web APIs to read 4 KB windows on demand directly from disk—meaning you can inspect multi-gigabyte files smoothly on desktop or mobile with zero network egress.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark.net — Zero telemetry, client-side cybersecurity suite. Not responsible for user actions or data loss.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Hex Dumper & Binary Inspection Engine
+    const PAGE_SIZE = 4096; // 4KB per view slice for instant rendering
+    let uploadedFile = null; // Stores uploaded File object separately from text input
+    let currentBlob = null;
+    let currentFileName = "input.bin";
+    let currentOffset = 0;
+    let currentSliceBytes = new Uint8Array(0);
+    let currentPlainDump = "";
+
+    const tabFile = document.getElementById("tabFile");
+    const tabText = document.getElementById("tabText");
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const textInputPanel = document.getElementById("textInputPanel");
+    const rawTextInput = document.getElementById("rawTextInput");
+    const resultsArea = document.getElementById("resultsArea");
+
+    const bytesPerRowEl = document.getElementById("bytesPerRow");
+    const hexCaseEl = document.getElementById("hexCase");
+    const metaSource = document.getElementById("metaSource");
+    const metaMagic = document.getElementById("metaMagic");
+    const metaEntropy = document.getElementById("metaEntropy");
+    const metaHash = document.getElementById("metaHash");
+
+    const btnPrevPage = document.getElementById("btnPrevPage");
+    const btnNextPage = document.getElementById("btnNextPage");
+    const pageIndicator = document.getElementById("pageIndicator");
+    const offsetJump = document.getElementById("offsetJump");
+    const searchHex = document.getElementById("searchHex");
+    const hexHeaderRow = document.getElementById("hexHeaderRow");
+    const hexViewer = document.getElementById("hexViewer");
+
+    const btnCopyDump = document.getElementById("btnCopyDump");
+    const btnCopyCArray = document.getElementById("btnCopyCArray");
+    const btnDownloadTxt = document.getElementById("btnDownloadTxt");
+    const btnReset = document.getElementById("btnReset");
+
+    // Auto-switch to 8 columns on narrow mobile screens for comfort
+    if (window.innerWidth < 600) {
+      bytesPerRowEl.value = "8";
+    }
+
+    // Mode Switching with Isolated State Preservation
+    tabFile.addEventListener("click", () => {
+      tabFile.classList.add("active");
+      tabText.classList.remove("active");
+      textInputPanel.style.display = "none";
+
+      if (uploadedFile) {
+        dropArea.style.display = "none";
+        loadFileBlob(uploadedFile);
+      } else {
+        currentBlob = null;
+        dropArea.style.display = "block";
+        resultsArea.style.display = "none";
+      }
+    });
+
+    tabText.addEventListener("click", () => {
+      tabText.classList.add("active");
+      tabFile.classList.remove("active");
+      dropArea.style.display = "none";
+      textInputPanel.style.display = "block";
+      rawTextInput.focus();
+
+      if (rawTextInput.value.length > 0) {
+        loadTextBuffer(rawTextInput.value);
+      } else {
+        currentBlob = null;
+        resultsArea.style.display = "none";
+      }
+    });
+
+    rawTextInput.addEventListener("input", () => {
+      loadTextBuffer(rawTextInput.value);
+    });
+
+    function loadTextBuffer(str) {
+      const encoded = new TextEncoder().encode(str);
+      currentBlob = new Blob([encoded]);
+      currentFileName = "utf8-buffer.bin";
+      currentOffset = 0;
+      resultsArea.style.display = encoded.length > 0 ? "block" : "none";
+      if (encoded.length > 0) {
+        inspectHeaderAndHash(currentBlob, currentFileName);
+        renderCurrentSlice();
+      }
+    }
+
+    // Drag and Drop Events
+    dropArea.addEventListener("click", () => filePicker.click());
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, e => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, e => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+    dropArea.addEventListener("drop", e => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        loadFileBlob(e.dataTransfer.files[0]);
+      }
+    });
+    filePicker.addEventListener("change", e => {
+      if (e.target.files && e.target.files.length > 0) {
+        loadFileBlob(e.target.files[0]);
+      }
+    });
+
+    function loadFileBlob(file) {
+      uploadedFile = file;
+      currentBlob = file;
+      currentFileName = file.name;
+      currentOffset = 0;
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+      inspectHeaderAndHash(file, file.name);
+      renderCurrentSlice();
+    }
+
+    // Magic Byte Signatures Database
+    const MAGIC_SIGNATURES = [
+      { hex: "89504E470D0A1A0A", name: "PNG Image (89 50 4E 47)" },
+      { hex: "FFD8FF", name: "JPEG Image (FF D8 FF)" },
+      { hex: "47494638", name: "GIF Image (GIF87a/89a)" },
+      { hex: "25504446", name: "PDF Document (%PDF)" },
+      { hex: "504B0304", name: "ZIP / APK / DOCX / JAR Archive (PK..)" },
+      { hex: "7F454C46", name: "ELF Linux Executable (7F ELF)" },
+      { hex: "4D5A", name: "Windows PE / DOS Executable (MZ)" },
+      { hex: "CAFEBABE", name: "Java Class / Mach-O Fat Binary (CA FE BA BE)" },
+      { hex: "FEEDFACE", name: "Mach-O 32-bit Executable" },
+      { hex: "FEEDFACF", name: "Mach-O 64-bit Executable" },
+      { hex: "1F8B08", name: "GZIP Compressed Archive" },
+      { hex: "377ABCAF271C", name: "7-Zip Archive" },
+      { hex: "526172211A07", name: "RAR Archive" },
+      { hex: "53514C69746520666F726D61742033", name: "SQLite 3 Database" },
+      { hex: "D4C3B2A1", name: "PCAP Network Capture (Little Endian)" },
+      { hex: "A1B2C3D4", name: "PCAP Network Capture (Big Endian)" },
+      { hex: "0A0D0D0A", name: "PCAPNG Network Capture" },
+      { hex: "4F676753", name: "Ogg Media Container (OggS)" },
+      { hex: "664C6143", name: "FLAC Audio (fLaC)" },
+      { hex: "494433", name: "MP3 Audio with ID3v2 Tag" },
+      { hex: "0061736D", name: "WebAssembly Binary (\\0asm)" }
+    ];
+
+    async function inspectHeaderAndHash(blob, name) {
+      const sizeStr = blob.size >= 1048576
+        ? `${(blob.size / 1048576).toFixed(2)} MB`
+        : `${(blob.size / 1024).toFixed(2)} KB (${blob.size.toLocaleString()} B)`;
+      metaSource.textContent = `${name} — ${sizeStr}`;
+
+      // Read first 32 bytes for Magic Header
+      const headerSlice = await blob.slice(0, 32).arrayBuffer();
+      const headerBytes = new Uint8Array(headerSlice);
+      const headerHex = Array.from(headerBytes).map(b => b.toString(16).padStart(2, "0").toUpperCase()).join("");
+
+      let matchedMagic = "Unknown / Raw Binary or ASCII";
+      for (const sig of MAGIC_SIGNATURES) {
+        if (headerHex.startsWith(sig.hex)) {
+          matchedMagic = sig.name;
+          break;
+        }
+      }
+      if (matchedMagic.startsWith("Unknown") && headerBytes.length > 0) {
+        const isPrintable = headerBytes.every(b => (b >= 32 && b <= 126) || b === 9 || b === 10 || b === 13);
+        if (isPrintable) matchedMagic = "Plaintext / UTF-8 / Source Text";
+      }
+      metaMagic.textContent = matchedMagic;
+
+      // Compute SHA-256 for files up to 64MB to prevent UI freeze
+      if (blob.size <= 64 * 1024 * 1024) {
+        metaHash.textContent = "Computing...";
+        try {
+          const fullBuf = await blob.arrayBuffer();
+          const digest = await crypto.subtle.digest("SHA-256", fullBuf);
+          const hexHash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+          metaHash.textContent = `${hexHash.slice(0, 12)}...${hexHash.slice(-10)}`;
+          metaHash.title = hexHash;
+        } catch {
+          metaHash.textContent = "Hash unavailable";
+        }
+      } else {
+        metaHash.textContent = "Skipped (>64MB stream mode)";
+      }
+    }
+
+    function calculateEntropy(bytes) {
+      if (!bytes.length) return 0;
+      const freq = new Uint32Array(256);
+      for (let i = 0; i < bytes.length; i++) freq[bytes[i]]++;
+      let entropy = 0;
+      const len = bytes.length;
+      for (let i = 0; i < 256; i++) {
+        if (freq[i] > 0) {
+          const p = freq[i] / len;
+          entropy -= p * Math.log2(p);
+        }
+      }
+      return entropy;
+    }
+
+    async function renderCurrentSlice() {
+      if (!currentBlob) return;
+      const totalSize = currentBlob.size;
+      const endOffset = Math.min(currentOffset + PAGE_SIZE, totalSize);
+      const buffer = await currentBlob.slice(currentOffset, endOffset).arrayBuffer();
+      currentSliceBytes = new Uint8Array(buffer);
+
+      // Update Entropy for current page
+      const ent = calculateEntropy(currentSliceBytes);
+      let entLabel = "Low (Structured/Text)";
+      if (ent > 7.2) entLabel = "High (Compressed/Encrypted)";
+      else if (ent > 5.2) entLabel = "Medium (Executable/Mixed)";
+      metaEntropy.textContent = `${ent.toFixed(3)} bits/B (${entLabel})`;
+
+      // Update Pagination UI
+      pageIndicator.textContent = `0x${currentOffset.toString(16).toUpperCase().padStart(6, "0")} – 0x${Math.max(0, endOffset - 1).toString(16).toUpperCase().padStart(6, "0")} (${totalSize.toLocaleString()} B)`;
+      btnPrevPage.disabled = currentOffset <= 0;
+      btnNextPage.disabled = endOffset >= totalSize;
+
+      formatHexOutput();
+    }
+
+    function escapeHtml(ch) {
+      if (ch === "&") return "&amp;";
+      if (ch === "<") return "&lt;";
+      if (ch === ">") return "&gt;";
+      return ch;
+    }
+
+    function formatHexOutput() {
+      const cols = parseInt(bytesPerRowEl.value, 10);
+      const isUpper = hexCaseEl.value === "upper";
+      const query = searchHex.value.trim();
+
+      // Build Header Row
+      let hdr = "OFFSET    ";
+      for (let c = 0; c < cols; c++) {
+        const colHex = c.toString(16).padStart(2, "0");
+        hdr += (isUpper ? colHex.toUpperCase() : colHex) + " ";
+        if (c === (cols / 2) - 1) hdr += " ";
+      }
+      hdr += "  ASCII";
+      hexHeaderRow.textContent = hdr;
+
+      // Determine highlighted indices if search query is active
+      const matchedIndices = new Set();
+      if (query.length > 0) {
+        const cleanHexQuery = query.replace(/[^0-9a-fA-F]/g, "");
+        const isHexPattern = /^([0-9a-fA-F]{2}\s*)+$/.test(query);
+
+        if (isHexPattern && cleanHexQuery.length >= 2 && cleanHexQuery.length % 2 === 0) {
+          const pattern = [];
+          for (let i = 0; i < cleanHexQuery.length; i += 2) {
+            pattern.push(parseInt(cleanHexQuery.slice(i, i + 2), 16));
+          }
+          for (let i = 0; i <= currentSliceBytes.length - pattern.length; i++) {
+            let ok = true;
+            for (let j = 0; j < pattern.length; j++) {
+              if (currentSliceBytes[i + j] !== pattern[j]) { ok = false; break; }
+            }
+            if (ok) {
+              for (let j = 0; j < pattern.length; j++) matchedIndices.add(i + j);
+            }
+          }
+        } else {
+          // ASCII substring search
+          const qBytes = new TextEncoder().encode(query.toLowerCase());
+          if (qBytes.length > 0) {
+            for (let i = 0; i <= currentSliceBytes.length - qBytes.length; i++) {
+              let ok = true;
+              for (let j = 0; j < qBytes.length; j++) {
+                const b = currentSliceBytes[i + j];
+                const lowerB = (b >= 65 && b <= 90) ? b + 32 : b;
+                if (lowerB !== qBytes[j]) { ok = false; break; }
+              }
+              if (ok) {
+                for (let j = 0; j < qBytes.length; j++) matchedIndices.add(i + j);
+              }
+            }
+          }
+        }
+      }
+
+      let htmlLines = [];
+      let plainLines = [];
+
+      for (let i = 0; i < currentSliceBytes.length; i += cols) {
+        const rowOffset = currentOffset + i;
+        const offStr = rowOffset.toString(16).padStart(8, "0");
+        const formattedOff = isUpper ? offStr.toUpperCase() : offStr;
+
+        let hexHtml = "";
+        let hexPlain = "";
+        let asciiHtml = "";
+        let asciiPlain = "";
+
+        for (let c = 0; c < cols; c++) {
+          const idx = i + c;
+          if (idx < currentSliceBytes.length) {
+            const b = currentSliceBytes[idx];
+            const bStr = b.toString(16).padStart(2, "0");
+            const bHex = isUpper ? bStr.toUpperCase() : bStr;
+            const isMatch = matchedIndices.has(idx);
+
+            hexPlain += bHex + " ";
+            if (isMatch) {
+              hexHtml += `<span class="hl-match">${bHex}</span> `;
+            } else if (b === 0) {
+              hexHtml += `<span class="hl-null">${bHex}</span> `;
+            } else if (b >= 32 && b <= 126) {
+              hexHtml += `<span class="hl-ascii">${bHex}</span> `;
+            } else {
+              hexHtml += `${bHex} `;
+            }
+
+            if (b >= 32 && b <= 126) {
+              const ch = String.fromCharCode(b);
+              asciiPlain += ch;
+              asciiHtml += isMatch
+                ? `<span class="hl-match">${escapeHtml(ch)}</span>`
+                : `<span class="hl-ascii">${escapeHtml(ch)}</span>`;
+            } else {
+              asciiPlain += ".";
+              asciiHtml += isMatch
+                ? `<span class="hl-match">.</span>`
+                : `<span class="hl-nonprint">.</span>`;
+            }
+          } else {
+            hexPlain += "   ";
+            hexHtml += "   ";
+          }
+
+          if (c === (cols / 2) - 1) {
+            hexPlain += " ";
+            hexHtml += " ";
+          }
+        }
+
+        htmlLines.push(`<span class="hl-offset">${formattedOff}</span>  ${hexHtml} <span class="hl-offset">|</span>${asciiHtml}<span class="hl-offset">|</span>`);
+        plainLines.push(`${formattedOff}  ${hexPlain} |${asciiPlain}|`);
+      }
+
+      hexViewer.innerHTML = htmlLines.join("\n");
+      currentPlainDump = plainLines.join("\n");
+    }
+
+    // Controls Listeners
+    bytesPerRowEl.addEventListener("change", formatHexOutput);
+    hexCaseEl.addEventListener("change", formatHexOutput);
+    searchHex.addEventListener("input", formatHexOutput);
+
+    btnPrevPage.addEventListener("click", () => {
+      if (currentOffset >= PAGE_SIZE) {
+        currentOffset -= PAGE_SIZE;
+        renderCurrentSlice();
+      }
+    });
+
+    btnNextPage.addEventListener("click", () => {
+      if (currentBlob && currentOffset + PAGE_SIZE < currentBlob.size) {
+        currentOffset += PAGE_SIZE;
+        renderCurrentSlice();
+      }
+    });
+
+    offsetJump.addEventListener("keydown", e => {
+      if (e.key === "Enter" && currentBlob) {
+        const val = offsetJump.value.trim();
+        const parsed = val.startsWith("0x") || val.startsWith("0X")
+          ? parseInt(val, 16)
+          : parseInt(val, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < currentBlob.size) {
+          currentOffset = Math.floor(parsed / 16) * 16;
+          renderCurrentSlice();
+        }
+      }
+    });
+
+    btnCopyDump.addEventListener("click", () => {
+      if (!currentPlainDump) return;
+      navigator.clipboard.writeText(currentPlainDump);
+      const orig = btnCopyDump.textContent;
+      btnCopyDump.textContent = "✓ Copied Canonical Dump";
+      setTimeout(() => btnCopyDump.textContent = orig, 1600);
+    });
+
+    btnCopyCArray.addEventListener("click", () => {
+      if (!currentSliceBytes.length) return;
+      const hexItems = Array.from(currentSliceBytes).map(b => "0x" + b.toString(16).padStart(2, "0").toUpperCase());
+      let cCode = `unsigned char payload[${currentSliceBytes.length}] = {\n  `;
+      for (let i = 0; i < hexItems.length; i++) {
+        cCode += hexItems[i] + (i < hexItems.length - 1 ? ", " : "");
+        if ((i + 1) % 12 === 0 && i < hexItems.length - 1) cCode += "\n  ";
+      }
+      cCode += "\n};";
+      navigator.clipboard.writeText(cCode);
+      const orig = btnCopyCArray.textContent;
+      btnCopyCArray.textContent = "✓ Copied C Array";
+      setTimeout(() => btnCopyCArray.textContent = orig, 1600);
+    });
+
+    btnDownloadTxt.addEventListener("click", () => {
+      if (!currentPlainDump) return;
+      const blob = new Blob([currentPlainDump], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${currentFileName}-hexdump.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    btnReset.addEventListener("click", () => {
+      uploadedFile = null;
+      currentBlob = null;
+      currentSliceBytes = new Uint8Array(0);
+      currentPlainDump = "";
+      filePicker.value = "";
+      rawTextInput.value = "";
+      offsetJump.value = "";
+      searchHex.value = "";
+      resultsArea.style.display = "none";
+      if (tabFile.classList.contains("active")) {
+        dropArea.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
