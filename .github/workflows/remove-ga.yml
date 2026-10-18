@@ -1,0 +1,50 @@
+name: Remove Google Analytics
+
+on:
+  push:
+    branches: [ main, master ] # Change to your default branch if different
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run Cleanup Script
+        run: |
+          python3 -c '
+          import os, re
+          
+          ga_script_pattern = re.compile(r"<script[^>]*src=[\x27\x27https://www\.googletagmanager\.com/gtag/js\?id=[^\x27\x27]+[\x27\x27][^>]*>.*?</script>", re.DOTALL | re.IGNORECASE)
+          ga_config_pattern = re.compile(r"<script[^>]*>\s*window\.dataLayer\s*=\s*window\.dataLayer\s*\|\|\s*\[\];\s*function\s*gtag\([^)]*\)\s*\{[^}]*\}\s*gtag\([^)]+\);\s*</script>", re.DOTALL | re.IGNORECASE)
+          gtag_inline_pattern = re.compile(r"<script[^>]*>.*?(?:gtag\(\s*[\x27\x27]config[\x27\x27]\s*,\s*[\x27\x27][GU]A-[^\x27\x27]+[\x27\x27]\s*\)).*?</script>", re.DOTALL | re.IGNORECASE)
+
+          for root, dirs, files in os.walk("."):
+              # Skip hidden git folders
+              if ".git" in root:
+                  continue
+              for file in files:
+                  if file.endswith((".html", ".htm", ".php")):
+                      path = os.path.join(root, file)
+                      with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                          content = f.read()
+                      orig = content
+                      content = ga_script_pattern.sub("", content)
+                      content = ga_config_pattern.sub("", content)
+                      content = gtag_inline_pattern.sub("", content)
+                      if content != orig:
+                          with open(path, "w", encoding="utf-8") as f:
+                              f.write(content)
+                          print(f"Cleaned: {path}")
+          '
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automatically remove Google Analytics tracking snippets"
