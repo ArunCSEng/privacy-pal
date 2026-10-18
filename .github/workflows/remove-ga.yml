@@ -17,16 +17,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run Robust ID-Based Cleanup
+      - name: Run Index-Based Clean Script
         run: |
           python3 -c '
-          import os, re
+          import os
 
           target_id = "G-R0WMWNF4NZ"
           modified_count = 0
 
           for root, dirs, files in os.walk("."):
-              if ".git" in root:
+              if ".git" in root or ".github" in root:
                   continue
               for file in files:
                   if file.endswith((".html", ".htm", ".php", ".phtml", ".js")):
@@ -37,28 +37,46 @@ jobs:
 
                           if target_id in content:
                               original_content = content
-
-                              # 1. Remove any <script>...</script> block containing the ID
-                              script_pattern = re.compile(r"<script[^>]*>.*?" + re.escape(target_id) + r".*?</script>", re.DOTALL | re.IGNORECASE)
-                              content = script_pattern.sub("", content)
-
-                              # 2. Remove any preceding Google tag HTML comment if left behind
-                              comment_pattern = re.compile(r"<!--\s*Google tag\s*\(gtag\.js\)\s*-->", re.IGNORECASE)
-                              content = comment_pattern.sub("", content)
+                              
+                              # Safely slice out the script block containing the ID
+                              while target_id in content:
+                                  idx = content.find(target_id)
+                                  
+                                  # Find surrounding script tags
+                                  script_start = max(content.rfind("<script", 0, idx), content.rfind("<SCRIPT", 0, idx))
+                                  script_end = max(content.find("</script>", idx), content.find("</SCRIPT>", idx))
+                                  
+                                  if script_start != -1 and script_end != -1:
+                                      script_end += len("</script>")
+                                      
+                                      # Check for preceding Google comment tag
+                                      comment_start = content.rfind("<!--", 0, script_start)
+                                      if comment_start != -1:
+                                          comment_end = content.find("-->", comment_start)
+                                          if comment_end != -1 and comment_end < script_start:
+                                              if "Google tag" in content[comment_start:comment_end+3]:
+                                                  script_start = comment_start
+                                      
+                                      content = content[:script_start] + content[script_end:]
+                                  else:
+                                      # Fallback: remove lines with ID if tags aren't matched
+                                      lines = content.splitlines(keepends=True)
+                                      content = "".join([l for l in lines if target_id not in l])
+                                      break
 
                               if content != original_content:
                                   with open(path, "w", encoding="utf-8") as f:
                                       f.write(content)
-                                  print(f"Successfully stripped ID from: {path}")
+                                  print(f"Successfully cleaned: {path}")
                                   modified_count += 1
                       except Exception as e:
-                          print(f"Skipped {path} due to error: {e}")
+                          print(f"Skipped {path}: {e}")
 
-          print(f"\nTotal files cleaned: {modified_count}")
+          print(f"Total files cleaned: {modified_count}")
           '
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Robust cleanup: Strip Google Analytics ID tags globally"
+          commit_message: "Clean snippet: Remove Google Analytics ID globally"
           branch: ${{ github.ref_name }}
