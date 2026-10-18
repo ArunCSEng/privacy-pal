@@ -2,7 +2,8 @@ name: Remove Google Analytics
 
 on:
   push:
-    branches: [ main, master ] # Change to your default branch if different
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   cleanup:
@@ -16,35 +17,48 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run Cleanup Script
+      - name: Run Robust ID-Based Cleanup
         run: |
           python3 -c '
           import os, re
-          
-          ga_script_pattern = re.compile(r"<script[^>]*src=[\x27\x27https://www\.googletagmanager\.com/gtag/js\?id=[^\x27\x27]+[\x27\x27][^>]*>.*?</script>", re.DOTALL | re.IGNORECASE)
-          ga_config_pattern = re.compile(r"<script[^>]*>\s*window\.dataLayer\s*=\s*window\.dataLayer\s*\|\|\s*\[\];\s*function\s*gtag\([^)]*\)\s*\{[^}]*\}\s*gtag\([^)]+\);\s*</script>", re.DOTALL | re.IGNORECASE)
-          gtag_inline_pattern = re.compile(r"<script[^>]*>.*?(?:gtag\(\s*[\x27\x27]config[\x27\x27]\s*,\s*[\x27\x27][GU]A-[^\x27\x27]+[\x27\x27]\s*\)).*?</script>", re.DOTALL | re.IGNORECASE)
+
+          target_id = "G-R0WMWNF4NZ"
+          modified_count = 0
 
           for root, dirs, files in os.walk("."):
-              # Skip hidden git folders
               if ".git" in root:
                   continue
               for file in files:
-                  if file.endswith((".html", ".htm", ".php")):
+                  if file.endswith((".html", ".htm", ".php", ".phtml", ".js")):
                       path = os.path.join(root, file)
-                      with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                          content = f.read()
-                      orig = content
-                      content = ga_script_pattern.sub("", content)
-                      content = ga_config_pattern.sub("", content)
-                      content = gtag_inline_pattern.sub("", content)
-                      if content != orig:
-                          with open(path, "w", encoding="utf-8") as f:
-                              f.write(content)
-                          print(f"Cleaned: {path}")
+                      try:
+                          with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                              content = f.read()
+
+                          if target_id in content:
+                              original_content = content
+
+                              # 1. Remove any <script>...</script> block containing the ID
+                              script_pattern = re.compile(r"<script[^>]*>.*?" + re.escape(target_id) + r".*?</script>", re.DOTALL | re.IGNORECASE)
+                              content = script_pattern.sub("", content)
+
+                              # 2. Remove any preceding Google tag HTML comment if left behind
+                              comment_pattern = re.compile(r"<!--\s*Google tag\s*\(gtag\.js\)\s*-->", re.IGNORECASE)
+                              content = comment_pattern.sub("", content)
+
+                              if content != original_content:
+                                  with open(path, "w", encoding="utf-8") as f:
+                                      f.write(content)
+                                  print(f"Successfully stripped ID from: {path}")
+                                  modified_count += 1
+                      except Exception as e:
+                          print(f"Skipped {path} due to error: {e}")
+
+          print(f"\nTotal files cleaned: {modified_count}")
           '
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automatically remove Google Analytics tracking snippets"
+          commit_message: "Robust cleanup: Strip Google Analytics ID tags globally"
+          branch: ${{ github.ref_name }}
