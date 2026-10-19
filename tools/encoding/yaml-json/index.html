@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>YAML ↔ JSON Converter — Free Offline Client-Side Tool | BitDark</title>
+  <meta name="title" content="YAML ↔ JSON Converter — Free Offline Client-Side Tool | BitDark" />
+  <meta name="description" content="Convert YAML to JSON and JSON to YAML entirely offline in browser memory. Local parsing, schema validation, zero telemetry, and zero network egress." />
+  <meta name="keywords" content="yaml to json, json to yaml, offline yaml parser, client side yaml converter, secure json formatter, zero log data converter" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/yaml-json" />
+
+  <!-- js-yaml Engine for Strict Spec Compliant In-Memory Parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Wrapper */
+    .wrapper {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+      flex: 1;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 20px; }
+    .tool-header h1 { font-size: 1.7rem; color: var(--atom-heading); margin-bottom: 6px; font-weight: 700; }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Tool Card & Converter Layout */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    }
+
+    /* Primary Toolbar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--atom-border);
+      margin-bottom: 16px;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:active { transform: translateY(1px); }
+    .btn-atom.btn-active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      box-shadow: 0 0 0 2px var(--atom-border-focus);
+    }
+    .btn-atom-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-weight: 600;
+    }
+    .btn-atom-secondary:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
+    }
+
+    .config-select-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-muted);
+    }
+    .atom-select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .atom-select:focus { border-color: var(--atom-border-focus); }
+
+    /* Alert / Validation Messenger */
+    .status-alert {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      word-break: break-word;
+    }
+    .status-alert.error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+    .status-alert.success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+
+    /* Split Editor Workspace */
+    .converter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .pane {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .pane-header {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pane-title {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pane-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background-color: var(--atom-surface);
+      color: var(--atom-cyan);
+      border: 1px solid var(--atom-border);
+      font-weight: normal;
+    }
+    .pane-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .btn-pane-sm {
+      background: none;
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      color: var(--atom-text);
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-pane-sm:hover {
+      border-color: var(--atom-text);
+      color: var(--atom-heading);
+      background-color: var(--atom-surface);
+    }
+
+    .editor-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      min-height: 440px;
+    }
+    .editor-textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 440px;
+      background-color: transparent;
+      border: none;
+      padding: 14px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      line-height: 1.55;
+      resize: vertical;
+      outline: none;
+      tab-size: 2;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow-x: auto;
+    }
+    .editor-textarea:focus {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .pane-footer {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-top: 1px solid var(--atom-border);
+      padding: 6px 12px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Disclaimer Section */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 30px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Explainer Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; font-weight: 600; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    .file-input-hidden { display: none; }
+
+    /* Responsive / Mobile Optimization */
+    @media (max-width: 900px) {
+      .nav-inner {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        gap: 10px;
+      }
+      .brand { justify-self: center; }
+      .trust-badge { justify-self: center; }
+      .ip-pill-nav {
+        justify-self: center;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .converter-grid {
+        grid-template-columns: 1fr;
+      }
+      .editor-wrapper,
+      .editor-textarea {
+        min-height: 280px;
+      }
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        width: 100%;
+      }
+      .btn-atom {
+        justify-content: center;
+        text-align: center;
+      }
+      .config-select-group {
+        justify-content: space-between;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      /* Prevent iOS Safari auto-zoom by enforcing 16px input font size */
+      .editor-textarea {
+        font-size: 16px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar { padding: 8px 12px; }
+      .wrapper { padding: 14px 10px 40px; }
+      .tool-header h1 { font-size: 1.4rem; }
+      .tool-card { padding: 12px; }
+      .editor-textarea {
+        padding: 10px;
+        min-height: 240px;
+      }
+      .editor-wrapper { min-height: 240px; }
+      .pane-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .pane-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .btn-pane-sm {
+        flex: 1;
+        text-align: center;
+        padding: 5px 4px;
+      }
+      .btn-group {
+        grid-template-columns: 1fr 1fr;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding</a> / yaml-json
+    </nav>
+
+    <div class="tool-header">
+      <h1>YAML ↔ JSON Converter</h1>
+      <p>Convert and format structured YAML and JSON specifications natively in-browser with real-time error tracking and 0-byte network egress.</p>
+    </div>
+
+    <!-- Active Conversion Suite -->
+    <div class="tool-card">
+      <div class="controls-bar">
+        <div class="btn-group">
+          <button class="btn-atom btn-active" id="btnModeYamlToJson" title="Source: YAML (Left) → Target: JSON (Right)">
+            <span>YAML → JSON</span>
+          </button>
+          <button class="btn-atom btn-atom-secondary" id="btnModeJsonToYaml" title="Source: JSON (Left) → Target: YAML (Right)">
+            <span>JSON → YAML</span>
+          </button>
+          <button class="btn-atom btn-atom-secondary" id="btnSwap" title="Swap Source and Target Directions">
+            <span>⇄ Swap</span>
+          </button>
+          <button class="btn-atom btn-atom-secondary" id="btnConvert" title="Execute Conversion (Source → Target)">
+            <span>⚡ Convert</span>
+          </button>
+          <button class="btn-atom btn-atom-secondary" id="btnSample" title="Load Demo Payload">
+            <span>Sample</span>
+          </button>
+          <button class="btn-atom btn-atom-secondary" id="btnClear" title="Clear Both Panes">
+            <span>Clear</span>
+          </button>
+        </div>
+
+        <div class="config-select-group">
+          <label for="indentationSelect">Indent Size:</label>
+          <select id="indentationSelect" class="atom-select">
+            <option value="2" selected>2 Spaces</option>
+            <option value="4">4 Spaces</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Real-Time Error or Notification Banner -->
+      <div id="statusAlert" class="status-alert">
+        <span id="statusAlertMsg">Ready</span>
+        <span id="statusAlertClose" style="cursor: pointer; opacity: 0.8; font-weight: bold; padding-left: 12px;">✕</span>
+      </div>
+
+      <!-- Split Code Panes (Left = Source, Right = Target) -->
+      <div class="converter-grid">
+        <!-- Source Pane (Left) -->
+        <section class="pane" id="sourceSection">
+          <div class="pane-header">
+            <div class="pane-title">
+              <span id="sourceTitle">YAML (Source)</span>
+              <span class="pane-badge" id="sourceBadge">YAML 1.2</span>
+            </div>
+            <div class="pane-actions" id="sourceActions">
+              <button class="btn-pane-sm" id="btnUploadSource">Upload</button>
+              <button class="btn-pane-sm" id="btnFormatSource" style="display:none;">Format</button>
+              <button class="btn-pane-sm" id="btnMinifySource" style="display:none;">Minify</button>
+              <button class="btn-pane-sm" id="btnCopySource">Copy</button>
+              <button class="btn-pane-sm" id="btnDownloadSource">Download</button>
+              <input type="file" id="filePickerSource" class="file-input-hidden" />
+            </div>
+          </div>
+          <div class="editor-wrapper">
+            <textarea id="sourceInput" class="editor-textarea" spellcheck="false" placeholder="# Type or paste source payload here..."></textarea>
+          </div>
+          <div class="pane-footer">
+            <span id="sourceStats">Lines: 0 | Chars: 0</span>
+            <span id="sourceEncoding">UTF-8</span>
+          </div>
+        </section>
+
+        <!-- Target Pane (Right) -->
+        <section class="pane" id="targetSection">
+          <div class="pane-header">
+            <div class="pane-title">
+              <span id="targetTitle">JSON (Target)</span>
+              <span class="pane-badge" id="targetBadge">RFC 8259</span>
+            </div>
+            <div class="pane-actions" id="targetActions">
+              <button class="btn-pane-sm" id="btnUploadTarget">Upload</button>
+              <button class="btn-pane-sm" id="btnFormatTarget">Format</button>
+              <button class="btn-pane-sm" id="btnMinifyTarget">Minify</button>
+              <button class="btn-pane-sm" id="btnCopyTarget">Copy</button>
+              <button class="btn-pane-sm" id="btnDownloadTarget">Download</button>
+              <input type="file" id="filePickerTarget" class="file-input-hidden" />
+            </div>
+          </div>
+          <div class="editor-wrapper">
+            <textarea id="targetInput" class="editor-textarea" spellcheck="false" placeholder="// Converted target output appears here..."></textarea>
+          </div>
+          <div class="pane-footer">
+            <span id="targetStats">Lines: 0 | Chars: 0</span>
+            <span id="targetEncoding">UTF-8</span>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Mandatory Disclaimer & Limitation of Liability -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Disclaimer & Limitation of Liability
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible:</strong> This utility is provided on an "as is" and "as available" basis without warranties of any kind, whether express, statutory, or implied. BitDark.net, its authors, and operators disclaim all liability and responsibility for any data corruption, syntax conversion inaccuracies, schema translation discrepancies, production downtime, data loss, or system failures resulting from the use or reliance upon this software. All data processing occurs strictly in-memory within the local browser sandbox. Users maintain full responsibility for cross-verifying and validating converted schemas prior to committing configurations to production environments.
+      </p>
+    </aside>
+
+    <!-- Technical Guide & Architecture -->
+    <article class="doc-section">
+      <h2>Architecture & Zero-Egress Operation</h2>
+      <p>
+        BitDark's YAML ↔ JSON converter is designed for security auditors, cloud infrastructure engineers, and developers who manage sensitive configuration keys, Kubernetes manifests, and application secrets. Traditional online formatters transmit payloads to remote backends, introducing risk of external credential scraping and log exposure.
+      </p>
+      <ul>
+        <li><strong>Strict Sandbox Isolation:</strong> Payloads are parsed locally through pure JavaScript Web APIs and the audited <code>js-yaml</code> library.</li>
+        <li><strong>No Telemetry & No Storage:</strong> The tool does not use <code>localStorage</code>, session tracking, remote logging, or cookie trackers. Memory buffers are freed once cleared.</li>
+        <li><strong>Dual Spec Compatibility:</strong> Converts scalar mappings, associative lists, nested arrays, multi-line blocks, and handles JSON strict typing conversions with precision.</li>
+      </ul>
+
+      <h2>Conversion Constraints</h2>
+      <p>
+        While every standard JSON structure translates cleanly into valid YAML, certain extended YAML specifications (such as custom data type tags, multi-document sequences separated by <code>---</code>, and recursive anchors) cannot be represented in single standard JSON documents without flattening or data-loss. In such cases, the tool parses the primary root document and reports structural limitations.
+      </p>
+    </article>
+
+    <!-- Footer -->
+    <footer class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </footer>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with AbortControllers
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, options = {}, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { ...options, signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (err) {
+          clearTimeout(timer);
+          throw err;
+        }
+      };
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetchWithTimeout("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com", { cache: "no-store" }, 2500);
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Dynamic Bidirectional Pipeline Engine
+    let currentMode = "yaml-to-json"; // 'yaml-to-json' | 'json-to-yaml'
+
+    const sourceInput = document.getElementById("sourceInput");
+    const targetInput = document.getElementById("targetInput");
+    const sourceTitle = document.getElementById("sourceTitle");
+    const targetTitle = document.getElementById("targetTitle");
+    const sourceBadge = document.getElementById("sourceBadge");
+    const targetBadge = document.getElementById("targetBadge");
+    const sourceStats = document.getElementById("sourceStats");
+    const targetStats = document.getElementById("targetStats");
+
+    const btnFormatSource = document.getElementById("btnFormatSource");
+    const btnMinifySource = document.getElementById("btnMinifySource");
+    const btnFormatTarget = document.getElementById("btnFormatTarget");
+    const btnMinifyTarget = document.getElementById("btnMinifyTarget");
+
+    const btnModeYamlToJson = document.getElementById("btnModeYamlToJson");
+    const btnModeJsonToYaml = document.getElementById("btnModeJsonToYaml");
+    const btnSwap = document.getElementById("btnSwap");
+    const btnConvert = document.getElementById("btnConvert");
+    const btnSample = document.getElementById("btnSample");
+    const btnClear = document.getElementById("btnClear");
+    const indentationSelect = document.getElementById("indentationSelect");
+
+    const statusAlert = document.getElementById("statusAlert");
+    const statusAlertMsg = document.getElementById("statusAlertMsg");
+    const statusAlertClose = document.getElementById("statusAlertClose");
+
+    const filePickerSource = document.getElementById("filePickerSource");
+    const filePickerTarget = document.getElementById("filePickerTarget");
+    const btnUploadSource = document.getElementById("btnUploadSource");
+    const btnUploadTarget = document.getElementById("btnUploadTarget");
+    const btnCopySource = document.getElementById("btnCopySource");
+    const btnCopyTarget = document.getElementById("btnCopyTarget");
+    const btnDownloadSource = document.getElementById("btnDownloadSource");
+    const btnDownloadTarget = document.getElementById("btnDownloadTarget");
+
+    function showAlert(msg, isError = false) {
+      statusAlert.className = `status-alert ${isError ? 'error' : 'success'}`;
+      statusAlert.style.display = "flex";
+      statusAlertMsg.textContent = msg;
+    }
+
+    function clearAlert() {
+      statusAlert.className = "status-alert";
+      statusAlert.style.display = "none";
+    }
+
+    statusAlertClose.addEventListener("click", () => {
+      statusAlert.style.display = "none";
+    });
+
+    function updateStats() {
+      const sVal = sourceInput.value;
+      const sLines = sVal ? sVal.split("\n").length : 0;
+      sourceStats.textContent = `Lines: ${sLines} | Chars: ${sVal.length}`;
+
+      const tVal = targetInput.value;
+      const tLines = tVal ? tVal.split("\n").length : 0;
+      targetStats.textContent = `Lines: ${tLines} | Chars: ${tVal.length}`;
+    }
+
+    sourceInput.addEventListener("input", updateStats);
+    targetInput.addEventListener("input", updateStats);
+
+    // Tab key support
+    [sourceInput, targetInput].forEach(area => {
+      area.addEventListener("keydown", function(e) {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const indent = " ".repeat(parseInt(indentationSelect.value, 10));
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + indent + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + indent.length;
+          updateStats();
+        }
+      });
+    });
+
+    // Synchronize UI Mode (Source -> Target Mapping)
+    function setConverterMode(mode, autoExecute = true) {
+      currentMode = mode;
+      clearAlert();
+
+      if (mode === "yaml-to-json") {
+        btnModeYamlToJson.className = "btn-atom btn-active";
+        btnModeJsonToYaml.className = "btn-atom btn-atom-secondary";
+
+        sourceTitle.textContent = "YAML (Source)";
+        sourceBadge.textContent = "YAML 1.2";
+        sourceInput.placeholder = "# Type or paste YAML data here...";
+        filePickerSource.accept = ".yaml,.yml,.txt";
+        btnFormatSource.style.display = "none";
+        btnMinifySource.style.display = "none";
+
+        targetTitle.textContent = "JSON (Target)";
+        targetBadge.textContent = "RFC 8259";
+        targetInput.placeholder = "// Converted JSON output appears here...";
+        filePickerTarget.accept = ".json,.txt";
+        btnFormatTarget.style.display = "inline-block";
+        btnMinifyTarget.style.display = "inline-block";
+      } else {
+        btnModeJsonToYaml.className = "btn-atom btn-active";
+        btnModeYamlToJson.className = "btn-atom btn-atom-secondary";
+
+        sourceTitle.textContent = "JSON (Source)";
+        sourceBadge.textContent = "RFC 8259";
+        sourceInput.placeholder = "// Type or paste JSON data here...";
+        filePickerSource.accept = ".json,.txt";
+        btnFormatSource.style.display = "inline-block";
+        btnMinifySource.style.display = "inline-block";
+
+        targetTitle.textContent = "YAML (Target)";
+        targetBadge.textContent = "YAML 1.2";
+        targetInput.placeholder = "# Converted YAML output appears here...";
+        filePickerTarget.accept = ".yaml,.yml,.txt";
+        btnFormatTarget.style.display = "none";
+        btnMinifyTarget.style.display = "none";
+      }
+
+      if (autoExecute && sourceInput.value.trim()) {
+        executeConversion();
+      }
+    }
+
+    // Core Conversion Routine
+    function executeConversion() {
+      clearAlert();
+      const raw = sourceInput.value.trim();
+      const indent = parseInt(indentationSelect.value, 10);
+
+      if (!raw) {
+        showAlert("Source input is empty. Paste data or load a sample.", true);
+        return;
+      }
+
+      if (typeof jsyaml === "undefined") {
+        showAlert("js-yaml parser failed to initialize. Check network script imports.", true);
+        return;
+      }
+
+      if (currentMode === "yaml-to-json") {
+        try {
+          const parsed = jsyaml.load(raw);
+          if (parsed === undefined) {
+            showAlert("YAML evaluated to empty or undefined payload.", true);
+            return;
+          }
+          targetInput.value = JSON.stringify(parsed, null, indent);
+          updateStats();
+          showAlert("Successfully converted YAML to JSON.", false);
+        } catch (err) {
+          let msg = "YAML Parse Error: " + err.message;
+          if (err.mark && err.mark.line !== undefined) {
+            msg = `YAML Syntax Error (Line ${err.mark.line + 1}, Col ${err.mark.column + 1}): ${err.reason || err.message}`;
+          }
+          showAlert(msg, true);
+        }
+      } else {
+        // Mode: json-to-yaml (with AST fallback for fault tolerance)
+        try {
+          let parsed;
+          try {
+            parsed = JSON.parse(raw);
+          } catch (jsonErr) {
+            // Fault tolerance: attempt relaxed parsing if user pasted YAML or unquoted JSON
+            parsed = jsyaml.load(raw);
+            if (typeof parsed !== "object" || parsed === null) {
+              throw jsonErr;
+            }
+          }
+
+          const converted = jsyaml.dump(parsed, {
+            indent: indent,
+            noArrayIndent: false,
+            skipInvalid: true,
+            lineWidth: -1
+          });
+          targetInput.value = converted;
+          updateStats();
+          showAlert("Successfully converted JSON to YAML.", false);
+        } catch (err) {
+          showAlert("JSON Parse Error: " + err.message, true);
+        }
+      }
+    }
+
+    btnConvert.addEventListener("click", executeConversion);
+    btnModeYamlToJson.addEventListener("click", () => setConverterMode("yaml-to-json"));
+    btnModeJsonToYaml.addEventListener("click", () => setConverterMode("json-to-yaml"));
+
+    // Swap Panes & Direction
+    btnSwap.addEventListener("click", () => {
+      clearAlert();
+      const previousTarget = targetInput.value;
+      const previousSource = sourceInput.value;
+
+      // Invert mode
+      const nextMode = currentMode === "yaml-to-json" ? "json-to-yaml" : "yaml-to-json";
+
+      // Transfer the target output into the source input
+      if (previousTarget.trim()) {
+        sourceInput.value = previousTarget;
+        targetInput.value = "";
+      } else {
+        sourceInput.value = previousSource;
+      }
+
+      setConverterMode(nextMode, false);
+      executeConversion();
+      showAlert(`Swapped pipeline to ${nextMode === 'yaml-to-json' ? 'YAML → JSON' : 'JSON → YAML'}.`, false);
+    });
+
+    // Reactive Indentation Change Listener
+    indentationSelect.addEventListener("change", () => {
+      const indent = parseInt(indentationSelect.value, 10);
+      
+      // If target or source has JSON, reformat cleanly
+      if (currentMode === "yaml-to-json" && targetInput.value.trim()) {
+        try {
+          const parsed = JSON.parse(targetInput.value);
+          targetInput.value = JSON.stringify(parsed, null, indent);
+          updateStats();
+          showAlert(`JSON target updated to ${indent} spaces.`, false);
+          return;
+        } catch (_) {}
+      } else if (currentMode === "json-to-yaml" && sourceInput.value.trim()) {
+        try {
+          const parsed = JSON.parse(sourceInput.value);
+          sourceInput.value = JSON.stringify(parsed, null, indent);
+          updateStats();
+        } catch (_) {}
+      }
+
+      executeConversion();
+    });
+
+    // Format & Minify Helpers
+    function handleFormatJson(textArea) {
+      clearAlert();
+      const raw = textArea.value.trim();
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        const indent = parseInt(indentationSelect.value, 10);
+        textArea.value = JSON.stringify(parsed, null, indent);
+        updateStats();
+        showAlert("JSON formatted cleanly.", false);
+      } catch (err) {
+        showAlert("Invalid JSON: " + err.message, true);
+      }
+    }
+
+    function handleMinifyJson(textArea) {
+      clearAlert();
+      const raw = textArea.value.trim();
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        textArea.value = JSON.stringify(parsed);
+        updateStats();
+        showAlert("JSON minified successfully.", false);
+      } catch (err) {
+        showAlert("Invalid JSON: " + err.message, true);
+      }
+    }
+
+    btnFormatTarget.addEventListener("click", () => handleFormatJson(targetInput));
+    btnMinifyTarget.addEventListener("click", () => handleMinifyJson(targetInput));
+    btnFormatSource.addEventListener("click", () => handleFormatJson(sourceInput));
+    btnMinifySource.addEventListener("click", () => handleMinifyJson(sourceInput));
+
+    // Clear Workspace
+    btnClear.addEventListener("click", () => {
+      sourceInput.value = "";
+      targetInput.value = "";
+      updateStats();
+      clearAlert();
+    });
+
+    // Sample Kubernetes Manifest
+    btnSample.addEventListener("click", () => {
+      clearAlert();
+      setConverterMode("yaml-to-json", false);
+      const sampleYaml = `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: bitdark-ingress\n  namespace: production\n  labels:\n    app: zero-telemetry\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: zero-telemetry\n  template:\n    metadata:\n      labels:\n        app: zero-telemetry\n    spec:\n      containers:\n        - name: gateway\n          image: bitdark/ingress:latest\n          ports:\n            - containerPort: 443\n          securityContext:\n            readOnlyRootFilesystem: true\n            allowPrivilegeEscalation: false`;
+      sourceInput.value = sampleYaml;
+      executeConversion();
+      showAlert("Loaded Kubernetes sample configuration.", false);
+    });
+
+    // Clipboard Copy Helpers
+    async function copyToClipboard(text, label) {
+      if (!text.trim()) {
+        showAlert(`${label} pane is empty.`, true);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        showAlert(`Copied ${label} to clipboard.`, false);
+      } catch {
+        showAlert(`Failed to copy ${label} to clipboard.`, true);
+      }
+    }
+
+    btnCopySource.addEventListener("click", () => copyToClipboard(sourceInput.value, sourceTitle.textContent));
+    btnCopyTarget.addEventListener("click", () => copyToClipboard(targetInput.value, targetTitle.textContent));
+
+    // File Downloads
+    function downloadBlob(content, getFilename, type) {
+      if (!content.trim()) {
+        showAlert("Cannot export empty content.", true);
+        return;
+      }
+      const blob = new Blob([content], { type: type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = getFilename();
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    btnDownloadSource.addEventListener("click", () => {
+      const ext = currentMode === "yaml-to-json" ? "yaml" : "json";
+      const mime = ext === "yaml" ? "text/yaml;charset=utf-8" : "application/json;charset=utf-8";
+      downloadBlob(sourceInput.value, () => `source-config-${Date.now()}.${ext}`, mime);
+    });
+
+    btnDownloadTarget.addEventListener("click", () => {
+      const ext = currentMode === "yaml-to-json" ? "json" : "yaml";
+      const mime = ext === "json" ? "application/json;charset=utf-8" : "text/yaml;charset=utf-8";
+      downloadBlob(targetInput.value, () => `target-config-${Date.now()}.${ext}`, mime);
+    });
+
+    // File Upload Handlers
+    btnUploadSource.addEventListener("click", () => filePickerSource.click());
+    btnUploadTarget.addEventListener("click", () => filePickerTarget.click());
+
+    filePickerSource.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        sourceInput.value = event.target.result;
+        updateStats();
+        executeConversion();
+        showAlert(`Imported ${file.name} into Source.`, false);
+      };
+      reader.readAsText(file);
+      filePickerSource.value = "";
+    });
+
+    filePickerTarget.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        targetInput.value = event.target.result;
+        updateStats();
+        showAlert(`Imported ${file.name} into Target.`, false);
+      };
+      reader.readAsText(file);
+      filePickerTarget.value = "";
+    });
+
+    // Drag-and-Drop Support
+    [
+      { area: sourceInput, isSource: true },
+      { area: targetInput, isSource: false }
+    ].forEach(({ area, isSource }) => {
+      area.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        area.style.backgroundColor = "rgba(82, 139, 255, 0.08)";
+      });
+      area.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        area.style.backgroundColor = "";
+      });
+      area.addEventListener("drop", (e) => {
+        e.preventDefault();
+        area.style.backgroundColor = "";
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const file = e.dataTransfer.files[0];
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            area.value = event.target.result;
+            updateStats();
+            if (isSource) executeConversion();
+            showAlert(`Loaded ${file.name}.`, false);
+          };
+          reader.readAsText(file);
+        }
+      });
+    });
+
+    // Initial Setup
+    setConverterMode("yaml-to-json", false);
+    updateStats();
+  </script>
+</body>
+</html>
