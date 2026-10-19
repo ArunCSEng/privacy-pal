@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>Offline SQLite Database Viewer & Inspector | BitDark</title>
+  <meta name="title" content="Offline SQLite Database Viewer & Inspector | BitDark" />
+  <meta name="description" content="Open, query, and inspect SQLite (.db, .sqlite, .sqlite3) databases directly in your browser. Zero uploads, zero tracking, entirely client-side." />
+  <meta name="keywords" content="sqlite viewer, sqlite online reader, client-side sqlite inspector, read sqlite browser offline, sqlite forensics tool" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/sqlite-viewer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    
+    .nav-stats {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1200px; margin: 0 auto; padding: 20px 14px 60px; }
+
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      word-break: break-all;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+
+    .tool-header { margin-bottom: 20px; }
+    .tool-header h1 { font-size: 1.55rem; color: var(--atom-heading); margin-bottom: 6px; word-break: break-word; }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Tool Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 14px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.9rem; color: var(--atom-text); margin-bottom: 6px; }
+    .dropzone-hint { font-size: 0.74rem; color: var(--atom-muted); font-family: var(--font-code); display: block; }
+    .file-input-hidden { display: none; }
+
+    .global-alert {
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .global-alert.error {
+      background-color: rgba(224, 108, 117, 0.15);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+      display: block;
+    }
+
+    /* Workspace */
+    .workspace-area { margin-top: 14px; display: none; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.68rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.8rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    /* Database Split Pane (min-width: 0 prevents table blowouts) */
+    .db-container {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+      min-width: 0;
+    }
+
+    .tables-panel {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 520px;
+      min-width: 0;
+    }
+    .tables-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 6px;
+    }
+    .tables-panel-header h3 {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .table-search-input {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      padding: 6px 8px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      outline: none;
+      width: 100%;
+    }
+    .table-search-input:focus { border-color: var(--atom-cyan); }
+
+    .table-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 2px;
+    }
+    .table-btn {
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 1px solid transparent;
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      padding: 7px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      word-break: break-all;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .table-btn:hover {
+      background-color: var(--atom-surface);
+      color: var(--atom-heading);
+    }
+    .table-btn.active {
+      background-color: var(--atom-surface);
+      border-color: var(--atom-cyan);
+      color: var(--atom-cyan);
+      font-weight: 600;
+    }
+
+    /* Query Work Area */
+    .query-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .sql-editor-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+    .sql-input {
+      width: 100%;
+      height: 95px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      color: var(--atom-heading);
+      resize: vertical;
+      outline: none;
+      line-height: 1.45;
+    }
+    .sql-input:focus { border-color: var(--atom-border-focus); }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      transition: opacity 0.2s;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-weight: 600;
+    }
+    .btn-secondary:hover { background-color: var(--atom-gutter); color: var(--atom-heading); }
+
+    /* Results Table */
+    .table-viewport {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      max-height: 420px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      min-width: 0;
+    }
+    table.sql-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      text-align: left;
+    }
+    table.sql-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-amber);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      position: sticky;
+      top: 0;
+      white-space: nowrap;
+      z-index: 2;
+    }
+    table.sql-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      white-space: nowrap;
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    table.sql-table tr:hover td { background-color: rgba(255,255,255,0.03); }
+
+    .query-msg {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      display: none;
+      word-break: break-all;
+    }
+    .query-msg.error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+      display: block;
+    }
+    .query-msg.success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+      display: block;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 4px;
+      font-size: 0.86rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.15rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 10px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 12px; }
+    .doc-section li { margin-bottom: 4px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Overrides */
+    @media (max-width: 820px) {
+      .db-container { grid-template-columns: 1fr; }
+      .tables-panel { max-height: 220px; }
+    }
+
+    @media (max-width: 600px) {
+      .navbar { padding: 8px 12px; }
+      .nav-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .nav-stats { width: 100%; justify-content: space-between; }
+      .ip-pill-nav { width: 100%; justify-content: space-between; font-size: 0.68rem; }
+      .wrapper { padding: 14px 10px 50px; }
+      .tool-header h1 { font-size: 1.35rem; }
+      .tool-card { padding: 12px; }
+      .dropzone { padding: 24px 10px; }
+      .sql-input { font-size: 16px; } /* Prevents iOS Safari auto-zoom */
+      .action-row { flex-direction: column; align-items: stretch; }
+      .btn-group { width: 100%; }
+      .btn-group .btn-atom { flex: 1; }
+      #btnCloseDb { width: 100%; }
+      .meta-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-stats">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / sqlite-viewer
+    </nav>
+
+    <div class="tool-header">
+      <h1>Offline SQLite Database Viewer</h1>
+      <p>Inspect schemas, browse tables, and execute custom SQL queries locally inside your browser WebAssembly sandbox.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div id="globalAlert" class="global-alert"></div>
+
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🗄️</span>
+        <p><strong>Click to choose a database</strong> or drag & drop file here</p>
+        <span class="dropzone-hint">Supports .db, .sqlite, .sqlite3, .sqlitedb (Memory processing only, 0-byte upload)</span>
+      </div>
+      <!-- File input positioned outside dropzone to eliminate bubbling/double-dialog bugs -->
+      <input type="file" id="filePicker" class="file-input-hidden" accept=".db,.sqlite,.sqlite3,.sqlitedb,.dump,application/x-sqlite3,application/octet-stream,*" />
+
+      <div class="workspace-area" id="workspaceArea">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File & Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Hash</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Tables Located</div>
+            <div class="meta-val" id="metaTables">-</div>
+          </div>
+        </div>
+
+        <div class="db-container">
+          <div class="tables-panel">
+            <div class="tables-panel-header">
+              <h3>Tables</h3>
+              <span id="tableCountBadge" style="font-family: var(--font-code); font-size: 0.72rem; color: var(--atom-muted);">0</span>
+            </div>
+            <input type="text" id="tableSearch" class="table-search-input" placeholder="Filter tables..." autocomplete="off" />
+            <ul class="table-list" id="tableList"></ul>
+          </div>
+
+          <div class="query-panel">
+            <div class="sql-editor-container">
+              <textarea class="sql-input" id="sqlQuery" placeholder="SELECT * FROM table_name LIMIT 100;"></textarea>
+              <div class="action-row">
+                <div class="btn-group">
+                  <button class="btn-atom" id="btnRunQuery">Execute SQL</button>
+                  <button class="btn-atom btn-secondary" id="btnViewSchema">Inspect Schema</button>
+                  <button class="btn-atom btn-secondary" id="btnExportCsv">Export CSV</button>
+                </div>
+                <button class="btn-atom btn-secondary" id="btnCloseDb">Close DB</button>
+              </div>
+            </div>
+
+            <div id="queryMessage" class="query-msg"></div>
+
+            <div class="table-viewport" id="tableViewport">
+              <table class="sql-table" id="resultsTable">
+                <thead><tr><th>No query executed yet</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Disclaimer & Data Reliability Notice
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages</strong> arising from the use of this tool, including data corruption, unrecovered forensic records, misinterpretation of database schemas, or loss of proprietary information. All processing executes strictly within client-side memory using WebAssembly. Users maintain sole responsibility for ensuring compliance with applicable data privacy, security, and digital chain-of-custody protocols before opening or querying critical database files.
+      </p>
+    </aside>
+
+    <!-- Technical Guide -->
+    <article class="doc-section">
+      <h2>In-Browser WebAssembly Architecture</h2>
+      <p>This utility initializes an isolated SQLite virtual machine compiled directly to WebAssembly (sql.js). When a file is loaded, it is read into an <code>ArrayBuffer</code> and instantiated completely offline within memory:</p>
+      <ul>
+        <li><strong>Zero Network Egress:</strong> Database records, sensitive credential caches, or browser history stores are never uploaded across network ports.</li>
+        <li><strong>Read-Only Safety:</strong> Queries run against the in-memory virtual image, ensuring original local files remain untouched and unmodified on disk.</li>
+        <li><strong>Forensics & Inspection:</strong> Allows instant query diagnostics for mobile app databases, browser storage files (e.g., Chrome/Firefox History or Cookies), and system caches without external native software installation.</li>
+      </ul>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Prevent accidental page navigation when files are dropped outside the dropzone
+    window.addEventListener("dragover", (e) => e.preventDefault(), false);
+    window.addEventListener("drop", (e) => e.preventDefault(), false);
+
+    // Dual-Stack IP Telemetry with Abort Timeouts
+    async function fetchWithTimeout(url, timeoutMs = 3500) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+        clearTimeout(id);
+        return response;
+      } catch (err) {
+        clearTimeout(id);
+        throw err;
+      }
+    }
+
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // Dedicated IPv4 Check
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("Primary failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+          } catch {
+            ipv4El.textContent = "Offline";
+          }
+        }
+      })();
+
+      // Dedicated AAAA IPv6 Check
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          if (res6.ok) {
+            const d6 = await res6.json();
+            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("Primary failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            const text6 = (await fb6.text()).trim();
+            ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+          } catch {
+            ipv6El.textContent = "Not Supported";
+          }
+        }
+      })();
+    }
+
+    // Dynamic Script Loader with Element Removal on Failure and Timeout
+    function loadScript(src, timeoutMs = 5000) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = true;
+        let timer = setTimeout(() => {
+          s.remove();
+          reject(new Error("Script load timeout: " + src));
+        }, timeoutMs);
+        s.onload = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+        s.onerror = (err) => {
+          clearTimeout(timer);
+          s.remove();
+          reject(err);
+        };
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureSqlJsLoaded() {
+      if (typeof initSqlJs === "function") return;
+      const scriptMirrors = [
+        "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js",
+        "https://unpkg.com/sql.js@1.12.0/dist/sql-wasm.js",
+        "https://cdn.jsdelivr.net/npm/sql.js@1.12.0/dist/sql-wasm.js"
+      ];
+      for (const mirror of scriptMirrors) {
+        try {
+          await loadScript(mirror);
+          if (typeof initSqlJs === "function") return;
+        } catch {}
+      }
+      throw new Error("Failed to load sql.js engine across all CDN mirrors.");
+    }
+
+    // Direct Binary Buffer Fetcher (Triple-Mirror)
+    async function fetchWasmBinary() {
+      const mirrors = [
+        "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.wasm",
+        "https://unpkg.com/sql.js@1.12.0/dist/sql-wasm.wasm",
+        "https://cdn.jsdelivr.net/npm/sql.js@1.12.0/dist/sql-wasm.wasm"
+      ];
+
+      for (const url of mirrors) {
+        try {
+          const resp = await fetchWithTimeout(url, 5000);
+          if (resp.ok) {
+            return await resp.arrayBuffer();
+          }
+        } catch {}
+      }
+      throw new Error("Failed to load sql-wasm.wasm binary across all CDN mirrors.");
+    }
+
+    let SQLModule = null;
+    let sqlInitPromise = null;
+
+    async function initSql() {
+      if (SQLModule) return SQLModule;
+      if (!sqlInitPromise) {
+        sqlInitPromise = (async () => {
+          try {
+            await ensureSqlJsLoaded();
+            const wasmBinary = await fetchWasmBinary();
+            SQLModule = await initSqlJs({ wasmBinary });
+            return SQLModule;
+          } catch (err) {
+            sqlInitPromise = null; // Reset cache so retry works on network restoration
+            throw err;
+          }
+        })();
+      }
+      return sqlInitPromise;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      detectUserIPs();
+      initSql().catch(() => {});
+    });
+
+    // SQLite Logic & Management
+    let activeDb = null;
+    let lastQueryResults = null;
+    let currentSelectedTable = "";
+    let cachedTableList = [];
+
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const workspaceArea = document.getElementById("workspaceArea");
+    const globalAlert = document.getElementById("globalAlert");
+    const metaFile = document.getElementById("metaFile");
+    const metaHash = document.getElementById("metaHash");
+    const metaTables = document.getElementById("metaTables");
+    const tableList = document.getElementById("tableList");
+    const tableCountBadge = document.getElementById("tableCountBadge");
+    const tableSearch = document.getElementById("tableSearch");
+    const sqlQuery = document.getElementById("sqlQuery");
+    const btnRunQuery = document.getElementById("btnRunQuery");
+    const btnViewSchema = document.getElementById("btnViewSchema");
+    const btnExportCsv = document.getElementById("btnExportCsv");
+    const btnCloseDb = document.getElementById("btnCloseDb");
+    const resultsTable = document.getElementById("resultsTable");
+    const queryMessage = document.getElementById("queryMessage");
+
+    dropArea.addEventListener("click", () => filePicker.click());
+    filePicker.addEventListener("click", (e) => e.stopPropagation());
+
+    ["dragenter", "dragover"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        loadDatabaseFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        loadDatabaseFile(e.target.files[0]);
+      }
+    });
+
+    btnCloseDb.addEventListener("click", resetToDropzone);
+
+    function resetToDropzone() {
+      if (activeDb) {
+        try { activeDb.close(); } catch {}
+        activeDb = null;
+      }
+      workspaceArea.style.display = "none";
+      dropArea.style.display = "block";
+      globalAlert.style.display = "none";
+      filePicker.value = "";
+      sqlQuery.value = "";
+      tableList.innerHTML = "";
+      tableSearch.value = "";
+      cachedTableList = [];
+      lastQueryResults = null;
+      currentSelectedTable = "";
+      resultsTable.innerHTML = "<thead><tr><th>No query executed yet</th></tr></thead><tbody></tbody>";
+      queryMessage.style.display = "none";
+    }
+
+    async function loadDatabaseFile(file) {
+      globalAlert.style.display = "none";
+      try {
+        const buffer = await file.arrayBuffer();
+
+        // 1. Instant Magic Header Verification
+        const isSqlite = buffer.byteLength >= 16 && new TextDecoder().decode(new Uint8Array(buffer, 0, 15)) === "SQLite format 3";
+        if (!isSqlite) {
+          throw new Error("Invalid file format: Missing 'SQLite format 3' header.");
+        }
+
+        const wasm = await initSql();
+
+        // 2. Safe Hash Computation (Secure & Insecure Contexts)
+        let hashDisplay = "Unavailable";
+        if (window.crypto && crypto.subtle) {
+          try {
+            const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            hashDisplay = `${hashHex.slice(0, 8)}...${hashHex.slice(-8)}`;
+          } catch {}
+        }
+
+        // 3. Test In-Memory Database Instantiation
+        const uInt8Array = new Uint8Array(buffer);
+        let tempDb = null;
+        try {
+          tempDb = new wasm.Database(uInt8Array);
+        } catch (dbErr) {
+          throw new Error("Corrupted SQLite file: " + dbErr.message);
+        }
+
+        if (activeDb) {
+          try { activeDb.close(); } catch {}
+        }
+        activeDb = tempDb;
+
+        // Transition Workspace UI
+        dropArea.style.display = "none";
+        workspaceArea.style.display = "block";
+
+        metaFile.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+        metaHash.textContent = hashDisplay;
+
+        refreshTableList(true);
+      } catch (err) {
+        resetToDropzone();
+        globalAlert.textContent = `Error: ${err.message}`;
+        globalAlert.className = "global-alert error";
+        globalAlert.style.display = "block";
+      } finally {
+        filePicker.value = "";
+      }
+    }
+
+    function refreshTableList(autoSelectFirst = false) {
+      if (!activeDb) return;
+      const tablesRes = activeDb.exec("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' ORDER BY name ASC;");
+      cachedTableList = [];
+
+      if (tablesRes.length > 0 && tablesRes[0].values.length > 0) {
+        cachedTableList = tablesRes[0].values.map(v => v[0]);
+        metaTables.textContent = cachedTableList.length.toString();
+        tableCountBadge.textContent = cachedTableList.length.toString();
+        renderTableList(cachedTableList);
+        
+        if (autoSelectFirst && cachedTableList.length > 0) {
+          selectTable(cachedTableList[0]);
+        } else if (!cachedTableList.includes(currentSelectedTable)) {
+          currentSelectedTable = cachedTableList.length > 0 ? cachedTableList[0] : "";
+        }
+      } else {
+        metaTables.textContent = "0 (Empty or schema-less)";
+        tableCountBadge.textContent = "0";
+        tableList.innerHTML = '<li style="padding: 8px; font-size: 0.75rem; color: var(--atom-muted);">No tables found.</li>';
+        showMessage("No tables or views found in this database.", "success");
+      }
+    }
+
+    function renderTableList(tables) {
+      tableList.innerHTML = "";
+      if (tables.length === 0) {
+        tableList.innerHTML = '<li style="padding: 8px; font-size: 0.75rem; color: var(--atom-muted);">No matching tables</li>';
+        return;
+      }
+      tables.forEach(tbl => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.className = "table-btn" + (tbl === currentSelectedTable ? " active" : "");
+        btn.textContent = tbl;
+        btn.addEventListener("click", () => selectTable(tbl));
+        li.appendChild(btn);
+        tableList.appendChild(li);
+      });
+    }
+
+    tableSearch.addEventListener("input", (e) => {
+      const val = e.target.value.toLowerCase().trim();
+      const filtered = cachedTableList.filter(t => t.toLowerCase().includes(val));
+      renderTableList(filtered);
+    });
+
+    // Sidebar table selection triggers safe table preview
+    function selectTable(tblName) {
+      currentSelectedTable = tblName;
+      document.querySelectorAll(".table-btn").forEach(b => {
+        b.classList.toggle("active", b.textContent === tblName);
+      });
+      const query = `SELECT * FROM "${tblName.replace(/"/g, '""')}" LIMIT 100;`;
+      sqlQuery.value = query;
+      executeTablePreview(tblName, query);
+    }
+
+    function executeTablePreview(tblName, query) {
+      if (!activeDb) return;
+      queryMessage.style.display = "none";
+
+      try {
+        const startTime = performance.now();
+        const res = activeDb.exec(query);
+        const elapsed = (performance.now() - startTime).toFixed(2);
+
+        if (res.length > 0) {
+          const data = res[0];
+          lastQueryResults = data;
+          renderTable(data.columns, data.values);
+          showMessage(`Returned ${data.values.length} row(s) in ${elapsed} ms.`, "success");
+        } else {
+          // Table has 0 rows: render its schema headers cleanly
+          const schemaRes = activeDb.exec(`PRAGMA table_info('${tblName.replace(/'/g, "''")}');`);
+          const colNames = (schemaRes.length > 0 && schemaRes[0].values.length > 0) 
+            ? schemaRes[0].values.map(v => v[1]) 
+            : [];
+          
+          lastQueryResults = { columns: colNames, values: [] };
+          renderTable(colNames, []);
+          showMessage(`Table '${tblName}' is empty (0 records).`, "success");
+        }
+      } catch (err) {
+        lastQueryResults = null;
+        resultsTable.innerHTML = "<thead><tr><th>Execution Error</th></tr></thead><tbody><tr><td style='color:var(--atom-coral)'>" + escapeHtml(err.message) + "</td></tr></tbody>";
+        showMessage(err.message, "error");
+      }
+    }
+
+    btnRunQuery.addEventListener("click", () => {
+      const q = sqlQuery.value.trim();
+      if (q) executeQuery(q);
+    });
+
+    btnViewSchema.addEventListener("click", () => {
+      if (!currentSelectedTable) {
+        showMessage("Select a table first to inspect its schema.", "error");
+        return;
+      }
+      executeQuery(`PRAGMA table_info('${currentSelectedTable.replace(/'/g, "''")}');`);
+    });
+
+    // Arbitrary SQL Query Runner
+    function executeQuery(query) {
+      if (!activeDb) return;
+      sqlQuery.value = query;
+      queryMessage.style.display = "none";
+
+      try {
+        const startTime = performance.now();
+        const res = activeDb.exec(query);
+        const elapsed = (performance.now() - startTime).toFixed(2);
+
+        // Synchronize schema if DDL query was run
+        const cleanQuery = query.trim().toUpperCase();
+        if (cleanQuery.startsWith("CREATE") || cleanQuery.startsWith("DROP") || cleanQuery.startsWith("ALTER")) {
+          refreshTableList(false);
+        }
+
+        if (res.length === 0) {
+          const modified = typeof activeDb.getRowsModified === "function" ? activeDb.getRowsModified() : 0;
+          lastQueryResults = null;
+          resultsTable.innerHTML = "<thead><tr><th>Result</th></tr></thead><tbody><tr><td>Statement executed successfully. " + modified + " row(s) modified.</td></tr></tbody>";
+          showMessage(`Executed in ${elapsed} ms. Rows modified: ${modified}.`, "success");
+          return;
+        }
+
+        const data = res[0];
+        lastQueryResults = data;
+        renderTable(data.columns, data.values);
+        showMessage(`Returned ${data.values.length} row(s) in ${elapsed} ms.`, "success");
+      } catch (err) {
+        lastQueryResults = null;
+        resultsTable.innerHTML = "<thead><tr><th>Execution Error</th></tr></thead><tbody><tr><td style='color:var(--atom-coral)'>" + escapeHtml(err.message) + "</td></tr></tbody>";
+        showMessage(err.message, "error");
+      }
+    }
+
+    // Formats Uint8Array (BLOBs) into hexadecimal strings
+    function formatCell(val) {
+      if (val === null || val === undefined) {
+        return '<span style="color:var(--atom-muted)">NULL</span>';
+      }
+      if (val instanceof Uint8Array) {
+        let hex = Array.from(val.subarray(0, 32)).map(b => b.toString(16).padStart(2, '0')).join('');
+        if (val.length > 32) hex += '...';
+        return `<span style="color:var(--atom-cyan)" title="BLOB (${val.length} bytes)">0x${hex}</span>`;
+      }
+      return escapeHtml(String(val));
+    }
+
+    function renderTable(columns, rows) {
+      if (!columns || columns.length === 0) {
+        resultsTable.innerHTML = "<thead><tr><th>Result</th></tr></thead><tbody><tr><td style='color:var(--atom-muted); text-align:center;'>0 columns available.</td></tr></tbody>";
+        return;
+      }
+
+      let thead = "<thead><tr>";
+      columns.forEach(col => {
+        thead += `<th>${escapeHtml(String(col))}</th>`;
+      });
+      thead += "</tr></thead>";
+
+      // Cap preview at 250 rows to preserve mobile DOM scrolling performance
+      const maxRender = 250;
+      const displayRows = rows.slice(0, maxRender);
+
+      let tbody = "<tbody>";
+      if (displayRows.length === 0) {
+        tbody += `<tr><td colspan="${columns.length}" style="text-align: center; color: var(--atom-muted); padding: 14px;">0 records found.</td></tr>`;
+      } else {
+        displayRows.forEach(row => {
+          tbody += "<tr>";
+          row.forEach(val => {
+            tbody += `<td>${formatCell(val)}</td>`;
+          });
+          tbody += "</tr>";
+        });
+      }
+
+      if (rows.length > maxRender) {
+        tbody += `<tr><td colspan="${columns.length}" style="text-align: center; color: var(--atom-amber); padding: 10px; font-weight: bold;">
+          Preview capped: Showing first ${maxRender} of ${rows.length} rows to prevent mobile browser freeze. Use CSV export for entire dataset.
+        </td></tr>`;
+      }
+      tbody += "</tbody>";
+
+      resultsTable.innerHTML = thead + tbody;
+    }
+
+    function showMessage(msg, type) {
+      queryMessage.textContent = msg;
+      queryMessage.className = `query-msg ${type}`;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // RFC-4180 Escaped CSV Exporter with Formula-Injection Defense & Streamed Chunking
+    btnExportCsv.addEventListener("click", () => {
+      if (!lastQueryResults || !lastQueryResults.columns || lastQueryResults.columns.length === 0) {
+        alert("No active query dataset available to export.");
+        return;
+      }
+
+      const { columns, values } = lastQueryResults;
+      const chunks = [];
+
+      // Write Header
+      chunks.push(columns.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",") + "\r\n");
+
+      // Write Rows with Formula & BLOB Hardening
+      values.forEach(row => {
+        const line = row.map(v => {
+          if (v === null || v === undefined) return '""';
+          if (v instanceof Uint8Array) {
+            const hex = Array.from(v).map(b => b.toString(16).padStart(2, '0')).join('');
+            return `"0x${hex}"`;
+          }
+          if (typeof v === "number" || typeof v === "boolean") {
+            return String(v);
+          }
+          let str = String(v);
+          // Mitigate CSV Formula Injection across whitespace and control characters
+          if (/^\s*[=\+\-@\t\r]/.test(str)) {
+            str = "'" + str;
+          }
+          return `"${str.replace(/"/g, '""')}"`;
+        }).join(",") + "\r\n";
+        chunks.push(line);
+      });
+
+      const blob = new Blob(chunks, { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sqlite-export-${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
