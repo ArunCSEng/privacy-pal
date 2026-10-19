@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>ReDoS Catastrophic Backtracking Tester — Free Offline Cybersecurity Tool | BitDark</title>
+  <meta name="title" content="ReDoS Catastrophic Backtracking Tester — Free Offline Cybersecurity Tool | BitDark" />
+  <meta name="description" content="Safely test regular expressions for catastrophic backtracking, exponential complexity, and ReDoS vulnerabilities in an isolated, client-side Web Worker sandbox." />
+  <meta name="keywords" content="redos tester, regex denial of service, catastrophic backtracking, regex vulnerability scanner, offline redos tool, client-side regex security" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/redos-tester" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-width: 320px;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      word-break: break-all;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.6rem; color: var(--atom-heading); margin-bottom: 6px; word-break: break-word; }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Preset Quick-Buttons */
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+    }
+    .preset-label { color: var(--atom-muted); font-size: 0.76rem; }
+    .btn-preset {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-cyan);
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      transition: all 0.2s ease;
+    }
+    .btn-preset:hover {
+      border-color: var(--atom-cyan);
+      background-color: rgba(86, 182, 194, 0.1);
+    }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .regex-input-wrapper {
+      display: flex;
+      align-items: center;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .regex-delimiter {
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      font-size: 1.1rem;
+      padding: 0 12px;
+      user-select: none;
+    }
+    .text-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      padding: 10px 4px;
+    }
+    .flags-input {
+      width: 70px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--atom-border);
+      outline: none;
+      color: var(--atom-amber);
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      padding: 10px 10px;
+    }
+    .textarea-input {
+      width: 100%;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      outline: none;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.86rem;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .textarea-input:focus, .regex-input-wrapper:focus-within {
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 18px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.84rem;
+      transition: opacity 0.2s, background-color 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424956;
+      color: var(--atom-heading);
+    }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+    }
+    @media (min-width: 600px) {
+      .status-banner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+    .status-safe {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-danger {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+    .status-warning {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
+    .meta-val { font-size: 0.86rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 36px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Mobile Responsive Rules */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 12px; }
+      .nav-inner { justify-content: center; }
+      .brand { width: 100%; text-align: center; }
+      .trust-badge, .ip-pill-nav { justify-content: center; width: 100%; }
+      .tool-card { padding: 16px; }
+      .btn-row { flex-direction: column; width: 100%; }
+      .btn-atom { width: 100%; }
+      .regex-delimiter { padding: 0 8px; }
+      .preset-bar { gap: 6px; }
+      .btn-preset { font-size: 0.72rem; padding: 5px 8px; }
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      text-align: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    @media (min-width: 600px) {
+      .bottom-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+      }
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding & Security</a> / redos-tester
+    </nav>
+
+    <div class="tool-header">
+      <h1>ReDoS Catastrophic Backtracking Tester</h1>
+      <p>Analyze regular expression patterns for polynomial or exponential catastrophic backtracking vulnerabilities directly within an isolated browser Web Worker.</p>
+    </div>
+
+    <!-- Presets -->
+    <div class="preset-bar">
+      <span class="preset-label">Test Vulnerable Examples:</span>
+      <button class="btn-preset" data-pattern="^(a+)+$" data-input="aaaaaaaaaaaaaaaaaaaaaaaaaaaa!" data-flags="">Nested Plus (a+)+</button>
+      <button class="btn-preset" data-pattern="(a|a)+$" data-input="aaaaaaaaaaaaaaaaaaaaaaaaaaaa!" data-flags="">Overlapping Or (a|a)+</button>
+      <button class="btn-preset" data-pattern="^([a-zA-Z0-9]+)*$" data-input="ThisIsAValidStringUntilEndMarker!" data-flags="">Group Kleene Star</button>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      <div class="form-group">
+        <label class="form-label" for="regexInput">
+          <span>Regular Expression Pattern</span>
+          <span>ECMAScript Syntax</span>
+        </label>
+        <div class="regex-input-wrapper">
+          <span class="regex-delimiter">/</span>
+          <input type="text" id="regexInput" class="text-input" placeholder="(a+)+$" value="^(a+)+$" spellcheck="false" autocomplete="off" />
+          <span class="regex-delimiter">/</span>
+          <input type="text" id="flagsInput" class="flags-input" placeholder="flags" value="" spellcheck="false" autocomplete="off" title="Regex Flags (e.g., i, m, s)" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="testInput">
+          <span>Test Input String (Attack Payload / Probe)</span>
+          <span id="payloadLen">Length: 29 chars</span>
+        </label>
+        <textarea id="testInput" class="textarea-input" rows="3" placeholder="Enter target string to test against..." spellcheck="false">aaaaaaaaaaaaaaaaaaaaaaaaaaaa!</textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-atom btn-secondary" id="btnSynthesize">Auto-Synthesize Payload</button>
+        <button class="btn-atom" id="btnRunTest">Test Backtracking Safety</button>
+      </div>
+
+      <!-- Results Workspace -->
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Evaluation Execution Time</div>
+            <div class="meta-val" id="metaExecutionTime">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Static Analysis Finding</div>
+            <div class="meta-val" id="metaHeuristic">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Pattern Match Status</div>
+            <div class="meta-val" id="metaMatchStatus">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Worker Sandbox Watchdog</div>
+            <div class="meta-val" id="metaSandboxStatus">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Evaluation Metrics & Diagnostic Log:</div>
+        <div class="viewer-box" id="rawViewer">Ready.</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadJson">Export Report JSON</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Reset Analysis</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic Boundaries & Legal Disclaimer Callout -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Disclaimer & Operational Scope
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible for any misuse, server crashes, downtime, or damages resulting from the execution, testing, or deployment of patterns analyzed with this utility.</strong> This evaluator operates solely within the browser client memory utilizing a local Web Worker thread with a strict watchdog timeout (2,000 ms). Because regex execution engines vary across platforms (V8, PCRE, Python re, Oniguruma), patterns determined safe or unsafe here may behave differently in other runtime environments. Use responsibly in staging environments before deploying to production.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How Regular Expression Denial of Service (ReDoS) Occurs</h2>
+      <p>ReDoS arises when a Non-deterministic Finite Automaton (NFA) based regex engine encounters an input string designed to trigger exponential or high-order polynomial backtracking paths. When a pattern contains nested quantifiers, overlapping alternatives, or ambiguous group boundaries that fail near the tail end of an input, the evaluation engine systematically tests every possible permutation before concluding a non-match.</p>
+      
+      <h2>Common Vulnerable Pattern Archetypes</h2>
+      <ul>
+        <li><strong>Nested Quantifiers:</strong> Patterns like <code>(a+)+</code>, <code>(a*)*</code>, or <code>(x+x+)+y</code> create O(2<sup>n</sup>) combinatorial explosions when fed repeated matching characters followed by an unexpected mismatch.</li>
+        <li><strong>Overlapping Alternation with Repetition:</strong> Patterns such as <code>(a|a)+</code> or <code>(b|b+)+</code> force duplicate branches that double the verification stack with each input symbol.</li>
+        <li><strong>Ambiguous Delimiters:</strong> Patterns like <code>.*[a-z]+.*</code> with loose boundary anchors can cause massive polynomial degradation on long, multi-line text blocks.</li>
+      </ul>
+
+      <h2>Isolated Sandboxed Execution</h2>
+      <p>Standard in-thread regex tests can freeze or crash the browser UI thread if catastrophic backtracking occurs. BitDark encapsulates test executions inside isolated, dynamically allocated Web Workers. If an execution exceeds the watchdog threshold (2 seconds), the parent worker terminates the thread instantly, preventing tab lockups and returning vulnerability telemetry cleanly.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Corrected Dual-Stack IPv4 / IPv6 Telemetry
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Localhost environment check
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Strict IPv4 endpoints)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection (Strict IPv6 endpoints, avoiding dual-stack IPv4 false reporting)
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // ReDoS Testing Workspace Engine
+    const regexInput = document.getElementById("regexInput");
+    const flagsInput = document.getElementById("flagsInput");
+    const testInput = document.getElementById("testInput");
+    const payloadLen = document.getElementById("payloadLen");
+    const btnRunTest = document.getElementById("btnRunTest");
+    const btnSynthesize = document.getElementById("btnSynthesize");
+    const btnReset = document.getElementById("btnReset");
+    const btnDownloadJson = document.getElementById("btnDownloadJson");
+    const presetButtons = document.querySelectorAll(".btn-preset");
+
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaExecutionTime = document.getElementById("metaExecutionTime");
+    const metaHeuristic = document.getElementById("metaHeuristic");
+    const metaMatchStatus = document.getElementById("metaMatchStatus");
+    const metaSandboxStatus = document.getElementById("metaSandboxStatus");
+    const rawViewer = document.getElementById("rawViewer");
+
+    let currentAnalysisReport = null;
+    let activeWorker = null;
+
+    function resetOutputArea() {
+      if (activeWorker) {
+        activeWorker.terminate();
+        activeWorker = null;
+      }
+      resultsArea.style.display = "none";
+      currentAnalysisReport = null;
+    }
+
+    // Auto-clear stale results when modifying test configuration
+    testInput.addEventListener("input", () => {
+      payloadLen.textContent = `Length: ${testInput.value.length} chars`;
+      resetOutputArea();
+    });
+
+    regexInput.addEventListener("input", resetOutputArea);
+    flagsInput.addEventListener("input", resetOutputArea);
+
+    presetButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        regexInput.value = btn.getAttribute("data-pattern");
+        testInput.value = btn.getAttribute("data-input");
+        flagsInput.value = btn.getAttribute("data-flags") || "";
+        payloadLen.textContent = `Length: ${testInput.value.length} chars`;
+        resetOutputArea();
+      });
+    });
+
+    btnSynthesize.addEventListener("click", () => {
+      const pat = regexInput.value;
+      if (!pat) return;
+      
+      resetOutputArea();
+      // Look for repeated character or token
+      let charMatch = pat.match(/([a-zA-Z0-9])\+/);
+      let targetChar = charMatch ? charMatch[1] : "a";
+      testInput.value = targetChar.repeat(28) + "!";
+      payloadLen.textContent = `Length: ${testInput.value.length} chars`;
+    });
+
+    btnReset.addEventListener("click", resetOutputArea);
+
+    // Static Pattern Analyzer for ReDoS Archetypes
+    function inspectPatternHeuristics(pattern) {
+      const findings = [];
+      
+      // 1. Nested quantifiers: (x+)+, (x*)*, (x+)*
+      if (/(\([^\)]*[\+\*][^\)]*\)[\+\*])/.test(pattern)) {
+        findings.push("Dangerous nested quantifier structure detected: (x+)+ or (x*)*");
+      }
+      
+      // 2. Overlapping alternation inside repetition: (a|a)+, (a|ab)+
+      if (/\(([^\vert{}\)]+)\|([^|\)]+)\)[\+\*]/.test(pattern)) {
+        const altMatch = pattern.match(/\(([^\vert{}\)]+)\|([^|\)]+)\)[\+\*]/);
+        if (altMatch && (altMatch[1].startsWith(altMatch[2]) || altMatch[2].startsWith(altMatch[1]))) {
+          findings.push("Overlapping alternation under repetition detected");
+        }
+      }
+
+      // 3. Repeated group with inner wildcard: (.*)+
+      if (/\(\.\*\vert{}\.\+\)[\+\*]/.test(pattern)) {
+        findings.push("Unconstrained wildcard grouped under repetition quantifier");
+      }
+
+      return findings;
+    }
+
+    btnRunTest.addEventListener("click", () => {
+      const pattern = regexInput.value.trim();
+      const flags = flagsInput.value.trim();
+      const sample = testInput.value;
+
+      if (!pattern) {
+        alert("Please enter a regular expression pattern to test.");
+        return;
+      }
+
+      // Validate regex syntax first
+      try {
+        new RegExp(pattern, flags);
+      } catch (err) {
+        alert("Invalid Regular Expression: " + err.message);
+        return;
+      }
+
+      // UI setup
+      resultsArea.style.display = "block";
+      statusBanner.className = "status-banner status-warning";
+      statusBanner.innerHTML = `<span>⏳ Evaluating regex in sandboxed worker...</span> <span>Watchdog Armed</span>`;
+      metaExecutionTime.textContent = "Measuring...";
+      metaHeuristic.textContent = "Analyzing structure...";
+      metaMatchStatus.textContent = "Computing...";
+      metaSandboxStatus.textContent = "Worker Active";
+      rawViewer.textContent = "Executing payload match inside isolated thread...";
+
+      const staticIssues = inspectPatternHeuristics(pattern);
+      metaHeuristic.textContent = staticIssues.length > 0 ? `${staticIssues.length} Risks Flagged` : "Clean Structure";
+
+      // Spin up inline sandboxed Web Worker
+      if (activeWorker) activeWorker.terminate();
+
+      const workerBlob = new Blob([`
+        self.onmessage = function(e) {
+          const { pattern, flags, sample } = e.data;
+          const t0 = performance.now();
+          try {
+            const rx = new RegExp(pattern, flags);
+            const matched = rx.test(sample);
+            const t1 = performance.now();
+            self.postMessage({ status: 'complete', matched: matched, duration: (t1 - t0) });
+          } catch(err) {
+            self.postMessage({ status: 'error', message: err.message });
+          }
+        };
+      `], { type: "application/javascript" });
+
+      const workerUrl = URL.createObjectURL(workerBlob);
+      activeWorker = new Worker(workerUrl);
+
+      const TIMEOUT_LIMIT = 2000; // 2 seconds watchdog
+      let timedOut = false;
+
+      const timer = setTimeout(() => {
+        timedOut = true;
+        activeWorker.terminate();
+        activeWorker = null;
+        URL.revokeObjectURL(workerUrl);
+
+        handleExecutionResult({
+          status: "timeout",
+          duration: TIMEOUT_LIMIT,
+          pattern,
+          flags,
+          sample,
+          staticIssues
+        });
+      }, TIMEOUT_LIMIT);
+
+      activeWorker.onmessage = function(event) {
+        if (timedOut) return;
+        clearTimeout(timer);
+        activeWorker.terminate();
+        activeWorker = null;
+        URL.revokeObjectURL(workerUrl);
+
+        handleExecutionResult({
+          ...event.data,
+          pattern,
+          flags,
+          sample,
+          staticIssues
+        });
+      };
+    });
+
+    function handleExecutionResult(res) {
+      if (res.status === "timeout") {
+        statusBanner.className = "status-banner status-danger";
+        statusBanner.innerHTML = `<span>🚨 HIGH RISK: Catastrophic Backtracking Triggered</span> <span>Watchdog Timeout (&gt; 2,000ms)</span>`;
+        metaExecutionTime.textContent = "> 2,000 ms (Killed)";
+        metaMatchStatus.textContent = "Terminated";
+        metaSandboxStatus.textContent = "Killed by Watchdog";
+
+        currentAnalysisReport = {
+          risk_level: "CRITICAL",
+          vulnerability: "Catastrophic Exponential / Polynomial Backtracking (ReDoS)",
+          pattern: `/${res.pattern}/${res.flags}`,
+          probe_payload_length: res.sample.length,
+          execution_time_ms: "> 2000",
+          watchdog_status: "Web Worker terminated by safety watchdog to protect client resources.",
+          static_code_findings: res.staticIssues,
+          mitigation_recommendation: [
+            "Eliminate nested repetitions such as (a+)+ or (.*a)+.",
+            "Make quantifier boundaries possessive where supported, or use atomic groups.",
+            "Enforce strict input length restrictions at ingress validation gates prior to regex processing."
+          ]
+        };
+
+        rawViewer.textContent = JSON.stringify(currentAnalysisReport, null, 2);
+        return;
+      }
+
+      if (res.status === "error") {
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ Execution Runtime Error</span> <span>${res.message}</span>`;
+        metaExecutionTime.textContent = "Error";
+        metaMatchStatus.textContent = "Failed";
+        metaSandboxStatus.textContent = "Terminated";
+        rawViewer.textContent = "Execution error: " + res.message;
+        return;
+      }
+
+      // Normal completion
+      const dur = res.duration.toFixed(2);
+      const isSlow = res.duration > 100;
+      const hasRisks = res.staticIssues.length > 0;
+
+      if (isSlow || hasRisks) {
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ Suspicious Execution Profile</span> <span>Execution: ${dur}ms</span>`;
+      } else {
+        statusBanner.className = "status-banner status-safe";
+        statusBanner.innerHTML = `<span>✓ Pattern Execution Within Safe Threshold</span> <span>Execution: ${dur}ms</span>`;
+      }
+
+      metaExecutionTime.textContent = `${dur} ms`;
+      metaMatchStatus.textContent = res.matched ? "Matched" : "No Match";
+      metaSandboxStatus.textContent = "Graceful Exit";
+
+      currentAnalysisReport = {
+        risk_level: isSlow ? "MEDIUM" : (hasRisks ? "LOW-MEDIUM" : "LOW"),
+        pattern: `/${res.pattern}/${res.flags}`,
+        matched: res.matched,
+        probe_payload_length: res.sample.length,
+        execution_time_ms: parseFloat(dur),
+        static_analysis_findings: res.staticIssues.length > 0 ? res.staticIssues : ["No known high-risk ReDoS quantifier archetypes located."],
+        evaluator_notes: isSlow 
+          ? "Execution time is elevated. Larger payloads may escalate backtracking latency exponentially." 
+          : "Regex executed cleanly within acceptable execution boundaries on this input string."
+      };
+
+      rawViewer.textContent = JSON.stringify(currentAnalysisReport, null, 2);
+    }
+
+    btnDownloadJson.addEventListener("click", () => {
+      if (!currentAnalysisReport) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentAnalysisReport, null, 2));
+      const dlAnchor = document.createElement("a");
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `redos-analysis-${Date.now()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    });
+  </script>
+</body>
+</html>
