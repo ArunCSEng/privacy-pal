@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text & Code Diff Viewer — Free Offline Developer Tool | BitDark</title>
+  <meta name="title" content="Text & Code Diff Viewer — Free Offline Developer Tool | BitDark" />
+  <meta name="description" content="Compare text, code, JSON, and configurations with side-by-side or inline diffing. 100% client-side, zero server uploads, complete privacy." />
+  <meta name="keywords" content="diff viewer, code comparison tool, side by side diff, inline diff, text difference checker, offline diff tool" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/diff-viewer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 20px 16px 50px; 
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 20px; }
+    .tool-header h1 { font-size: 1.6rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Tool Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .controls-left, .controls-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-family: var(--font-ui);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--atom-text); color: var(--atom-heading); }
+    .btn-primary { background-color: var(--atom-amber); color: #1e2227; font-weight: 700; border-color: var(--atom-amber); }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-active { border-color: var(--atom-cyan); color: var(--atom-cyan); background-color: rgba(86, 182, 194, 0.1); }
+
+    .toggle-group {
+      display: inline-flex;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .toggle-group .btn {
+      border: none;
+      border-radius: 0;
+      border-right: 1px solid var(--atom-border);
+    }
+    .toggle-group .btn:last-child { border-right: none; }
+
+    /* Editor Grid */
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 768px) {
+      .editor-grid { grid-template-columns: 1fr; }
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+      color: var(--atom-muted);
+    }
+    .pane-header span strong { color: var(--atom-heading); }
+
+    .textarea-box {
+      width: 100%;
+      height: 240px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      resize: vertical;
+      white-space: pre;
+    }
+    .textarea-box:focus {
+      outline: none;
+      border-color: var(--atom-border-focus);
+    }
+
+    /* Diff Output Area */
+    .diff-output-container {
+      margin-top: 16px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .diff-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--atom-gutter);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+    }
+    .diff-stats {
+      display: flex;
+      gap: 12px;
+    }
+    .diff-stat-add { color: var(--atom-green); }
+    .diff-stat-del { color: var(--atom-coral); }
+
+    .diff-view-area {
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    /* Side-by-side & Unified tables */
+    .diff-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .diff-table td {
+      padding: 2px 8px;
+      vertical-align: top;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .diff-num {
+      width: 44px;
+      text-align: right;
+      color: var(--atom-muted);
+      user-select: none;
+      border-right: 1px solid var(--atom-border);
+      padding-right: 8px !important;
+      background-color: var(--atom-gutter);
+    }
+    .diff-marker {
+      width: 20px;
+      text-align: center;
+      user-select: none;
+      font-weight: bold;
+    }
+    .line-add { background-color: rgba(152, 195, 121, 0.12); color: #b5e495; }
+    .line-del { background-color: rgba(224, 108, 117, 0.12); color: #f28b94; }
+    .line-eq { color: var(--atom-text); }
+    .line-empty { background-color: var(--atom-gutter); opacity: 0.4; }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 28px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Explanations */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.15rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile specific adjustments */
+    @media (max-width: 600px) {
+      .navbar { padding: 8px 12px; }
+      .nav-inner { flex-direction: column; align-items: stretch; }
+      .brand { text-align: center; }
+      .trust-badge, .ip-pill-nav { justify-content: center; }
+      .controls-bar { flex-direction: column; align-items: stretch; }
+      .controls-left, .controls-right { justify-content: space-between; width: 100%; }
+      .diff-table td { font-size: 0.74rem; }
+      .diff-num { width: 32px; padding-right: 4px !important; }
+      .bottom-bar { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding & Text</a> / diff-viewer
+    </nav>
+
+    <div class="tool-header">
+      <h1>Text & Code Diff Viewer</h1>
+      <p>Compare raw text, source code, JSON, and configurations in real time with side-by-side or unified view entirely inside browser memory.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="controls-bar">
+        <div class="controls-left">
+          <div class="toggle-group">
+            <button class="btn btn-active" id="btnSideBySide" type="button">Side-by-Side</button>
+            <button class="btn" id="btnUnified" type="button">Unified</button>
+          </div>
+          <button class="btn" id="btnSwap" type="button">⇄ Swap Sides</button>
+          <button class="btn" id="btnClear" type="button">Clear All</button>
+        </div>
+        <div class="controls-right">
+          <button class="btn btn-primary" id="btnSample" type="button">Load Sample</button>
+        </div>
+      </div>
+
+      <div class="editor-grid">
+        <div class="editor-pane">
+          <div class="pane-header">
+            <span><strong>Original Text</strong> (Left / Baseline)</span>
+            <span id="origLineCount">0 lines</span>
+          </div>
+          <textarea id="origText" class="textarea-box" placeholder="Paste or type original text here..." spellcheck="false"></textarea>
+        </div>
+
+        <div class="editor-pane">
+          <div class="pane-header">
+            <span><strong>Modified Text</strong> (Right / Revision)</span>
+            <span id="modLineCount">0 lines</span>
+          </div>
+          <textarea id="modText" class="textarea-box" placeholder="Paste or type modified text here..." spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <div class="diff-output-container">
+        <div class="diff-header-bar">
+          <span>Diff Inspection View</span>
+          <div class="diff-stats" id="diffStats">
+            <span class="diff-stat-add" id="statAdded">+0 additions</span>
+            <span class="diff-stat-del" id="statDeleted">-0 deletions</span>
+          </div>
+        </div>
+        <div class="diff-view-area" id="diffOutput">
+          <div style="padding: 24px; text-align: center; color: var(--atom-muted);">
+            Diff output will automatically populate when you enter text above.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mandatory Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any errors, omissions, data loss, code discrepancies, or formatting inaccuracies produced by this tool. All processing occurs strictly within the local client-side environment. Users are solely responsible for independently verifying all critical code modifications, patches, deployment configurations, and confidential records before operational use.
+      </p>
+    </aside>
+
+    <article class="doc-section">
+      <h2>How the Client-Side Diff Engine Works</h2>
+      <p>BitDark's Diff Viewer evaluates text changes locally using an optimized implementation of the <strong>Longest Common Subsequence (LCS)</strong> algorithm. It categorizes lines into unchanged, added, or deleted segments without dispatching payloads to remote cloud services.</p>
+      <ul>
+        <li><strong>Side-by-Side Mode:</strong> Aligns corresponding original and modified lines visually with colored markers for structural comparison.</li>
+        <li><strong>Unified Mode:</strong> Interleaves additions and deletions in a single compact stream matching standard UNIX git diff syntax.</li>
+        <li><strong>Total Privacy:</strong> Neither the baseline text nor your modified code ever leaves your device or enters any server logs.</li>
+      </ul>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Independent Dual IPv4 and IPv6 Detection Logic
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // Explicit IPv4 Lookup
+      try {
+        const controller4 = new AbortController();
+        const timeout4 = setTimeout(() => controller4.abort(), 4000);
+        const res4 = await fetch("https://api.ipify.org?format=json", { signal: controller4.signal, cache: "no-store" });
+        clearTimeout(timeout4);
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Endpoint failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          const text4 = (await fb4.text()).trim();
+          ipv4El.textContent = text4.includes(".") ? text4 : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // Explicit Dedicated IPv6 Lookup
+      try {
+        const controller6 = new AbortController();
+        const timeout6 = setTimeout(() => controller6.abort(), 4000);
+        const res6 = await fetch("https://api64.ipify.org?format=json", { signal: controller6.signal, cache: "no-store" });
+        clearTimeout(timeout6);
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip && d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Diff Algorithm & Presentation Logic
+    let currentMode = "side-by-side";
+    const origText = document.getElementById("origText");
+    const modText = document.getElementById("modText");
+    const diffOutput = document.getElementById("diffOutput");
+    const origLineCount = document.getElementById("origLineCount");
+    const modLineCount = document.getElementById("modLineCount");
+    const statAdded = document.getElementById("statAdded");
+    const statDeleted = document.getElementById("statDeleted");
+    const btnSideBySide = document.getElementById("btnSideBySide");
+    const btnUnified = document.getElementById("btnUnified");
+    const btnSwap = document.getElementById("btnSwap");
+    const btnClear = document.getElementById("btnClear");
+    const btnSample = document.getElementById("btnSample");
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function computeLCS(aLines, bLines) {
+      const n = aLines.length;
+      const m = bLines.length;
+      const dp = Array.from({ length: n + 1 }, () => new Uint32Array(m + 1));
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < m; j++) {
+          if (aLines[i] === bLines[j]) {
+            dp[i + 1][j + 1] = dp[i][j] + 1;
+          } else {
+            dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+          }
+        }
+      }
+
+      const diff = [];
+      let i = n, j = m;
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && aLines[i - 1] === bLines[j - 1]) {
+          diff.push({ type: "eq", oldLine: aLines[i - 1], newLine: bLines[j - 1], oldNum: i, newNum: j });
+          i--;
+          j--;
+        } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+          diff.push({ type: "add", newLine: bLines[j - 1], newNum: j });
+          j--;
+        } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
+          diff.push({ type: "del", oldLine: aLines[i - 1], oldNum: i });
+          i--;
+        }
+      }
+      return diff.reverse();
+    }
+
+    function renderDiff() {
+      const a = origText.value;
+      const b = modText.value;
+
+      const aLines = a === "" ? [] : a.split("\n");
+      const bLines = b === "" ? [] : b.split("\n");
+
+      origLineCount.textContent = `${aLines.length} lines`;
+      modLineCount.textContent = `${bLines.length} lines`;
+
+      if (a === "" && b === "") {
+        diffOutput.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--atom-muted);">Diff output will automatically populate when you enter text above.</div>';
+        statAdded.textContent = "+0 additions";
+        statDeleted.textContent = "-0 deletions";
+        return;
+      }
+
+      const diffList = computeLCS(aLines, bLines);
+      let adds = 0;
+      let dels = 0;
+
+      diffList.forEach(item => {
+        if (item.type === "add") adds++;
+        if (item.type === "del") dels++;
+      });
+
+      statAdded.textContent = `+${adds} additions`;
+      statDeleted.textContent = `-${dels} deletions`;
+
+      if (currentMode === "unified") {
+        renderUnified(diffList);
+      } else {
+        renderSideBySide(diffList);
+      }
+    }
+
+    function renderUnified(diffList) {
+      let html = '<table class="diff-table">';
+      diffList.forEach(item => {
+        if (item.type === "eq") {
+          html += `<tr class="line-eq">
+            <td class="diff-num">${item.oldNum}</td>
+            <td class="diff-num">${item.newNum}</td>
+            <td class="diff-marker">&nbsp;</td>
+            <td>${escapeHtml(item.oldLine)}</td>
+          </tr>`;
+        } else if (item.type === "del") {
+          html += `<tr class="line-del">
+            <td class="diff-num">${item.oldNum}</td>
+            <td class="diff-num"></td>
+            <td class="diff-marker">-</td>
+            <td>${escapeHtml(item.oldLine)}</td>
+          </tr>`;
+        } else if (item.type === "add") {
+          html += `<tr class="line-add">
+            <td class="diff-num"></td>
+            <td class="diff-num">${item.newNum}</td>
+            <td class="diff-marker">+</td>
+            <td>${escapeHtml(item.newLine)}</td>
+          </tr>`;
+        }
+      });
+      html += '</table>';
+      diffOutput.innerHTML = html;
+    }
+
+    function renderSideBySide(diffList) {
+      // Group contiguous additions and deletions for side alignment
+      const rows = [];
+      let i = 0;
+      while (i < diffList.length) {
+        const item = diffList[i];
+        if (item.type === "eq") {
+          rows.push({ left: item, right: item });
+          i++;
+        } else {
+          const delGroup = [];
+          const addGroup = [];
+          while (i < diffList.length && diffList[i].type !== "eq") {
+            if (diffList[i].type === "del") delGroup.push(diffList[i]);
+            if (diffList[i].type === "add") addGroup.push(diffList[i]);
+            i++;
+          }
+          const maxLen = Math.max(delGroup.length, addGroup.length);
+          for (let k = 0; k < maxLen; k++) {
+            rows.push({
+              left: delGroup[k] || null,
+              right: addGroup[k] || null
+            });
+          }
+        }
+      }
+
+      let html = '<table class="diff-table">';
+      rows.forEach(r => {
+        html += '<tr>';
+        // Left Column
+        if (!r.left) {
+          html += '<td class="diff-num line-empty"></td><td class="line-empty"></td>';
+        } else if (r.left.type === "eq") {
+          html += `<td class="diff-num">${r.left.oldNum}</td><td class="line-eq">${escapeHtml(r.left.oldLine)}</td>`;
+        } else {
+          html += `<td class="diff-num line-del">${r.left.oldNum}</td><td class="line-del">- ${escapeHtml(r.left.oldLine)}</td>`;
+        }
+
+        // Right Column
+        if (!r.right) {
+          html += '<td class="diff-num line-empty"></td><td class="line-empty"></td>';
+        } else if (r.right.type === "eq") {
+          html += `<td class="diff-num">${r.right.newNum}</td><td class="line-eq">${escapeHtml(r.right.newLine)}</td>`;
+        } else {
+          html += `<td class="diff-num line-add">${r.right.newNum}</td><td class="line-add">+ ${escapeHtml(r.right.newLine)}</td>`;
+        }
+        html += '</tr>';
+      });
+      html += '</table>';
+      diffOutput.innerHTML = html;
+    }
+
+    // Event Bindings
+    origText.addEventListener("input", renderDiff);
+    modText.addEventListener("input", renderDiff);
+
+    btnSideBySide.addEventListener("click", () => {
+      currentMode = "side-by-side";
+      btnSideBySide.classList.add("btn-active");
+      btnUnified.classList.remove("btn-active");
+      renderDiff();
+    });
+
+    btnUnified.addEventListener("click", () => {
+      currentMode = "unified";
+      btnUnified.classList.add("btn-active");
+      btnSideBySide.classList.remove("btn-active");
+      renderDiff();
+    });
+
+    btnSwap.addEventListener("click", () => {
+      const temp = origText.value;
+      origText.value = modText.value;
+      modText.value = temp;
+      renderDiff();
+    });
+
+    btnClear.addEventListener("click", () => {
+      origText.value = "";
+      modText.value = "";
+      renderDiff();
+    });
+
+    btnSample.addEventListener("click", () => {
+      origText.value = `// Configuration v1.0
+const config = {
+  host: "127.0.0.1",
+  port: 8080,
+  tls: false,
+  debug: true,
+  retries: 3
+};
+
+function connect() {
+  console.log("Connecting without encryption...");
+}`;
+
+      modText.value = `// Configuration v2.0
+const config = {
+  host: "0.0.0.0",
+  port: 443,
+  tls: true,
+  debug: false,
+  retries: 5,
+  certPath: "/etc/ssl/certs"
+};
+
+function connect() {
+  console.log("Initiating TLS handshake...");
+}`;
+      renderDiff();
+    });
+  </script>
+</body>
+</html>
