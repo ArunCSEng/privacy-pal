@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>Offline PCAP Packet Visualizer & Protocol Analyzer | BitDark</title>
+  <meta name="title" content="Offline PCAP Packet Visualizer & Protocol Analyzer | BitDark" />
+  <meta name="description" content="Inspect, parse, and analyze libpcap capture files locally in browser memory. Dissect Ethernet, VLAN, IPv4, IPv6, TCP, UDP, ICMP, and ARP frames with zero data upload." />
+  <meta name="keywords" content="pcap visualizer, packet analyzer, offline wireshark viewer, parse pcap browser, network forensics tool, client-side packet inspector" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/pcap-visualizer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .brand span { color: var(--atom-amber); }
+    
+    .nav-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); font-weight: 600; }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Wrapper */
+    .wrapper {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      flex: 1;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      margin-bottom: 14px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 20px; }
+    .tool-header h1 {
+      font-size: 1.6rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.9rem;
+      max-width: 850px;
+    }
+
+    /* Main Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 30px 14px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.04);
+    }
+    .dropzone-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    .dropzone p {
+      font-size: 0.92rem;
+      color: var(--atom-heading);
+      margin-bottom: 4px;
+    }
+    .dropzone-hint {
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      display: block;
+      word-break: break-word;
+    }
+    .file-input-hidden { display: none; }
+
+    /* Results Workspace */
+    .results-area {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .status-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+    }
+    .status-ok {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-err {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    /* Summary Metric Grid */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+    }
+    .stat-label {
+      font-size: 0.68rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 2px;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-weight: 700;
+    }
+
+    /* Toolbar & Search Controls */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      flex: 1 1 320px;
+    }
+    .input-filter {
+      flex: 1 1 180px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .input-filter:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .select-protocol {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-ghost {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+    }
+    .btn-ghost:hover {
+      background-color: var(--atom-border);
+      color: var(--atom-heading);
+    }
+
+    /* Table Container with Native Mobile Scroll */
+    .table-container {
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      background-color: var(--atom-bg);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-height: 400px;
+      margin-bottom: 12px;
+    }
+    table.packet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      min-width: 680px;
+    }
+    table.packet-table th {
+      position: sticky;
+      top: 0;
+      background-color: #1a1d22;
+      color: var(--atom-muted);
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--atom-border);
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    table.packet-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(53, 59, 69, 0.45);
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    table.packet-table tr {
+      cursor: pointer;
+      transition: background-color 0.1s;
+    }
+    table.packet-table tr:hover {
+      background-color: rgba(82, 139, 255, 0.08);
+    }
+    table.packet-table tr.selected {
+      background-color: rgba(82, 139, 255, 0.18) !important;
+      color: var(--atom-heading);
+    }
+
+    /* Protocol Badges */
+    .proto-badge {
+      display: inline-block;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .proto-tcp { background-color: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid rgba(86, 182, 194, 0.4); }
+    .proto-udp { background-color: rgba(198, 120, 221, 0.15); color: var(--atom-purple); border: 1px solid rgba(198, 120, 221, 0.4); }
+    .proto-icmp { background-color: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid rgba(229, 192, 123, 0.4); }
+    .proto-arp { background-color: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid rgba(152, 195, 121, 0.4); }
+    .proto-other { background-color: rgba(171, 178, 191, 0.15); color: var(--atom-text); border: 1px solid rgba(171, 178, 191, 0.3); }
+
+    /* Pagination Bar for Large PCAPs */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pag-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pag-btn {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.72rem;
+    }
+    .pag-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Packet Details Workspace */
+    .inspector-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    @media (max-width: 880px) {
+      .inspector-layout { grid-template-columns: 1fr; }
+    }
+
+    .detail-panel {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-amber);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .layer-tree {
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      max-height: 280px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .layer-node {
+      margin-bottom: 8px;
+      border-left: 2px solid var(--atom-border);
+      padding-left: 8px;
+    }
+    .layer-title {
+      color: var(--atom-heading);
+      font-weight: 600;
+    }
+    .layer-kv {
+      color: var(--atom-text);
+      display: block;
+      word-break: break-all;
+    }
+    .layer-kv span {
+      color: var(--atom-muted);
+    }
+
+    .hex-viewer {
+      font-family: var(--font-code);
+      font-size: 0.71rem;
+      line-height: 1.45;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 8px;
+      max-height: 280px;
+      overflow-x: auto;
+      overflow-y: auto;
+      white-space: pre;
+      color: var(--atom-cyan);
+    }
+
+    /* Disclaimer Section */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 24px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 22px;
+      font-size: 0.86rem;
+      line-height: 1.7;
+      color: var(--atom-text);
+    }
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      margin-top: 18px;
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 10px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 12px; }
+    .doc-section li { margin-bottom: 5px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      font-size: 0.8rem;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 680px) {
+      .navbar { padding: 8px 12px; }
+      .nav-inner { flex-direction: column; align-items: flex-start; }
+      .nav-stats { width: 100%; justify-content: space-between; }
+      .ip-pill-nav { width: 100%; justify-content: space-between; font-size: 0.67rem; }
+      .tool-card { padding: 12px; }
+      .dropzone { padding: 20px 10px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .filter-group { flex: 1 1 100%; }
+      .btn-group { width: 100%; }
+      .btn-atom { flex: 1 1 auto; text-align: center; }
+      .pagination-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-stats">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / pcap-visualizer
+    </nav>
+
+    <div class="tool-header">
+      <h1>Offline PCAP Packet Visualizer</h1>
+      <p>Inspect, filter, and dissect captured network traffic files locally in memory. Parse Ethernet, 802.1Q VLANs, IPv4, IPv6, TCP, UDP, ICMP, and ARP frames without network egress.</p>
+    </div>
+
+    <!-- Active Tool Card -->
+    <div class="tool-card">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">📡</span>
+        <p><strong>Click to choose a capture file</strong> or drag &amp; drop PCAP here</p>
+        <span class="dropzone-hint">Supports libpcap format (.pcap, .cap) &bull; Native ArrayBuffer memory parsing (Zero cloud upload)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept=".pcap,.cap" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <!-- Metric Summary -->
+        <div class="summary-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Packets</div>
+            <div class="stat-value" id="statTotalPackets">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Duration</div>
+            <div class="stat-value" id="statDuration">0.00s</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Capture Size</div>
+            <div class="stat-value" id="statTotalBytes">0 B</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">TCP / UDP / Other</div>
+            <div class="stat-value" id="statProtocols">0 / 0 / 0</div>
+          </div>
+        </div>
+
+        <!-- Toolbar Controls -->
+        <div class="toolbar">
+          <div class="filter-group">
+            <input type="text" id="filterInput" class="input-filter" placeholder="Filter by IP, MAC, port, or info..." />
+            <select id="protocolFilter" class="select-protocol">
+              <option value="ALL">All Protocols</option>
+              <option value="TCP">TCP</option>
+              <option value="UDP">UDP</option>
+              <option value="ICMP">ICMP / ICMPv6</option>
+              <option value="ARP">ARP</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="btn-group">
+            <button class="btn-atom" id="btnExportJson">Export JSON</button>
+            <button class="btn-atom btn-ghost" id="btnReset">Clear</button>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar">
+          <span id="paginationInfo">Showing 0-0 of 0 packets</span>
+          <div class="pag-controls">
+            <button class="pag-btn" id="btnPrevPage" disabled>&larr; Prev</button>
+            <span id="pageNumberDisplay">Page 1</span>
+            <button class="pag-btn" id="btnNextPage" disabled>Next &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Packet Grid Table -->
+        <div class="table-container">
+          <table class="packet-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No.</th>
+                <th style="width: 80px;">Time (s)</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th style="width: 70px;">Protocol</th>
+                <th style="width: 65px;">Length</th>
+                <th>Summary Info</th>
+              </tr>
+            </thead>
+            <tbody id="packetTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Frame Deep-Dive Inspector -->
+        <div class="inspector-layout">
+          <div class="detail-panel">
+            <div class="panel-header">
+              <span>Frame Protocol Dissection</span>
+              <span id="selectedPacketLabel">No Packet Selected</span>
+            </div>
+            <div class="layer-tree" id="layerTreeContainer">
+              Select a packet in the table above to view decoded protocol layers.
+            </div>
+          </div>
+
+          <div class="detail-panel">
+            <div class="panel-header">
+              <span>Hex Dump &amp; ASCII Payload</span>
+              <span id="selectedBytesLabel">0 bytes</span>
+            </div>
+            <div class="hex-viewer" id="hexViewerContainer">Select a packet to view raw octets.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal & Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Disclaimer &amp; Forensic Limitation of Liability
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any security audits, forensic conclusions, network diagnostic decisions, packet interception compliance, or legal liabilities arising from the use of this tool. This client-side utility performs lightweight header parsing directly inside your browser memory for rapid triage and education. It does not replace full cryptographic chain-of-custody verification or court-admissible PCAP extraction workflows provided by formal command-line toolchains such as Wireshark, TShark, or tcpdump. Ensure you hold explicit, authorized consent before capturing or inspecting traffic across any network infrastructure.
+      </p>
+    </aside>
+
+    <!-- Technical Guide -->
+    <article class="doc-section">
+      <h2>How the Browser-Native PCAP Parser Operates</h2>
+      <p>Standard network traffic captures produced by tools like <code>tcpdump</code>, <code>dumpcap</code>, or Snort follow the classic libpcap file specification. BitDark reads the raw byte stream directly via the HTML5 <code>FileReader</code> and <code>ArrayBuffer</code> APIs, decoding structures without transmitting packets to remote servers:</p>
+      <ul>
+        <li><strong>Global Libpcap Header (24 Bytes):</strong> Evaluates the initial 32-bit magic number (<code>0xA1B2C3D4</code> for microsecond precision or <code>0xA1B23C4D</code> for nanosecond precision) to establish byte endianness, followed by snapshot length (<code>snaplen</code>) and data link type (Ethernet <code>DLT_EN10MB</code>).</li>
+        <li><strong>Packet Header (16 Bytes):</strong> Decodes UNIX epoch timestamp seconds, fractional microsecond offsets, included capture length (<code>incl_len</code>), and raw wire length (<code>orig_len</code>).</li>
+        <li><strong>Layer 2 / Ethernet II &amp; 802.1Q:</strong> Extracts MAC addresses, checks for VLAN tags (`0x8100`), and determines the inner Layer 3 EtherType discriminator (<code>0x0800</code> for IPv4, <code>0x86DD</code> for IPv6, <code>0x0806</code> for ARP).</li>
+        <li><strong>Layer 3 / Internet Protocol:</strong> Dynamically calculates IPv4 Internet Header Length (`IHL`), validates Total Length, extracts TTL, Protocol, and IP addresses. For IPv6, processes the 40-byte fixed header including Next Header and 128-bit addresses.</li>
+        <li><strong>Layer 4 / Transport:</strong> Decodes source and destination ports, sequence numbers, acknowledgement numbers, and TCP control flags (SYN, ACK, FIN, RST, PSH, URG), along with common UDP port heuristics.</li>
+      </ul>
+
+      <h2>Zero Egress Execution Model</h2>
+      <p>Network packet captures often contain sensitive organizational data, including cleartext session tokens, DNS search histories, internal RFC 1918 addressing topologies, and unencrypted credentials. BitDark operates under strict client-side isolation: no telemetry, no tracking analytics, and zero cloud uploads.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark &bull; Zero telemetry, client-side cybersecurity suite</span>
+      <nav>
+        <a href="/">Directory</a> &bull; <a href="/blog">Blog</a> &bull; <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    /* 1. Bulletproof Dual-Stack IP Detection */
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        if (ipv4El) ipv4El.textContent = "127.0.0.1 (Local)";
+        if (ipv6El) ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(id);
+          return res;
+        } catch (e) {
+          clearTimeout(id);
+          throw e;
+        }
+      };
+
+      // Detect IPv4
+      try {
+        const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+        if (res4.ok) {
+          const data4 = await res4.json();
+          if (ipv4El) ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+          if (ipv4El) ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          if (ipv4El) ipv4El.textContent = "Offline";
+        }
+      }
+
+      // Detect IPv6 strictly via dedicated AAAA endpoint
+      try {
+        const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+        if (res6.ok) {
+          const data6 = await res6.json();
+          if (ipv6El) ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+          const text6 = (await fb6.text()).trim();
+          if (ipv6El) ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          if (ipv6El) ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    /* 2. PCAP Binary Dissection Engine */
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const packetTableBody = document.getElementById("packetTableBody");
+    const layerTreeContainer = document.getElementById("layerTreeContainer");
+    const hexViewerContainer = document.getElementById("hexViewerContainer");
+    const selectedPacketLabel = document.getElementById("selectedPacketLabel");
+    const selectedBytesLabel = document.getElementById("selectedBytesLabel");
+
+    const statTotalPackets = document.getElementById("statTotalPackets");
+    const statDuration = document.getElementById("statDuration");
+    const statTotalBytes = document.getElementById("statTotalBytes");
+    const statProtocols = document.getElementById("statProtocols");
+
+    const filterInput = document.getElementById("filterInput");
+    const protocolFilter = document.getElementById("protocolFilter");
+    const btnReset = document.getElementById("btnReset");
+    const btnExportJson = document.getElementById("btnExportJson");
+
+    const paginationInfo = document.getElementById("paginationInfo");
+    const btnPrevPage = document.getElementById("btnPrevPage");
+    const btnNextPage = document.getElementById("btnNextPage");
+    const pageNumberDisplay = document.getElementById("pageNumberDisplay");
+
+    let parsedPackets = [];
+    let filteredIndices = [];
+    let activeSelectedIndex = -1;
+    let currentPage = 1;
+    const PAGE_SIZE = 100; // Keeps mobile DOM lightweight
+
+    // Drag-and-drop wiring
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      filterInput.value = "";
+      protocolFilter.value = "ALL";
+      parsedPackets = [];
+      filteredIndices = [];
+      activeSelectedIndex = -1;
+      currentPage = 1;
+      packetTableBody.innerHTML = "";
+      layerTreeContainer.innerHTML = "Select a packet in the table above to view decoded protocol layers.";
+      hexViewerContainer.textContent = "Select a packet to view raw octets.";
+    });
+
+    function handleFileSelection(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const buffer = e.target.result;
+          parsePcapFile(buffer, file.name);
+        } catch (err) {
+          dropArea.style.display = "none";
+          resultsArea.style.display = "block";
+          statusBanner.className = "status-banner status-err";
+          statusBanner.innerHTML = `<span>✕ PCAP Parsing Error: ${escapeHtml(err.message)}</span> <span>Invalid Format</span>`;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function parsePcapFile(buffer, fileName) {
+      const dataView = new DataView(buffer);
+      if (buffer.byteLength < 24) {
+        throw new Error("File too small to be a valid PCAP capture.");
+      }
+
+      // Check Magic Header
+      const magic = dataView.getUint32(0, false);
+      let littleEndian = false;
+      let isNano = false;
+
+      if (magic === 0xa1b2c3d4) {
+        littleEndian = false;
+      } else if (magic === 0xd4c3b2a1) {
+        littleEndian = true;
+      } else if (magic === 0xa1b23c4d) {
+        littleEndian = false;
+        isNano = true;
+      } else if (magic === 0x4d3cb2a1) {
+        littleEndian = true;
+        isNano = true;
+      } else if (magic === 0x0a0d0d0a) {
+        throw new Error("PCAPNG format detected. Please export this file from Wireshark as classic PCAP (.pcap/libpcap).");
+      } else {
+        throw new Error(`Unrecognized magic bytes (0x${magic.toString(16).toUpperCase()}).`);
+      }
+
+      const majorVer = dataView.getUint16(4, littleEndian);
+      const minorVer = dataView.getUint16(6, littleEndian);
+      const linkType = dataView.getUint32(20, littleEndian);
+
+      let offset = 24;
+      parsedPackets = [];
+      let packetNumber = 1;
+      let firstTimestamp = null;
+      let totalBytesCount = 0;
+      let tcpCount = 0;
+      let udpCount = 0;
+      let otherCount = 0;
+
+      while (offset + 16 <= buffer.byteLength) {
+        const tsSec = dataView.getUint32(offset, littleEndian);
+        const tsUsec = dataView.getUint32(offset + 4, littleEndian);
+        const inclLen = dataView.getUint32(offset + 8, littleEndian);
+        const origLen = dataView.getUint32(offset + 12, littleEndian);
+        offset += 16;
+
+        // Prevent infinite loops on corrupted zero-length records
+        if (inclLen === 0) {
+          continue;
+        }
+
+        // Catch truncated capture end safely
+        if (offset + inclLen > buffer.byteLength) {
+          break;
+        }
+
+        const packetBytes = new Uint8Array(buffer, offset, inclLen);
+        const rawTimestamp = tsSec + (isNano ? tsUsec / 1e9 : tsUsec / 1e6);
+        if (firstTimestamp === null) firstTimestamp = rawTimestamp;
+        const relTime = rawTimestamp - firstTimestamp;
+
+        totalBytesCount += inclLen;
+
+        // Robust protocol frame dissection
+        const dissection = dissectFrame(packetBytes, linkType);
+
+        if (dissection.protocol === "TCP") tcpCount++;
+        else if (dissection.protocol === "UDP") udpCount++;
+        else otherCount++;
+
+        parsedPackets.push({
+          number: packetNumber++,
+          relTime: relTime,
+          origLen: origLen,
+          inclLen: inclLen,
+          bytes: packetBytes,
+          source: dissection.source,
+          destination: dissection.destination,
+          protocol: dissection.protocol,
+          info: dissection.info,
+          details: dissection.details
+        });
+
+        offset += inclLen;
+      }
+
+      if (parsedPackets.length === 0) {
+        throw new Error("No readable packets found in PCAP capture payload.");
+      }
+
+      // Update UI Stats
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+      statusBanner.className = "status-banner status-ok";
+      statusBanner.innerHTML = `<span>✓ Parsed ${parsedPackets.length.toLocaleString()} packets from ${escapeHtml(fileName)}</span> <span>Libpcap v${majorVer}.${minorVer}</span>`;
+
+      statTotalPackets.textContent = parsedPackets.length.toLocaleString();
+      const lastPkt = parsedPackets[parsedPackets.length - 1];
+      statDuration.textContent = lastPkt ? `${lastPkt.relTime.toFixed(3)}s` : "0.000s";
+      statTotalBytes.textContent = formatBytes(totalBytesCount);
+      statProtocols.textContent = `${tcpCount} / ${udpCount} / ${otherCount}`;
+
+      applyFilter();
+      if (filteredIndices.length > 0) {
+        selectPacket(filteredIndices[0]);
+      }
+    }
+
+    /* 3. Dissect Packet Layers */
+    function dissectFrame(bytes, linkType) {
+      const len = bytes.length;
+      let result = {
+        source: "Unknown",
+        destination: "Unknown",
+        protocol: "OTHER",
+        info: "Raw Frame",
+        details: []
+      };
+
+      // Only standard Ethernet supported (DLT_EN10MB = 1)
+      if (linkType !== 1) {
+        result.info = `Unsupported LinkType (${linkType})`;
+        result.details.push({
+          layer: "Data Link Layer",
+          fields: { "LinkType": linkType, "Length": `${len} bytes` }
+        });
+        return result;
+      }
+
+      if (len < 14) {
+        result.info = "Truncated Ethernet Header";
+        return result;
+      }
+
+      const dstMac = formatMac(bytes, 0);
+      const srcMac = formatMac(bytes, 6);
+      let etherType = (bytes[12] << 8) | bytes[13];
+      let l3Offset = 14;
+
+      result.source = srcMac;
+      result.destination = dstMac;
+
+      // Handle 802.1Q VLAN Tagging
+      if (etherType === 0x8100 && len >= 18) {
+        const vlanId = ((bytes[14] & 0x0f) << 8) | bytes[15];
+        etherType = (bytes[16] << 8) | bytes[17];
+        l3Offset = 18;
+        result.details.push({
+          layer: "Ethernet II (802.1Q VLAN)",
+          fields: {
+            "Destination MAC": dstMac,
+            "Source MAC": srcMac,
+            "VLAN ID": vlanId,
+            "Inner EtherType": `0x${etherType.toString(16).padStart(4, "0").toUpperCase()}`
+          }
+        });
+      } else {
+        result.details.push({
+          layer: "Ethernet II",
+          fields: {
+            "Destination MAC": dstMac,
+            "Source MAC": srcMac,
+            "EtherType": `0x${etherType.toString(16).padStart(4, "0").toUpperCase()}`
+          }
+        });
+      }
+
+      // IPv4
+      if (etherType === 0x0800 && len >= l3Offset + 20) {
+        const verIhl = bytes[l3Offset];
+        const ihl = (verIhl & 0x0f) * 4;
+        
+        if (ihl < 20 || len < l3Offset + ihl) {
+          result.info = "Truncated or Invalid IPv4 Header";
+          return result;
+        }
+
+        const totalLen = (bytes[l3Offset + 2] << 8) | bytes[l3Offset + 3];
+        const ttl = bytes[l3Offset + 8];
+        const protoNum = bytes[l3Offset + 9];
+        const srcIp = `${bytes[l3Offset+12]}.${bytes[l3Offset+13]}.${bytes[l3Offset+14]}.${bytes[l3Offset+15]}`;
+        const dstIp = `${bytes[l3Offset+16]}.${bytes[l3Offset+17]}.${bytes[l3Offset+18]}.${bytes[l3Offset+19]}`;
+
+        result.source = srcIp;
+        result.destination = dstIp;
+
+        result.details.push({
+          layer: "Internet Protocol Version 4",
+          fields: {
+            "Source IP": srcIp,
+            "Destination IP": dstIp,
+            "Header Length": `${ihl} bytes`,
+            "Total Length": `${totalLen} bytes`,
+            "Time to Live (TTL)": ttl,
+            "Protocol": protoNum
+          }
+        });
+
+        const l4Offset = l3Offset + ihl;
+        dissectTransport(bytes, l4Offset, protoNum, result);
+      }
+      // IPv6
+      else if (etherType === 0x86dd && len >= l3Offset + 40) {
+        const payloadLen = (bytes[l3Offset + 4] << 8) | bytes[l3Offset + 5];
+        const nextHeader = bytes[l3Offset + 6];
+        const hopLimit = bytes[l3Offset + 7];
+        const srcIp6 = formatIpv6(bytes, l3Offset + 8);
+        const dstIp6 = formatIpv6(bytes, l3Offset + 24);
+
+        result.source = srcIp6;
+        result.destination = dstIp6;
+
+        result.details.push({
+          layer: "Internet Protocol Version 6",
+          fields: {
+            "Source IPv6": srcIp6,
+            "Destination IPv6": dstIp6,
+            "Payload Length": `${payloadLen} bytes`,
+            "Next Header": nextHeader,
+            "Hop Limit": hopLimit
+          }
+        });
+
+        const l4Offset = l3Offset + 40;
+        dissectTransport(bytes, l4Offset, nextHeader, result);
+      }
+      // ARP
+      else if (etherType === 0x0806) {
+        result.protocol = "ARP";
+        if (len >= l3Offset + 28) {
+          const op = (bytes[l3Offset + 6] << 8) | bytes[l3Offset + 7];
+          const sIp = `${bytes[l3Offset+14]}.${bytes[l3Offset+15]}.${bytes[l3Offset+16]}.${bytes[l3Offset+17]}`;
+          const dIp = `${bytes[l3Offset+24]}.${bytes[l3Offset+25]}.${bytes[l3Offset+26]}.${bytes[l3Offset+27]}`;
+          result.source = sIp;
+          result.destination = dIp;
+          const opDesc = op === 1 ? `Who has ${dIp}? Tell ${sIp}` : `${sIp} is at ${srcMac}`;
+          result.info = `ARP: ${opDesc}`;
+          result.details.push({
+            layer: "Address Resolution Protocol",
+            fields: {
+              "Opcode": op === 1 ? "1 (Request)" : op === 2 ? "2 (Reply)" : op,
+              "Sender IP": sIp,
+              "Target IP": dIp
+            }
+          });
+        } else {
+          result.info = "ARP (Truncated Frame)";
+        }
+      } else {
+        result.info = `EtherType 0x${etherType.toString(16).toUpperCase()}`;
+      }
+
+      return result;
+    }
+
+    function dissectTransport(bytes, offset, protoNum, result) {
+      const len = bytes.length;
+      if (offset >= len) return;
+
+      // TCP
+      if (protoNum === 6 && len >= offset + 20) {
+        result.protocol = "TCP";
+        const srcPort = (bytes[offset] << 8) | bytes[offset + 1];
+        const dstPort = (bytes[offset + 2] << 8) | bytes[offset + 3];
+        const seqNum = ((bytes[offset+4]<<24)>>>0) + ((bytes[offset+5]<<16)>>>0) + ((bytes[offset+6]<<8)>>>0) + bytes[offset+7];
+        const ackNum = ((bytes[offset+8]<<24)>>>0) + ((bytes[offset+9]<<16)>>>0) + ((bytes[offset+10]<<8)>>>0) + bytes[offset+11];
+        const flags = bytes[offset + 13];
+
+        const flagList = [];
+        if (flags & 0x02) flagList.push("SYN");
+        if (flags & 0x10) flagList.push("ACK");
+        if (flags & 0x01) flagList.push("FIN");
+        if (flags & 0x04) flagList.push("RST");
+        if (flags & 0x08) flagList.push("PSH");
+        if (flags & 0x20) flagList.push("URG");
+
+        const flagStr = flagList.length > 0 ? `[${flagList.join(", ")}]` : "[None]";
+        result.info = `${srcPort} → ${dstPort} ${flagStr} Seq=${seqNum} Ack=${ackNum}`;
+
+        result.details.push({
+          layer: "Transmission Control Protocol (TCP)",
+          fields: {
+            "Source Port": `${srcPort} (${getPortLabel(srcPort)})`,
+            "Destination Port": `${dstPort} (${getPortLabel(dstPort)})`,
+            "Sequence Number": seqNum,
+            "Acknowledgment Number": ackNum,
+            "Flags": flagStr
+          }
+        });
+      }
+      // UDP
+      else if (protoNum === 17 && len >= offset + 8) {
+        result.protocol = "UDP";
+        const srcPort = (bytes[offset] << 8) | bytes[offset + 1];
+        const dstPort = (bytes[offset + 2] << 8) | bytes[offset + 3];
+        const udpLen = (bytes[offset + 4] << 8) | bytes[offset + 5];
+
+        let service = "";
+        if (srcPort === 53 || dstPort === 53) service = "DNS";
+        else if (srcPort === 67 || dstPort === 67 || srcPort === 68 || dstPort === 68) service = "DHCP";
+        else if (srcPort === 123 || dstPort === 123) service = "NTP";
+        else if (srcPort === 5353 || dstPort === 5353) service = "mDNS";
+        else if (srcPort === 443 || dstPort === 443) service = "QUIC / HTTP3";
+
+        result.info = `${srcPort} → ${dstPort} Len=${udpLen} ${service ? "(" + service + ")" : ""}`.trim();
+        result.details.push({
+          layer: "User Datagram Protocol (UDP)",
+          fields: {
+            "Source Port": `${srcPort} (${getPortLabel(srcPort)})`,
+            "Destination Port": `${dstPort} (${getPortLabel(dstPort)})`,
+            "Length": `${udpLen} bytes`
+          }
+        });
+      }
+      // ICMP (IPv4)
+      else if (protoNum === 1 && len >= offset + 2) {
+        result.protocol = "ICMP";
+        const type = bytes[offset];
+        const code = bytes[offset + 1];
+        let typeStr = `Type ${type}, Code ${code}`;
+        if (type === 8) typeStr = "Echo (ping) Request";
+        else if (type === 0) typeStr = "Echo (ping) Reply";
+        else if (type === 3) typeStr = "Destination Unreachable";
+
+        result.info = `ICMP: ${typeStr}`;
+        result.details.push({
+          layer: "Internet Control Message Protocol (ICMP)",
+          fields: { "Type": type, "Code": code, "Description": typeStr }
+        });
+      }
+      // ICMPv6
+      else if (protoNum === 58 && len >= offset + 2) {
+        result.protocol = "ICMP";
+        const type = bytes[offset];
+        const code = bytes[offset + 1];
+        let desc = `ICMPv6 Type ${type}`;
+        if (type === 128) desc = "ICMPv6 Echo Request";
+        else if (type === 129) desc = "ICMPv6 Echo Reply";
+        else if (type === 133) desc = "ICMPv6 Router Solicitation";
+        else if (type === 134) desc = "ICMPv6 Router Advertisement";
+        else if (type === 135) desc = "ICMPv6 Neighbor Solicitation";
+        else if (type === 136) desc = "ICMPv6 Neighbor Advertisement";
+
+        result.info = desc;
+        result.details.push({
+          layer: "Internet Control Message Protocol v6 (ICMPv6)",
+          fields: { "Type": type, "Code": code, "Description": desc }
+        });
+      } else {
+        result.protocol = "OTHER";
+        result.info = `Protocol ${protoNum}`;
+      }
+    }
+
+    /* 4. Filter & Pagination Engine */
+    function applyFilter() {
+      const term = filterInput.value.trim().toLowerCase();
+      const proto = protocolFilter.value;
+
+      filteredIndices = [];
+      for (let i = 0; i < parsedPackets.length; i++) {
+        const pkt = parsedPackets[i];
+        if (proto !== "ALL" && pkt.protocol !== proto) continue;
+        if (term) {
+          const match = pkt.source.toLowerCase().includes(term) ||
+                        pkt.destination.toLowerCase().includes(term) ||
+                        pkt.info.toLowerCase().includes(term);
+          if (!match) continue;
+        }
+        filteredIndices.push(i);
+      }
+
+      currentPage = 1;
+      renderTablePage();
+    }
+
+    filterInput.addEventListener("input", applyFilter);
+    protocolFilter.addEventListener("change", applyFilter);
+
+    function renderTablePage() {
+      packetTableBody.innerHTML = "";
+      const totalFiltered = filteredIndices.length;
+
+      if (totalFiltered === 0) {
+        paginationInfo.textContent = "Showing 0 of 0 packets";
+        pageNumberDisplay.textContent = "Page 0";
+        btnPrevPage.disabled = true;
+        btnNextPage.disabled = true;
+        return;
+      }
+
+      const totalPages = Math.ceil(totalFiltered / PAGE_SIZE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * PAGE_SIZE;
+      const endIdx = Math.min(startIdx + PAGE_SIZE, totalFiltered);
+
+      paginationInfo.textContent = `Showing ${startIdx + 1}-${endIdx} of ${totalFiltered.toLocaleString()} packets`;
+      pageNumberDisplay.textContent = `Page ${currentPage} of ${totalPages}`;
+      btnPrevPage.disabled = currentPage === 1;
+      btnNextPage.disabled = currentPage === totalPages;
+
+      const frag = document.createDocumentFragment();
+
+      for (let i = startIdx; i < endIdx; i++) {
+        const rawIdx = filteredIndices[i];
+        const pkt = parsedPackets[rawIdx];
+
+        const tr = document.createElement("tr");
+        tr.dataset.index = rawIdx;
+        if (rawIdx === activeSelectedIndex) tr.classList.add("selected");
+
+        let badgeClass = "proto-other";
+        if (pkt.protocol === "TCP") badgeClass = "proto-tcp";
+        else if (pkt.protocol === "UDP") badgeClass = "proto-udp";
+        else if (pkt.protocol === "ICMP") badgeClass = "proto-icmp";
+        else if (pkt.protocol === "ARP") badgeClass = "proto-arp";
+
+        tr.innerHTML = `
+          <td>${pkt.number}</td>
+          <td>${pkt.relTime.toFixed(4)}</td>
+          <td>${escapeHtml(pkt.source)}</td>
+          <td>${escapeHtml(pkt.destination)}</td>
+          <td><span class="proto-badge ${badgeClass}">${pkt.protocol}</span></td>
+          <td>${pkt.inclLen}</td>
+          <td>${escapeHtml(pkt.info)}</td>
+        `;
+
+        tr.addEventListener("click", () => selectPacket(rawIdx));
+        frag.appendChild(tr);
+      }
+
+      packetTableBody.appendChild(frag);
+    }
+
+    btnPrevPage.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTablePage();
+      }
+    });
+
+    btnNextPage.addEventListener("click", () => {
+      const totalPages = Math.ceil(filteredIndices.length / PAGE_SIZE);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTablePage();
+      }
+    });
+
+    /* 5. Packet Inspection & Hex Dump */
+    function selectPacket(index) {
+      activeSelectedIndex = index;
+      const rows = packetTableBody.querySelectorAll("tr");
+      rows.forEach(r => {
+        if (parseInt(r.dataset.index, 10) === index) {
+          r.classList.add("selected");
+        } else {
+          r.classList.remove("selected");
+        }
+      });
+
+      const pkt = parsedPackets[index];
+      if (!pkt) return;
+
+      selectedPacketLabel.textContent = `Packet #${pkt.number} (${pkt.protocol})`;
+      selectedBytesLabel.textContent = `${pkt.inclLen} bytes on wire`;
+
+      // Render Tree Layers
+      let treeHtml = "";
+      pkt.details.forEach(layer => {
+        treeHtml += `<div class="layer-node">`;
+        treeHtml += `<div class="layer-title">▶ ${escapeHtml(layer.layer)}</div>`;
+        for (const [key, val] of Object.entries(layer.fields)) {
+          treeHtml += `<span class="layer-kv"><span>${escapeHtml(key)}:</span> ${escapeHtml(String(val))}</span>`;
+        }
+        treeHtml += `</div>`;
+      });
+      layerTreeContainer.innerHTML = treeHtml || "No additional layer metadata available.";
+
+      // Render Hex & ASCII Dump
+      hexViewerContainer.textContent = generateHexDump(pkt.bytes);
+    }
+
+    function generateHexDump(bytes) {
+      let output = "";
+      const len = bytes.length;
+      for (let i = 0; i < len; i += 16) {
+        const offset = i.toString(16).padStart(4, "0").toUpperCase();
+        let hexPart = "";
+        let asciiPart = "";
+
+        for (let j = 0; j < 16; j++) {
+          if (i + j < len) {
+            const b = bytes[i + j];
+            hexPart += b.toString(16).padStart(2, "0").toUpperCase() + " ";
+            asciiPart += (b >= 32 && b <= 126) ? String.fromCharCode(b) : ".";
+          } else {
+            hexPart += "   ";
+          }
+          if (j === 7) hexPart += " ";
+        }
+
+        output += `${offset}  ${hexPart} |${asciiPart}|\n`;
+      }
+      return output;
+    }
+
+    /* 6. JSON Export */
+    btnExportJson.addEventListener("click", () => {
+      if (parsedPackets.length === 0) return;
+      const exportData = parsedPackets.map(p => ({
+        number: p.number,
+        timestamp_offset_seconds: p.relTime,
+        length_bytes: p.inclLen,
+        protocol: p.protocol,
+        source: p.source,
+        destination: p.destination,
+        info: p.info,
+        layers: p.details
+      }));
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+      const dl = document.createElement("a");
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", `pcap-analysis-${Date.now()}.json`);
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    });
+
+    /* 7. Binary String Formatting Utilities */
+    function formatMac(bytes, start) {
+      return Array.from(bytes.slice(start, start + 6))
+        .map(b => b.toString(16).padStart(2, "0").toUpperCase())
+        .join(":");
+    }
+
+    function formatIpv6(bytes, start) {
+      const parts = [];
+      for (let i = 0; i < 16; i += 2) {
+        parts.push(((bytes[start + i] << 8) | bytes[start + i + 1]).toString(16));
+      }
+      return parts.join(":");
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / 1048576).toFixed(2) + " MB";
+    }
+
+    function getPortLabel(port) {
+      const ports = {
+        21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 53: "DNS",
+        80: "HTTP", 110: "POP3", 123: "NTP", 143: "IMAP", 443: "HTTPS",
+        445: "SMB", 993: "IMAPS", 995: "POP3S", 3306: "MySQL",
+        3389: "RDP", 5353: "mDNS", 5432: "PostgreSQL", 8080: "HTTP-Proxy"
+      };
+      return ports[port] || "Port";
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
