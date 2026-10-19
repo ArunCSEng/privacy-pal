@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Apple Property List (plist) Viewer & Decoder — Free Offline Tool | BitDark</title>
+  <meta name="title" content="Apple Property List (plist) Viewer & Decoder — Free Offline Tool | BitDark" />
+  <meta name="description" content="Parse, inspect, and convert Apple binary plist (bplist00) and XML plist files directly in your browser. 100% offline, zero data upload." />
+  <meta name="keywords" content="plist viewer, bplist decoder, binary plist to json, apple plist converter, local plist parser, offline plist reader" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/plist-viewer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); word-break: break-all; }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      word-break: break-word;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 {
+      font-size: 1.7rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.92rem;
+    }
+
+    /* Tool Card & Inputs */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .input-mode-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-bg);
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+      font-weight: 600;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 6px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+
+    .file-input-hidden { display: none; }
+
+    .raw-paste-container {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .paste-textarea {
+      width: 100%;
+      height: 180px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      resize: vertical;
+      outline: none;
+    }
+    .paste-textarea:focus { border-color: var(--atom-border-focus); }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .status-success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.7rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .view-switcher-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .view-tabs { display: flex; gap: 6px; }
+    .view-btn {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .view-btn.active {
+      border-color: var(--atom-cyan);
+      color: var(--atom-cyan);
+      font-weight: 600;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 480px;
+      overflow: auto;
+      white-space: pre;
+      color: var(--atom-heading);
+      line-height: 1.5;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 30px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Explanations */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 14px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .brand { text-align: center; }
+      .trust-badge, .ip-pill-nav {
+        justify-content: center;
+        align-self: center;
+      }
+      .wrapper { padding: 18px 12px 40px; }
+      .tool-header h1 { font-size: 1.4rem; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; text-align: center; }
+      .view-switcher-bar { flex-direction: column; align-items: flex-start; }
+      .bottom-bar { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding & Serialization</a> / plist-viewer
+    </nav>
+
+    <div class="tool-header">
+      <h1>Apple Property List (plist) Viewer & Decoder</h1>
+      <p>Inspect, decode, and transform macOS & iOS binary plists (bplist00) and XML property lists entirely in local memory.</p>
+    </div>
+
+    <!-- Active Tool Card -->
+    <div class="tool-card">
+      <div class="input-mode-tabs">
+        <button class="tab-btn active" id="tabUpload">Upload File</button>
+        <button class="tab-btn" id="tabPaste">Paste Raw Text / XML</button>
+      </div>
+
+      <!-- File Upload Zone -->
+      <div id="uploadContainer">
+        <div class="dropzone" id="dropArea">
+          <span class="dropzone-icon">📋</span>
+          <p><strong>Click to browse</strong> or drag & drop a .plist file here</p>
+          <span class="dropzone-hint">Supports Binary Plist (bplist00), XML Plist, and .strings (0-byte network upload)</span>
+          <input type="file" id="filePicker" class="file-input-hidden" accept=".plist,.strings,.xml,.mobileconfig" />
+        </div>
+      </div>
+
+      <!-- Raw Paste Zone -->
+      <div class="raw-paste-container" id="pasteContainer">
+        <textarea class="paste-textarea" id="pasteInput" placeholder="Paste raw XML plist data here (e.g. <?xml version='1.0' encoding='UTF-8'?> <plist version='1.0'><dict>...</dict></plist>)..."></textarea>
+        <button class="btn-atom" id="btnParsePasted" style="align-self: flex-start;">Parse Pasted Data</button>
+      </div>
+
+      <!-- Results Area -->
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Source Identifier</div>
+            <div class="meta-val" id="metaName">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Detected Format</div>
+            <div class="meta-val" id="metaFormat">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">File Size</div>
+            <div class="meta-val" id="metaSize">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Digest</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+        </div>
+
+        <div class="view-switcher-bar">
+          <div class="meta-label" style="margin: 0;">Parsed Manifest Output:</div>
+          <div class="view-tabs">
+            <button class="view-btn active" id="btnViewJson">Formatted JSON</button>
+            <button class="view-btn" id="btnViewXml">Standard XML Plist</button>
+          </div>
+        </div>
+
+        <div class="viewer-box" id="outputViewer">Loading parsed payload...</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnCopy">Copy Content</button>
+          <button class="btn-atom" id="btnDownloadJson">Download JSON</button>
+          <button class="btn-atom" id="btnDownloadXml">Download XML Plist</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear / Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicit Non-Responsibility Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> BitDark Legal & Operational Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any loss, corruption, misinterpretation, unauthorized inspection, or legal outcomes resulting from the processing of your property list files. All parsing, binary de-serialization, and conversions take place strictly inside your browser sandbox memory using local JavaScript APIs. BitDark.net does not store, transmit, inspect, or retain your files, nor does BitDark.net warrant the forensic accuracy or compatibility of parsed attributes for mission-critical iOS or macOS provisioning profiles. Use this utility entirely at your own risk.
+      </p>
+    </aside>
+
+    <!-- Technical & Specification Reference -->
+    <article class="doc-section">
+      <h2>Apple Property List Formats Explained</h2>
+      <p>Property lists are serialization formats utilized extensively across Apple platforms (macOS, iOS, watchOS, tvOS) to store user preferences, application bundles, configuration states, and security entitlements:</p>
+      <ul>
+        <li><strong>Binary Plist (<code>bplist00</code>):</strong> A compact binary format introduced in Mac OS X 10.2. It packs primitives (integers, booleans, dates, floats, and binary blobs) with an offset table and trailer referencing the root object graph.</li>
+        <li><strong>XML Plist (Version 1.0):</strong> A structured text format validated by Apple's DTD schema (<code>Apple//DTD PLIST 1.0//EN</code>), featuring explicit typed tags such as <code>&lt;dict&gt;</code>, <code>&lt;key&gt;</code>, <code>&lt;array&gt;</code>, <code>&lt;string&gt;</code>, and <code>&lt;data&gt;</code>.</li>
+        <li><strong>OpenStep / NeXTSTEP Plist:</strong> The historical ASCII format preceding XML, using curly braces for dictionaries and semicolons as terminators.</li>
+      </ul>
+
+      <h2>Memory-Only Processing Guarantee</h2>
+      <p>Traditional conversion sites often upload property list files to remote backend servers to invoke tools like <code>plutil</code>. BitDark executes an internal binary byte-level decoder and XML DOM parser in-memory. Zero network requests are initiated for your files, ensuring complete confidentiality for proprietary certificates, entitlements, and credentials.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // IP Telemetry with Localhost Recognition and Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM Elements
+    const tabUpload = document.getElementById("tabUpload");
+    const tabPaste = document.getElementById("tabPaste");
+    const uploadContainer = document.getElementById("uploadContainer");
+    const pasteContainer = document.getElementById("pasteContainer");
+    const pasteInput = document.getElementById("pasteInput");
+    const btnParsePasted = document.getElementById("btnParsePasted");
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaName = document.getElementById("metaName");
+    const metaFormat = document.getElementById("metaFormat");
+    const metaSize = document.getElementById("metaSize");
+    const metaHash = document.getElementById("metaHash");
+    const outputViewer = document.getElementById("outputViewer");
+    const btnViewJson = document.getElementById("btnViewJson");
+    const btnViewXml = document.getElementById("btnViewXml");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDownloadJson = document.getElementById("btnDownloadJson");
+    const btnDownloadXml = document.getElementById("btnDownloadXml");
+    const btnReset = document.getElementById("btnReset");
+
+    let parsedDataObject = null;
+    let formattedJsonString = "";
+    let formattedXmlString = "";
+    let currentActiveView = "json";
+
+    // Mode Switcher Tabs
+    tabUpload.addEventListener("click", () => {
+      tabUpload.classList.add("active");
+      tabPaste.classList.remove("active");
+      uploadContainer.style.display = "block";
+      pasteContainer.style.display = "none";
+    });
+
+    tabPaste.addEventListener("click", () => {
+      tabPaste.classList.add("active");
+      tabUpload.classList.remove("active");
+      uploadContainer.style.display = "none";
+      pasteContainer.style.display = "flex";
+    });
+
+    // File Drag & Drop Handling
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleIncomingFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleIncomingFile(e.target.files[0]);
+      }
+    });
+
+    btnParsePasted.addEventListener("click", () => {
+      const rawText = pasteInput.value.trim();
+      if (!rawText) return;
+      handlePastedContent(rawText);
+    });
+
+    // Process File Buffer
+    async function handleIncomingFile(file) {
+      resultsArea.style.display = "block";
+      statusBanner.className = "status-banner";
+      statusBanner.innerHTML = "<span>Parsing binary structures...</span>";
+      metaName.textContent = file.name;
+      metaSize.textContent = `${(file.size / 1024).toFixed(2)} KB (${file.size.toLocaleString()} bytes)`;
+      metaHash.textContent = "Calculating...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+        
+        // SHA-256 Digest
+        const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+        const hashArr = Array.from(new Uint8Array(hashBuf));
+        const hashHex = hashArr.map(b => b.toString(16).padStart(2, "0")).join("");
+        metaHash.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
+
+        const byteHeader = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 8));
+        const headerText = String.fromCharCode(...byteHeader);
+
+        if (headerText.startsWith("bplist")) {
+          metaFormat.textContent = `Binary Plist (${headerText.slice(0, 8)})`;
+          parsedDataObject = parseBinaryPlist(buffer);
+        } else {
+          metaFormat.textContent = "XML / Text Plist";
+          const textDecoder = new TextDecoder("utf-8");
+          const xmlContent = textDecoder.decode(buffer);
+          parsedDataObject = parseXmlPlist(xmlContent);
+        }
+
+        renderParsedData();
+      } catch (err) {
+        showParseError(err.message);
+      }
+    }
+
+    // Process Raw Pasted String
+    async function handlePastedContent(rawText) {
+      resultsArea.style.display = "block";
+      statusBanner.className = "status-banner";
+      statusBanner.innerHTML = "<span>Parsing text payload...</span>";
+      metaName.textContent = "Pasted Text";
+      metaSize.textContent = `${rawText.length} characters`;
+      metaFormat.textContent = "XML Plist";
+      metaHash.textContent = "N/A";
+
+      try {
+        parsedDataObject = parseXmlPlist(rawText);
+        renderParsedData();
+      } catch (err) {
+        showParseError(err.message);
+      }
+    }
+
+    function renderParsedData() {
+      formattedJsonString = JSON.stringify(parsedDataObject, null, 2);
+      formattedXmlString = jsonToXmlPlist(parsedDataObject);
+
+      statusBanner.className = "status-banner status-success";
+      statusBanner.innerHTML = `<span>✓ Successfully Parsed & Decoded</span> <span>Ready for Export</span>`;
+
+      updateView();
+    }
+
+    function showParseError(msg) {
+      statusBanner.className = "status-banner status-error";
+      statusBanner.innerHTML = `<span>✕ Parser Failure: ${msg}</span>`;
+      outputViewer.textContent = "Failed to parse property list. Ensure the input is a valid bplist00 or valid Apple XML plist format.";
+    }
+
+    function updateView() {
+      if (currentActiveView === "json") {
+        outputViewer.textContent = formattedJsonString;
+      } else {
+        outputViewer.textContent = formattedXmlString;
+      }
+    }
+
+    btnViewJson.addEventListener("click", () => {
+      currentActiveView = "json";
+      btnViewJson.classList.add("active");
+      btnViewXml.classList.remove("active");
+      updateView();
+    });
+
+    btnViewXml.addEventListener("click", () => {
+      currentActiveView = "xml";
+      btnViewXml.classList.add("active");
+      btnViewJson.classList.remove("active");
+      updateView();
+    });
+
+    btnCopy.addEventListener("click", () => {
+      const activeContent = currentActiveView === "json" ? formattedJsonString : formattedXmlString;
+      navigator.clipboard.writeText(activeContent).then(() => {
+        const originalText = btnCopy.textContent;
+        btnCopy.textContent = "Copied!";
+        setTimeout(() => btnCopy.textContent = originalText, 1800);
+      });
+    });
+
+    btnDownloadJson.addEventListener("click", () => {
+      if (!formattedJsonString) return;
+      triggerDownload(formattedJsonString, "data:application/json;charset=utf-8,", "plist-decoded.json");
+    });
+
+    btnDownloadXml.addEventListener("click", () => {
+      if (!formattedXmlString) return;
+      triggerDownload(formattedXmlString, "data:text/xml;charset=utf-8,", "converted.plist");
+    });
+
+    function triggerDownload(content, mimePrefix, filename) {
+      const blob = new Blob([content], { type: mimePrefix.replace("data:", "").replace(",", "") });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      pasteInput.value = "";
+      filePicker.value = "";
+      parsedDataObject = null;
+      formattedJsonString = "";
+      formattedXmlString = "";
+    });
+
+    // Pure JavaScript Binary Plist (bplist00) Parser Engine
+    function parseBinaryPlist(buffer) {
+      const dataView = new DataView(buffer);
+      const bytes = new Uint8Array(buffer);
+
+      if (buffer.byteLength < 32) {
+        throw new Error("File too small to be a valid binary plist.");
+      }
+
+      // Trailer is the final 32 bytes
+      const trailerOffset = buffer.byteLength - 32;
+      const offsetIntSize = dataView.getUint8(trailerOffset + 6);
+      const objectRefSize = dataView.getUint8(trailerOffset + 7);
+      const numObjects = Number(dataView.getBigUint64(trailerOffset + 8));
+      const topObject = Number(dataView.getBigUint64(trailerOffset + 16));
+      const offsetTableOffset = Number(dataView.getBigUint64(trailerOffset + 24));
+
+      function readIntAtOffset(offset, size) {
+        if (size === 1) return dataView.getUint8(offset);
+        if (size === 2) return dataView.getUint16(offset);
+        if (size === 4) return dataView.getUint32(offset);
+        if (size === 8) return Number(dataView.getBigUint64(offset));
+        let val = 0;
+        for (let i = 0; i < size; i++) val = (val * 256) + bytes[offset + i];
+        return val;
+      }
+
+      const offsetTable = [];
+      for (let i = 0; i < numObjects; i++) {
+        offsetTable.push(readIntAtOffset(offsetTableOffset + (i * offsetIntSize), offsetIntSize));
+      }
+
+      function parseObject(objIndex) {
+        if (objIndex >= offsetTable.length) return null;
+        const offset = offsetTable[objIndex];
+        const byte = bytes[offset];
+        const type = (byte & 0xF0) >> 4;
+        let info = byte & 0x0F;
+        let cursor = offset + 1;
+
+        function readCount() {
+          if (info === 0x0F) {
+            const intByte = bytes[cursor];
+            const intInfo = intByte & 0x0F;
+            cursor++;
+            const intLen = 1 << intInfo;
+            const val = readIntAtOffset(cursor, intLen);
+            cursor += intLen;
+            return val;
+          }
+          return info;
+        }
+
+        switch (type) {
+          case 0x0: // Primitive singletons
+            if (info === 0x00) return null;
+            if (info === 0x08) return false;
+            if (info === 0x09) return true;
+            return null;
+
+          case 0x1: { // Integer
+            const length = 1 << info;
+            if (length === 1) return dataView.getInt8(cursor);
+            if (length === 2) return dataView.getInt16(cursor);
+            if (length === 4) return dataView.getInt32(cursor);
+            if (length === 8) return Number(dataView.getBigInt64(cursor));
+            let v = 0;
+            for (let i = 0; i < length; i++) v = (v * 256) + bytes[cursor + i];
+            return v;
+          }
+
+          case 0x2: { // Real / Float
+            const length = 1 << info;
+            if (length === 4) return dataView.getFloat32(cursor);
+            if (length === 8) return dataView.getFloat64(cursor);
+            return 0.0;
+          }
+
+          case 0x3: { // Date (Apple epoch: seconds from 2001-01-01)
+            const seconds = dataView.getFloat64(cursor);
+            const appleEpochMs = 978307200000;
+            return new Date(appleEpochMs + (seconds * 1000)).toISOString();
+          }
+
+          case 0x4: { // Data blob
+            const count = readCount();
+            const sub = bytes.subarray(cursor, cursor + count);
+            let hex = "";
+            for (let i = 0; i < Math.min(count, 32); i++) {
+              hex += sub[i].toString(16).padStart(2, "0");
+            }
+            return `<Data: ${hex}${count > 32 ? "..." : ""}>`;
+          }
+
+          case 0x5: { // ASCII String
+            const count = readCount();
+            let str = "";
+            for (let i = 0; i < count; i++) {
+              str += String.fromCharCode(bytes[cursor + i]);
+            }
+            return str;
+          }
+
+          case 0x6: { // UTF-16 BE String
+            const count = readCount();
+            let str = "";
+            for (let i = 0; i < count; i++) {
+              str += String.fromCharCode(dataView.getUint16(cursor + (i * 2)));
+            }
+            return str;
+          }
+
+          case 0x8: { // UID
+            const len = info + 1;
+            return `UID(${readIntAtOffset(cursor, len)})`;
+          }
+
+          case 0xA: { // Array
+            const count = readCount();
+            const arr = [];
+            for (let i = 0; i < count; i++) {
+              const ref = readIntAtOffset(cursor + (i * objectRefSize), objectRefSize);
+              arr.push(parseObject(ref));
+            }
+            return arr;
+          }
+
+          case 0xC: { // Set
+            const count = readCount();
+            const setArr = [];
+            for (let i = 0; i < count; i++) {
+              const ref = readIntAtOffset(cursor + (i * objectRefSize), objectRefSize);
+              setArr.push(parseObject(ref));
+            }
+            return setArr;
+          }
+
+          case 0xD: { // Dictionary
+            const count = readCount();
+            const dict = {};
+            const keyOffsets = cursor;
+            const valOffsets = cursor + (count * objectRefSize);
+            for (let i = 0; i < count; i++) {
+              const keyRef = readIntAtOffset(keyOffsets + (i * objectRefSize), objectRefSize);
+              const valRef = readIntAtOffset(valOffsets + (i * objectRefSize), objectRefSize);
+              const key = parseObject(keyRef);
+              const val = parseObject(valRef);
+              dict[key] = val;
+            }
+            return dict;
+          }
+
+          default:
+            return `<Unknown Type 0x${type.toString(16)}>`;
+        }
+      }
+
+      return parseObject(topObject);
+    }
+
+    // Pure JavaScript XML Plist Parser Engine
+    function parseXmlPlist(xmlString) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+      const err = xmlDoc.querySelector("parsererror");
+      if (err) throw new Error("Malformed XML: " + err.textContent.slice(0, 80));
+
+      const plistEl = xmlDoc.querySelector("plist");
+      if (!plistEl) throw new Error("Missing <plist> root element.");
+
+      let rootChild = null;
+      for (let i = 0; i < plistEl.children.length; i++) {
+        if (plistEl.children[i].nodeType === 1) {
+          rootChild = plistEl.children[i];
+          break;
+        }
+      }
+      if (!rootChild) return {};
+
+      function parseDomNode(node) {
+        const tag = node.tagName.toLowerCase();
+        switch (tag) {
+          case "dict": {
+            const out = {};
+            let activeKey = null;
+            for (let i = 0; i < node.children.length; i++) {
+              const child = node.children[i];
+              if (child.tagName.toLowerCase() === "key") {
+                activeKey = child.textContent.trim();
+              } else if (activeKey !== null) {
+                out[activeKey] = parseDomNode(child);
+                activeKey = null;
+              }
+            }
+            return out;
+          }
+          case "array": {
+            const list = [];
+            for (let i = 0; i < node.children.length; i++) {
+              list.push(parseDomNode(node.children[i]));
+            }
+            return list;
+          }
+          case "string":
+            return node.textContent;
+          case "integer":
+            return parseInt(node.textContent.trim(), 10);
+          case "real":
+            return parseFloat(node.textContent.trim());
+          case "true":
+            return true;
+          case "false":
+            return false;
+          case "date":
+            return node.textContent.trim();
+          case "data":
+            return `<Data: ${node.textContent.trim().replace(/\s+/g, "").slice(0, 32)}...>`;
+          default:
+            return node.textContent.trim();
+        }
+      }
+
+      return parseDomNode(rootChild);
+    }
+
+    // Convert JS Object to Clean Apple XML Plist
+    function jsonToXmlPlist(obj) {
+      function serialize(val, indent = "  ") {
+        if (val === null || val === undefined) return `${indent}<string></string>\n`;
+        if (typeof val === "boolean") return `${indent}<${val}/>\n`;
+        if (typeof val === "number") {
+          return Number.isInteger(val) ? `${indent}<integer>${val}</integer>\n` : `${indent}<real>${val}</real>\n`;
+        }
+        if (typeof val === "string") {
+          const esc = val.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          return `${indent}<string>${esc}</string>\n`;
+        }
+        if (Array.isArray(val)) {
+          if (val.length === 0) return `${indent}<array/>\n`;
+          let res = `${indent}<array>\n`;
+          for (const item of val) res += serialize(item, indent + "  ");
+          res += `${indent}</array>\n`;
+          return res;
+        }
+        if (typeof val === "object") {
+          const keys = Object.keys(val);
+          if (keys.length === 0) return `${indent}<dict/>\n`;
+          let res = `${indent}<dict>\n`;
+          for (const k of keys) {
+            const escKey = k.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            res += `${indent}  <key>${escKey}</key>\n`;
+            res += serialize(val[k], indent + "  ");
+          }
+          res += `${indent}</dict>\n`;
+          return res;
+        }
+        return `${indent}<string>${String(val)}</string>\n`;
+      }
+
+      return `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n${serialize(obj, "")}</plist>`;
+    }
+  </script>
+</body>
+</html>
