@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark</title>
+  <meta name="title" content="Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark" />
+  <meta name="description" content="Inspect, parse, and analyze Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) and .reg files locally in your browser. 100% client-side memory execution, zero tracking, zero network egress." />
+  <meta name="keywords" content="registry viewer, offline registry parser, ntuser.dat viewer, amcache viewer, regf forensic parser, windows forensics, client-side registry analyzer" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/registry-viewer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-blue: #61afef;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .brand span { color: var(--atom-amber); }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); margin: 0 2px; }
+
+    /* Layout */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 24px 16px 60px; 
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+      color: var(--atom-muted);
+      word-break: break-word;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { 
+      font-size: 1.8rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+      line-height: 1.25;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 0.95rem; 
+      max-width: 860px;
+    }
+
+    /* Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 40px 18px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { 
+      font-size: 2.2rem; 
+      margin-bottom: 10px; 
+      display: inline-block; 
+    }
+    .dropzone p { 
+      font-size: 0.92rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
+    .dropzone-hint { 
+      font-size: 0.76rem; 
+      color: var(--atom-muted); 
+      font-family: var(--font-code);
+      display: block;
+      line-height: 1.4;
+    }
+    .file-input-hidden { display: none; }
+
+    /* Results Workspace */
+    .results-area { 
+      margin-top: 24px; 
+      display: none; 
+    }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .status-found {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-missing {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { 
+      font-size: 0.72rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 4px; 
+      letter-spacing: 0.5px;
+    }
+    .meta-val { 
+      font-size: 0.85rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
+    }
+
+    /* Filter Toolbar */
+    .toolbar-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .search-input-wrap {
+      flex: 1 1 280px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--atom-border-focus); }
+
+    .triage-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tag-btn {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-cyan);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    .tag-btn:hover, .tag-btn.active {
+      background-color: var(--atom-gutter);
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    /* Explorer Container */
+    .reg-explorer {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 16px;
+      min-height: 480px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    @media (max-width: 860px) {
+      .reg-explorer {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+    }
+
+    .tree-pane {
+      background-color: var(--atom-gutter);
+      border-right: 1px solid var(--atom-border);
+      overflow-y: auto;
+      max-height: 540px;
+      padding: 12px 8px;
+    }
+    @media (max-width: 860px) {
+      .tree-pane {
+        border-right: none;
+        border-bottom: 1px solid var(--atom-border);
+        max-height: 260px;
+      }
+    }
+
+    .tree-header {
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-left: 6px;
+      letter-spacing: 0.5px;
+    }
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border-radius: 3px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-text);
+      cursor: pointer;
+      word-break: break-all;
+      transition: background-color 0.15s;
+    }
+    .tree-item:hover { background-color: var(--atom-surface); }
+    .tree-item.selected {
+      background-color: rgba(82, 139, 255, 0.15);
+      border-left: 3px solid var(--atom-blue);
+      color: var(--atom-heading);
+    }
+
+    .detail-pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: var(--atom-bg);
+    }
+    .detail-header-bar {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+      background-color: var(--atom-surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .active-key-path {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-cyan);
+      word-break: break-all;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      flex: 1;
+      max-height: 480px;
+    }
+    .reg-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+      min-width: 480px;
+    }
+    .reg-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background-color: var(--atom-gutter);
+      color: var(--atom-muted);
+      border-bottom: 1px solid var(--atom-border);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .reg-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      vertical-align: top;
+      word-break: break-word;
+    }
+    .reg-table tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+    .type-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-purple);
+      white-space: nowrap;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 18px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 32px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { 
+      color: var(--atom-heading); 
+      font-size: 1.2rem; 
+      margin-bottom: 10px; 
+      margin-top: 20px; 
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 14px; }
+      .nav-inner { flex-direction: column; align-items: stretch; gap: 8px; }
+      .nav-center { justify-content: space-between; }
+      .brand { text-align: center; }
+      .wrapper { padding: 18px 12px 50px; }
+      .tool-card { padding: 16px; }
+      .dropzone { padding: 26px 12px; }
+      .btn-row { justify-content: stretch; }
+      .btn-row button { flex: 1 1 100%; text-align: center; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .bottom-bar { flex-direction: column; text-align: center; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-center">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / registry-viewer
+    </nav>
+
+    <div class="tool-header">
+      <h1>Windows Registry Hive Viewer</h1>
+      <p>Inspect, parse, and analyze raw Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) and .reg text exports in-browser with complete tree traversal. Zero network egress, zero server storage.</p>
+    </div>
+
+    <!-- Active Tool Card -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🗂️</span>
+        <p><strong>Click to choose a registry file</strong> or drag &amp; drop here</p>
+        <span class="dropzone-hint">Supports binary hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve) &amp; .reg exports</span>
+        <input type="file" id="filePicker" class="file-input-hidden" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File Name &amp; Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Hash</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Hive Format / Signature</div>
+            <div class="meta-val" id="metaFormat">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Extracted Keys / Values</div>
+            <div class="meta-val" id="metaCounts">-</div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="toolbar-row">
+          <div class="search-input-wrap">
+            <input type="text" id="filterInput" class="search-input" placeholder="Search key paths, value names, or value data..." />
+          </div>
+          <div class="triage-tags">
+            <button class="tag-btn active" data-filter="all">All</button>
+            <button class="tag-btn" data-filter="run">Run / Startup</button>
+            <button class="tag-btn" data-filter="user">User Activity</button>
+            <button class="tag-btn" data-filter="usb">USB / Storage</button>
+            <button class="tag-btn" data-filter="network">Network</button>
+          </div>
+        </div>
+
+        <!-- Registry Explorer Container -->
+        <div class="reg-explorer">
+          <div class="tree-pane">
+            <div class="tree-header">Keys Navigation (<span id="keyCounter">0</span>)</div>
+            <div id="treeList"></div>
+          </div>
+          <div class="detail-pane">
+            <div class="detail-header-bar">
+              <span class="active-key-path" id="activeKeyDisplay">Select a key to view values</span>
+            </div>
+            <div class="table-container">
+              <table class="reg-table">
+                <thead>
+                  <tr>
+                    <th style="width: 25%;">Value Name</th>
+                    <th style="width: 20%;">Type</th>
+                    <th style="width: 55%;">Data</th>
+                  </tr>
+                </thead>
+                <tbody id="valuesTableBody">
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 24px;">No key selected</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnExportJson">Export Registry JSON</button>
+          <button class="btn-atom btn-secondary" id="btnExportCsv">Export CSV</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forensic & Liability Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal Disclaimer &amp; Forensic Evidentiary Notice
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible:</strong> This utility is offered strictly for rapid offline triage, educational analysis, and security auditing. BitDark.net and its maintainers assume no responsibility or liability for evidentiary integrity disputes, investigative inaccuracies, omissions, data corruption, legal proceedings, or business decisions arising from the use or interpretation of this tool's output. Binary hive parsing executed in-browser is subject to sandboxing memory limits and does not reconstruct corrupted transaction logs (.LOG1/.LOG2) or unallocated cell spaces. Always verify critical findings using forensically validated workstation suites.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Documentation -->
+    <article class="doc-section">
+      <h2>Windows Registry Hive Architecture</h2>
+      <p>The Windows Registry is a hierarchical configuration database stored on disk as binary files termed "hives". Unlike standard plaintext configuration formats, binary hives adhere to the Windows Registry format:</p>
+      <ul>
+        <li><strong>REGF Header:</strong> The first 4,096 bytes (0x1000) contain the primary hive header, commencing with the ASCII signature <code>regf</code>, sequence numbers, last modification timestamps (64-bit Windows FILETIME), and an offset pointer to the root cell.</li>
+        <li><strong>HBIN Allocations:</strong> Following the header, data is segmented into 4 KB chunks prefaced by <code>hbin</code>. These blocks house key cells (<code>nk</code>), value cells (<code>vk</code>), subkey lists (<code>lf</code>, <code>lh</code>, <code>ri</code>), and data cells.</li>
+        <li><strong>Standard Hive Paths:</strong>
+          <ul>
+            <li><code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code> &rarr; <code>%SystemRoot%\System32\config\</code></li>
+            <li><code>NTUSER.DAT</code> &rarr; <code>%SystemDrive%\Users\&lt;Username&gt;\NTUSER.DAT</code></li>
+            <li><code>Amcache.hve</code> &rarr; <code>%SystemRoot%\appcompat\Programs\Amcache.hve</code></li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Forensic disk artifacts frequently contain sensitive user identifiers, password hashes (SAM), credentials, and corporate network topology. BitDark's Windows Registry Hive Viewer parses raw files strictly in-memory using native JavaScript <code>ArrayBuffer</code> and <code>DataView</code> constructs. No telemetry or file bytes are ever uploaded or transmitted over the wire.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // IP Telemetry with Multiple Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM Elements
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFile = document.getElementById("metaFile");
+    const metaHash = document.getElementById("metaHash");
+    const metaFormat = document.getElementById("metaFormat");
+    const metaCounts = document.getElementById("metaCounts");
+    const treeList = document.getElementById("treeList");
+    const keyCounter = document.getElementById("keyCounter");
+    const activeKeyDisplay = document.getElementById("activeKeyDisplay");
+    const valuesTableBody = document.getElementById("valuesTableBody");
+    const filterInput = document.getElementById("filterInput");
+    const tagButtons = document.querySelectorAll(".tag-btn");
+    const btnExportJson = document.getElementById("btnExportJson");
+    const btnExportCsv = document.getElementById("btnExportCsv");
+    const btnReset = document.getElementById("btnReset");
+
+    // In-memory Registry Store: Map of keyPath -> Array of { name, type, data }
+    let parsedRegistryData = new Map();
+    let currentActiveKey = null;
+    let currentFileName = "registry";
+    let activeFilterTag = "all";
+
+    // Drag and drop listeners
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(event => {
+      dropArea.addEventListener(event, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      parsedRegistryData.clear();
+      currentActiveKey = null;
+      treeList.innerHTML = "";
+      valuesTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 24px;">No key selected</td></tr>`;
+      activeKeyDisplay.textContent = "Select a key to view values";
+      filterInput.value = "";
+    });
+
+    // File Processing
+    async function handleFileSelection(file) {
+      currentFileName = file.name;
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaFile.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      metaHash.textContent = "Computing SHA-256...";
+      metaFormat.textContent = "Analyzing format...";
+      metaCounts.textContent = "Extracting records...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+
+        // SHA-256
+        const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+        const hashArr = Array.from(new Uint8Array(hashBuf));
+        const hashHex = hashArr.map(b => b.toString(16).padStart(2, "0")).join("");
+        metaHash.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
+
+        parseRegistryFile(buffer, file);
+      } catch (err) {
+        statusBanner.className = "status-banner status-missing";
+        statusBanner.innerHTML = `<span>✕ Error reading file: ${err.message}</span>`;
+      }
+    }
+
+    function parseRegistryFile(buffer, file) {
+      parsedRegistryData.clear();
+      const bytes = new Uint8Array(buffer);
+
+      // Check for binary REGF signature: "regf" (0x72, 0x65, 0x67, 0x66)
+      const isRegf = bytes.length >= 4 && bytes[0] === 0x72 && bytes[1] === 0x65 && bytes[2] === 0x67 && bytes[3] === 0x66;
+
+      if (isRegf) {
+        metaFormat.textContent = "Binary REGF Windows Hive";
+        statusBanner.className = "status-banner status-found";
+        statusBanner.innerHTML = `<span>✓ Valid Binary Windows Registry Hive (REGF) Detected</span><span>B-Tree Hierarchical Parse</span>`;
+        parseBinaryRegfComplete(buffer);
+      } else {
+        // Text-based .reg check (UTF-16LE or UTF-8)
+        let textContent = "";
+        try {
+          textContent = new TextDecoder("utf-16le", { fatal: false }).decode(bytes);
+        } catch {
+          textContent = "";
+        }
+        if (!textContent.includes("Windows Registry Editor") && !textContent.includes("[")) {
+          textContent = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+        }
+
+        if (textContent.includes("Windows Registry Editor") || textContent.includes("[HKEY_") || textContent.includes("[\x00H\x00K\x00")) {
+          metaFormat.textContent = "Windows .reg Script Export";
+          statusBanner.className = "status-banner status-found";
+          statusBanner.innerHTML = `<span>✓ Windows Registry Script (.reg) Detected</span><span>Export File</span>`;
+          parseTextReg(textContent);
+        } else {
+          metaFormat.textContent = "Raw Registry Carve / Unknown";
+          statusBanner.className = "status-banner status-missing";
+          statusBanner.innerHTML = `<span>⚠️ Unknown Signature — Attempting String Carving</span><span>Heuristic Scan</span>`;
+          carveRegistryStrings(textContent);
+        }
+      }
+
+      // Update counts
+      let totalValues = 0;
+      for (const values of parsedRegistryData.values()) {
+        totalValues += values.length;
+      }
+      metaCounts.textContent = `${parsedRegistryData.size} Keys / ${totalValues} Values`;
+      keyCounter.textContent = parsedRegistryData.size;
+
+      renderTreeList();
+    }
+
+    // Complete Windows Registry Binary Hive (REGF) Engine
+    function parseBinaryRegfComplete(buffer) {
+      const dv = new DataView(buffer);
+      const uint8 = new Uint8Array(buffer);
+      const HIVE_OFFSET = 0x1000; // Hive bins start at offset 4096
+
+      // Parse hive header timestamp (FILETIME at 0x0C)
+      try {
+        const ftLow = dv.getUint32(0x0C, true);
+        const ftHigh = dv.getUint32(0x10, true);
+        const filetime = (BigInt(ftHigh) << 32n) + BigInt(ftLow);
+        if (filetime > 0n) {
+          const unixMs = Number((filetime - 116444736000000000n) / 10000n);
+          const dt = new Date(unixMs);
+          if (!isNaN(dt.getTime())) {
+            metaFormat.textContent += ` • Last Modified: ${dt.toISOString().replace("T", " ").slice(0, 19)} UTC`;
+          }
+        }
+      } catch (e) {}
+
+      // Get root cell offset relative to HIVE_OFFSET (at offset 0x24)
+      const rootCellRelOffset = dv.getUint32(0x24, true);
+
+      // Binary safe cell reader
+      function getAbsoluteCellOffset(relOffset) {
+        const abs = HIVE_OFFSET + relOffset;
+        if (abs < HIVE_OFFSET || abs >= buffer.byteLength - 4) return null;
+        return abs;
+      }
+
+      // Read string helper from cell
+      function readCellString(cellAbs, offsetInCell, length, isAscii) {
+        const start = cellAbs + offsetInCell;
+        if (start + length > buffer.byteLength) return "";
+        const slice = uint8.subarray(start, start + length);
+        if (isAscii) {
+          return new TextDecoder("latin1").decode(slice);
+        } else {
+          try {
+            return new TextDecoder("utf-16le").decode(slice);
+          } catch {
+            return new TextDecoder("latin1").decode(slice);
+          }
+        }
+      }
+
+      // Read value data content
+      function parseValueData(valType, dataLen, dataOffsetOrVal, vkCellAbs) {
+        const isInline = (dataLen & 0x80000000) !== 0;
+        const actualLen = dataLen & 0x7FFFFFFF;
+
+        if (isInline) {
+          if (valType === 4) { // REG_DWORD
+            return `0x${dataOffsetOrVal.toString(16).padStart(8, "0")} (${dataOffsetOrVal})`;
+          }
+          const b0 = dataOffsetOrVal & 0xFF;
+          const b1 = (dataOffsetOrVal >> 8) & 0xFF;
+          const b2 = (dataOffsetOrVal >> 16) & 0xFF;
+          const b3 = (dataOffsetOrVal >> 24) & 0xFF;
+          return `Inline: [${b0.toString(16).padStart(2, "0")} ${b1.toString(16).padStart(2, "0")} ${b2.toString(16).padStart(2, "0")} ${b3.toString(16).padStart(2, "0")}]`;
+        }
+
+        const dataAbs = getAbsoluteCellOffset(dataOffsetOrVal);
+        if (dataAbs === null) return `[Offset 0x${dataOffsetOrVal.toString(16)}]`;
+
+        // In cell structure: [CellSize (4 bytes)] [Data bytes...]
+        const dataStart = dataAbs + 4;
+        const readLen = Math.min(actualLen, buffer.byteLength - dataStart);
+        if (readLen <= 0) return "";
+
+        const dataBytes = uint8.subarray(dataStart, dataStart + readLen);
+
+        switch (valType) {
+          case 1: // REG_SZ
+          case 2: // REG_EXPAND_SZ
+            try {
+              return new TextDecoder("utf-16le").decode(dataBytes).replace(/\0+$/, "");
+            } catch {
+              return new TextDecoder("latin1").decode(dataBytes).replace(/\0+$/, "");
+            }
+          case 4: // REG_DWORD
+            if (dataBytes.length >= 4) {
+              const val = new DataView(dataBytes.buffer, dataBytes.byteOffset, 4).getUint32(0, true);
+              return `0x${val.toString(16).padStart(8, "0")} (${val})`;
+            }
+            return `0x00000000 (0)`;
+          case 11: // REG_QWORD
+            if (dataBytes.length >= 8) {
+              const qv = new DataView(dataBytes.buffer, dataBytes.byteOffset, 8).getBigUint64(0, true);
+              return `0x${qv.toString(16).padStart(16, "0")} (${qv.toString()})`;
+            }
+            return `0x0`;
+          case 7: // REG_MULTI_SZ
+            try {
+              const str = new TextDecoder("utf-16le").decode(dataBytes);
+              return str.split("\0").filter(s => s.length > 0).join(" | ");
+            } catch {
+              return "REG_MULTI_SZ [Data]";
+            }
+          case 3: // REG_BINARY
+          default:
+            const hexPreview = Array.from(dataBytes.slice(0, 32))
+              .map(b => b.toString(16).padStart(2, "0"))
+              .join(" ");
+            return readLen > 32 ? `${hexPreview}... (${readLen} bytes)` : hexPreview;
+        }
+      }
+
+      // Parse Values list for a Named Key (nk)
+      function parseValuesForNk(nkAbs) {
+        const values = [];
+        const numValues = dv.getUint32(nkAbs + 0x28, true);
+        const valuesListRel = dv.getUint32(nkAbs + 0x2C, true);
+
+        if (numValues === 0 || valuesListRel === 0 || valuesListRel === 0xFFFFFFFF) return values;
+
+        const valListAbs = getAbsoluteCellOffset(valuesListRel);
+        if (valListAbs === null) return values;
+
+        const valListStart = valListAbs + 4; // Skip cell size
+        for (let i = 0; i < Math.min(numValues, 500); i++) {
+          if (valListStart + (i * 4) + 4 > buffer.byteLength) break;
+          const vkRel = dv.getUint32(valListStart + (i * 4), true);
+          const vkAbs = getAbsoluteCellOffset(vkRel);
+          if (vkAbs === null) continue;
+
+          // Check for 'vk' signature (0x76, 0x6B)
+          if (uint8[vkAbs + 4] === 0x76 && uint8[vkAbs + 5] === 0x6B) {
+            const valNameLen = dv.getUint16(vkAbs + 0x06, true);
+            const dataLen = dv.getUint32(vkAbs + 0x08, true);
+            const dataOffsetOrVal = dv.getUint32(vkAbs + 0x0C, true);
+            const valType = dv.getUint32(vkAbs + 0x10, true);
+            const flags = dv.getUint16(vkAbs + 0x14, true);
+
+            let valName = "(Default)";
+            if (valNameLen > 0) {
+              const isNameAscii = (flags & 0x0001) !== 0;
+              valName = readCellString(vkAbs, 0x18, valNameLen, isNameAscii);
+            }
+
+            const valData = parseValueData(valType, dataLen, dataOffsetOrVal, vkAbs);
+            values.push({
+              name: valName || "(Default)",
+              type: getRegistryTypeString(valType),
+              data: valData
+            });
+          }
+        }
+        return values;
+      }
+
+      // Extract subkey offsets recursively across B-tree index structures (lf, lh, ri, li)
+      function getSubkeyOffsets(listRelOffset) {
+        const offsets = [];
+        const listAbs = getAbsoluteCellOffset(listRelOffset);
+        if (listAbs === null) return offsets;
+
+        const sig = String.fromCharCode(uint8[listAbs + 4], uint8[listAbs + 5]);
+        const count = dv.getUint16(listAbs + 0x06, true);
+
+        if (sig === "lf" || sig === "lh") {
+          // Array of { uint32 subkeyRelOffset, uint32 hash }
+          for (let i = 0; i < count; i++) {
+            const entryOffset = listAbs + 8 + (i * 8);
+            if (entryOffset + 4 > buffer.byteLength) break;
+            offsets.push(dv.getUint32(entryOffset, true));
+          }
+        } else if (sig === "ri" || sig === "li") {
+          // Index of sub-lists
+          for (let i = 0; i < count; i++) {
+            const entryOffset = listAbs + 8 + (i * 4);
+            if (entryOffset + 4 > buffer.byteLength) break;
+            const subListRel = dv.getUint32(entryOffset, true);
+            offsets.push(...getSubkeyOffsets(subListRel));
+          }
+        }
+        return offsets;
+      }
+
+      // Traverse Key Hierarchy Starting at Root
+      const visitedCells = new Set();
+
+      function walkNkCell(nkRelOffset, parentPath) {
+        if (visitedCells.has(nkRelOffset)) return;
+        visitedCells.add(nkRelOffset);
+
+        const nkAbs = getAbsoluteCellOffset(nkRelOffset);
+        if (nkAbs === null) return;
+
+        // Verify 'nk' signature (0x6E, 0x6B)
+        if (uint8[nkAbs + 4] !== 0x6E || uint8[nkAbs + 5] !== 0x6B) return;
+
+        const flags = dv.getUint16(nkAbs + 0x06, true);
+        const nameLen = dv.getUint16(nkAbs + 0x48, true);
+        const isAscii = (flags & 0x0020) !== 0;
+
+        let keyName = readCellString(nkAbs, 0x4C, nameLen, isAscii).replace(/\0/g, "");
+        if (!keyName) keyName = "ROOT";
+
+        const currentPath = parentPath ? `${parentPath}\\${keyName}` : keyName;
+
+        // Extract values
+        const values = parseValuesForNk(nkAbs);
+        parsedRegistryData.set(currentPath, values);
+
+        // Traverse subkeys
+        const numSubkeys = dv.getUint32(nkAbs + 0x18, true);
+        const subkeysListRel = dv.getUint32(nkAbs + 0x20, true);
+
+        if (numSubkeys > 0 && subkeysListRel !== 0 && subkeysListRel !== 0xFFFFFFFF) {
+          const subkeyOffsets = getSubkeyOffsets(subkeysListRel);
+          for (const subRel of subkeyOffsets) {
+            walkNkCell(subRel, currentPath);
+          }
+        }
+      }
+
+      // Start recursive B-tree traversal from root
+      if (rootCellRelOffset > 0 && rootCellRelOffset !== 0xFFFFFFFF) {
+        walkNkCell(rootCellRelOffset, "");
+      }
+
+      // If tree was damaged or root empty, perform linear fallback scan across hbin cells
+      if (parsedRegistryData.size <= 1) {
+        parseHbinLinear(buffer);
+      }
+    }
+
+    // Secondary hbin linear fallback parser if tree root is truncated
+    function parseHbinLinear(buffer) {
+      const dv = new DataView(buffer);
+      const uint8 = new Uint8Array(buffer);
+      const textDecoder = new TextDecoder("latin1");
+      let offset = 0x1000;
+      let activeKeyName = "CARVED_ROOT";
+
+      while (offset < uint8.length - 8) {
+        if (uint8[offset] === 0x68 && uint8[offset+1] === 0x62 && uint8[offset+2] === 0x69 && uint8[offset+3] === 0x6E) { // "hbin"
+          const binSize = dv.getUint32(offset + 8, true);
+          const binEnd = Math.min(offset + (binSize > 0 ? binSize : 4096), uint8.length);
+          let cellOffset = offset + 32;
+
+          while (cellOffset < binEnd - 4) {
+            const rawCellSize = dv.getInt32(cellOffset, true);
+            const cellSize = Math.abs(rawCellSize);
+            if (cellSize < 4 || cellOffset + cellSize > uint8.length) break;
+
+            const sig = String.fromCharCode(uint8[cellOffset + 4], uint8[cellOffset + 5]);
+            if (sig === "nk" && cellOffset + 0x4C <= uint8.length) {
+              const nameLen = dv.getUint16(cellOffset + 0x48, true);
+              const flags = dv.getUint16(cellOffset + 0x06, true);
+              const isAscii = (flags & 0x0020) !== 0;
+              let kName = "";
+              if (cellOffset + 0x4C + nameLen <= uint8.length) {
+                kName = isAscii 
+                  ? textDecoder.decode(uint8.subarray(cellOffset + 0x4C, cellOffset + 0x4C + nameLen))
+                  : new TextDecoder("utf-16le").decode(uint8.subarray(cellOffset + 0x4C, cellOffset + 0x4C + nameLen));
+              }
+              if (kName && !kName.includes("\x00")) {
+                activeKeyName = `HIVE\\${kName}`;
+                if (!parsedRegistryData.has(activeKeyName)) {
+                  parsedRegistryData.set(activeKeyName, []);
+                }
+              }
+            }
+            cellOffset += cellSize;
+          }
+          offset += (binSize > 0 ? binSize : 4096);
+        } else {
+          offset += 512;
+        }
+      }
+    }
+
+    function getRegistryTypeString(typeNum) {
+      switch (typeNum) {
+        case 0: return "REG_NONE";
+        case 1: return "REG_SZ";
+        case 2: return "REG_EXPAND_SZ";
+        case 3: return "REG_BINARY";
+        case 4: return "REG_DWORD";
+        case 5: return "REG_DWORD_BIG_ENDIAN";
+        case 6: return "REG_LINK";
+        case 7: return "REG_MULTI_SZ";
+        case 8: return "REG_RESOURCE_LIST";
+        case 11: return "REG_QWORD";
+        default: return `REG_TYPE_${typeNum}`;
+      }
+    }
+
+    // Windows .reg Text Parser
+    function parseTextReg(text) {
+      const lines = text.split(/\r?\n/);
+      let currentKey = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (!line || line.startsWith(";") || line.startsWith("#")) continue;
+
+        if (line.startsWith("[") && line.endsWith("]")) {
+          currentKey = line.slice(1, -1);
+          if (!parsedRegistryData.has(currentKey)) {
+            parsedRegistryData.set(currentKey, []);
+          }
+          continue;
+        }
+
+        if (!currentKey) {
+          currentKey = "GLOBAL_ENTRIES";
+          parsedRegistryData.set(currentKey, []);
+        }
+
+        if (line.includes("=")) {
+          const equalIdx = line.indexOf("=");
+          let valName = line.slice(0, equalIdx).trim();
+          let valContent = line.slice(equalIdx + 1).trim();
+
+          if (valName.startsWith('"') && valName.endsWith('"')) {
+            valName = valName.slice(1, -1);
+          } else if (valName === "@") {
+            valName = "(Default)";
+          }
+
+          let valType = "REG_SZ";
+          let valData = valContent;
+
+          if (valContent.startsWith('"') && valContent.endsWith('"')) {
+            valType = "REG_SZ";
+            valData = valContent.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          } else if (valContent.startsWith("dword:")) {
+            valType = "REG_DWORD";
+            const hex = valContent.slice(6);
+            valData = `0x${hex} (${parseInt(hex, 16) || 0})`;
+          } else if (valContent.startsWith("hex:")) {
+            valType = "REG_BINARY";
+            valData = valContent.slice(4);
+          } else if (valContent.startsWith("hex(")) {
+            const closing = valContent.indexOf("):");
+            const typeId = valContent.slice(4, closing);
+            valType = `REG_HEX_${typeId}`;
+            valData = valContent.slice(closing + 2);
+          }
+
+          parsedRegistryData.get(currentKey).push({
+            name: valName,
+            type: valType,
+            data: valData
+          });
+        }
+      }
+    }
+
+    // Heuristic string carver for corrupted or unstructured files
+    function carveRegistryStrings(rawText) {
+      const keyMatches = rawText.match(/(?:HKEY_[A-Z_]+|ControlSet001|CurrentVersion|Microsoft\\Windows)[a-zA-Z0-9_\\]+/g) || [];
+      const uniqueKeys = Array.from(new Set(keyMatches));
+
+      uniqueKeys.slice(0, 300).forEach(key => {
+        parsedRegistryData.set(key, [
+          { name: "Carved Artifact", type: "CARVED_STRING", data: key }
+        ]);
+      });
+
+      if (parsedRegistryData.size === 0) {
+        parsedRegistryData.set("UNPARSED_BINARY", [
+          { name: "Raw Size", type: "INFO", data: `${rawText.length} bytes inspected without signature` }
+        ]);
+      }
+    }
+
+    // Render Tree Navigation
+    function renderTreeList() {
+      treeList.innerHTML = "";
+      const searchTerm = filterInput.value.toLowerCase().trim();
+
+      const sortedKeys = Array.from(parsedRegistryData.keys()).sort();
+      let matchCount = 0;
+
+      sortedKeys.forEach(keyPath => {
+        const values = parsedRegistryData.get(keyPath);
+
+        // Apply Triage Filter
+        let passesTriage = true;
+        if (activeFilterTag === "run") {
+          passesTriage = /run|runonce|services|startup/i.test(keyPath);
+        } else if (activeFilterTag === "user") {
+          passesTriage = /userassist|typedurls|recentdocs|explorer|mountpoints2/i.test(keyPath);
+        } else if (activeFilterTag === "usb") {
+          passesTriage = /usbstor|usb|mounteddevices|disk/i.test(keyPath);
+        } else if (activeFilterTag === "network") {
+          passesTriage = /network|tcpip|interfaces|dns/i.test(keyPath);
+        }
+
+        // Apply Search Filter
+        let passesSearch = true;
+        if (searchTerm) {
+          const keyMatches = keyPath.toLowerCase().includes(searchTerm);
+          const valueMatches = values.some(v => 
+            v.name.toLowerCase().includes(searchTerm) || 
+            v.data.toLowerCase().includes(searchTerm)
+          );
+          passesSearch = keyMatches || valueMatches;
+        }
+
+        if (passesTriage && passesSearch) {
+          matchCount++;
+          const item = document.createElement("div");
+          item.className = "tree-item";
+          if (keyPath === currentActiveKey) item.classList.add("selected");
+
+          const shortName = keyPath.split("\\").pop() || keyPath;
+          item.innerHTML = `<span style="color: var(--atom-amber);">📁</span> <span title="${keyPath}">${shortName}</span>`;
+
+          item.addEventListener("click", () => {
+            document.querySelectorAll(".tree-item").forEach(el => el.classList.remove("selected"));
+            item.classList.add("selected");
+            displayKeyValues(keyPath);
+          });
+
+          treeList.appendChild(item);
+        }
+      });
+
+      keyCounter.textContent = matchCount;
+
+      if (treeList.firstChild && (!currentActiveKey || !parsedRegistryData.has(currentActiveKey))) {
+        treeList.firstChild.click();
+      } else if (!treeList.firstChild) {
+        valuesTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 24px;">No matching registry keys found</td></tr>`;
+        activeKeyDisplay.textContent = "No match";
+      }
+    }
+
+    // Display Values in Table
+    function displayKeyValues(keyPath) {
+      currentActiveKey = keyPath;
+      activeKeyDisplay.textContent = keyPath;
+      valuesTableBody.innerHTML = "";
+
+      const values = parsedRegistryData.get(keyPath) || [];
+
+      if (values.length === 0) {
+        valuesTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--atom-muted); padding: 20px;">No values recorded in this key</td></tr>`;
+        return;
+      }
+
+      values.forEach(v => {
+        const row = document.createElement("tr");
+
+        const nameTd = document.createElement("td");
+        nameTd.style.fontWeight = "600";
+        nameTd.style.color = "var(--atom-heading)";
+        nameTd.textContent = v.name;
+
+        const typeTd = document.createElement("td");
+        typeTd.innerHTML = `<span class="type-badge">${v.type}</span>`;
+
+        const dataTd = document.createElement("td");
+        dataTd.textContent = v.data;
+
+        row.appendChild(nameTd);
+        row.appendChild(typeTd);
+        row.appendChild(dataTd);
+        valuesTableBody.appendChild(row);
+      });
+    }
+
+    // Filter toolbar interactions
+    filterInput.addEventListener("input", renderTreeList);
+
+    tagButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tagButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeFilterTag = btn.getAttribute("data-filter");
+        renderTreeList();
+      });
+    });
+
+    // Export Handlers
+    btnExportJson.addEventListener("click", () => {
+      if (parsedRegistryData.size === 0) return;
+      const exportObj = {
+        metadata: {
+          file_name: currentFileName,
+          exported_at: new Date().toISOString(),
+          total_keys: parsedRegistryData.size
+        },
+        registry_keys: {}
+      };
+
+      for (const [k, v] of parsedRegistryData.entries()) {
+        exportObj.registry_keys[k] = v;
+      }
+
+      const jsonStr = JSON.stringify(exportObj, null, 2);
+      downloadBlob(jsonStr, `registry-export-${Date.now()}.json`, "application/json");
+    });
+
+    btnExportCsv.addEventListener("click", () => {
+      if (parsedRegistryData.size === 0) return;
+      let csvContent = "KeyPath,ValueName,ValueType,ValueData\r\n";
+
+      for (const [k, values] of parsedRegistryData.entries()) {
+        values.forEach(v => {
+          const escKey = `"${k.replace(/"/g, '""')}"`;
+          const escName = `"${v.name.replace(/"/g, '""')}"`;
+          const escType = `"${v.type.replace(/"/g, '""')}"`;
+          const escData = `"${v.data.replace(/"/g, '""')}"`;
+          csvContent += `${escKey},${escName},${escType},${escData}\r\n`;
+        });
+      }
+
+      downloadBlob(csvContent, `registry-export-${Date.now()}.csv`, "text/csv;charset=utf-8;");
+    });
+
+    function downloadBlob(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
