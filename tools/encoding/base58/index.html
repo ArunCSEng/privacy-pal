@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Base58 Encoder &amp; Decoder — Free Offline Client-Side Tool | BitDark</title>
-  <meta name="title" content="Base58 Encoder &amp; Decoder — Free Offline Client-Side Tool | BitDark" />
-  <meta name="description" content="Encode and decode data using Base58 and Base58Check across Bitcoin, Ripple, and Flickr alphabets entirely in your browser. Zero tracking, zero network egress." />
-  <meta name="keywords" content="base58 encoder, base58 decoder, base58check tool, bitcoin base58, ripple base58, flickr base58, offline base58, client-side encoder" />
+  <title>Base58 &amp; Base62 Codec — Free Offline Client-Side Tool | BitDark</title>
+  <meta name="title" content="Base58 &amp; Base62 Codec — Free Offline Client-Side Tool | BitDark" />
+  <meta name="description" content="Encode and decode raw strings, hexadecimal buffers, and hashes into Bitcoin/IPFS Base58, Ripple, Flickr, and Base62 alphanumeric formats locally in browser memory. Zero network egress." />
+  <meta name="keywords" content="base58 encoder, base62 encoder, base58 decoder, base62 decoder, base58check tool, bitcoin base58, base62 codec, buffer js, offline encoding tool, client-side encoder" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://bitdark.net/tools/encoding/base58" />
 
@@ -150,7 +150,7 @@
     /* Configuration Bar */
     .config-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 16px;
       margin-bottom: 20px;
       background-color: var(--atom-bg);
@@ -195,12 +195,20 @@
       font-size: 0.8rem;
       color: var(--atom-heading);
       user-select: none;
+      transition: opacity 0.2s;
+    }
+    .checkbox-wrap.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
     .checkbox-wrap input {
       accent-color: var(--atom-amber);
       width: 16px;
       height: 16px;
       cursor: pointer;
+    }
+    .checkbox-wrap.disabled input {
+      cursor: not-allowed;
     }
 
     /* IO Workspace */
@@ -493,8 +501,8 @@
     </nav>
 
     <div class="tool-header">
-      <h1>Base58 Encoder &amp; Decoder</h1>
-      <p>Transform raw text, hex buffers, and binary keys into Base58 and Base58Check strings locally in your browser memory.</p>
+      <h1>Base58 &amp; Base62 Codec</h1>
+      <p>Encode and decode raw strings, hex buffers, and integer payloads into Bitcoin/IPFS Base58, Ripple, Flickr, and Base62 formats directly in your browser memory.</p>
     </div>
 
     <!-- Active Tool Workspace -->
@@ -503,17 +511,23 @@
         <div class="config-field">
           <label class="config-label" for="directionMode">Operation Mode</label>
           <select id="directionMode" class="select-input">
-            <option value="encode">Encode to Base58</option>
-            <option value="decode">Decode from Base58</option>
+            <option value="encode">Encode</option>
+            <option value="decode">Decode</option>
           </select>
         </div>
 
         <div class="config-field">
-          <label class="config-label" for="alphabetSelect">Base58 Alphabet</label>
+          <label class="config-label" for="alphabetSelect">Codec &amp; Alphabet</label>
           <select id="alphabetSelect" class="select-input">
-            <option value="bitcoin">Bitcoin / IPFS (Standard)</option>
-            <option value="ripple">Ripple</option>
-            <option value="flickr">Flickr</option>
+            <optgroup label="Base58 Formats">
+              <option value="bitcoin">Base58: Bitcoin / IPFS (Standard)</option>
+              <option value="ripple">Base58: Ripple</option>
+              <option value="flickr">Base58: Flickr</option>
+            </optgroup>
+            <optgroup label="Base62 Formats">
+              <option value="base62_standard">Base62: Standard (0-9A-Za-z)</option>
+              <option value="base62_inverted">Base62: Inverted / POSIX (0-9a-zA-Z)</option>
+            </optgroup>
           </select>
         </div>
 
@@ -525,9 +539,9 @@
           </select>
         </div>
 
-        <label class="checkbox-wrap">
+        <label class="checkbox-wrap" id="checksumContainer">
           <input type="checkbox" id="checkChecksum" />
-          <span>Enable Base58Check (SHA-256x2)</span>
+          <span id="checksumLabel">Enable Base58Check (SHA-256x2)</span>
         </label>
       </div>
 
@@ -541,7 +555,7 @@
       <div class="io-grid">
         <div class="io-column">
           <div class="io-header">
-            <span class="io-title" id="inputColTitle">Input</span>
+            <span class="io-title" id="inputColTitle">Raw Input</span>
             <span id="inputStats">0 chars · 0 bytes</span>
           </div>
           <textarea id="inputText" class="text-box" placeholder="Enter text or hex to encode..." spellcheck="false"></textarea>
@@ -549,7 +563,7 @@
 
         <div class="io-column">
           <div class="io-header">
-            <span class="io-title" id="outputColTitle">Base58 Output</span>
+            <span class="io-title" id="outputColTitle">Encoded Output</span>
             <span id="outputStats">0 chars · 0 bytes</span>
           </div>
           <textarea id="outputText" class="text-box" placeholder="Encoded result appears here..." readonly spellcheck="false"></textarea>
@@ -578,63 +592,74 @@
         <span>⚠️</span> Operational Boundaries &amp; Liability Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any data loss, financial loss, key exposure, transmission errors, or cryptographic misconfigurations.</strong> All Base58 encoding and decoding algorithms execute strictly client-side in your local browser memory using native JavaScript. No payloads, cryptographic keys, hashes, or encoded strings are ever transmitted, logged, or stored by BitDark.net. Users are solely responsible for verifying checksums and validity before utilizing encoded strings in production environments or financial networks.
+        <strong>bitdark.net is not responsible for any data loss, financial loss, key exposure, transmission errors, or cryptographic misconfigurations.</strong> All Base58 and Base62 encoding and decoding routines execute strictly client-side in your local browser sandbox using native JavaScript memory buffers. No payloads, raw byte streams, cryptographic seeds, or decoded results are ever transmitted, logged, or cached by bitdark.net. Users are solely responsible for verifying checksums and validity before utilizing encoded strings in production environments or financial networks.
       </p>
     </aside>
 
     <!-- Technical & Educational Content -->
     <article class="doc-section">
-      <h2>What is Base58 Encoding?</h2>
-      <p>Base58 is a binary-to-text encoding scheme developed by Satoshi Nakamoto for the Bitcoin cryptocurrency network. Unlike Base64, Base58 intentionally removes characters that appear identical or ambiguous in standard fonts, preventing human transcription errors and ambiguity in printed materials.</p>
-      
-      <p>The six omitted characters are:</p>
-      <ul>
-        <li><code>0</code> (Number zero) and <code>O</code> (Uppercase letter O)</li>
-        <li><code>I</code> (Uppercase letter I) and <code>l</code> (Lowercase letter L)</li>
-        <li><code>+</code> (Plus) and <code>/</code> (Slash), which can break line breaks and URL paths</li>
-      </ul>
+      <h2>Understanding Base58 and Base62 Encodings</h2>
+      <p>Both Base58 and Base62 are compact binary-to-text conversion algorithms engineered for clean human interaction, URL safety, and high information density without requiring non-alphanumeric punctuation marks.</p>
 
       <h2>Supported Alphabet Specifications</h2>
       <div class="table-wrap">
         <table class="spec-table">
           <thead>
             <tr>
-              <th>System</th>
-              <th>Character Set (58 Characters)</th>
+              <th>Scheme</th>
+              <th>Radix</th>
+              <th>Character Set</th>
+              <th>Common Use Cases</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Bitcoin / IPFS</strong></td>
+              <td><strong>Base58 (Bitcoin)</strong></td>
+              <td>58</td>
               <td><code>123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz</code></td>
+              <td>Bitcoin addresses, IPFS Content Identifiers (CIDv0)</td>
             </tr>
             <tr>
-              <td><strong>Ripple</strong></td>
+              <td><strong>Base58 (Ripple)</strong></td>
+              <td>58</td>
               <td><code>rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxz</code></td>
+              <td>XRP Ledger account identifiers</td>
             </tr>
             <tr>
-              <td><strong>Flickr</strong></td>
+              <td><strong>Base58 (Flickr)</strong></td>
+              <td>58</td>
               <td><code>123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ</code></td>
+              <td>Short photo URLs and identifiers</td>
+            </tr>
+            <tr>
+              <td><strong>Base62 (Standard)</strong></td>
+              <td>62</td>
+              <td><code>0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</code></td>
+              <td>URL shorteners, token generation, database key compression</td>
+            </tr>
+            <tr>
+              <td><strong>Base62 (Inverted)</strong></td>
+              <td>62</td>
+              <td><code>0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</code></td>
+              <td>POSIX-compliant key sorting and ASCII-ordered identifiers</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2>How Base58Check Validation Works</h2>
-      <p>Base58Check adds a 4-byte double SHA-256 checksum to prevent typos when transcribing Bitcoin and cryptocurrency addresses:</p>
+      <h2>Base58 vs. Base62: Structural Differences</h2>
       <ul>
-        <li><strong>Payload Packaging:</strong> A version prefix byte is prepended to the payload data.</li>
-        <li><strong>Double Hashing:</strong> The combined data is hashed twice with SHA-256: <code>SHA256(SHA256(payload))</code>.</li>
-        <li><strong>Checksum Append:</strong> The first 4 bytes of the double hash are appended to the payload.</li>
-        <li><strong>Conversion:</strong> The combined buffer is encoded using the Base58 algorithm. Any transcription mistake alters the decoded checksum, allowing software to reject invalid addresses before transmitting assets.</li>
+        <li><strong>Base58:</strong> Satoshi Nakamoto specifically removed ambiguous visual characters (<code>0</code>, <code>O</code>, <code>I</code>, <code>l</code>) and URL-problematic punctuation (<code>+</code>, <code>/</code>) to reduce human reading and typing errors.</li>
+        <li><strong>Base62:</strong> Retains all 62 standard ASCII alphanumeric characters (0–9, A–Z, a–z), making it completely alphanumeric and safe for URLs, pathnames, and SQL tokens without any visual character exclusions.</li>
+        <li><strong>Base58Check:</strong> Augments raw Base58 with a double SHA-256 4-byte checksum, enabling instant detection of transcription typos in cryptocurrency addresses.</li>
       </ul>
 
       <h2>Zero Network Egress Security</h2>
-      <p>BitDark performs all Base58 math and cryptographic checksum calculations using native JavaScript big-number arrays and the browser's <code>crypto.subtle</code> API. Disconnecting your internet or executing this page locally in an air-gapped browser leaves all functionality completely operational.</p>
+      <p>All calculations execute through native JavaScript big-number array reduction and the browser's native <code>crypto.subtle</code> Web API. All operations remain fully functional offline and in air-gapped workstations.</p>
     </article>
 
     <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite. BitDark.net is not responsible for user configurations or third-party misuse.</span>
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite. bitdark.net not responsible for user configurations or third-party misuse.</span>
       <nav>
         <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
       </nav>
@@ -642,7 +667,7 @@
   </main>
 
   <script>
-    // Robust IP Telemetry with Localhost and Timeout Fallbacks
+    // IP Telemetry with Timeout and Local Fallbacks
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
@@ -666,7 +691,7 @@
         }
       };
 
-      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      // IPv4 Detection
       try {
         const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
         if (res4.ok) {
@@ -684,7 +709,7 @@
         }
       }
 
-      // IPv6 Detection (Primary: api64 test, Fallback: icanhazip)
+      // IPv6 Detection
       try {
         const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
         if (res6.ok) {
@@ -705,11 +730,13 @@
     }
     window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Alphabets
+    // Character Sets
     const ALPHABETS = {
       bitcoin: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
       ripple: "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxz",
-      flickr: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+      flickr: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+      base62_standard: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+      base62_inverted: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     };
 
     // UI Elements
@@ -718,6 +745,7 @@
     const formatSelect = document.getElementById("formatSelect");
     const formatLabel = document.getElementById("formatLabel");
     const checkChecksum = document.getElementById("checkChecksum");
+    const checksumContainer = document.getElementById("checksumContainer");
     const inputText = document.getElementById("inputText");
     const outputText = document.getElementById("outputText");
     const inputStats = document.getElementById("inputStats");
@@ -739,7 +767,7 @@
       return new Uint8Array(second);
     }
 
-    // Hex and Byte Helpers
+    // Hex and Byte Converters
     function hexToBytes(hex) {
       const clean = hex.replace(/[^0-9a-fA-F]/g, "");
       if (clean.length % 2 !== 0) {
@@ -756,10 +784,11 @@
       return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
     }
 
-    // Base58 Core Encoding
-    function encodeRawBase58(bytes, alphabet) {
+    // Radix Encoding (Base58 / Base62 with leading zeros preserved)
+    function encodeRadix(bytes, alphabet) {
       if (!bytes || bytes.length === 0) return "";
-      
+      const base = alphabet.length;
+
       let leadingZeros = 0;
       while (leadingZeros < bytes.length && bytes[leadingZeros] === 0) {
         leadingZeros++;
@@ -770,12 +799,12 @@
         let carry = bytes[i];
         for (let j = 0; j < digits.length; j++) {
           carry += digits[j] << 8;
-          digits[j] = carry % 58;
-          carry = (carry / 58) | 0;
+          digits[j] = carry % base;
+          carry = (carry / base) | 0;
         }
         while (carry > 0) {
-          digits.push(carry % 58);
-          carry = (carry / 58) | 0;
+          digits.push(carry % base);
+          carry = (carry / base) | 0;
         }
       }
 
@@ -790,9 +819,10 @@
       return output;
     }
 
-    // Base58 Core Decoding
-    function decodeRawBase58(str, alphabet) {
+    // Radix Decoding (Base58 / Base62 with leading zeros preserved)
+    function decodeRadix(str, alphabet) {
       if (!str || str.length === 0) return new Uint8Array(0);
+      const base = alphabet.length;
 
       const charMap = new Map();
       for (let i = 0; i < alphabet.length; i++) {
@@ -808,11 +838,11 @@
       for (let i = leadingZeros; i < str.length; i++) {
         const val = charMap.get(str[i]);
         if (val === undefined) {
-          throw new Error(`Invalid Base58 character "${str[i]}" at index ${i}.`);
+          throw new Error(`Invalid character "${str[i]}" at index ${i} for selected alphabet.`);
         }
         let carry = val;
         for (let j = 0; j < bytes.length; j++) {
-          carry += bytes[j] * 58;
+          carry += bytes[j] * base;
           bytes[j] = carry & 0xff;
           carry >>= 8;
         }
@@ -836,15 +866,26 @@
       return result;
     }
 
-    // UI Updates and Core Calculation
+    // Core Processing Function
     async function processData() {
       const mode = directionMode.value;
-      const alphabet = ALPHABETS[alphabetSelect.value];
+      const alphabetKey = alphabetSelect.value;
+      const alphabet = ALPHABETS[alphabetKey];
       const format = formatSelect.value;
-      const isBase58Check = checkChecksum.checked;
+      const isBase58 = alphabetKey.startsWith("bitcoin") || alphabetKey.startsWith("ripple") || alphabetKey.startsWith("flickr");
+      const isBase58Check = isBase58 && checkChecksum.checked;
       const rawInput = inputText.value;
 
-      // Update counters
+      // Checkbox state handling
+      if (!isBase58) {
+        checksumContainer.classList.add("disabled");
+        checkChecksum.disabled = true;
+      } else {
+        checksumContainer.classList.remove("disabled");
+        checkChecksum.disabled = false;
+      }
+
+      // Update character and byte counters
       const inByteLen = new TextEncoder().encode(rawInput).length;
       inputStats.textContent = `${rawInput.length} chars · ${inByteLen} bytes`;
 
@@ -858,7 +899,6 @@
 
       try {
         if (mode === "encode") {
-          // Determine bytes to encode
           let inputBytes;
           if (format === "hex") {
             inputBytes = hexToBytes(rawInput);
@@ -875,18 +915,19 @@
             finalBytes.set(checksum, inputBytes.length);
           }
 
-          const encoded = encodeRawBase58(finalBytes, alphabet);
+          const encoded = encodeRadix(finalBytes, alphabet);
           outputText.value = encoded;
 
           const outByteLen = new TextEncoder().encode(encoded).length;
           outputStats.textContent = `${encoded.length} chars · ${outByteLen} bytes`;
 
+          const schemeName = isBase58 ? (isBase58Check ? "Base58Check" : "Base58") : "Base62";
           statusBanner.className = "status-banner status-ok";
-          statusBanner.innerHTML = `<span>✓ Encoded successfully (${encoded.length} Base58 characters)</span><span>${isBase58Check ? "Base58Check Verified" : "Standard Base58"}</span>`;
+          statusBanner.innerHTML = `<span>✓ Encoded successfully (${encoded.length} characters)</span><span>${schemeName} Ready</span>`;
         } else {
           // Decode mode
           const cleanInput = rawInput.trim();
-          const decodedBytes = decodeRawBase58(cleanInput, alphabet);
+          const decodedBytes = decodeRadix(cleanInput, alphabet);
 
           let payloadBytes = decodedBytes;
           if (isBase58Check) {
@@ -924,8 +965,9 @@
           outputStats.textContent = `${resultString.length} chars · ${outByteLen} bytes`;
 
           if (!statusBanner.innerHTML.includes("Notice:")) {
+            const schemeName = isBase58 ? (isBase58Check ? "Base58Check Match" : "Valid Base58") : "Valid Base62";
             statusBanner.className = "status-banner status-ok";
-            statusBanner.innerHTML = `<span>✓ Decoded successfully (${payloadBytes.length} bytes extracted)</span><span>${isBase58Check ? "Checksum Match" : "Valid Base58"}</span>`;
+            statusBanner.innerHTML = `<span>✓ Decoded successfully (${payloadBytes.length} bytes extracted)</span><span>${schemeName}</span>`;
           }
         }
       } catch (err) {
@@ -939,17 +981,21 @@
     // Direction Toggle
     function updateUIMode() {
       const mode = directionMode.value;
+      const alphabetKey = alphabetSelect.value;
+      const isBase58 = alphabetKey.startsWith("bitcoin") || alphabetKey.startsWith("ripple") || alphabetKey.startsWith("flickr");
+      const scheme = isBase58 ? "Base58" : "Base62";
+
       if (mode === "encode") {
         inputColTitle.textContent = "Raw Input";
-        outputColTitle.textContent = "Base58 Output";
+        outputColTitle.textContent = `${scheme} Output`;
         formatLabel.textContent = "Input Format";
-        inputText.placeholder = formatSelect.value === "hex" ? "Enter hexadecimal string (e.g., 48656c6c6f)..." : "Enter raw text to encode...";
-        outputText.placeholder = "Encoded Base58 string appears here...";
+        inputText.placeholder = formatSelect.value === "hex" ? "Enter hexadecimal string (e.g., 48656c6c6f)..." : `Enter raw text to encode into ${scheme}...`;
+        outputText.placeholder = `Encoded ${scheme} string appears here...`;
       } else {
-        inputColTitle.textContent = "Base58 Input";
+        inputColTitle.textContent = `${scheme} Input`;
         outputColTitle.textContent = "Decoded Output";
         formatLabel.textContent = "Output Format";
-        inputText.placeholder = "Enter or paste Base58 string to decode...";
+        inputText.placeholder = `Enter or paste ${scheme} string to decode...`;
         outputText.placeholder = "Decoded result appears here...";
       }
       processData();
@@ -958,10 +1004,8 @@
     // Event Listeners
     inputText.addEventListener("input", processData);
     directionMode.addEventListener("change", updateUIMode);
-    alphabetSelect.addEventListener("change", processData);
-    formatSelect.addEventListener("change", () => {
-      updateUIMode();
-    });
+    alphabetSelect.addEventListener("change", updateUIMode);
+    formatSelect.addEventListener("change", updateUIMode);
     checkChecksum.addEventListener("change", processData);
 
     // Swap Button
@@ -1028,8 +1072,9 @@
       const blob = new Blob([outputText.value], { type: "text/plain;charset=utf-8" });
       const dlAnchor = document.createElement("a");
       dlAnchor.href = URL.createObjectURL(blob);
-      const ext = directionMode.value === "encode" ? "b58.txt" : (formatSelect.value === "hex" ? "hex.txt" : "txt");
-      dlAnchor.download = `bitdark-base58-${Date.now()}.${ext}`;
+      const isBase58 = alphabetSelect.value.startsWith("bitcoin") || alphabetSelect.value.startsWith("ripple") || alphabetSelect.value.startsWith("flickr");
+      const ext = directionMode.value === "encode" ? (isBase58 ? "b58.txt" : "b62.txt") : (formatSelect.value === "hex" ? "hex.txt" : "txt");
+      dlAnchor.download = `bitdark-codec-${Date.now()}.${ext}`;
       document.body.appendChild(dlAnchor);
       dlAnchor.click();
       dlAnchor.remove();
