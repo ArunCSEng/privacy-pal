@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>TAR Archive Forensics & Header Inspector — Free Offline Tool | BitDark</title>
+  <meta name="title" content="TAR Archive Forensics & Header Inspector — Free Offline Tool | BitDark" />
+  <meta name="description" content="Inspect, verify, and forensically analyze TAR and TAR.GZ archive headers entirely in client-side browser memory. Zero tracking, zero uploads, zero network egress." />
+  <meta name="keywords" content="tar inspector, tar header parser, tar forensics, ustar parser, pax header viewer, offline tar extractor, archive security audit" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/tar-inspector" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .brand span { color: var(--atom-amber); }
+    
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--atom-cyan);
+      box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+    
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+      color: var(--atom-muted);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 {
+      font-size: 1.75rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.95rem;
+      max-width: 850px;
+    }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .dropzone p {
+      font-size: 0.92rem;
+      color: var(--atom-text);
+      margin-bottom: 6px;
+    }
+    .dropzone p strong { color: var(--atom-heading); }
+    .dropzone-hint {
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      display: inline-block;
+      max-width: 90%;
+    }
+
+    .file-input-hidden { display: none; }
+
+    /* Results Workspace */
+    .results-area {
+      margin-top: 24px;
+      display: none;
+    }
+    
+    .status-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      word-break: break-word;
+    }
+    .status-valid {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-warning {
+      background-color: rgba(229, 192, 123, 0.12);
+      border: 1px solid var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .status-threat {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px 14px;
+      border-radius: 4px;
+      min-width: 0;
+    }
+    .meta-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+    .meta-val {
+      font-size: 0.86rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Filter & Controls */
+    .table-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .search-input {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      flex: 1;
+      min-width: 220px;
+      max-width: 400px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--atom-border-focus);
+    }
+    .table-stats {
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+
+    /* Entries Responsive Table Container */
+    .table-wrapper {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+      max-height: 480px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      text-align: left;
+      min-width: 720px;
+    }
+    th {
+      background-color: var(--atom-gutter);
+      color: var(--atom-muted);
+      padding: 10px 12px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--atom-border);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-file { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); }
+    .badge-dir { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); }
+    .badge-sym { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); }
+    .badge-risk { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); font-weight: 700; }
+    .badge-ok { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); }
+
+    .btn-action-small {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-family: var(--font-ui);
+    }
+    .btn-action-small:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+
+    /* Modal / Inspector Drawer */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--atom-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--atom-coral); }
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+    }
+    .modal-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Detail Blocks */
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+    }
+    .detail-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--atom-border);
+      font-size: 0.78rem;
+    }
+    .detail-key {
+      color: var(--atom-muted);
+      width: 180px;
+      font-weight: 600;
+    }
+
+    /* Text & Code Viewers */
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 16px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424955;
+      color: var(--atom-heading);
+    }
+
+    /* Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 32px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 14px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .trust-badge, .ip-pill-nav { width: 100%; justify-content: flex-start; }
+      .wrapper { padding: 18px 12px 48px; }
+      .tool-header h1 { font-size: 1.45rem; }
+      .tool-card { padding: 14px; }
+      .dropzone { padding: 24px 12px; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .table-controls { flex-direction: column; align-items: stretch; }
+      .search-input { max-width: 100%; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .modal-content { max-height: 92vh; }
+      .detail-key { width: 110px; font-size: 0.74rem; }
+      .bottom-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Network Egress
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / tar-inspector
+    </nav>
+
+    <!-- Header -->
+    <div class="tool-header">
+      <h1>TAR Archive Forensics & Header Inspector</h1>
+      <p>Inspect POSIX USTAR, GNU, PAX, and V7 tape archive headers in client-side memory. Audit block checksums, detect path traversal exploits, analyze permission bitmasks, and extract file entries with zero server upload.</p>
+    </div>
+
+    <!-- Active Workspace -->
+    <div class="tool-card">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">📦</span>
+        <p><strong>Click to select a TAR archive</strong> or drag & drop here</p>
+        <span class="dropzone-hint">Supports uncompressed .tar and gzip-compressed .tar.gz / .tgz (Stream parsed in memory)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept=".tar,.tar.gz,.tgz,application/x-tar,application/gzip" />
+      </div>
+
+      <!-- Results Panel -->
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Archive File</div>
+            <div class="meta-val" id="metaFileName">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Checksum</div>
+            <div class="meta-val" id="metaSha256">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Format Standard</div>
+            <div class="meta-val" id="metaFormat">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Total Entries / Size</div>
+            <div class="meta-val" id="metaCountSize">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Anomaly / Risk Flags</div>
+            <div class="meta-val" id="metaRisks">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Trailer Padding</div>
+            <div class="meta-val" id="metaTrailer">-</div>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="table-controls">
+          <input type="text" id="searchInput" class="search-input" placeholder="Filter by filename, user, or type..." />
+          <div class="table-stats" id="tableStats">Showing 0 of 0 entries</div>
+        </div>
+
+        <!-- Entries Table -->
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 70px;">Type</th>
+                <th>File Path</th>
+                <th style="width: 100px;">Size</th>
+                <th style="width: 85px;">Mode</th>
+                <th style="width: 130px;">Owner (UID/GID)</th>
+                <th style="width: 150px;">MTime (UTC)</th>
+                <th style="width: 80px;">Integrity</th>
+                <th style="width: 75px; text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="entriesTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnExportJson">Export Manifest JSON</button>
+          <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector Modal -->
+    <div class="modal-overlay" id="inspectorModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Entry Header Details</h3>
+          <button class="modal-close" id="modalCloseBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <table class="detail-table" id="modalDetailTable"></table>
+          
+          <div class="meta-label" style="margin-top: 14px; margin-bottom: 6px;">Entry Payload Preview:</div>
+          <div class="viewer-box" id="modalPreviewBox">No preview available for this entry type.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-atom" id="btnDownloadEntry">Download Entry File</button>
+          <button class="btn-atom btn-secondary" id="modalCloseAction">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Disclaimer Callout -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Boundary Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible:</strong> BitDark.net and its creators make no warranties, representations, or claims regarding the accuracy, completeness, authenticity, or forensic legal validity of parsed archive headers or file extraction results. All operations execute strictly in your local browser sandbox without server verification. BitDark.net assumes no liability or responsibility for file loss, corrupted archives, undetected exploits, malicious archive payloads, path traversal vulnerabilities, or forensic investigative conclusions derived from this software. Always confirm critical forensic artifacts in an isolated, air-gapped forensic environment with established command-line toolsets.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How TAR Archive Structure Works</h2>
+      <p>The Tape Archive (TAR) format specifies an uncompressed sequential byte stream structured into contiguous <strong>512-byte blocks</strong>. Each archived item begins with a 512-byte header block defining file metadata, followed immediately by the payload data rounded up to the nearest 512-byte multiple, followed by a 1024-byte zero-block end-of-archive marker.</p>
+
+      <h2>Supported Format Standards & Field Offsets</h2>
+      <ul>
+        <li><strong>V7 (Early Unix):</strong> Legacy headers containing basic 100-character name, 8-character octal mode, UID, GID, size, mtime, and checksum fields.</li>
+        <li><strong>POSIX USTAR (IEEE Std 1003.1):</strong> Introduces the <code>ustar\0</code> magic signature at offset 257, uname/gname text strings, and a 155-byte <code>prefix</code> field allowing total paths up to 256 bytes.</li>
+        <li><strong>GNU TAR:</strong> Extends USTAR with <code>././@LongLink</code> blocks (types <code>L</code> and <code>K</code>) to accommodate arbitrarily long filenames and symlink targets without string truncation.</li>
+        <li><strong>PAX Extended Format (POSIX.1-2001):</strong> Uses typeflag <code>x</code> and <code>g</code> blocks formatted with UTF-8 key-value records to support nanosecond timestamps, unlimited file sizes, and international paths.</li>
+      </ul>
+
+      <h2>Forensic Checksums and Threat Audits</h2>
+      <p>This analyzer performs the following client-side forensic validations:</p>
+      <ul>
+        <li><strong>Checksum Recalculation:</strong> Sums all 512 bytes with the 8 checksum bytes (offset 148–155) treated as ASCII spaces (0x20), verifying both unsigned and signed sums to detect tampered headers.</li>
+        <li><strong>Path Traversal Risk (Zip Slip / Tar Slip):</strong> Flags archive entries utilizing directory traversal strings (<code>../</code>, absolute root <code>/</code>, or Windows drive prefixes) designed to escape extraction target roots.</li>
+        <li><strong>Privilege Escalation Artifacts:</strong> Highlights SUID (<code>04000</code>) and SGID (<code>02000</code>) permission bits that could introduce security vulnerabilities if extracted onto Unix hosts.</li>
+        <li><strong>Trailer Slack & Anomaly Detection:</strong> Evaluates bytes beyond the standard two 512-byte zero blocks to discover steganographic payloads or hidden slack data.</li>
+      </ul>
+    </article>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry with Independent Endpoints & Timeout Protection
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+          clearTimeout(id);
+          return res;
+        } catch (err) {
+          clearTimeout(id);
+          throw err;
+        }
+      };
+
+      // 1. IPv4 Resolution (Ensures strictly IPv4 address returned)
+      (async () => {
+        try {
+          const res = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ip && !data.ip.includes(":")) {
+              ipv4El.textContent = data.ip;
+              return;
+            }
+          }
+          throw new Error("Invalid IPv4 payload");
+        } catch {
+          try {
+            const fb = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb.ok) {
+              const text = (await fb.text()).trim();
+              if (text && !text.includes(":")) {
+                ipv4El.textContent = text;
+                return;
+              }
+            }
+          } catch {}
+          ipv4El.textContent = "Unavailable";
+        }
+      })();
+
+      // 2. IPv6 Resolution (Queries dedicated IPv6-only endpoints)
+      (async () => {
+        try {
+          const res = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ip && data.ip.includes(":")) {
+              ipv6El.textContent = data.ip;
+              return;
+            }
+          }
+          throw new Error("Invalid IPv6 payload");
+        } catch {
+          try {
+            const fb = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb.ok) {
+              const text = (await fb.text()).trim();
+              if (text && text.includes(":")) {
+                ipv6El.textContent = text;
+                return;
+              }
+            }
+          } catch {}
+          ipv6El.textContent = "Not Detected";
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // DOM References
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFileName = document.getElementById("metaFileName");
+    const metaSha256 = document.getElementById("metaSha256");
+    const metaFormat = document.getElementById("metaFormat");
+    const metaCountSize = document.getElementById("metaCountSize");
+    const metaRisks = document.getElementById("metaRisks");
+    const metaTrailer = document.getElementById("metaTrailer");
+    const entriesTableBody = document.getElementById("entriesTableBody");
+    const searchInput = document.getElementById("searchInput");
+    const tableStats = document.getElementById("tableStats");
+    const btnExportJson = document.getElementById("btnExportJson");
+    const btnClear = document.getElementById("btnClear");
+
+    // Modal DOM References
+    const inspectorModal = document.getElementById("inspectorModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDetailTable = document.getElementById("modalDetailTable");
+    const modalPreviewBox = document.getElementById("modalPreviewBox");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const modalCloseAction = document.getElementById("modalCloseAction");
+    const btnDownloadEntry = document.getElementById("btnDownloadEntry");
+
+    // Application State
+    let parsedEntries = [];
+    let activeRawBuffer = null;
+    let selectedEntry = null;
+
+    // Drag & Drop Interactions
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    btnClear.addEventListener("click", resetWorkspace);
+
+    function resetWorkspace() {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      parsedEntries = [];
+      activeRawBuffer = null;
+      selectedEntry = null;
+      entriesTableBody.innerHTML = "";
+    }
+
+    // Modal Listeners
+    [modalCloseBtn, modalCloseAction].forEach(btn => {
+      btn.addEventListener("click", () => {
+        inspectorModal.style.display = "none";
+      });
+    });
+
+    window.addEventListener("click", (e) => {
+      if (e.target === inspectorModal) {
+        inspectorModal.style.display = "none";
+      }
+    });
+
+    // Main Ingestion Workflow
+    async function handleFileSelection(file) {
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaFileName.textContent = `${file.name} (${formatBytes(file.size)})`;
+      metaSha256.textContent = "Computing SHA-256...";
+      metaFormat.textContent = "Detecting compression...";
+      metaCountSize.textContent = "Scanning blocks...";
+      metaRisks.textContent = "Auditing security...";
+      metaTrailer.textContent = "Inspecting padding...";
+
+      try {
+        const rawArrayBuffer = await file.arrayBuffer();
+
+        // Compute File Checksum
+        const hashBuf = await crypto.subtle.digest("SHA-256", rawArrayBuffer);
+        const hashHex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        metaSha256.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
+
+        // Handle Potential Gzip Decompression
+        let tarBuffer = rawArrayBuffer;
+        const u8 = new Uint8Array(rawArrayBuffer);
+        const isGzip = u8.length > 2 && u8[0] === 0x1f && u8[1] === 0x8b;
+
+        if (isGzip) {
+          metaFormat.textContent = "GZIP compressed tar detected. Decompressing...";
+          if (typeof DecompressionStream !== "undefined") {
+            const ds = new DecompressionStream("gzip");
+            const decompressedStream = new Response(new Blob([rawArrayBuffer]).stream().pipeThrough(ds));
+            tarBuffer = await decompressedStream.arrayBuffer();
+          } else {
+            throw new Error("DecompressionStream API not supported in this browser. Please provide an uncompressed .tar file.");
+          }
+        }
+
+        activeRawBuffer = tarBuffer;
+        parseTarArchive(tarBuffer, file.name, isGzip);
+      } catch (err) {
+        statusBanner.className = "status-banner status-threat";
+        statusBanner.innerHTML = `<span>✕ Parser Failure: ${escapeHtml(err.message)}</span> <span>Aborted</span>`;
+        metaFormat.textContent = "Error";
+      }
+    }
+
+    // TAR Parsing Engine
+    function parseTarArchive(buffer, originalFileName, wasGzip) {
+      const bytes = new Uint8Array(buffer);
+      const totalLen = bytes.length;
+      parsedEntries = [];
+
+      let offset = 0;
+      let nextLongName = null;
+      let nextLongLink = null;
+      let globalPax = {};
+      let nextPax = {};
+      let zeroBlockCount = 0;
+      let formatDetected = "V7 Legacy (No Magic)";
+      let riskCount = 0;
+      let totalPayloadBytes = 0;
+
+      while (offset + 512 <= totalLen) {
+        const block = bytes.subarray(offset, offset + 512);
+
+        // Check for 512-byte Zero Block
+        let isZero = true;
+        for (let i = 0; i < 512; i++) {
+          if (block[i] !== 0) {
+            isZero = false;
+            break;
+          }
+        }
+
+        if (isZero) {
+          zeroBlockCount++;
+          offset += 512;
+          if (zeroBlockCount >= 2) {
+            break; // Standard TAR EOF marker reached
+          }
+          continue;
+        } else {
+          zeroBlockCount = 0;
+        }
+
+        // Parse Standard Header Fields
+        const rawName = readString(block, 0, 100);
+        const rawModeStr = readString(block, 100, 8);
+        const rawUidStr = readString(block, 108, 8);
+        const rawGidStr = readString(block, 116, 8);
+        const rawSizeStr = readString(block, 124, 12);
+        const rawMtimeStr = readString(block, 136, 12);
+        const rawChksumStr = readString(block, 148, 8);
+        const typeflagChar = String.fromCharCode(block[156] || 0);
+        const rawLinkname = readString(block, 157, 100);
+        const magic = readString(block, 257, 6);
+        const version = readString(block, 263, 2);
+        const uname = readString(block, 265, 32);
+        const gname = readString(block, 297, 32);
+        const devmajor = readString(block, 329, 8);
+        const devminor = readString(block, 337, 8);
+        const prefix = readString(block, 345, 155);
+
+        // Numeric Conversions
+        const mode = parseOctal(rawModeStr);
+        const uid = parseOctal(rawUidStr);
+        const gid = parseOctal(rawGidStr);
+        const mtime = parseOctal(rawMtimeStr);
+        const declaredChecksum = parseOctal(rawChksumStr);
+
+        // Binary Size Check (GNU base-256 for files > 8GB)
+        let size = 0;
+        if (block[124] & 0x80) {
+          // Base-256 representation
+          for (let i = 125; i < 136; i++) {
+            size = (size * 256) + block[i];
+          }
+        } else {
+          size = parseOctal(rawSizeStr);
+        }
+
+        // Format Detection
+        if (magic.startsWith("ustar")) {
+          if (formatDetected.indexOf("PAX") === -1 && formatDetected.indexOf("GNU") === -1) {
+            formatDetected = magic.includes(" ") ? "GNU TAR" : "POSIX USTAR";
+          }
+        }
+
+        // Forensics Checksum Verification
+        let unsignedSum = 0;
+        let signedSum = 0;
+        for (let i = 0; i < 512; i++) {
+          let b = (i >= 148 && i < 156) ? 32 : block[i];
+          unsignedSum += b;
+          signedSum += (b < 128) ? b : (b - 256);
+        }
+        const checksumValid = (unsignedSum === declaredChecksum) || (signedSum === declaredChecksum);
+
+        // Compute File Data Offset
+        const dataOffset = offset + 512;
+        const paddedDataSize = Math.ceil(size / 512) * 512;
+
+        if (dataOffset + size > totalLen) {
+          // Truncated entry anomaly
+          riskCount++;
+        }
+
+        // Resolve Path according to USTAR / GNU conventions
+        let resolvedPath = rawName;
+        if (prefix && prefix.trim().length > 0) {
+          resolvedPath = `${prefix.trim()}/${rawName}`;
+        }
+        if (nextLongName !== null) {
+          resolvedPath = nextLongName;
+          nextLongName = null;
+          formatDetected = "GNU TAR (LongLink)";
+        }
+        if (nextPax["path"]) {
+          resolvedPath = nextPax["path"];
+        }
+
+        let resolvedLink = rawLinkname;
+        if (nextLongLink !== null) {
+          resolvedLink = nextLongLink;
+          nextLongLink = null;
+        }
+        if (nextPax["linkpath"]) {
+          resolvedLink = nextPax["linkpath"];
+        }
+
+        // GNU LongName handler (type 'L')
+        if (typeflagChar === 'L') {
+          nextLongName = readDataString(bytes, dataOffset, size);
+          offset = dataOffset + paddedDataSize;
+          continue;
+        }
+
+        // GNU LongLink handler (type 'K')
+        if (typeflagChar === 'K') {
+          nextLongLink = readDataString(bytes, dataOffset, size);
+          offset = dataOffset + paddedDataSize;
+          continue;
+        }
+
+        // PAX Extended Header Handler (type 'x' or 'g')
+        if (typeflagChar === 'x' || typeflagChar === 'g') {
+          formatDetected = "POSIX.1-2001 (PAX)";
+          const paxStr = readDataString(bytes, dataOffset, size);
+          const parsedPax = parsePaxBlock(paxStr);
+          if (typeflagChar === 'g') {
+            globalPax = Object.assign({}, globalPax, parsedPax);
+          } else {
+            nextPax = Object.assign({}, globalPax, parsedPax);
+          }
+          offset = dataOffset + paddedDataSize;
+          continue;
+        }
+
+        // Determine Human-Friendly Type
+        let typeName = "File";
+        let typeClass = "badge-file";
+        switch (typeflagChar) {
+          case '0':
+          case '\0':
+            typeName = "File";
+            typeClass = "badge-file";
+            break;
+          case '1':
+            typeName = "HardLink";
+            typeClass = "badge-sym";
+            break;
+          case '2':
+            typeName = "SymLink";
+            typeClass = "badge-sym";
+            break;
+          case '3':
+            typeName = "CharDev";
+            typeClass = "badge-file";
+            break;
+          case '4':
+            typeName = "BlockDev";
+            typeClass = "badge-file";
+            break;
+          case '5':
+            typeName = "Dir";
+            typeClass = "badge-dir";
+            break;
+          case '6':
+            typeName = "FIFO";
+            typeClass = "badge-file";
+            break;
+          default:
+            typeName = `Type '${typeflagChar}'`;
+            typeClass = "badge-file";
+            break;
+        }
+
+        // Security Anomaly Detection
+        const anomalies = [];
+        if (!checksumValid) {
+          anomalies.push("Invalid Checksum (Header Tampered/Corrupted)");
+        }
+        if (resolvedPath.includes("../") || resolvedPath.includes("..\\") || resolvedPath.startsWith("/")) {
+          anomalies.push("Path Traversal Risk (Zip Slip vulnerability)");
+        }
+        if (resolvedPath.startsWith("./") && resolvedPath.length > 2 && resolvedPath[2] === ".") {
+          anomalies.push("Suspicious Hidden Path");
+        }
+        if ((mode & 0o4000) !== 0) {
+          anomalies.push("SUID Permission Bit Set");
+        }
+        if ((mode & 0o2000) !== 0) {
+          anomalies.push("SGID Permission Bit Set");
+        }
+        if ((mode & 0o1000) !== 0) {
+          anomalies.push("Sticky Bit Set");
+        }
+
+        if (anomalies.length > 0) {
+          riskCount += anomalies.length;
+        }
+
+        totalPayloadBytes += size;
+
+        parsedEntries.push({
+          id: parsedEntries.length,
+          name: resolvedPath,
+          rawName: rawName,
+          size: size,
+          mode: mode,
+          modeOctal: (mode & 0o7777).toString(8).padStart(4, "0"),
+          modePermissions: formatPermissions(mode),
+          uid: uid,
+          gid: gid,
+          uname: uname || String(uid),
+          gname: gname || String(gid),
+          mtime: mtime,
+          mtimeIso: mtime > 0 ? new Date(mtime * 1000).toISOString().replace("T", " ").replace(/\..+/, "") : "N/A",
+          typeflag: typeflagChar,
+          typeName: typeName,
+          typeClass: typeClass,
+          linkname: resolvedLink,
+          checksum: declaredChecksum,
+          checksumValid: checksumValid,
+          magic: magic,
+          version: version,
+          headerOffset: offset,
+          dataOffset: dataOffset,
+          anomalies: anomalies,
+          paxData: Object.keys(nextPax).length > 0 ? Object.assign({}, nextPax) : null
+        });
+
+        nextPax = {};
+        offset = dataOffset + paddedDataSize;
+      }
+
+      // Check Slack Space / Trailer Bytes After 2 Zero Blocks
+      let trailerSlackBytes = totalLen - offset;
+      let nonZeroTrailerFound = false;
+      if (trailerSlackBytes > 0) {
+        for (let i = offset; i < totalLen; i++) {
+          if (bytes[i] !== 0) {
+            nonZeroTrailerFound = true;
+            break;
+          }
+        }
+      }
+
+      if (nonZeroTrailerFound) {
+        riskCount++;
+      }
+
+      // Update Header Cards
+      metaFormat.textContent = wasGzip ? `${formatDetected} (GZIP Decompressed)` : formatDetected;
+      metaCountSize.textContent = `${parsedEntries.length} items (${formatBytes(totalPayloadBytes)})`;
+      metaRisks.textContent = riskCount > 0 ? `${riskCount} Flagged` : "0 (Clean Headers)";
+      metaRisks.style.color = riskCount > 0 ? "var(--atom-coral)" : "var(--atom-green)";
+      
+      metaTrailer.textContent = nonZeroTrailerFound
+        ? `Anomaly: ${trailerSlackBytes} Non-Zero Bytes Past EOF`
+        : `${trailerSlackBytes} bytes padding`;
+      metaTrailer.style.color = nonZeroTrailerFound ? "var(--atom-coral)" : "var(--atom-heading)";
+
+      // Update Status Banner
+      if (riskCount > 0) {
+        statusBanner.className = "status-banner status-warning";
+        statusBanner.innerHTML = `<span>⚠️ ${riskCount} Forensic Risk Anomaly Flags Detected</span> <span>Caution Required</span>`;
+      } else {
+        statusBanner.className = "status-banner status-valid";
+        statusBanner.innerHTML = `<span>✓ Archive Parsed Successfully • Headers Cryptographically Verified</span> <span>Integrity Valid</span>`;
+      }
+
+      renderEntriesTable(parsedEntries);
+    }
+
+    // Table Rendering
+    function renderEntriesTable(entries) {
+      entriesTableBody.innerHTML = "";
+      tableStats.textContent = `Showing ${entries.length} of ${parsedEntries.length} entries`;
+
+      if (entries.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td colspan="8" style="text-align: center; color: var(--atom-muted); padding: 24px;">No archive entries match filter.</td>`;
+        entriesTableBody.appendChild(row);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      entries.forEach(entry => {
+        const tr = document.createElement("tr");
+
+        const integrityBadge = entry.anomalies.length > 0
+          ? `<span class="badge badge-risk" title="${escapeHtml(entry.anomalies.join(', '))}">Flagged (${entry.anomalies.length})</span>`
+          : `<span class="badge badge-ok">Valid</span>`;
+
+        tr.innerHTML = `
+          <td><span class="badge ${entry.typeClass}">${escapeHtml(entry.typeName)}</span></td>
+          <td style="color: var(--atom-heading); word-break: break-all;">
+            ${escapeHtml(entry.name)}
+            ${entry.linkname ? `<div style="font-size: 0.72rem; color: var(--atom-purple);">→ ${escapeHtml(entry.linkname)}</div>` : ''}
+          </td>
+          <td>${formatBytes(entry.size)}</td>
+          <td><code>${entry.modePermissions}</code></td>
+          <td>${escapeHtml(entry.uname)}:${escapeHtml(entry.gname)}</td>
+          <td>${entry.mtimeIso}</td>
+          <td>${integrityBadge}</td>
+          <td style="text-align: center;">
+            <button class="btn-action-small" data-id="${entry.id}">Inspect</button>
+          </td>
+        `;
+
+        fragment.appendChild(tr);
+      });
+
+      entriesTableBody.appendChild(fragment);
+
+      // Attach inspect buttons
+      entriesTableBody.querySelectorAll(".btn-action-small").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = parseInt(btn.getAttribute("data-id"), 10);
+          openEntryInspector(parsedEntries[id]);
+        });
+      });
+    }
+
+    // Filter Logic
+    searchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderEntriesTable(parsedEntries);
+        return;
+      }
+
+      const filtered = parsedEntries.filter(item => 
+        item.name.toLowerCase().includes(q) ||
+        item.uname.toLowerCase().includes(q) ||
+        item.gname.toLowerCase().includes(q) ||
+        item.typeName.toLowerCase().includes(q) ||
+        (item.anomalies.join(" ")).toLowerCase().includes(q)
+      );
+
+      renderEntriesTable(filtered);
+    });
+
+    // Inspector Modal
+    function openEntryInspector(entry) {
+      selectedEntry = entry;
+      modalTitle.textContent = entry.name;
+
+      let detailHtml = `
+        <tr><td class="detail-key">Header Offset</td><td>${entry.headerOffset} (0x${entry.headerOffset.toString(16)})</td></tr>
+        <tr><td class="detail-key">Payload Offset</td><td>${entry.dataOffset} (0x${entry.dataOffset.toString(16)})</td></tr>
+        <tr><td class="detail-key">File Size</td><td>${entry.size} bytes (${formatBytes(entry.size)})</td></tr>
+        <tr><td class="detail-key">File Mode</td><td>Octal 0${entry.modeOctal} (<code>${entry.modePermissions}</code>)</td></tr>
+        <tr><td class="detail-key">Ownership</td><td>UID ${entry.uid} (${escapeHtml(entry.uname)}) / GID ${entry.gid} (${escapeHtml(entry.gname)})</td></tr>
+        <tr><td class="detail-key">Last Modified (MTime)</td><td>${entry.mtimeIso} (${entry.mtime})</td></tr>
+        <tr><td class="detail-key">Header Checksum</td><td>${entry.checksum} (Declared) — ${entry.checksumValid ? '<span style="color:var(--atom-green);">Verified Match</span>' : '<span style="color:var(--atom-coral);">Checksum Mismatch / Tampered</span>'}</td></tr>
+        <tr><td class="detail-key">Standard Magic</td><td><code>${escapeHtml(entry.magic || "None")}</code> (Version: <code>${escapeHtml(entry.version || "None")}</code>)</td></tr>
+      `;
+
+      if (entry.linkname) {
+        detailHtml += `<tr><td class="detail-key">Link Target</td><td style="color:var(--atom-purple);">${escapeHtml(entry.linkname)}</td></tr>`;
+      }
+
+      if (entry.anomalies.length > 0) {
+        detailHtml += `<tr><td class="detail-key" style="color:var(--atom-coral);">Forensic Flags</td><td style="color:var(--atom-coral);"><strong>${escapeHtml(entry.anomalies.join(" • "))}</strong></td></tr>`;
+      }
+
+      if (entry.paxData) {
+        detailHtml += `<tr><td class="detail-key">PAX Attributes</td><td><pre style="margin:0; font-size:0.75rem;">${escapeHtml(JSON.stringify(entry.paxData, null, 2))}</pre></td></tr>`;
+      }
+
+      modalDetailTable.innerHTML = detailHtml;
+
+      // Render Content Preview
+      if (entry.size === 0) {
+        modalPreviewBox.textContent = `[Empty Entry / Container Node]`;
+        btnDownloadEntry.style.display = "none";
+      } else if (entry.size > 2 * 1024 * 1024) {
+        modalPreviewBox.textContent = `[Payload exceeds 2MB preview limit (${formatBytes(entry.size)}). Use download button to export.]`;
+        btnDownloadEntry.style.display = "inline-flex";
+      } else {
+        btnDownloadEntry.style.display = "inline-flex";
+        try {
+          const entryBytes = new Uint8Array(activeRawBuffer, entry.dataOffset, entry.size);
+          const isText = isAsciiOrUtf8(entryBytes.subarray(0, Math.min(1024, entryBytes.length)));
+
+          if (isText) {
+            const dec = new TextDecoder("utf-8", { fatal: false });
+            modalPreviewBox.textContent = dec.decode(entryBytes.subarray(0, 8192)) + (entryBytes.length > 8192 ? "\n... [Truncated for display]" : "");
+          } else {
+            // Hex Dump
+            modalPreviewBox.textContent = renderHexDump(entryBytes.subarray(0, 512)) + (entryBytes.length > 512 ? "\n... [Remaining binary data omitted]" : "");
+          }
+        } catch (e) {
+          modalPreviewBox.textContent = `Error reading payload: ${e.message}`;
+        }
+      }
+
+      inspectorModal.style.display = "flex";
+    }
+
+    // Individual Entry Download
+    btnDownloadEntry.addEventListener("click", () => {
+      if (!selectedEntry || !activeRawBuffer || selectedEntry.size === 0) return;
+      try {
+        const fileSlice = activeRawBuffer.slice(selectedEntry.dataOffset, selectedEntry.dataOffset + selectedEntry.size);
+        const cleanName = selectedEntry.name.split("/").pop() || "extracted-file";
+        const blob = new Blob([fileSlice], { type: "application/octet-stream" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = cleanName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert("Extraction failed: " + err.message);
+      }
+    });
+
+    // Manifest JSON Export
+    btnExportJson.addEventListener("click", () => {
+      if (parsedEntries.length === 0) return;
+
+      const exportPayload = {
+        meta: {
+          generator: "BitDark Client-Side TAR Forensics Inspector",
+          timestamp_utc: new Date().toISOString(),
+          total_entries: parsedEntries.length,
+          disclaimer: "BitDark.net assumes no responsibility for analysis conclusions or forensic accuracy."
+        },
+        entries: parsedEntries.map(e => ({
+          name: e.name,
+          type: e.typeName,
+          size_bytes: e.size,
+          mode_octal: e.modeOctal,
+          permissions: e.modePermissions,
+          uid: e.uid,
+          gid: e.gid,
+          uname: e.uname,
+          gname: e.gname,
+          mtime_epoch: e.mtime,
+          mtime_utc: e.mtimeIso,
+          header_checksum: e.checksum,
+          checksum_valid: e.checksumValid,
+          anomalies: e.anomalies,
+          pax: e.paxData
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tar-manifest-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Binary Parsing Utilities
+    function readString(u8Array, start, length) {
+      let str = "";
+      for (let i = start; i < start + length; i++) {
+        if (u8Array[i] === 0) break;
+        str += String.fromCharCode(u8Array[i]);
+      }
+      return str.trim();
+    }
+
+    function readDataString(u8Array, start, length) {
+      const slice = u8Array.subarray(start, start + length);
+      const dec = new TextDecoder("utf-8", { fatal: false });
+      let text = dec.decode(slice);
+      // Remove trailing null bytes if present
+      const nullIdx = text.indexOf("\0");
+      return nullIdx !== -1 ? text.substring(0, nullIdx) : text;
+    }
+
+    function parseOctal(str) {
+      if (!str) return 0;
+      const clean = str.replace(/[^0-7]/g, "");
+      return clean ? parseInt(clean, 8) : 0;
+    }
+
+    function parsePaxBlock(paxString) {
+      const records = {};
+      let i = 0;
+      const len = paxString.length;
+
+      while (i < len) {
+        const spaceIdx = paxString.indexOf(" ", i);
+        if (spaceIdx === -1) break;
+
+        const recordLen = parseInt(paxString.substring(i, spaceIdx), 10);
+        if (isNaN(recordLen) || recordLen <= 0) break;
+
+        const line = paxString.substring(spaceIdx + 1, i + recordLen);
+        const eqIdx = line.indexOf("=");
+        if (eqIdx !== -1) {
+          const key = line.substring(0, eqIdx);
+          let val = line.substring(eqIdx + 1);
+          if (val.endsWith("\n")) val = val.slice(0, -1);
+          records[key] = val;
+        }
+
+        i += recordLen;
+      }
+      return records;
+    }
+
+    function formatPermissions(mode) {
+      const types = ['---', '--x', '-w-', '-wx', 'r--', 'r-x', 'rw-', 'rwx'];
+      const u = (mode >> 6) & 7;
+      const g = (mode >> 3) & 7;
+      const o = mode & 7;
+
+      let uStr = types[u] || '---';
+      let gStr = types[g] || '---';
+      let oStr = types[o] || '---';
+
+      // SUID
+      if (mode & 0o4000) {
+        uStr = uStr.substring(0, 2) + (uStr[2] === 'x' ? 's' : 'S');
+      }
+      // SGID
+      if (mode & 0o2000) {
+        gStr = gStr.substring(0, 2) + (gStr[2] === 'x' ? 's' : 'S');
+      }
+      // Sticky
+      if (mode & 0o1000) {
+        oStr = oStr.substring(0, 2) + (oStr[2] === 'x' ? 't' : 'T');
+      }
+
+      return `${uStr}${gStr}${oStr}`;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + " " + sizes[i];
+    }
+
+    function isAsciiOrUtf8(u8) {
+      for (let i = 0; i < u8.length; i++) {
+        const b = u8[i];
+        if (b === 0) return false; // Null byte indicates binary
+      }
+      return true;
+    }
+
+    function renderHexDump(u8) {
+      let lines = [];
+      for (let i = 0; i < u8.length; i += 16) {
+        const chunk = u8.subarray(i, i + 16);
+        const hex = Array.from(chunk).map(b => b.toString(16).padStart(2, "0")).join(" ");
+        const ascii = Array.from(chunk).map(b => (b >= 32 && b <= 126) ? String.fromCharCode(b) : ".").join("");
+        lines.push(`${i.toString(16).padStart(6, "0")}  ${hex.padEnd(48, " ")}  |${ascii}|`);
+      }
+      return lines.join("\n");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
