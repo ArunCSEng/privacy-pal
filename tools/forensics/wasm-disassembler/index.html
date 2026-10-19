@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>Wasm Disassembler & Bytecode Inspector — Free Offline Reverse Engineering Tool | BitDark</title>
+  <meta name="title" content="Wasm Disassembler & Bytecode Inspector — Free Offline Reverse Engineering Tool | BitDark" />
+  <meta name="description" content="Inspect, parse sections, disassemble bytecodes, and audit WebAssembly binaries (.wasm) locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="wasm disassembler, webassembly decompiler, wat viewer, wasm bytecode inspector, reverse engineering wasm, offline binary analyzer" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/wasm-disassembler/" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, "Liberation Mono", Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      word-break: break-word;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .brand span { color: var(--atom-amber); }
+    .nav-meta-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 24px 16px 60px; 
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 20px; }
+    .tool-header h1 { 
+      font-size: 1.6rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 6px; 
+      line-height: 1.25;
+    }
+    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+
+    /* Tool Card & Workspace */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 6px; }
+    .dropzone-hint { font-size: 0.74rem; color: var(--atom-muted); font-family: var(--font-code); }
+
+    .file-input-hidden { display: none; }
+
+    /* Results Workspace */
+    .results-area { margin-top: 20px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-found {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-missing {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+      min-width: 0;
+    }
+    .meta-label { 
+      font-size: 0.72rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 4px; 
+    }
+    .meta-val { 
+      font-size: 0.85rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
+    }
+
+    .viewer-tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .tab-btn {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      max-height: 480px;
+      overflow-y: auto;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 14px;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-coral);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 28px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-coral);
+      margin-bottom: 6px;
+      font-size: 0.86rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.86rem;
+      line-height: 1.65;
+    }
+    .doc-section h2 { 
+      color: var(--atom-heading); 
+      font-size: 1.15rem; 
+      margin-bottom: 10px; 
+      margin-top: 18px; 
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 10px; }
+    .doc-section ul { margin-left: 18px; margin-bottom: 12px; }
+    .doc-section li { margin-bottom: 5px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 36px;
+      padding-top: 18px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 12px; }
+      .nav-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .nav-meta-wrap { width: 100%; justify-content: space-between; }
+      .trust-badge, .ip-pill-nav { font-size: 0.68rem; padding: 4px 8px; }
+      .wrapper { padding: 18px 12px 40px; }
+      .tool-card { padding: 14px; }
+      .dropzone { padding: 24px 10px; }
+      .meta-grid { grid-template-columns: 1fr; gap: 8px; }
+      .viewer-tab-bar { width: 100%; }
+      .tab-btn { flex: 1 1 auto; text-align: center; }
+      .btn-row { justify-content: stretch; }
+      .btn-row .btn-atom { width: 100%; text-align: center; }
+      .bottom-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-meta-wrap">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / wasm-disassembler
+    </nav>
+
+    <div class="tool-header">
+      <h1>WebAssembly Disassembler & Bytecode Inspector</h1>
+      <p>Disassemble binary headers, inspect section structures, audit imports/exports, and extract instructions directly in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">⚙️</span>
+        <p><strong>Click to choose a WebAssembly binary</strong> or drag & drop file here</p>
+        <span class="dropzone-hint">Accepts .wasm binaries (Strict memory processing, zero network egress)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept=".wasm,application/wasm" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File & Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Digest</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Magic & Version</div>
+            <div class="meta-val" id="metaMagic">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Sections & Functions</div>
+            <div class="meta-val" id="metaStats">-</div>
+          </div>
+        </div>
+
+        <div class="viewer-tab-bar">
+          <button class="tab-btn active" id="tabWat">Linear WAT Disassembly</button>
+          <button class="tab-btn" id="tabSections">Section Breakdown</button>
+          <button class="tab-btn" id="tabJson">Structured JSON Analysis</button>
+        </div>
+
+        <div class="viewer-box" id="codeViewer">Initializing binary decoder...</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadWat">Download .wat</button>
+          <button class="btn-atom" id="btnDownloadJson" style="background-color: var(--atom-cyan); color: #1e2227;">Export JSON</button>
+          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal Disclaimer Notice -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Operational Disclaimer
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible</strong> for how this tool is used, the interpretation of the disassembled code, or any damages, legal liabilities, or security incidents arising from analyzing, reverse engineering, or executing third-party binaries. This disassembler operates entirely in the client-side sandbox for educational, defensive, and diagnostic forensic research. Users bear full responsibility for complying with applicable local intellectual property laws, licensing agreements, and terms of service.
+      </p>
+    </aside>
+
+    <!-- Technical & Forensic Docs Section -->
+    <article class="doc-section">
+      <h2>WebAssembly Binary Format Anatomy</h2>
+      <p>The standard WebAssembly binary encoding begins with a strict 4-byte magic word <code>\x00asm</code> (<code>0x00 0x61 0x73 0x6d</code>) followed by a 4-byte little-endian format version number (typically <code>0x01 0x00 0x00 0x00</code> for Version 1).</p>
+      <ul>
+        <li><strong>Section IDs:</strong> Binary modules are subdivided into sequential sections: Type (1), Import (2), Function (3), Table (4), Memory (5), Global (6), Export (7), Start (8), Element (9), Code (10), Data (11), DataCount (12), and Custom (0).</li>
+        <li><strong>LEB128 Encoding:</strong> Integers, type declarations, section lengths, and instruction offsets are packed using Little Endian Base 128 variable-length integer representations.</li>
+        <li><strong>Function Payloads:</strong> Executable bytecodes are nested within the Code section (ID 10), consisting of local variable vectors terminated by standard stack opcodes.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security</h2>
+      <p>Unlike cloud reverse engineering tools that upload suspect binary payloads to external servers, BitDark's WebAssembly Disassembler decodes bytes natively in browser memory via raw <code>ArrayBuffer</code> traversals and Web Cryptography SHA-256 primitives. No telemetry or binary blobs are ever dispatched across the network.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry with CORS Safety and Localhost Isolation
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const res4 = await fetch("https://api4.ipify.org?format=json", { cache: "no-store" });
+        if (!res4.ok) throw new Error();
+        const d4 = await res4.json();
+        ipv4El.textContent = d4.ip || "Unavailable";
+      } catch {
+        try {
+          const fb4 = await fetch("https://v4.ident.me/json", { cache: "no-store" });
+          const d4 = await fb4.json();
+          ipv4El.textContent = d4.ip || "Unavailable";
+        } catch {
+          ipv4El.textContent = "Unavailable";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api6.ipify.org?format=json", { cache: "no-store" });
+        if (!res6.ok) throw new Error();
+        const d6 = await res6.json();
+        ipv6El.textContent = (d6.ip && d6.ip.includes(":")) ? d6.ip : "Not Supported";
+      } catch {
+        try {
+          const fb6 = await fetch("https://v6.ident.me/json", { cache: "no-store" });
+          const d6 = await fb6.json();
+          ipv6El.textContent = (d6.ip && d6.ip.includes(":")) ? d6.ip : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    const SECTION_NAMES = [
+      "Custom", "Type", "Import", "Function", "Table", "Memory",
+      "Global", "Export", "Start", "Element", "Code", "Data", "DataCount"
+    ];
+
+    const TYPE_NAMES = {
+      0x7F: "i32", 0x7E: "i64", 0x7D: "f32", 0x7C: "f64",
+      0x7B: "v128", 0x70: "funcref", 0x6F: "externref", 0x40: "void"
+    };
+
+    const OPCODES = {
+      0x00: "unreachable", 0x01: "nop", 0x02: "block", 0x03: "loop", 0x04: "if", 0x05: "else",
+      0x0B: "end", 0x0C: "br", 0x0D: "br_if", 0x0E: "br_table", 0x0F: "return", 0x10: "call",
+      0x11: "call_indirect", 0x1A: "drop", 0x1B: "select", 0x1C: "select_t",
+      0x20: "local.get", 0x21: "local.set", 0x22: "local.tee", 0x23: "global.get", 0x24: "global.set",
+      0x25: "table.get", 0x26: "table.set",
+      0x28: "i32.load", 0x29: "i64.load", 0x2A: "f32.load", 0x2B: "f64.load",
+      0x2C: "i32.load8_s", 0x2D: "i32.load8_u", 0x2E: "i32.load16_s", 0x2F: "i32.load16_u",
+      0x30: "i64.load8_s", 0x31: "i64.load8_u", 0x32: "i64.load16_s", 0x33: "i64.load16_u",
+      0x34: "i64.load32_s", 0x35: "i64.load32_u", 0x36: "i32.store", 0x37: "i64.store",
+      0x38: "f32.store", 0x39: "f64.store", 0x3A: "i32.store8", 0x3B: "i32.store16",
+      0x3C: "i64.store8", 0x3D: "i64.store16", 0x3E: "i64.store32",
+      0x3F: "memory.size", 0x40: "memory.grow",
+      0x41: "i32.const", 0x42: "i64.const", 0x43: "f32.const", 0x44: "f64.const",
+      0x45: "i32.eqz", 0x46: "i32.eq", 0x47: "i32.ne", 0x48: "i32.lt_s", 0x49: "i32.lt_u",
+      0x4A: "i32.gt_s", 0x4B: "i32.gt_u", 0x4C: "i32.le_s", 0x4D: "i32.le_u", 0x4E: "i32.ge_s", 0x4F: "i32.ge_u",
+      0x50: "i64.eqz", 0x51: "i64.eq", 0x52: "i64.ne", 0x53: "i64.lt_s", 0x54: "i64.lt_u",
+      0x55: "i64.gt_s", 0x56: "i64.gt_u", 0x57: "i64.le_s", 0x58: "i64.le_u", 0x59: "i64.ge_s", 0x5A: "i64.ge_u",
+      0x5B: "f32.eq", 0x5C: "f32.ne", 0x5D: "f32.lt", 0x5E: "f32.gt", 0x5F: "f32.le", 0x60: "f32.ge",
+      0x61: "f64.eq", 0x62: "f64.ne", 0x63: "f64.lt", 0x64: "f64.gt", 0x65: "f64.le", 0x66: "f64.ge",
+      0x67: "i32.clz", 0x68: "i32.ctz", 0x69: "i32.popcnt", 0x6A: "i32.add", 0x6B: "i32.sub",
+      0x6C: "i32.mul", 0x6D: "i32.div_s", 0x6E: "i32.div_u", 0x6F: "i32.rem_s", 0x70: "i32.rem_u",
+      0x71: "i32.and", 0x72: "i32.or", 0x73: "i32.xor", 0x74: "i32.shl", 0x75: "i32.shr_s", 0x76: "i32.shr_u",
+      0x77: "i32.rotl", 0x78: "i32.rotr",
+      0x79: "i64.clz", 0x7A: "i64.ctz", 0x7B: "i64.popcnt", 0x7C: "i64.add", 0x7D: "i64.sub",
+      0x7E: "i64.mul", 0x7F: "i64.div_s", 0x80: "i64.div_u", 0x81: "i64.rem_s", 0x82: "i64.rem_u",
+      0x83: "i64.and", 0x84: "i64.or", 0x85: "i64.xor", 0x86: "i64.shl", 0x87: "i64.shr_s", 0x88: "i64.shr_u",
+      0x89: "i64.rotl", 0x8A: "i64.rotr",
+      0x8B: "f32.abs", 0x8C: "f32.neg", 0x8D: "f32.ceil", 0x8E: "f32.floor", 0x8F: "f32.trunc",
+      0x90: "f32.nearest", 0x91: "f32.sqrt", 0x92: "f32.add", 0x93: "f32.sub", 0x94: "f32.mul",
+      0x95: "f32.div", 0x96: "f32.min", 0x97: "f32.max", 0x98: "f32.copysign",
+      0x99: "f64.abs", 0x9A: "f64.neg", 0x9B: "f64.ceil", 0x9C: "f64.floor", 0x9D: "f64.trunc",
+      0x9E: "f64.nearest", 0x9F: "f64.sqrt", 0xA0: "f64.add", 0xA1: "f64.sub", 0xA2: "f64.mul",
+      0xA3: "f64.div", 0xA4: "f64.min", 0xA5: "f64.max", 0xA6: "f64.copysign",
+      0xA7: "i32.wrap_i64", 0xA8: "i32.trunc_f32_s", 0xA9: "i32.trunc_f32_u", 0xAA: "i32.trunc_f64_s", 0xAB: "i32.trunc_f64_u",
+      0xAC: "i64.extend_i32_s", 0xAD: "i64.extend_i32_u", 0xAE: "i64.trunc_f32_s", 0xAF: "i64.trunc_f32_u",
+      0xB0: "i64.trunc_f64_s", 0xB1: "i64.trunc_f64_u", 0xB2: "f32.convert_i32_s", 0xB3: "f32.convert_i32_u",
+      0xB4: "f32.convert_i64_s", 0xB5: "f32.convert_i64_u", 0xB6: "f32.demote_f64", 0xB7: "f64.convert_i32_s",
+      0xB8: "f64.convert_i32_u", 0xB9: "f64.convert_i64_s", 0xBA: "f64.convert_i64_u", 0xBB: "f64.promote_f32",
+      0xBC: "i32.reinterpret_f32", 0xBD: "i64.reinterpret_f64", 0xBE: "f32.reinterpret_i32", 0xBF: "f64.reinterpret_i64",
+      0xC0: "i32.extend8_s", 0xC1: "i32.extend16_s", 0xC2: "i64.extend8_s", 0xC3: "i64.extend16_s", 0xC4: "i64.extend32_s",
+      0xD0: "ref.null", 0xD1: "ref.is_null", 0xD2: "ref.func"
+    };
+
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFile = document.getElementById("metaFile");
+    const metaHash = document.getElementById("metaHash");
+    const metaMagic = document.getElementById("metaMagic");
+    const metaStats = document.getElementById("metaStats");
+    const codeViewer = document.getElementById("codeViewer");
+    const btnReset = document.getElementById("btnReset");
+    const btnDownloadWat = document.getElementById("btnDownloadWat");
+    const btnDownloadJson = document.getElementById("btnDownloadJson");
+
+    const tabWat = document.getElementById("tabWat");
+    const tabSections = document.getElementById("tabSections");
+    const tabJson = document.getElementById("tabJson");
+
+    let activeParsedData = null;
+    let renderedWatText = "";
+    let renderedSectionsText = "";
+    let renderedJsonText = "";
+
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processWasmFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processWasmFile(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      codeViewer.textContent = "Initializing binary decoder...";
+      activeParsedData = null;
+    });
+
+    function setTab(activeTab) {
+      [tabWat, tabSections, tabJson].forEach(t => t.classList.remove("active"));
+      activeTab.classList.add("active");
+
+      if (activeTab === tabWat) codeViewer.textContent = renderedWatText;
+      if (activeTab === tabSections) codeViewer.textContent = renderedSectionsText;
+      if (activeTab === tabJson) codeViewer.textContent = renderedJsonText;
+    }
+
+    tabWat.addEventListener("click", () => setTab(tabWat));
+    tabSections.addEventListener("click", () => setTab(tabSections));
+    tabJson.addEventListener("click", () => setTab(tabJson));
+
+    function readVarUint(bytes, offset) {
+      let result = 0;
+      let shift = 0;
+      let size = 0;
+      while (offset < bytes.length) {
+        const b = bytes[offset++];
+        size++;
+        result |= (b & 0x7F) << shift;
+        if ((b & 0x80) === 0) break;
+        shift += 7;
+      }
+      return { value: result >>> 0, size };
+    }
+
+    function readVarInt(bytes, offset) {
+      let result = 0;
+      let shift = 0;
+      let size = 0;
+      let byte = 0;
+      while (offset < bytes.length) {
+        byte = bytes[offset++];
+        size++;
+        result |= (byte & 0x7F) << shift;
+        shift += 7;
+        if ((byte & 0x80) === 0) break;
+      }
+      if ((shift < 32) && (byte & 0x40)) {
+        result |= (~0 << shift);
+      }
+      return { value: result, size };
+    }
+
+    function readVarInt64(bytes, offset) {
+      let result = 0n;
+      let shift = 0n;
+      let size = 0;
+      let byte = 0;
+      while (offset < bytes.length) {
+        byte = bytes[offset++];
+        size++;
+        result |= BigInt(byte & 0x7F) << shift;
+        shift += 7n;
+        if ((byte & 0x80) === 0) break;
+      }
+      if ((shift < 64n) && (byte & 0x40)) {
+        result |= (~0n << shift);
+      }
+      return { value: result.toString(), size };
+    }
+
+    async function processWasmFile(file) {
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaFile.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      metaHash.textContent = "Computing SHA-256...";
+      metaMagic.textContent = "Verifying binary magic...";
+      metaStats.textContent = "Parsing sections...";
+      codeViewer.textContent = "Decoding bytecode...";
+
+      try {
+        const buffer = await file.arrayBuffer();
+
+        const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+        const hashArray = Array.from(new Uint8Array(hashBuf));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        metaHash.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
+
+        const isValid = WebAssembly.validate(buffer);
+        parseWasm(buffer, file, hashHex, isValid);
+      } catch (err) {
+        statusBanner.className = "status-banner status-missing";
+        statusBanner.innerHTML = `<span>✕ Binary Parse Error</span> <span>${err.message}</span>`;
+        codeViewer.textContent = "Parser Exception: " + err.message;
+      }
+    }
+
+    function parseWasm(buffer, file, hashHex, isValidModule) {
+      const bytes = new Uint8Array(buffer);
+
+      const isWasmMagic = bytes.length >= 8 &&
+                          bytes[0] === 0x00 && bytes[1] === 0x61 &&
+                          bytes[2] === 0x73 && bytes[3] === 0x6d;
+
+      if (!isWasmMagic) {
+        statusBanner.className = "status-banner status-missing";
+        statusBanner.innerHTML = `<span>✕ Invalid Format</span> <span>Missing WebAssembly \\0asm header</span>`;
+        metaMagic.textContent = "Invalid Header";
+        metaStats.textContent = "None";
+        codeViewer.textContent = "Error: The provided file does not conform to the WebAssembly binary specification (magic byte header 0x00 0x61 0x73 0x6D not detected).";
+        return;
+      }
+
+      const version = bytes[4] | (bytes[5] << 8) | (bytes[6] << 16) | (bytes[7] << 24);
+      metaMagic.textContent = `\\0asm (v${version})`;
+
+      let offset = 8;
+      const sections = [];
+      const typeSignatures = [];
+      const functionTypeIndices = [];
+      const importsList = [];
+      const exportsList = [];
+      let codeSectionOffset = null;
+      let codeSectionLength = 0;
+
+      while (offset < bytes.length) {
+        const secId = bytes[offset++];
+        const lenData = readVarUint(bytes, offset);
+        offset += lenData.size;
+        const secLen = lenData.value;
+        const secStart = offset;
+        const secName = SECTION_NAMES[secId] || `Custom(${secId})`;
+
+        const sectionRecord = {
+          id: secId,
+          name: secName,
+          offset: secStart,
+          size: secLen
+        };
+
+        if (secId === 0) {
+          let cOff = secStart;
+          const nameLen = readVarUint(bytes, cOff);
+          cOff += nameLen.size;
+          if (nameLen.value <= secLen) {
+            sectionRecord.customName = new TextDecoder().decode(bytes.slice(cOff, cOff + nameLen.value));
+          }
+        } else if (secId === 1) {
+          let tOff = secStart;
+          const count = readVarUint(bytes, tOff);
+          tOff += count.size;
+          for (let i = 0; i < count.value && tOff < secStart + secLen; i++) {
+            const form = bytes[tOff++];
+            if (form === 0x60) {
+              const paramCount = readVarUint(bytes, tOff);
+              tOff += paramCount.size;
+              const params = [];
+              for (let p = 0; p < paramCount.value; p++) {
+                params.push(TYPE_NAMES[bytes[tOff++]] || "unknown");
+              }
+              const returnCount = readVarUint(bytes, tOff);
+              tOff += returnCount.size;
+              const returns = [];
+              for (let r = 0; r < returnCount.value; r++) {
+                returns.push(TYPE_NAMES[bytes[tOff++]] || "unknown");
+              }
+              typeSignatures.push({ params, returns });
+            }
+          }
+        } else if (secId === 2) {
+          let iOff = secStart;
+          const count = readVarUint(bytes, iOff);
+          iOff += count.size;
+          for (let i = 0; i < count.value && iOff < secStart + secLen; i++) {
+            const mLen = readVarUint(bytes, iOff); iOff += mLen.size;
+            const mod = new TextDecoder().decode(bytes.slice(iOff, iOff + mLen.value)); iOff += mLen.value;
+            const fLen = readVarUint(bytes, iOff); iOff += fLen.size;
+            const fld = new TextDecoder().decode(bytes.slice(iOff, iOff + fLen.value)); iOff += fLen.value;
+            const kind = bytes[iOff++];
+            let desc = "";
+            if (kind === 0) {
+              const sigIdx = readVarUint(bytes, iOff); iOff += sigIdx.size;
+              desc = `func sig:${sigIdx.value}`;
+            } else if (kind === 1) {
+              iOff++; const lim = readVarUint(bytes, iOff); iOff += lim.size; desc = "table";
+            } else if (kind === 2) {
+              const lim = readVarUint(bytes, iOff); iOff += lim.size; desc = "memory";
+            } else if (kind === 3) {
+              iOff += 2; desc = "global";
+            }
+            importsList.push({ module: mod, field: fld, kind, desc });
+          }
+        } else if (secId === 3) {
+          let fOff = secStart;
+          const count = readVarUint(bytes, fOff);
+          fOff += count.size;
+          for (let i = 0; i < count.value && fOff < secStart + secLen; i++) {
+            const typeIdx = readVarUint(bytes, fOff);
+            fOff += typeIdx.size;
+            functionTypeIndices.push(typeIdx.value);
+          }
+        } else if (secId === 7) {
+          let eOff = secStart;
+          const count = readVarUint(bytes, eOff);
+          eOff += count.size;
+          for (let i = 0; i < count.value && eOff < secStart + secLen; i++) {
+            const nameLen = readVarUint(bytes, eOff);
+            eOff += nameLen.size;
+            const exportName = new TextDecoder().decode(bytes.slice(eOff, eOff + nameLen.value));
+            eOff += nameLen.value;
+            const kind = bytes[eOff++];
+            const itemIdx = readVarUint(bytes, eOff);
+            eOff += itemIdx.size;
+            exportsList.push({ name: exportName, kind, index: itemIdx.value });
+          }
+        } else if (secId === 10) {
+          codeSectionOffset = secStart;
+          codeSectionLength = secLen;
+        }
+
+        sections.push(sectionRecord);
+        offset = secStart + secLen;
+      }
+
+      let wat = `(module\n  ;; Source: ${file.name}\n  ;; SHA256: ${hashHex}\n  ;; Version: ${version}\n  ;; Engine Validated: ${isValidModule}\n\n`;
+
+      typeSignatures.forEach((sig, idx) => {
+        const pStr = sig.params.length ? ` (param ${sig.params.join(" ")})` : "";
+        const rStr = sig.returns.length ? ` (result ${sig.returns.join(" ")})` : "";
+        wat += `  (type $t${idx} (func${pStr}${rStr}))\n`;
+      });
+
+      importsList.forEach(imp => {
+        wat += `  (import "${imp.module}" "${imp.field}" (${imp.desc}))\n`;
+      });
+
+      exportsList.forEach(exp => {
+        const target = exp.kind === 0 ? "func" : (exp.kind === 2 ? "memory" : "item");
+        wat += `  (export "${exp.name}" (${target} ${exp.index}))\n`;
+      });
+
+      let totalFunctionsDisassembled = 0;
+      if (codeSectionOffset !== null) {
+        let cOff = codeSectionOffset;
+        const fnCount = readVarUint(bytes, cOff);
+        cOff += fnCount.size;
+        totalFunctionsDisassembled = fnCount.value;
+
+        for (let fnIndex = 0; fnIndex < fnCount.value && cOff < codeSectionOffset + codeSectionLength; fnIndex++) {
+          const bodySize = readVarUint(bytes, cOff);
+          cOff += bodySize.size;
+          const fnEnd = cOff + bodySize.value;
+
+          const sigIdx = functionTypeIndices[fnIndex];
+          const sig = (sigIdx !== undefined && typeSignatures[sigIdx]) ? typeSignatures[sigIdx] : null;
+          const pStr = sig && sig.params.length ? ` (param ${sig.params.join(" ")})` : "";
+          const rStr = sig && sig.returns.length ? ` (result ${sig.returns.join(" ")})` : "";
+
+          wat += `\n  (func $func_${fnIndex}${pStr}${rStr}\n`;
+
+          const localEntries = readVarUint(bytes, cOff);
+          cOff += localEntries.size;
+          for (let l = 0; l < localEntries.value && cOff < fnEnd; l++) {
+            const count = readVarUint(bytes, cOff);
+            cOff += count.size;
+            const typeByte = bytes[cOff++];
+            const typeStr = TYPE_NAMES[typeByte] || `0x${typeByte.toString(16)}`;
+            wat += `    (local ${count.value > 1 ? count.value + ' ' : ''}${typeStr})\n`;
+          }
+
+          let instrCount = 0;
+          let depth = 2;
+          while (cOff < fnEnd) {
+            const opByte = bytes[cOff++];
+            if (opByte === 0x0B) {
+              depth = Math.max(1, depth - 1);
+              wat += `${"  ".repeat(depth)}end\n`;
+              if (cOff >= fnEnd) break;
+              continue;
+            }
+
+            const opName = OPCODES[opByte] || `0x${opByte.toString(16).padStart(2, "0")}`;
+            let immStr = "";
+
+            if (opByte === 0x02 || opByte === 0x03 || opByte === 0x04) {
+              const bt = bytes[cOff++];
+              immStr = (bt === 0x40) ? "" : ` ${TYPE_NAMES[bt] || '0x' + bt.toString(16)}`;
+              wat += `${"  ".repeat(depth)}${opName}${immStr}\n`;
+              depth++;
+              continue;
+            } else if (opByte === 0x05) {
+              wat += `${"  ".repeat(Math.max(1, depth - 1))}else\n`;
+              continue;
+            } else if (opByte === 0x0C || opByte === 0x0D) {
+              const target = readVarUint(bytes, cOff); cOff += target.size;
+              immStr = ` ${target.value}`;
+            } else if (opByte === 0x0E) {
+              const count = readVarUint(bytes, cOff); cOff += count.size;
+              const targets = [];
+              for (let t = 0; t < count.value; t++) {
+                const trg = readVarUint(bytes, cOff); cOff += trg.size;
+                targets.push(trg.value);
+              }
+              const defaultTrg = readVarUint(bytes, cOff); cOff += defaultTrg.size;
+              immStr = ` [${targets.join(" ")}] default:${defaultTrg.value}`;
+            } else if (opByte === 0x10) {
+              const fIdx = readVarUint(bytes, cOff); cOff += fIdx.size;
+              immStr = ` $func_${fIdx.value}`;
+            } else if (opByte === 0x11) {
+              const typeIdx = readVarUint(bytes, cOff); cOff += typeIdx.size;
+              const tableIdx = readVarUint(bytes, cOff); cOff += tableIdx.size;
+              immStr = ` (type $t${typeIdx.value})`;
+            } else if (opByte === 0x1C) {
+              const vCount = readVarUint(bytes, cOff); cOff += vCount.size;
+              cOff += vCount.value;
+              immStr = ` (typed)`;
+            } else if (opByte >= 0x20 && opByte <= 0x24) {
+              const idx = readVarUint(bytes, cOff); cOff += idx.size;
+              immStr = ` ${idx.value}`;
+            } else if (opByte === 0x25 || opByte === 0x26) {
+              const idx = readVarUint(bytes, cOff); cOff += idx.size;
+              immStr = ` table:${idx.value}`;
+            } else if (opByte >= 0x28 && opByte <= 0x3E) {
+              const align = readVarUint(bytes, cOff); cOff += align.size;
+              const off = readVarUint(bytes, cOff); cOff += off.size;
+              immStr = (off.value > 0 ? ` offset=${off.value}` : "") + (align.value > 0 ? ` align=${Math.pow(2, align.value)}` : "");
+            } else if (opByte === 0x3F || opByte === 0x40) {
+              const memIdx = readVarUint(bytes, cOff); cOff += memIdx.size;
+            } else if (opByte === 0x41) {
+              const num = readVarInt(bytes, cOff); cOff += num.size;
+              immStr = ` ${num.value}`;
+            } else if (opByte === 0x42) {
+              const num = readVarInt64(bytes, cOff); cOff += num.size;
+              immStr = ` ${num.value}`;
+            } else if (opByte === 0x43) {
+              cOff += 4; immStr = ` [f32]`;
+            } else if (opByte === 0x44) {
+              cOff += 8; immStr = ` [f64]`;
+            } else if (opByte === 0xD0) {
+              const t = bytes[cOff++]; immStr = ` ${TYPE_NAMES[t] || t}`;
+            } else if (opByte === 0xD2) {
+              const fIdx = readVarUint(bytes, cOff); cOff += fIdx.size;
+              immStr = ` $func_${fIdx.value}`;
+            } else if (opByte === 0xFC) {
+              const subOp = readVarUint(bytes, cOff); cOff += subOp.size;
+              immStr = ` misc_ext:0x${subOp.value.toString(16)}`;
+              if (subOp.value === 8) {
+                const seg = readVarUint(bytes, cOff); cOff += seg.size;
+                cOff++;
+              } else if (subOp.value === 9) {
+                const seg = readVarUint(bytes, cOff); cOff += seg.size;
+              } else if (subOp.value === 10) {
+                cOff += 2;
+              } else if (subOp.value === 11) {
+                cOff++;
+              }
+            } else if (opByte === 0xFD) {
+              const subOp = readVarUint(bytes, cOff); cOff += subOp.size;
+              immStr = ` v128_subop:0x${subOp.value.toString(16)}`;
+              if (subOp.value === 0 || subOp.value === 12) {
+                const align = readVarUint(bytes, cOff); cOff += align.size;
+                const off = readVarUint(bytes, cOff); cOff += off.size;
+              } else if (subOp.value === 13) {
+                cOff += 16;
+                immStr += ` [16-byte vector]`;
+              }
+            }
+
+            wat += `${"  ".repeat(depth)}${opName}${immStr}\n`;
+            instrCount++;
+
+            if (instrCount > 500 && cOff < fnEnd) {
+              wat += `${"  ".repeat(depth)};; ... [${fnEnd - cOff} bytes remaining in func_${fnIndex}]\n`;
+              cOff = fnEnd;
+              break;
+            }
+          }
+
+          wat += `  )\n`;
+        }
+      }
+
+      wat += `)\n`;
+
+      let secTable = `ID | Section Name       | Offset (Bytes) | Size\n`;
+      secTable += `---+--------------------+----------------+-------------------------\n`;
+      sections.forEach(s => {
+        const label = s.customName ? `Custom (${s.customName})` : s.name;
+        secTable += `${String(s.id).padEnd(2)} | ${label.padEnd(18).slice(0, 18)} | 0x${s.offset.toString(16).padStart(8, '0')}     | ${(s.size / 1024).toFixed(2)} KB (${s.size} B)\n`;
+      });
+
+      activeParsedData = {
+        meta: {
+          file_name: file.name,
+          file_size_bytes: file.size,
+          sha256: hashHex,
+          wasm_version: version,
+          wasm_engine_valid: isValidModule
+        },
+        sections: sections,
+        type_signatures_count: typeSignatures.length,
+        functions_count: totalFunctionsDisassembled,
+        imports: importsList,
+        exports: exportsList
+      };
+
+      statusBanner.className = "status-banner status-found";
+      statusBanner.innerHTML = `<span>✓ Valid WebAssembly Module Decoded</span> <span>${isValidModule ? 'Passes Engine Validation' : 'Local Binary Decoded'}</span>`;
+      metaStats.textContent = `${sections.length} sections / ${totalFunctionsDisassembled} funcs`;
+
+      renderedWatText = wat;
+      renderedSectionsText = secTable;
+      renderedJsonText = JSON.stringify(activeParsedData, null, 2);
+
+      setTab(tabWat);
+    }
+
+    btnDownloadWat.addEventListener("click", () => {
+      if (!renderedWatText) return;
+      const blob = new Blob([renderedWatText], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "module.wat";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    btnDownloadJson.addEventListener("click", () => {
+      if (!renderedJsonText) return;
+      const blob = new Blob([renderedJsonText], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "module-analysis.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
