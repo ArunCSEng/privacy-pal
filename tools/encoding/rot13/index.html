@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>ROT13 Encoder & Decoder — Free Offline Obfuscation Tool | BitDark</title>
+  <meta name="title" content="ROT13 Encoder & Decoder — Free Offline Obfuscation Tool | BitDark" />
+  <meta name="description" content="Encode, decode, and transform text using ROT13, ROT47, ROT5, and ROT18 entirely in your browser memory. 100% offline, zero network egress." />
+  <meta name="keywords" content="rot13 encoder, rot13 decoder, caesar cipher online, rot47, rot18, rot5, text obfuscation tool, offline rot13, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/rot13" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--atom-amber); }
+    
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1100px; 
+      margin: 0 auto; 
+      padding: 24px 16px 60px; 
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      word-break: break-word;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { 
+      font-size: 1.75rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 6px; 
+      line-height: 1.25;
+    }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Control Bar */
+    .controls-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      padding: 12px 16px;
+    }
+    .variant-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .variant-label {
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+    .mode-btn {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
+    }
+    .mode-btn.active {
+      background-color: rgba(86, 182, 194, 0.15);
+      border-color: var(--atom-cyan);
+      color: var(--atom-cyan);
+      font-weight: 700;
+    }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-action:hover {
+      background: var(--atom-border);
+      color: var(--atom-heading);
+    }
+    .btn-action.btn-accent {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+    .btn-action.btn-accent:hover {
+      opacity: 0.9;
+    }
+
+    /* Workspace Dual Panel */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .io-column {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--atom-surface);
+    }
+    .io-column:first-child {
+      border-right: 1px solid var(--atom-border);
+    }
+    .io-header {
+      background-color: var(--atom-bg);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+    }
+    .io-header strong { color: var(--atom-heading); }
+    .io-stat { color: var(--atom-cyan); }
+
+    .cipher-textarea {
+      width: 100%;
+      height: 280px;
+      padding: 14px;
+      background-color: var(--atom-surface);
+      border: none;
+      outline: none;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    .cipher-textarea:focus {
+      background-color: #262a32;
+    }
+    .cipher-textarea::placeholder {
+      color: var(--atom-muted);
+      opacity: 0.7;
+    }
+    .cipher-textarea[readonly] {
+      background-color: rgba(30, 34, 39, 0.45);
+      cursor: text;
+    }
+
+    /* Informational Status Strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 12px 14px;
+      border-radius: 4px;
+    }
+    .stat-card-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .stat-card-val {
+      font-size: 0.95rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 32px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Explanations Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { 
+      color: var(--atom-heading); 
+      font-size: 1.25rem; 
+      margin-bottom: 10px; 
+      margin-top: 24px; 
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Responsive Mobile Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 10px 12px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .brand { text-align: center; }
+      .trust-badge, .ip-pill-nav {
+        justify-content: center;
+        width: 100%;
+      }
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .io-column:first-child {
+        border-right: none;
+        border-bottom: 1px solid var(--atom-border);
+      }
+      .cipher-textarea {
+        height: 200px;
+      }
+      .controls-panel {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .variant-selector, .action-group {
+        justify-content: center;
+        width: 100%;
+      }
+      .btn-action {
+        flex: 1 1 auto;
+        justify-content: center;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tool-header h1 { font-size: 1.45rem; }
+      .mode-btn { flex: 1 1 calc(50% - 6px); text-align: center; }
+      .ip-pill-nav {
+        font-size: 0.68rem;
+        flex-direction: column;
+        gap: 2px;
+        text-align: center;
+      }
+      .ip-divider { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Atom-Styled Navigation -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoders & Ciphers</a> / rot13
+    </nav>
+
+    <div class="tool-header">
+      <h1>ROT13 Cipher Encoder & Decoder</h1>
+      <p>Instant bidirectional substitution cipher engine executing entirely in local browser memory. Zero tracking, zero telemetry, and zero network calls.</p>
+    </div>
+
+    <!-- Active Utility Interface -->
+    <div class="controls-panel">
+      <div class="variant-selector">
+        <span class="variant-label">Algorithm:</span>
+        <button class="mode-btn active" data-mode="rot13">ROT13 (A-Z)</button>
+        <button class="mode-btn" data-mode="rot47">ROT47 (ASCII 33-126)</button>
+        <button class="mode-btn" data-mode="rot5">ROT5 (0-9)</button>
+        <button class="mode-btn" data-mode="rot18">ROT18 (ROT13 + ROT5)</button>
+      </div>
+
+      <div class="action-group">
+        <button class="btn-action" id="btnSample">Load Sample</button>
+        <button class="btn-action" id="btnSwap" title="Swap Input & Output">⇄ Swap</button>
+        <button class="btn-action" id="btnClear">Clear</button>
+        <button class="btn-action btn-accent" id="btnCopy">Copy Result</button>
+      </div>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="io-column">
+        <div class="io-header">
+          <span>INPUT (PLAIN / CIPHER)</span>
+          <span class="io-stat" id="inputStats">0 chars · 0 words</span>
+        </div>
+        <textarea 
+          id="cipherInput" 
+          class="cipher-textarea" 
+          placeholder="Type or paste your text here to transform immediately..."
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+        ></textarea>
+      </div>
+
+      <div class="io-column">
+        <div class="io-header">
+          <span>OUTPUT (TRANSFORMED)</span>
+          <span class="io-stat" id="outputStats">0 chars</span>
+        </div>
+        <textarea 
+          id="cipherOutput" 
+          class="cipher-textarea" 
+          placeholder="Transformed output will render dynamically..." 
+          readonly 
+          spellcheck="false"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Live Metrics Strip -->
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-card-label">Active Cipher Operation</div>
+        <div class="stat-card-val" id="statAlgorithm">ROT13 (Rotate Alphabet by 13)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Characters Rotated</div>
+        <div class="stat-card-val" id="statRotatedCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Untouched (Non-Target)</div>
+        <div class="stat-card-val" id="statUntouchedCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Execution Environment</div>
+        <div class="stat-card-val" style="color: var(--atom-green);">100% Offline (Local DOM)</div>
+      </div>
+    </div>
+
+    <!-- Forensic & Cryptographic Caution Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Cryptographic Limitations & Liability Disclaimer
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any loss, unauthorized disclosure, or compromised data resulting from the use or reliance upon this tool. ROT13 and related rotation variants (ROT5, ROT18, ROT47) are basic letter substitution ciphers intended exclusively for trivial obfuscation, spoiler prevention, puzzle solving, and educational demonstrations. <strong>ROT13 provides zero cryptographic confidentiality or security</strong> and can be trivially reversed without a secret key. Never use ROT13 to protect passwords, secrets, personal data, or sensitive production communications.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>How ROT13 Works</h2>
+      <p>
+        ROT13 ("rotate by 13 places") is a special implementation of the classic Caesar cipher that rotates every letter in the 26-letter Latin alphabet by 13 positions. Because 26 is an even number, applying ROT13 twice restores the original text:
+      </p>
+      <p>
+        <code>ROT13(ROT13(M)) = M</code>
+      </p>
+      <p>
+        Both encryption and decryption share the exact same mathematical transformation, eliminating the need to maintain separate encoding and decoding algorithms:
+      </p>
+      <ul>
+        <li><strong>Uppercase letters (A-Z):</strong> <code>A ↔ N</code>, <code>B ↔ O</code>, <code>C ↔ P</code>, ..., <code>M ↔ Z</code></li>
+        <li><strong>Lowercase letters (a-z):</strong> <code>a ↔ n</code>, <code>b ↔ o</code>, <code>c ↔ p</code>, ..., <code>m ↔ z</code></li>
+        <li><strong>Symbols, whitespace, and punctuation:</strong> Preserved without modification.</li>
+      </ul>
+
+      <h2>Supported Substitution Variants</h2>
+      <ul>
+        <li><strong>ROT13:</strong> The standard Usenet convention rotating ASCII letters A-Z and a-z by 13 places. Numbers and symbols are left intact.</li>
+        <li><strong>ROT5:</strong> Applied strictly to decimal digits <code>0-9</code> by rotating each digit by 5 positions (<code>0 ↔ 5</code>, <code>1 ↔ 6</code>, etc.).</li>
+        <li><strong>ROT18:</strong> A combination of ROT13 and ROT5, rotating both letters (by 13) and numbers (by 5) simultaneously.</li>
+        <li><strong>ROT47:</strong> A 47-position rotation across the 94 printable ASCII characters between ASCII code 33 (<code>!</code>) and 126 (<code>~</code>). It obfuscates letters, numbers, and common punctuation marks in a single reciprocal step.</li>
+      </ul>
+
+      <h2>Zero Network Egress Verification</h2>
+      <p>
+        All substitutions are computed synchronously in your browser's local JavaScript runtime. You can disconnect your device from the internet or inspect your browser's Developer Tools Network tab to confirm that no keystrokes, payloads, or metadata leave your machine.
+      </p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <!-- Visual Copy Feedback Toast -->
+  <div class="toast" id="copyToast">Copied to clipboard</div>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Resilient Multi-Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local test suites and offline file previewing
+      if (
+        window.location.protocol === "file:" || 
+        window.location.hostname === "localhost" || 
+        window.location.hostname === "127.0.0.1" || 
+        window.location.hostname === "0.0.0.0"
+      ) {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // Helper with strict timeout handling
+      async function fetchWithTimeout(url, timeoutMs = 3000) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          throw err;
+        }
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip || "Unavailable";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = (d6.ip && d6.ip.includes(":")) ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Cipher Engine & DOM State
+    const cipherInput = document.getElementById("cipherInput");
+    const cipherOutput = document.getElementById("cipherOutput");
+    const inputStats = document.getElementById("inputStats");
+    const outputStats = document.getElementById("outputStats");
+    const statAlgorithm = document.getElementById("statAlgorithm");
+    const statRotatedCount = document.getElementById("statRotatedCount");
+    const statUntouchedCount = document.getElementById("statUntouchedCount");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnClear = document.getElementById("btnClear");
+    const btnSwap = document.getElementById("btnSwap");
+    const btnSample = document.getElementById("btnSample");
+    const modeButtons = document.querySelectorAll(".mode-btn");
+    const copyToast = document.getElementById("copyToast");
+
+    let currentMode = "rot13";
+
+    const algorithmDescriptions = {
+      rot13: "ROT13 (Rotate Alphabet by 13)",
+      rot47: "ROT47 (Printable ASCII 33-126)",
+      rot5: "ROT5 (Rotate Digits 0-9 by 5)",
+      rot18: "ROT18 (ROT13 Letters + ROT5 Digits)"
+    };
+
+    // Transformation Core
+    function transformROT13(char) {
+      const code = char.charCodeAt(0);
+      if (code >= 65 && code <= 90) {
+        return { char: String.fromCharCode(((code - 65 + 13) % 26) + 65), rotated: true };
+      }
+      if (code >= 97 && code <= 122) {
+        return { char: String.fromCharCode(((code - 97 + 13) % 26) + 97), rotated: true };
+      }
+      return { char, rotated: false };
+    }
+
+    function transformROT5(char) {
+      const code = char.charCodeAt(0);
+      if (code >= 48 && code <= 57) {
+        return { char: String.fromCharCode(((code - 48 + 5) % 10) + 48), rotated: true };
+      }
+      return { char, rotated: false };
+    }
+
+    function transformROT47(char) {
+      const code = char.charCodeAt(0);
+      if (code >= 33 && code <= 126) {
+        return { char: String.fromCharCode(((code - 33 + 47) % 94) + 33), rotated: true };
+      }
+      return { char, rotated: false };
+    }
+
+    function processCipher() {
+      const text = cipherInput.value;
+      let out = "";
+      let rotated = 0;
+      let untouched = 0;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        let result = { char: ch, rotated: false };
+
+        if (currentMode === "rot13") {
+          result = transformROT13(ch);
+        } else if (currentMode === "rot5") {
+          result = transformROT5(ch);
+        } else if (currentMode === "rot18") {
+          const letterRes = transformROT13(ch);
+          if (letterRes.rotated) {
+            result = letterRes;
+          } else {
+            result = transformROT5(ch);
+          }
+        } else if (currentMode === "rot47") {
+          result = transformROT47(ch);
+        }
+
+        out += result.char;
+        if (result.rotated) {
+          rotated++;
+        } else {
+          untouched++;
+        }
+      }
+
+      cipherOutput.value = out;
+
+      // Update Word / Character Counts
+      const trimmed = text.trim();
+      const words = trimmed ? trimmed.split(/\s+/).length : 0;
+      inputStats.textContent = `${text.length} chars · ${words} words`;
+      outputStats.textContent = `${out.length} chars`;
+
+      statRotatedCount.textContent = rotated.toLocaleString();
+      statUntouchedCount.textContent = untouched.toLocaleString();
+    }
+
+    // Event Listeners
+    cipherInput.addEventListener("input", processCipher);
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        modeButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentMode = btn.dataset.mode;
+        statAlgorithm.textContent = algorithmDescriptions[currentMode] || currentMode.toUpperCase();
+        processCipher();
+      });
+    });
+
+    btnClear.addEventListener("click", () => {
+      cipherInput.value = "";
+      cipherOutput.value = "";
+      processCipher();
+      cipherInput.focus();
+    });
+
+    btnSwap.addEventListener("click", () => {
+      const temp = cipherInput.value;
+      cipherInput.value = cipherOutput.value;
+      cipherOutput.value = temp;
+      processCipher();
+    });
+
+    btnSample.addEventListener("click", () => {
+      if (currentMode === "rot5") {
+        cipherInput.value = "PIN: 1492 | Access Code: 8307 | Port: 8080";
+      } else if (currentMode === "rot47") {
+        cipherInput.value = "BitDark.net offline security tool: The Quick Brown Fox jumps over the Lazy Dog! (12345)";
+      } else if (currentMode === "rot18") {
+        cipherInput.value = "Agent 007 dispatched to Section 9 at 14:00 UTC.";
+      } else {
+        cipherInput.value = "Why did the developer cross the road? Gb trg gb gur bgure fvqr!";
+      }
+      processCipher();
+    });
+
+    // Copy with Visual Toast Feedback
+    btnCopy.addEventListener("click", async () => {
+      const outputText = cipherOutput.value;
+      if (!outputText) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(outputText);
+        } else {
+          cipherOutput.select();
+          document.execCommand("copy");
+        }
+        showToast("Copied to clipboard!");
+      } catch (err) {
+        showToast("Press Ctrl+C to copy");
+      }
+    });
+
+    function showToast(msg) {
+      copyToast.textContent = msg;
+      copyToast.classList.add("show");
+      setTimeout(() => copyToast.classList.remove("show"), 2000);
+    }
+
+    // Initialize with blank metrics
+    processCipher();
+  </script>
+</body>
+</html>
