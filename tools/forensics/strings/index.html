@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  
+  <title>Binary Strings Extractor — Free Offline Forensic Tool | BitDark</title>
+  <meta name="title" content="Binary Strings Extractor — Free Offline Forensic Tool | BitDark" />
+  <meta name="description" content="Extract printable ASCII and Unicode (UTF-16LE dual-pass) strings from binaries, executables, malware samples, and firmware directly in your browser. Zero tracking, zero network egress." />
+  <meta name="keywords" content="strings extractor, binary strings online, reverse engineering strings, malware analysis string dumper, ascii unicode extractor, offline forensics tool, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/strings" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--atom-amber); }
+    
+    .nav-stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 5px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout Wrapper */
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 {
+      font-size: 1.8rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.95rem;
+    }
+
+    /* Tool Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    /* Drag & Drop */
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 36px 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .dropzone p {
+      font-size: 0.92rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+    }
+    .dropzone-hint {
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+      display: block;
+    }
+    .file-input-hidden { display: none; }
+
+    /* Configuration Panel */
+    .config-panel {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--atom-border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      align-items: center;
+    }
+    .config-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .config-label {
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .config-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .config-select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      outline: none;
+      width: 100%;
+    }
+    .config-select:focus {
+      border-color: var(--atom-border-focus);
+    }
+    .config-range {
+      width: 100%;
+      accent-color: var(--atom-amber);
+      cursor: pointer;
+    }
+    .badge-val {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      color: var(--atom-amber);
+      font-weight: 700;
+    }
+
+    /* Processing Progress Bar */
+    .progress-box {
+      margin-top: 16px;
+      display: none;
+    }
+    .progress-bar-bg {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .progress-bar-fill {
+      background-color: var(--atom-amber);
+      height: 100%;
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+    .progress-text {
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Results Workspace */
+    .results-area {
+      margin-top: 24px;
+      display: none;
+    }
+    
+    .status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 4px;
+      margin-bottom: 18px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-found {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-missing {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px 12px;
+      border-radius: 4px;
+    }
+    .meta-label {
+      font-size: 0.70rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.84rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .filter-input {
+      flex: 1 1 200px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-heading);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .filter-input:focus { border-color: var(--atom-border-focus); }
+    .filter-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+    .chip:hover { border-color: var(--atom-cyan); color: var(--atom-cyan); }
+    .chip.active {
+      background-color: var(--atom-cyan);
+      color: #1e2227;
+      border-color: var(--atom-cyan);
+      font-weight: 700;
+    }
+
+    /* Output Box */
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.80rem;
+      height: 440px;
+      overflow-y: auto;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--atom-heading);
+      line-height: 1.6;
+    }
+
+    /* Button Group */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 14px;
+      gap: 8px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s ease;
+      touch-action: manipulation;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom-secondary {
+      background-color: var(--atom-bg);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+    }
+    .btn-atom-secondary:hover {
+      border-color: var(--atom-amber);
+      color: var(--atom-heading);
+    }
+
+    /* BitDark Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 30px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      margin-top: 22px;
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+      .navbar { padding: 8px 12px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .nav-stats {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .trust-badge, .ip-pill-nav {
+        font-size: 0.70rem;
+      }
+      .wrapper { padding: 18px 12px 40px; }
+      .tool-header h1 { font-size: 1.45rem; }
+      .tool-card { padding: 14px 10px; }
+      .dropzone { padding: 22px 10px; }
+      .btn-row {
+        flex-direction: column;
+        width: 100%;
+      }
+      .btn-atom, .btn-atom-secondary {
+        width: 100%;
+        justify-content: center;
+        padding: 11px;
+      }
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-stats">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / strings-extractor
+    </nav>
+
+    <div class="tool-header">
+      <h1>Binary Strings Extractor</h1>
+      <p>Scan and extract printable ASCII and Unicode (UTF-16LE dual-pass) text sequences from raw binaries, executables, malware payloads, firmware, or memory dumps entirely inside your browser's local sandbox.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">📜</span>
+        <p><strong>Click to choose a file</strong> or drag & drop binary artifact here</p>
+        <span class="dropzone-hint">Supports EXE, DLL, ELF, Mach-O, APK, PDF, PCAP, RAW, firmware & memory dumps (0-byte upload)</span>
+        <input type="file" id="filePicker" class="file-input-hidden" />
+      </div>
+
+      <!-- Config Controls -->
+      <div class="config-panel">
+        <div class="config-group">
+          <label class="config-label" for="minLenRange">
+            <span>Min String Length</span>
+            <span id="minLenDisplay" class="badge-val">4</span>
+          </label>
+          <div class="config-control">
+            <input type="range" id="minLenRange" class="config-range" min="3" max="32" value="4" />
+          </div>
+        </div>
+
+        <div class="config-group">
+          <label class="config-label" for="encodingSelect">Encoding Modes</label>
+          <select id="encodingSelect" class="config-select">
+            <option value="both" selected>ASCII & Unicode (UTF-16LE Dual-Pass)</option>
+            <option value="ascii">ASCII Only (7-bit printable)</option>
+            <option value="unicode">Unicode Only (UTF-16LE Dual-Pass)</option>
+          </select>
+        </div>
+
+        <div class="config-group">
+          <label class="config-label" for="offsetFormatSelect">Offset Display</label>
+          <select id="offsetFormatSelect" class="config-select">
+            <option value="hex" selected>Hexadecimal (0x00000000)</option>
+            <option value="dec">Decimal</option>
+            <option value="none">Omit Offset</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Processing Progress Bar -->
+      <div class="progress-box" id="progressBox">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+        <div class="progress-text">
+          <span id="progressStatusText">Streaming binary slices...</span>
+          <span id="progressPercentText">0%</span>
+        </div>
+      </div>
+
+      <!-- Results Area -->
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Target File</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Digest</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Total Strings Found</div>
+            <div class="meta-val" id="metaCount">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Execution Time</div>
+            <div class="meta-val" id="metaTime">-</div>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-bar">
+          <input type="text" id="filterInput" class="filter-input" placeholder="Search strings or regex (e.g. https?://, cmd\.exe)..." />
+          <div class="filter-chip-group">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="urls">URLs / Endpoints</button>
+            <button class="chip" data-filter="ips">IP Addresses (v4/v6)</button>
+            <button class="chip" data-filter="paths">File / Reg Paths</button>
+            <button class="chip" data-filter="emails">Emails</button>
+          </div>
+        </div>
+
+        <div class="viewer-header">
+          <span id="renderedCountDisplay">Displaying records...</span>
+          <span>Max preview: 5,000 lines (Full dataset exported via download)</span>
+        </div>
+        <div class="viewer-box" id="rawViewer">Loading binary buffer...</div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownload">Download Filtered TXT</button>
+          <button class="btn-atom btn-atom-secondary" id="btnCopy">Copy to Clipboard</button>
+          <button class="btn-atom btn-atom-secondary" id="btnReset">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BitDark Disclaimer Notice -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> BitDark Legal & Forensic Disclaimer
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible</strong> for how binary data, extracted strings, hardcoded secrets, cryptographic artifacts, or source code remnants are accessed, interpreted, or utilized. This tool operates entirely client-side inside the user's browser for security research, incident response, reverse engineering, and educational triage. <strong>bitdark.net</strong> accepts no liability for damages, regulatory non-compliance, forensic invalidation, intellectual property violations, or system disruptions arising from the ingestion, handling, or analysis of malicious, copyrighted, or proprietary binaries.
+      </p>
+    </aside>
+
+    <!-- Technical & Methodological Documentation -->
+    <article class="doc-section">
+      <h2>How Browser-Based Strings Extraction Works</h2>
+      <p>The standard Unix/Sysinternals <code>strings</code> command scans files for consecutive printable byte sequences. BitDark implements this utility natively using high-speed TypedArray evaluation (<code>Uint8Array</code> and <code>DataView</code>) inside a local browser sandbox:</p>
+      <ul>
+        <li><strong>ASCII Sequences:</strong> Inspects consecutive bytes strictly within the standard printable range (<code>0x20</code> space through <code>0x7E</code> tilde), accompanied by horizontal tab (<code>0x09</code>).</li>
+        <li><strong>Dual-Pass UTF-16LE Wide Unicode:</strong> Scans both <strong>even</strong> (offset <code>0, 2, 4...</code>) and <strong>odd</strong> (offset <code>1, 3, 5...</code>) byte alignments to capture wide strings regardless of compiler data padding or struct boundaries.</li>
+        <li><strong>Carry-Over Streaming Pipeline:</strong> Analyzes artifacts in non-blocking slices using carry-over boundary buffers. This guarantees strings crossing 4 MB chunk boundaries are never split or duplicated, while protecting browser memory from heap overflows.</li>
+        <li><strong>Zero Network Egress:</strong> The entire process leverages the HTML5 File API and Web Cryptography API (<code>crypto.subtle.digest</code>). No files are uploaded to any server.</li>
+      </ul>
+
+      <h2>Forensic Triage Indicators</h2>
+      <p>Analyzing raw string outputs allows analysts to identify command-and-control (C2) domains, hardcoded IP addresses, dropped executable paths, suspicious API calls (e.g., <code>VirtualAlloc</code>, <code>CreateRemoteThread</code>), base64 encoded parameters, and build environment telemetry without detonating the payload.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite. bitdark.net is not responsible for binary artifacts or extracted content.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Telemetry with Safe Timeouts
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchTimeout = async (url, ms = 2500) => {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), ms);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+          clearTimeout(tid);
+          return res;
+        } catch (e) {
+          clearTimeout(tid);
+          throw e;
+        }
+      };
+
+      try {
+        const res4 = await fetchTimeout("https://api.ipify.org?format=json");
+        if (res4.ok) {
+          const d4 = await res4.json();
+          ipv4El.textContent = d4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb4 = await fetchTimeout("https://ipv4.icanhazip.com");
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      try {
+        const res6 = await fetchTimeout("https://api64.ipify.org?format=json");
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip && d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const fb6 = await fetchTimeout("https://ipv6.icanhazip.com");
+          const t6 = (await fb6.text()).trim();
+          ipv6El.textContent = t6.includes(":") ? t6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Fast Binary Strings Engine
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFile = document.getElementById("metaFile");
+    const metaHash = document.getElementById("metaHash");
+    const metaCount = document.getElementById("metaCount");
+    const metaTime = document.getElementById("metaTime");
+    const rawViewer = document.getElementById("rawViewer");
+    const renderedCountDisplay = document.getElementById("renderedCountDisplay");
+    
+    const minLenRange = document.getElementById("minLenRange");
+    const minLenDisplay = document.getElementById("minLenDisplay");
+    const encodingSelect = document.getElementById("encodingSelect");
+    const offsetFormatSelect = document.getElementById("offsetFormatSelect");
+    
+    const progressBox = document.getElementById("progressBox");
+    const progressBarFill = document.getElementById("progressBarFill");
+    const progressStatusText = document.getElementById("progressStatusText");
+    const progressPercentText = document.getElementById("progressPercentText");
+
+    const filterInput = document.getElementById("filterInput");
+    const filterChips = document.querySelectorAll(".filter-chip-group .chip");
+    
+    const btnDownload = document.getElementById("btnDownload");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnReset = document.getElementById("btnReset");
+
+    const textDecoderLatin1 = new TextDecoder("latin1");
+    const textDecoderUtf16le = new TextDecoder("utf-16le");
+    const MAX_MEMORY_STRINGS = 250000; // Safeguard browser memory from multi-GB dump OOM crashes
+
+    let activeFile = null;
+    let extractedStrings = [];
+    let filteredResults = [];
+    let activePreset = "all";
+    let isProcessing = false;
+    let extractionTruncated = false;
+
+    // Controls Synchronization
+    minLenRange.addEventListener("input", (e) => {
+      minLenDisplay.textContent = e.target.value;
+    });
+
+    minLenRange.addEventListener("change", () => {
+      if (activeFile && !isProcessing) startExtraction();
+    });
+
+    encodingSelect.addEventListener("change", () => {
+      if (activeFile && !isProcessing) startExtraction();
+    });
+
+    offsetFormatSelect.addEventListener("change", () => {
+      if (extractedStrings.length > 0) applyFilterAndRender();
+    });
+
+    // Drag and Drop
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(ev => {
+      dropArea.addEventListener(ev, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleIncomingFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleIncomingFile(e.target.files[0]);
+      }
+    });
+
+    async function handleIncomingFile(file) {
+      activeFile = file;
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+
+      metaFile.textContent = `${file.name} (${formatBytes(file.size)})`;
+      metaHash.textContent = "Computing SHA-256...";
+      metaCount.textContent = "Scanning...";
+      metaTime.textContent = "...";
+      rawViewer.textContent = "Processing binary artifacts...";
+
+      // Non-blocking SHA-256 calculation (lowered to 100MB threshold to protect mobile memory budgets)
+      try {
+        if (file.size <= 100 * 1024 * 1024) {
+          const hashBuf = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+          const hashArr = Array.from(new Uint8Array(hashBuf));
+          const hex = hashArr.map(b => b.toString(16).padStart(2, "0")).join("");
+          metaHash.textContent = `${hex.slice(0, 10)}...${hex.slice(-8)}`;
+        } else {
+          metaHash.textContent = "Skipped (>100MB size)";
+        }
+      } catch {
+        metaHash.textContent = "Unavailable";
+      }
+
+      startExtraction();
+    }
+
+    // High-Speed Streaming Extraction with Boundary Carry-Over
+    async function startExtraction() {
+      if (!activeFile || isProcessing) return;
+      isProcessing = true;
+      extractionTruncated = false;
+
+      const t0 = performance.now();
+      const minLength = parseInt(minLenRange.value, 10);
+      const encMode = encodingSelect.value;
+      const doAscii = encMode === "both" || encMode === "ascii";
+      const doUnicode = encMode === "both" || encMode === "unicode";
+
+      progressBox.style.display = "block";
+      progressBarFill.style.width = "0%";
+      progressStatusText.textContent = "Streaming binary slices...";
+      progressPercentText.textContent = "0%";
+
+      extractedStrings = [];
+
+      const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per read
+      const fileSize = activeFile.size;
+      let fileOffset = 0;
+
+      // Carry-over tracking to prevent boundary split/duplicates
+      let asciiCarryBytes = new Uint8Array(0);
+      let asciiCarryStart = -1;
+
+      // Unicode even and odd pass state
+      let uPassState = [
+        { carryBytes: new Uint8Array(0), carryStart: -1 }, // pass 0 (even)
+        { carryBytes: new Uint8Array(0), carryStart: -1 }  // pass 1 (odd)
+      ];
+
+      while (fileOffset < fileSize) {
+        if (extractedStrings.length >= MAX_MEMORY_STRINGS) {
+          extractionTruncated = true;
+          break;
+        }
+
+        const readEnd = Math.min(fileOffset + CHUNK_SIZE, fileSize);
+        const chunkBlob = activeFile.slice(fileOffset, readEnd);
+        const chunkBuf = await chunkBlob.arrayBuffer();
+        const rawChunk = new Uint8Array(chunkBuf);
+        const isEOF = readEnd >= fileSize;
+
+        // --- 1. ASCII Stream Pass ---
+        if (doAscii) {
+          let buffer;
+          let baseOffset;
+
+          if (asciiCarryBytes.length > 0) {
+            buffer = new Uint8Array(asciiCarryBytes.length + rawChunk.length);
+            buffer.set(asciiCarryBytes, 0);
+            buffer.set(rawChunk, asciiCarryBytes.length);
+            baseOffset = asciiCarryStart;
+            asciiCarryBytes = new Uint8Array(0);
+            asciiCarryStart = -1;
+          } else {
+            buffer = rawChunk;
+            baseOffset = fileOffset;
+          }
+
+          let start = -1;
+          const len = buffer.length;
+
+          for (let i = 0; i < len; i++) {
+            const b = buffer[i];
+            const isPrintable = (b >= 32 && b <= 126) || b === 9;
+
+            if (isPrintable) {
+              if (start === -1) start = i;
+            } else {
+              if (start !== -1) {
+                if ((i - start) >= minLength) {
+                  extractedStrings.push({
+                    offset: baseOffset + start,
+                    type: "ASCII",
+                    str: textDecoderLatin1.decode(buffer.subarray(start, i))
+                  });
+                }
+                start = -1;
+              }
+            }
+          }
+
+          // Handle tail reaching chunk boundary
+          if (start !== -1) {
+            if (isEOF) {
+              if ((len - start) >= minLength) {
+                extractedStrings.push({
+                  offset: baseOffset + start,
+                  type: "ASCII",
+                  str: textDecoderLatin1.decode(buffer.subarray(start, len))
+                });
+              }
+            } else {
+              asciiCarryBytes = buffer.slice(start);
+              asciiCarryStart = baseOffset + start;
+            }
+          }
+        }
+
+        // --- 2. Dual-Pass Unicode (UTF-16LE) Stream Pass ---
+        if (doUnicode) {
+          for (let pass = 0; pass < 2; pass++) {
+            const state = uPassState[pass];
+            let buffer;
+            let baseOffset;
+
+            if (state.carryBytes.length > 0) {
+              buffer = new Uint8Array(state.carryBytes.length + rawChunk.length);
+              buffer.set(state.carryBytes, 0);
+              buffer.set(rawChunk, state.carryBytes.length);
+              baseOffset = state.carryStart;
+              state.carryBytes = new Uint8Array(0);
+              state.carryStart = -1;
+            } else {
+              buffer = rawChunk;
+              baseOffset = fileOffset;
+            }
+
+            const len = buffer.length;
+            let relStartIdx = (baseOffset % 2 === pass) ? 0 : 1;
+
+            let uStart = -1;
+
+            for (let i = relStartIdx; i < len - 1; i += 2) {
+              const b1 = buffer[i];
+              const b2 = buffer[i + 1];
+
+              if (b2 === 0 && ((b1 >= 32 && b1 <= 126) || b1 === 9)) {
+                if (uStart === -1) uStart = i;
+              } else {
+                if (uStart !== -1) {
+                  const charCount = (i - uStart) / 2;
+                  if (charCount >= minLength) {
+                    extractedStrings.push({
+                      offset: baseOffset + uStart,
+                      type: "UTF-16LE",
+                      str: textDecoderUtf16le.decode(buffer.subarray(uStart, i))
+                    });
+                  }
+                  uStart = -1;
+                }
+              }
+            }
+
+            if (uStart !== -1) {
+              const boundaryEnd = len - ((len - relStartIdx) % 2);
+              const charCount = (boundaryEnd - uStart) / 2;
+              if (isEOF) {
+                if (charCount >= minLength) {
+                  extractedStrings.push({
+                    offset: baseOffset + uStart,
+                    type: "UTF-16LE",
+                    str: textDecoderUtf16le.decode(buffer.subarray(uStart, boundaryEnd))
+                  });
+                }
+              } else {
+                state.carryBytes = buffer.slice(uStart);
+                state.carryStart = baseOffset + uStart;
+              }
+            }
+          }
+        }
+
+        fileOffset = readEnd;
+        const progress = Math.min(100, Math.round((fileOffset / fileSize) * 100));
+        progressBarFill.style.width = `${progress}%`;
+        progressPercentText.textContent = `${progress}%`;
+
+        // Free event loop periodically
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      progressBox.style.display = "none";
+      isProcessing = false;
+
+      // Sort chronological by physical file offset
+      extractedStrings.sort((a, b) => a.offset - b.offset);
+
+      const t1 = performance.now();
+      metaTime.textContent = `${((t1 - t0) / 1000).toFixed(2)}s`;
+      metaCount.textContent = extractedStrings.length.toLocaleString() + (extractionTruncated ? " (Capped)" : "");
+
+      statusBanner.className = "status-banner status-found";
+      statusBanner.innerHTML = extractionTruncated
+        ? `<span>⚠️ Dataset Capped</span> <span>Reached safe browser memory ceiling (250,000 strings)</span>`
+        : `<span>✓ Extraction Complete</span> <span>${extractedStrings.length.toLocaleString()} strings identified</span>`;
+
+      applyFilterAndRender();
+    }
+
+    function applyFilterAndRender() {
+      const q = filterInput.value.trim();
+      const offsetMode = offsetFormatSelect.value;
+      let list = extractedStrings;
+
+      // Presets
+      if (activePreset === "urls") {
+        const urlRx = /https?:\/\/[^\s"'<>]+|ftp:\/\/[^\s"'<>]+/i;
+        list = list.filter(item => urlRx.test(item.str));
+      } else if (activePreset === "ips") {
+        const ipv4Rx = /(^|[^0-9.])((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?=[^0-9.]|$)/;
+        // Strictly matched IPv6 regex requiring hex groups around compressed segments to prevent C++ scope (::) false positives
+        const ipv6Rx = /(^|[^0-9a-fA-F:])((?:[0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|:(?::[0-9a-fA-F]{1,4}){1,7}|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?::[0-9a-fA-F]{1,4}){1,6}|::1)(?=[^0-9a-fA-F:]|$)/i;
+        list = list.filter(item => ipv4Rx.test(item.str) || ipv6Rx.test(item.str));
+      } else if (activePreset === "paths") {
+        const pathRx = /(?:[a-zA-Z]:\\|\/(?:usr|etc|var|bin|tmp|System|Library|Users|Windows|Program Files)|HKLM\\|HKCU\\|\.[\w]{2,4}\b)/i;
+        list = list.filter(item => pathRx.test(item.str));
+      } else if (activePreset === "emails") {
+        const emailRx = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+        list = list.filter(item => emailRx.test(item.str));
+      }
+
+      if (q) {
+        try {
+          const customRx = new RegExp(q, "i");
+          list = list.filter(item => customRx.test(item.str));
+        } catch {
+          const lower = q.toLowerCase();
+          list = list.filter(item => item.str.toLowerCase().includes(lower));
+        }
+      }
+
+      filteredResults = list;
+      renderedCountDisplay.textContent = `Showing ${Math.min(filteredResults.length, 5000).toLocaleString()} of ${filteredResults.length.toLocaleString()} matched strings`;
+
+      if (filteredResults.length === 0) {
+        rawViewer.textContent = "No strings match the chosen criteria.";
+        return;
+      }
+
+      const previewLimit = Math.min(filteredResults.length, 5000);
+      const lines = [];
+
+      for (let i = 0; i < previewLimit; i++) {
+        const entry = filteredResults[i];
+        let offsetPrefix = "";
+        if (offsetMode === "hex") {
+          offsetPrefix = `0x${entry.offset.toString(16).toUpperCase().padStart(8, "0")}  [${entry.type.padEnd(8)}]  `;
+        } else if (offsetMode === "dec") {
+          offsetPrefix = `${entry.offset.toString().padStart(10, "0")}  [${entry.type.padEnd(8)}]  `;
+        }
+        lines.push(offsetPrefix + entry.str);
+      }
+
+      rawViewer.textContent = lines.join("\n");
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        filterChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activePreset = chip.dataset.filter;
+        applyFilterAndRender();
+      });
+    });
+
+    filterInput.addEventListener("input", () => {
+      applyFilterAndRender();
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      activeFile = null;
+      extractedStrings = [];
+      filteredResults = [];
+      filterInput.value = "";
+      activePreset = "all";
+      filterChips.forEach(c => c.classList.remove("active"));
+      filterChips[0].classList.add("active");
+      rawViewer.textContent = "Loading binary buffer...";
+    });
+
+    // Copy to Clipboard (Includes [${entry.type}] to match downloaded and rendered forensic records)
+    btnCopy.addEventListener("click", async () => {
+      if (filteredResults.length === 0) return;
+      const offsetMode = offsetFormatSelect.value;
+      const previewLimit = Math.min(filteredResults.length, 10000);
+      const textToCopy = filteredResults.slice(0, previewLimit).map(entry => {
+        let prefix = "";
+        if (offsetMode === "hex") {
+          prefix = `0x${entry.offset.toString(16).toUpperCase().padStart(8, "0")}  [${entry.type.padEnd(8)}]  `;
+        } else if (offsetMode === "dec") {
+          prefix = `${entry.offset.toString().padStart(10, "0")}  [${entry.type.padEnd(8)}]  `;
+        } else {
+          prefix = `[${entry.type.padEnd(8)}]  `;
+        }
+        return prefix + entry.str;
+      }).join("\n");
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        const prevText = btnCopy.textContent;
+        btnCopy.textContent = "✓ Copied!";
+        setTimeout(() => { btnCopy.textContent = prevText; }, 1800);
+      } catch (err) {
+        alert("Clipboard error: " + err.message);
+      }
+    });
+
+    btnDownload.addEventListener("click", () => {
+      if (filteredResults.length === 0) return;
+      const offsetMode = offsetFormatSelect.value;
+      
+      const chunkLines = [];
+      const len = filteredResults.length;
+      for (let i = 0; i < len; i++) {
+        const entry = filteredResults[i];
+        let prefix = "";
+        if (offsetMode === "hex") {
+          prefix = `0x${entry.offset.toString(16).toUpperCase().padStart(8, "0")}  [${entry.type.padEnd(8)}]  `;
+        } else if (offsetMode === "dec") {
+          prefix = `${entry.offset.toString().padStart(10, "0")}  [${entry.type.padEnd(8)}]  `;
+        } else {
+          prefix = `[${entry.type.padEnd(8)}]  `;
+        }
+        chunkLines.push(prefix + entry.str + "\n");
+      }
+
+      const blob = new Blob(chunkLines, { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const baseName = activeFile ? activeFile.name.replace(/\.[^/.]+$/, "") : "binary";
+      a.href = url;
+      a.download = `${baseName}-strings.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return "0 B";
+      const k = 1024;
+      const sizes = ["B", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }
+  </script>
+</body>
+</html>
