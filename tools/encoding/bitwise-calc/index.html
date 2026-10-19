@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  
+  <title>Bitwise Calculator & Binary Operator Inspector — Free Offline Tool | BitDark</title>
+  <meta name="title" content="Bitwise Calculator & Binary Operator Inspector — Free Offline Tool | BitDark" />
+  <meta name="description" content="Interactive bitwise calculator and bit manipulator for AND, OR, XOR, NOT, shifts, and two's complement representations. Evaluated 100% locally in browser memory." />
+  <meta name="keywords" content="bitwise calculator, binary calculator, bitwise operators, two's complement, bit shift calculator, bitmasking tool, xor calculator" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/bitwise-calc" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+      flex: 1;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.75rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    /* Configuration Bar */
+    .config-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .config-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .config-label {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pill-selector {
+      display: inline-flex;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .pill-btn {
+      background: transparent;
+      border: none;
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .pill-btn.active {
+      background-color: var(--atom-border);
+      color: var(--atom-amber);
+      font-weight: 700;
+    }
+
+    /* Inputs Grid */
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+    }
+    .input-title { color: var(--atom-heading); font-weight: 600; }
+    .input-type-tag { color: var(--atom-cyan); }
+
+    .calc-input {
+      width: 100%;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: var(--font-code);
+      font-size: 0.95rem;
+      color: var(--atom-heading);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .calc-input:focus {
+      border-color: var(--atom-border-focus);
+      box-shadow: 0 0 0 1px var(--atom-border-focus);
+    }
+    .calc-input.error { border-color: var(--atom-coral); }
+
+    .op-selector-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      min-width: 130px;
+    }
+    .calc-select {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 8px;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      color: var(--atom-amber);
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+    }
+    .calc-select:focus { border-color: var(--atom-border-focus); }
+
+    /* Quick Presets Row */
+    .preset-scroller {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .btn-preset {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-preset:hover {
+      border-color: var(--atom-cyan);
+      color: var(--atom-cyan);
+    }
+
+    /* Primary Result Banner */
+    .result-display-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .result-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      border-bottom: 1px dashed var(--atom-border);
+      padding-bottom: 12px;
+    }
+    .result-heading-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-badge {
+      background-color: rgba(152, 195, 121, 0.15);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .result-val-large {
+      font-family: var(--font-code);
+      font-size: 1.4rem;
+      color: var(--atom-amber);
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    /* Output Formats Grid */
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .output-tile {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      position: relative;
+    }
+    .output-tile-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .tile-label {
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+    }
+    .btn-copy {
+      background: none;
+      border: none;
+      color: var(--atom-cyan);
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+    .btn-copy:hover { text-decoration: underline; }
+    .tile-value {
+      font-family: var(--font-code);
+      font-size: 0.86rem;
+      color: var(--atom-heading);
+      word-break: break-all;
+      letter-spacing: 0.5px;
+    }
+
+    /* Interactive Bitboard Display */
+    .bitboard-wrapper {
+      margin-top: 24px;
+    }
+    .bitboard-title {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bit-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 0.7rem;
+      text-transform: none;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-box { width: 10px; height: 10px; border-radius: 2px; }
+    .legend-box.one { background: var(--atom-green); }
+    .legend-box.zero { background: var(--atom-border); }
+
+    .bits-container {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bits-row-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 680px;
+    }
+    .bit-row-line {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+    .bit-row-label {
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-text);
+      font-weight: 600;
+    }
+    .bit-cells {
+      display: flex;
+      gap: 2px;
+      justify-content: space-between;
+    }
+    .bit-cell-group {
+      display: inline-flex;
+      gap: 2px;
+      margin-right: 6px;
+    }
+    .bit-cell-group:last-child { margin-right: 0; }
+    .bit-cell {
+      width: 18px;
+      height: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 2px;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      font-weight: bold;
+      color: var(--atom-muted);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.1s, border-color 0.1s;
+    }
+    .bit-cell:hover {
+      border-color: var(--atom-amber);
+    }
+    .bit-cell.active-1 {
+      background-color: rgba(152, 195, 121, 0.2);
+      border-color: var(--atom-green);
+      color: var(--atom-green);
+    }
+    .bit-cell.read-only {
+      cursor: default;
+    }
+    .bit-cell.read-only:hover {
+      border-color: var(--atom-border);
+    }
+    .bit-cell.result-1 {
+      background-color: rgba(229, 192, 123, 0.22);
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+    }
+    .bit-index-header {
+      display: flex;
+      gap: 2px;
+      justify-content: space-between;
+    }
+    .bit-idx-col {
+      width: 18px;
+      text-align: center;
+      font-family: var(--font-code);
+      font-size: 0.58rem;
+      color: var(--atom-muted);
+    }
+
+    /* All Operators Quick Matrix */
+    .matrix-section {
+      margin-top: 24px;
+    }
+    .matrix-title {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .matrix-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      background-color: var(--atom-bg);
+      text-align: left;
+      min-width: 540px;
+    }
+    .matrix-table th {
+      background-color: var(--atom-surface);
+      color: var(--atom-heading);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    .matrix-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      word-break: break-all;
+    }
+    .matrix-table tr:last-child td { border-bottom: none; }
+    .matrix-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+    .matrix-op-name { color: var(--atom-cyan); font-weight: 600; }
+    .matrix-val { color: var(--atom-heading); }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 32px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Documentation Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.25rem; margin-bottom: 10px; margin-top: 24px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      font-size: 0.82rem;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding: 20px 0;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Responsive Mobile Media Queries */
+    @media (max-width: 860px) {
+      .nav-inner {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 10px;
+        text-align: center;
+      }
+      .trust-badge, .ip-pill-nav { justify-self: center; }
+      .inputs-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .op-selector-wrap {
+        width: 100%;
+      }
+      .wrapper {
+        padding: 16px 14px 40px;
+      }
+      .tool-header h1 {
+        font-size: 1.4rem;
+      }
+      .tool-card {
+        padding: 16px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ip-pill-nav {
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 10px;
+      }
+      .ip-divider { display: none; }
+      .config-strip {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .result-val-large {
+        font-size: 1.15rem;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding & Math</a> / bitwise-calc
+    </nav>
+
+    <div class="tool-header">
+      <h1>Bitwise Calculator & Binary Inspector</h1>
+      <p>Simulate bitwise logic gates, shifts, two's complement representations, and bitwise masks entirely in-memory with zero network telemetry.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card">
+      
+      <!-- Top Settings Bar -->
+      <div class="config-strip">
+        <div class="config-group">
+          <span class="config-label">Word Length:</span>
+          <div class="pill-selector" id="wordSizeSelector">
+            <button type="button" class="pill-btn" data-bits="8">8-bit</button>
+            <button type="button" class="pill-btn" data-bits="16">16-bit</button>
+            <button type="button" class="pill-btn active" data-bits="32">32-bit</button>
+            <button type="button" class="pill-btn" data-bits="64">64-bit</button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <span class="config-label">Input Format:</span>
+          <div class="pill-selector" id="baseSelector">
+            <button type="button" class="pill-btn active" data-base="auto">Auto / Dec</button>
+            <button type="button" class="pill-btn" data-base="hex">Hex (0x)</button>
+            <button type="button" class="pill-btn" data-base="bin">Bin (0b)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Presets Scrollbar -->
+      <div class="preset-scroller">
+        <span class="config-label" style="align-self: center; margin-right: 4px;">Presets:</span>
+        <button type="button" class="btn-preset" data-a="255" data-op="AND" data-b="15">Low Nibble Mask (255 &amp; 15)</button>
+        <button type="button" class="btn-preset" data-a="1" data-op="SHL" data-b="5">Bit 5 Flag (1 &lt;&lt; 5)</button>
+        <button type="button" class="btn-preset" data-a="170" data-op="XOR" data-b="255">Invert Bits (170 ^ 255)</button>
+        <button type="button" class="btn-preset" data-a="4294967040" data-op="AND" data-b="3232235521">/24 Subnet Mask</button>
+        <button type="button" class="btn-preset" data-a="53" data-op="NOT" data-b="0">Unary Inversion (~53)</button>
+      </div>
+
+      <!-- Operands and Operator Inputs -->
+      <div class="inputs-grid">
+        <div class="input-wrapper">
+          <div class="input-label-row">
+            <span class="input-title">Operand A</span>
+            <span class="input-type-tag" id="typeA">Dec: 42</span>
+          </div>
+          <input type="text" id="inputA" class="calc-input" value="42" placeholder="e.g. 42, 0x2A, 0b101010" autocomplete="off" spellcheck="false" />
+        </div>
+
+        <div class="op-selector-wrap">
+          <span class="config-label">Operator</span>
+          <select id="operatorSelect" class="calc-select" aria-label="Bitwise Operator">
+            <option value="AND">&amp; (AND)</option>
+            <option value="OR">| (OR)</option>
+            <option value="XOR">^ (XOR)</option>
+            <option value="NOT">~ (NOT)</option>
+            <option value="SHL">&lt;&lt; (Left Shift)</option>
+            <option value="SHR">&gt;&gt; (Sign-Propagating Right Shift)</option>
+            <option value="USHR">&gt;&gt;&gt; (Zero-Fill Right Shift)</option>
+            <option value="NAND">NAND</option>
+            <option value="NOR">NOR</option>
+            <option value="XNOR">XNOR</option>
+          </select>
+        </div>
+
+        <div class="input-wrapper" id="wrapB">
+          <div class="input-label-row">
+            <span class="input-title">Operand B</span>
+            <span class="input-type-tag" id="typeB">Dec: 15</span>
+          </div>
+          <input type="text" id="inputB" class="calc-input" value="15" placeholder="e.g. 15, 0x0F, 0b1111" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+
+      <!-- Active Primary Result Card -->
+      <div class="result-display-card">
+        <div class="result-main-row">
+          <div class="result-heading-group">
+            <span class="result-badge" id="equationBadge">42 &amp; 15</span>
+            <span class="config-label">Evaluated Expression</span>
+          </div>
+          <div class="result-val-large" id="mainResultDisplay">10</div>
+        </div>
+
+        <div class="output-grid">
+          <div class="output-tile">
+            <div class="output-tile-head">
+              <span class="tile-label">Signed Decimal</span>
+              <button class="btn-copy" data-target="valSigned">Copy</button>
+            </div>
+            <div class="tile-value" id="valSigned">10</div>
+          </div>
+
+          <div class="output-tile">
+            <div class="output-tile-head">
+              <span class="tile-label">Unsigned Decimal</span>
+              <button class="btn-copy" data-target="valUnsigned">Copy</button>
+            </div>
+            <div class="tile-value" id="valUnsigned">10</div>
+          </div>
+
+          <div class="output-tile">
+            <div class="output-tile-head">
+              <span class="tile-label">Hexadecimal</span>
+              <button class="btn-copy" data-target="valHex">Copy</button>
+            </div>
+            <div class="tile-value" id="valHex">0x0000000A</div>
+          </div>
+
+          <div class="output-tile">
+            <div class="output-tile-head">
+              <span class="tile-label">Octal</span>
+              <button class="btn-copy" data-target="valOct">Copy</button>
+            </div>
+            <div class="tile-value" id="valOct">0o12</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Clickable Bitboard -->
+      <div class="bitboard-wrapper">
+        <div class="bitboard-title">
+          <span>Interactive Bitboard (Click bit in Operand A to toggle)</span>
+          <div class="bit-legend">
+            <div class="legend-item"><span class="legend-box one"></span> 1 (Set)</div>
+            <div class="legend-item"><span class="legend-box zero"></span> 0 (Clear)</div>
+          </div>
+        </div>
+
+        <div class="bits-container">
+          <div class="bits-row-grid" id="bitsMatrixWrapper">
+            <!-- Dynamically populated bit rows -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Matrix Comparison of All Operators -->
+      <div class="matrix-section">
+        <div class="matrix-title">All Operators Evaluated Simultaneously on (A, B)</div>
+        <div class="matrix-table-wrap">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Operation</th>
+                <th>Expression</th>
+                <th>Binary Value</th>
+                <th>Hex</th>
+                <th>Signed Decimal</th>
+              </tr>
+            </thead>
+            <tbody id="matrixTbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legal & Operational Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Disclaimer & Usage Policy
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages, algorithmic inaccuracies, system bugs, or operational failures arising from the use of this calculation engine. Bitwise representations, two's complement evaluations, and shift arithmetic are calculated strictly in-memory within your local client browser. Always verify critical cryptographic, financial, or embedded systems bit calculations against dedicated unit test suites and hardware compilers.
+      </p>
+    </aside>
+
+    <!-- Technical Guide & Reference -->
+    <article class="doc-section">
+      <h2>How Bitwise Operators Operate in Silicon and Software</h2>
+      <p>Bitwise operators manipulate integers at the level of individual binary digits (bits). Rather than treating values as cohesive quantities, bitwise instructions apply primitive Boolean gates concurrently across each bit position:</p>
+      <ul>
+        <li><strong>AND (<code>&amp;</code>):</strong> Yields <code>1</code> only if both corresponding bits are <code>1</code>. Commonly used for bitmasking and checking flag status.</li>
+        <li><strong>OR (<code>|</code>):</strong> Yields <code>1</code> if either corresponding bit is <code>1</code>. Commonly used to set or pack flags without disturbing adjacent bits.</li>
+        <li><strong>XOR (<code>^</code>):</strong> Yields <code>1</code> if the operand bits differ. Essential for parity calculation, cryptographic hashing, and toggling specific bits.</li>
+        <li><strong>NOT (<code>~</code>):</strong> Unary operator that inverts each bit. In two's complement systems, <code>~x</code> equals <code>-(x + 1)</code>.</li>
+        <li><strong>Logical vs Arithmetic Shifts:</strong> Left shift (<code>&lt;&lt;</code>) appends zero bits to the right. Signed right shift (<code>&gt;&gt;</code>) preserves the most significant sign bit, while unsigned zero-fill right shift (<code>&gt;&gt;&gt;</code>) pushes zeros regardless of sign.</li>
+      </ul>
+
+      <h2>Two's Complement Representation</h2>
+      <p>Modern microprocessors represent signed integers using two's complement notation. In an $N$-bit system, the most significant bit (MSB) carries a negative weight of $-2^{N-1}$, while all lower bits carry positive binary weights. This ensures standard addition circuits handle both positive and negative values without requiring dedicated subtraction silicon.</p>
+
+      <h2>Zero Network Egress Guarantee</h2>
+      <p>Like all security and developer utilities on BitDark, this bitwise inspector functions without third-party network egress. No input keystrokes, numeric states, or results are logged, cached, or transferred to external servers.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Handle local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // --- State and DOM Element Wiring ---
+    let currentBitWidth = 32;
+    let currentInputMode = "auto";
+
+    const inputA = document.getElementById("inputA");
+    const inputB = document.getElementById("inputB");
+    const operatorSelect = document.getElementById("operatorSelect");
+    const wrapB = document.getElementById("wrapB");
+    const typeA = document.getElementById("typeA");
+    const typeB = document.getElementById("typeB");
+
+    const equationBadge = document.getElementById("equationBadge");
+    const mainResultDisplay = document.getElementById("mainResultDisplay");
+    const valSigned = document.getElementById("valSigned");
+    const valUnsigned = document.getElementById("valUnsigned");
+    const valHex = document.getElementById("valHex");
+    const valOct = document.getElementById("valOct");
+
+    const bitsMatrixWrapper = document.getElementById("bitsMatrixWrapper");
+    const matrixTbody = document.getElementById("matrixTbody");
+
+    // Word Length & Base Selector Handlers
+    document.querySelectorAll("#wordSizeSelector .pill-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#wordSizeSelector .pill-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentBitWidth = parseInt(btn.dataset.bits, 10);
+        recalculate();
+      });
+    });
+
+    document.querySelectorAll("#baseSelector .pill-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#baseSelector .pill-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentInputMode = btn.dataset.base;
+        recalculate();
+      });
+    });
+
+    // Presets Click Handler
+    document.querySelectorAll(".btn-preset").forEach(btn => {
+      btn.addEventListener("click", () => {
+        inputA.value = btn.dataset.a;
+        operatorSelect.value = btn.dataset.op;
+        inputB.value = btn.dataset.b;
+        recalculate();
+      });
+    });
+
+    // Clipboard Copy Buttons
+    document.querySelectorAll(".btn-copy").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.dataset.target;
+        const text = document.getElementById(targetId).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = btn.textContent;
+          btn.textContent = "Copied!";
+          setTimeout(() => { btn.textContent = originalText; }, 1400);
+        });
+      });
+    });
+
+    // Inputs Change Handlers
+    [inputA, inputB].forEach(el => {
+      el.addEventListener("input", recalculate);
+    });
+
+    operatorSelect.addEventListener("change", () => {
+      const isUnary = operatorSelect.value === "NOT";
+      wrapB.style.opacity = isUnary ? "0.4" : "1";
+      inputB.disabled = isUnary;
+      recalculate();
+    });
+
+    // BigInt Sanitization and Parsing
+    function parseValue(rawStr, mode) {
+      if (!rawStr) return 0n;
+      let s = rawStr.trim();
+      try {
+        if (mode === "hex" && !s.toLowerCase().startsWith("0x")) s = "0x" + s;
+        if (mode === "bin" && !s.toLowerCase().startsWith("0b")) s = "0b" + s;
+        return BigInt(s);
+      } catch (err) {
+        return 0n;
+      }
+    }
+
+    function getMask(bits) {
+      return (1n << BigInt(bits)) - 1n;
+    }
+
+    function toUnsignedBigInt(val, bits) {
+      const mask = getMask(bits);
+      return val & mask;
+    }
+
+    function toSignedBigInt(val, bits) {
+      const mask = getMask(bits);
+      let unsigned = val & mask;
+      const signBit = 1n << BigInt(bits - 1);
+      if ((unsigned & signBit) !== 0n) {
+        return unsigned - (1n << BigInt(bits));
+      }
+      return unsigned;
+    }
+
+    function formatBinaryGroups(val, bits) {
+      const unsigned = toUnsignedBigInt(val, bits);
+      let binStr = unsigned.toString(2).padStart(bits, "0");
+      let grouped = [];
+      for (let i = 0; i < binStr.length; i += 4) {
+        grouped.push(binStr.slice(i, i + 4));
+      }
+      return grouped.join(" ");
+    }
+
+    function formatHex(val, bits) {
+      const unsigned = toUnsignedBigInt(val, bits);
+      const hexChars = Math.ceil(bits / 4);
+      return "0x" + unsigned.toString(16).toUpperCase().padStart(hexChars, "0");
+    }
+
+    // Core Computation
+    function recalculate() {
+      const valA_raw = parseValue(inputA.value, currentInputMode);
+      const valB_raw = parseValue(inputB.value, currentInputMode);
+      const op = operatorSelect.value;
+      const bits = currentBitWidth;
+      const mask = getMask(bits);
+
+      const a = toUnsignedBigInt(valA_raw, bits);
+      const b = toUnsignedBigInt(valB_raw, bits);
+
+      typeA.textContent = `Dec: ${toSignedBigInt(a, bits).toString()}`;
+      typeB.textContent = `Dec: ${toSignedBigInt(b, bits).toString()}`;
+
+      let result = 0n;
+
+      switch (op) {
+        case "AND": result = a & b; break;
+        case "OR": result = a | b; break;
+        case "XOR": result = a ^ b; break;
+        case "NOT": result = (~a) & mask; break;
+        case "SHL": {
+          const shift = Number(b % BigInt(bits));
+          result = (a << BigInt(shift)) & mask;
+          break;
+        }
+        case "SHR": {
+          const signedA = toSignedBigInt(a, bits);
+          const shift = Number(b % BigInt(bits));
+          result = (signedA >> BigInt(shift)) & mask;
+          break;
+        }
+        case "USHR": {
+          const shift = Number(b % BigInt(bits));
+          result = (a >> BigInt(shift)) & mask;
+          break;
+        }
+        case "NAND": result = (~(a & b)) & mask; break;
+        case "NOR": result = (~(a | b)) & mask; break;
+        case "XNOR": result = (~(a ^ b)) & mask; break;
+      }
+
+      result = result & mask;
+
+      // Update Result Display
+      const signedRes = toSignedBigInt(result, bits);
+      const unsignedRes = result;
+
+      mainResultDisplay.textContent = signedRes.toString();
+      valSigned.textContent = signedRes.toString();
+      valUnsigned.textContent = unsignedRes.toString();
+      valHex.textContent = formatHex(result, bits);
+      valOct.textContent = "0o" + unsignedRes.toString(8);
+
+      const opSymbol = operatorSelect.options[operatorSelect.selectedIndex].text.split(" ")[0];
+      equationBadge.textContent = op === "NOT" ? `~(${a})` : `${a} ${opSymbol} ${b}`;
+
+      // Render Interactive Bitboards
+      renderBitboards(a, b, result, bits, op);
+
+      // Render All Operators Table
+      renderMatrix(a, b, bits, mask);
+    }
+
+    // Render Bitboards
+    function renderBitboards(a, b, result, bits, op) {
+      bitsMatrixWrapper.innerHTML = "";
+
+      // Header row with bit positions
+      const headerRow = document.createElement("div");
+      headerRow.className = "bit-row-line";
+      const emptyLabel = document.createElement("div");
+      emptyLabel.className = "bit-row-label";
+      emptyLabel.textContent = "Bit Index";
+      headerRow.appendChild(emptyLabel);
+
+      const headerCells = document.createElement("div");
+      headerCells.className = "bit-cells";
+
+      // Render cells in nibbles (groups of 4)
+      for (let i = bits - 1; i >= 0; i--) {
+        const idxBox = document.createElement("div");
+        idxBox.className = "bit-idx-col";
+        idxBox.textContent = (i % 4 === 0 || i === bits - 1) ? i : "·";
+        headerCells.appendChild(idxBox);
+      }
+      headerRow.appendChild(headerCells);
+      bitsMatrixWrapper.appendChild(headerRow);
+
+      // Row A (Clickable to toggle bit)
+      bitsMatrixWrapper.appendChild(createBitRow("Operand A", a, bits, true, (bitIndex) => {
+        const toggled = a ^ (1n << BigInt(bitIndex));
+        inputA.value = toggled.toString();
+        recalculate();
+      }));
+
+      // Row B (if binary op)
+      if (op !== "NOT") {
+        bitsMatrixWrapper.appendChild(createBitRow("Operand B", b, bits, true, (bitIndex) => {
+          const toggled = b ^ (1n << BigInt(bitIndex));
+          inputB.value = toggled.toString();
+          recalculate();
+        }));
+      }
+
+      // Result Row
+      bitsMatrixWrapper.appendChild(createBitRow("Result", result, bits, false, null, true));
+    }
+
+    function createBitRow(label, value, bits, isInteractive, onToggle, isResult = false) {
+      const row = document.createElement("div");
+      row.className = "bit-row-line";
+
+      const lbl = document.createElement("div");
+      lbl.className = "bit-row-label";
+      lbl.textContent = label;
+      row.appendChild(lbl);
+
+      const cellsContainer = document.createElement("div");
+      cellsContainer.className = "bit-cells";
+
+      for (let i = bits - 1; i >= 0; i--) {
+        const bitVal = (value >> BigInt(i)) & 1n;
+        const cell = document.createElement("div");
+        cell.className = "bit-cell";
+        cell.textContent = bitVal.toString();
+
+        if (bitVal === 1n) {
+          cell.classList.add(isResult ? "result-1" : "active-1");
+        }
+
+        if (isInteractive) {
+          cell.title = `Bit ${i}: Click to toggle`;
+          cell.addEventListener("click", () => onToggle(i));
+        } else {
+          cell.classList.add("read-only");
+          cell.title = `Bit ${i} = ${bitVal}`;
+        }
+
+        cellsContainer.appendChild(cell);
+      }
+
+      row.appendChild(cellsContainer);
+      return row;
+    }
+
+    // Render Matrix of All Operators
+    function renderMatrix(a, b, bits, mask) {
+      matrixTbody.innerHTML = "";
+
+      const ops = [
+        { name: "AND", expr: "A & B", res: a & b },
+        { name: "OR", expr: "A | B", res: a | b },
+        { name: "XOR", expr: "A ^ B", res: a ^ b },
+        { name: "NOT (A)", expr: "~A", res: (~a) & mask },
+        { name: "NAND", expr: "~(A & B)", res: (~(a & b)) & mask },
+        { name: "NOR", expr: "~(A | B)", res: (~(a | b)) & mask },
+        { name: "XNOR", expr: "~(A ^ B)", res: (~(a ^ b)) & mask },
+        { name: "Shift Left (A << B)", expr: `A << (B % ${bits})`, res: (a << (b % BigInt(bits))) & mask },
+        { name: "Signed Shift Right", expr: `A >> (B % ${bits})`, res: (toSignedBigInt(a, bits) >> (b % BigInt(bits))) & mask },
+        { name: "Unsigned Shift Right", expr: `A >>> (B % ${bits})`, res: (a >> (b % BigInt(bits))) & mask }
+      ];
+
+      ops.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const tdOp = document.createElement("td");
+        tdOp.className = "matrix-op-name";
+        tdOp.textContent = item.name;
+        tr.appendChild(tdOp);
+
+        const tdExpr = document.createElement("td");
+        tdExpr.style.color = "var(--atom-muted)";
+        tdExpr.textContent = item.expr;
+        tr.appendChild(tdExpr);
+
+        const tdBin = document.createElement("td");
+        tdBin.style.fontSize = "0.74rem";
+        tdBin.textContent = formatBinaryGroups(item.res, bits);
+        tr.appendChild(tdBin);
+
+        const tdHex = document.createElement("td");
+        tdHex.className = "matrix-val";
+        tdHex.textContent = formatHex(item.res, bits);
+        tr.appendChild(tdHex);
+
+        const tdDec = document.createElement("td");
+        tdDec.className = "matrix-val";
+        tdDec.textContent = toSignedBigInt(item.res, bits).toString();
+        tr.appendChild(tdDec);
+
+        matrixTbody.appendChild(tr);
+      });
+    }
+
+    // Initial Trigger
+    recalculate();
+  </script>
+</body>
+</html>
