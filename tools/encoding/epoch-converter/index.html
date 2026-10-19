@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  
+  <title>Unix Epoch Timestamp Converter — Free Offline Developer Tool | BitDark</title>
+  <meta name="title" content="Unix Epoch Timestamp Converter — Free Offline Developer Tool | BitDark" />
+  <meta name="description" content="Convert Unix timestamps in seconds, milliseconds, and nanoseconds to human-readable UTC and local time in your browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="epoch converter, unix timestamp converter, utc to epoch, epoch to human date, timestamp to date, epoch calculator, offline epoch tool, bitdark" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/epoch-converter" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--atom-amber); }
+
+    .nav-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 5px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--atom-cyan);
+      box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Main Container */
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 18px;
+      color: var(--atom-muted);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 {
+      font-size: 1.7rem;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+    .tool-header p {
+      color: var(--atom-text);
+      font-size: 0.95rem;
+      max-width: 850px;
+    }
+
+    /* Cards & Form Layout */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      color: var(--atom-heading);
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+    }
+    .card-title .tag {
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: var(--atom-cyan);
+    }
+
+    /* Live Clock Banner */
+    .ticker-container {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-green);
+      padding: 16px;
+      border-radius: 4px;
+    }
+    .ticker-main { min-width: 0; }
+    .ticker-label {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .ticker-val {
+      font-family: var(--font-code);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--atom-green);
+      word-break: break-all;
+    }
+    .ticker-sub {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-text);
+      margin-top: 4px;
+    }
+    .ticker-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Forms, Inputs, Buttons */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .input-atom {
+      flex: 1 1 240px;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s ease-in-out;
+      min-width: 0;
+    }
+    .input-atom:focus {
+      border-color: var(--atom-border-focus);
+    }
+    select.input-atom {
+      cursor: pointer;
+      flex: 0 1 160px;
+    }
+
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.15s, background-color 0.15s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-atom:hover { opacity: 0.92; }
+    .btn-atom:active { transform: translateY(1px); }
+    .btn-secondary {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      border-color: var(--atom-text);
+      color: var(--atom-heading);
+    }
+
+    /* Result Output Grids */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .res-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+      position: relative;
+    }
+    .res-label {
+      font-size: 0.72rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .res-val {
+      font-size: 0.88rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+    .btn-copy-tiny {
+      background: none;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-muted);
+      border-radius: 3px;
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-family: var(--font-code);
+    }
+    .btn-copy-tiny:hover {
+      color: var(--atom-cyan);
+      border-color: var(--atom-cyan);
+    }
+
+    /* Quick Presets Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+    .atom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      text-align: left;
+    }
+    .atom-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-muted);
+      padding: 8px 12px;
+      border: 1px solid var(--atom-border);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+    }
+    .atom-table td {
+      padding: 8px 12px;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .atom-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin: 28px 0;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 {
+      color: var(--atom-heading);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      margin-top: 22px;
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+      font-size: 0.82rem;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 680px) {
+      .navbar { padding: 10px 12px; }
+      .nav-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .nav-badges {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .trust-badge, .ip-pill-nav {
+        flex: 1 1 auto;
+        justify-content: center;
+        font-size: 0.68rem;
+        padding: 5px 6px;
+      }
+      .wrapper { padding: 16px 12px 40px; }
+      .tool-header h1 { font-size: 1.4rem; }
+      .ticker-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .ticker-val { font-size: 1.35rem; }
+      .ticker-actions {
+        flex-direction: row;
+        width: 100%;
+      }
+      .ticker-actions button {
+        flex: 1;
+      }
+      .input-atom, select.input-atom, .btn-atom {
+        width: 100%;
+        flex: 1 1 100%;
+      }
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+      .bottom-bar {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header & Navbar with Corrected IP Detection -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="nav-badges">
+        <div class="trust-badge">
+          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        </div>
+        <div class="ip-pill-nav">
+          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+          <span class="ip-divider">·</span>
+          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a> / <a href="/#encoding">Encoding</a> / epoch-converter
+    </nav>
+
+    <!-- Header Title -->
+    <header class="tool-header">
+      <h1>Unix Epoch Timestamp Converter</h1>
+      <p>Precision bi-directional epoch timestamp calculator. Convert between Unix timestamps and ISO-8601/RFC-2822 dates locally inside your browser runtime.</p>
+    </header>
+
+    <!-- 1. Live Timestamp Monitor -->
+    <section class="tool-card">
+      <div class="card-title">
+        <span>Live Epoch Clock</span>
+        <span class="tag">System Synced</span>
+      </div>
+      <div class="ticker-container">
+        <div class="ticker-main">
+          <div class="ticker-label">Current Unix Epoch Time (Seconds):</div>
+          <div class="ticker-val" id="liveSec">0000000000</div>
+          <div class="ticker-sub">
+            Milliseconds: <code id="liveMs" style="color: var(--atom-amber);">0000000000000</code> &nbsp;|&nbsp; 
+            <span id="liveUtc">Syncing UTC...</span>
+          </div>
+        </div>
+        <div class="ticker-actions">
+          <button class="btn-atom" id="btnCopyLive" type="button">Copy Epoch</button>
+          <button class="btn-atom btn-secondary" id="btnToggleTicker" type="button">Pause</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Epoch to Date Converter -->
+    <section class="tool-card">
+      <div class="card-title">
+        <span>Convert Epoch Timestamp to Human Date</span>
+        <span class="tag">Auto-Detects Sec / Ms / µs / Ns</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputEpoch">Enter Timestamp:</label>
+        <div class="input-row">
+          <input 
+            type="text" 
+            id="inputEpoch" 
+            class="input-atom" 
+            placeholder="e.g. 1774000000 or 1774000000000" 
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <select id="selectUnit" class="input-atom" aria-label="Timestamp unit">
+            <option value="auto" selected>Auto-detect Unit</option>
+            <option value="s">Seconds (s)</option>
+            <option value="ms">Milliseconds (ms)</option>
+            <option value="us">Microseconds (µs)</option>
+            <option value="ns">Nanoseconds (ns)</option>
+          </select>
+          <button class="btn-atom" id="btnConvertEpoch" type="button">Convert</button>
+          <button class="btn-atom btn-secondary" id="btnSetNowEpoch" type="button">Now</button>
+        </div>
+      </div>
+
+      <div class="results-grid" id="epochResults" style="display: none;">
+        <div class="res-item">
+          <div class="res-label">
+            <span>GMT / UTC (ISO 8601)</span>
+            <button class="btn-copy-tiny" data-target="valIso">Copy</button>
+          </div>
+          <div class="res-val" id="valIso">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>RFC 2822 Formatted</span>
+            <button class="btn-copy-tiny" data-target="valRfc">Copy</button>
+          </div>
+          <div class="res-val" id="valRfc">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Your Local Timezone</span>
+            <button class="btn-copy-tiny" data-target="valLocal">Copy</button>
+          </div>
+          <div class="res-val" id="valLocal">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Relative Age</span>
+          </div>
+          <div class="res-val" id="valRelative">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Day / Week Breakdown</span>
+          </div>
+          <div class="res-val" id="valBreakdown">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Hexadecimal (Unix 32/64)</span>
+            <button class="btn-copy-tiny" data-target="valHex">Copy</button>
+          </div>
+          <div class="res-val" id="valHex">-</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Human Date to Epoch Converter -->
+    <section class="tool-card">
+      <div class="card-title">
+        <span>Convert Human Date to Unix Timestamp</span>
+        <span class="tag">Local & UTC Support</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pick Date & Time:</label>
+        <div class="input-row">
+          <input type="datetime-local" id="inputDateTime" class="input-atom" step="1" />
+          <select id="selectDateTz" class="input-atom" aria-label="Input timezone">
+            <option value="local" selected>Local Timezone</option>
+            <option value="utc">UTC / GMT</option>
+          </select>
+          <button class="btn-atom" id="btnConvertDate" type="button">Convert to Epoch</button>
+        </div>
+      </div>
+
+      <div class="results-grid" id="dateResults" style="display: none;">
+        <div class="res-item">
+          <div class="res-label">
+            <span>Unix Timestamp (Seconds)</span>
+            <button class="btn-copy-tiny" data-target="resSec">Copy</button>
+          </div>
+          <div class="res-val" id="resSec" style="color: var(--atom-amber); font-weight: bold;">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Unix Timestamp (Milliseconds)</span>
+            <button class="btn-copy-tiny" data-target="resMs">Copy</button>
+          </div>
+          <div class="res-val" id="resMs" style="color: var(--atom-cyan);">-</div>
+        </div>
+        <div class="res-item">
+          <div class="res-label">
+            <span>Normalized ISO 8601 String</span>
+            <button class="btn-copy-tiny" data-target="resDateIso">Copy</button>
+          </div>
+          <div class="res-val" id="resDateIso">-</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Quick Reference Milestones Table -->
+    <section class="tool-card">
+      <div class="card-title">
+        <span>Critical Epoch Milestones & Boundaries</span>
+        <span class="tag">Quick Reference</span>
+      </div>
+      <div class="table-container">
+        <table class="atom-table">
+          <thead>
+            <tr>
+              <th>Milestone Event</th>
+              <th>Epoch Seconds</th>
+              <th>UTC Calendar Representation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Unix Epoch Origin (Zero Time)</td>
+              <td><code>0</code></td>
+              <td>1970-01-01T00:00:00Z</td>
+            </tr>
+            <tr>
+              <td>1 Billion Seconds (1 Giga-Second)</td>
+              <td><code>1000000000</code></td>
+              <td>2001-09-09T01:46:40Z</td>
+            </tr>
+            <tr>
+              <td>Year 2038 Bug (Signed 32-bit Max)</td>
+              <td><code>2147483647</code></td>
+              <td>2038-01-19T03:14:07Z</td>
+            </tr>
+            <tr>
+              <td>Unsigned 32-bit Overflow Limit</td>
+              <td><code>4294967295</code></td>
+              <td>2106-02-07T06:28:15Z</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Disclaimer Callout Card -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Disclaimer & Operational Responsibility Notice
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible:</strong> The epoch conversion calculations, date interpretations, and timezone mappings provided on this website are executed entirely client-side for diagnostic, developer reference, and educational purposes. BitDark and its operators assume no liability or responsibility for scheduling errors, financial discrepancies, database anomalies, algorithmic execution failures, leap-second offsets, or system drift resulting from reliance on the timestamps produced by this utility. Always verify mission-critical time calculations against formal cryptographic NTP sources and certified standard time authorities.
+      </p>
+    </aside>
+
+    <!-- Educational & Technical Guide -->
+    <article class="doc-section">
+      <h2>How the Unix Timestamp Operates</h2>
+      <p>
+        The Unix epoch represents the total elapsed time in seconds since <strong>00:00:00 UTC on Thursday, 1 January 1970</strong>, excluding leap seconds. It serves as the primary timekeeper for POSIX-compliant operating systems, database row versioning, transaction ledgers, and token expiration headers (such as JWT <code>exp</code> and <code>iat</code> claims).
+      </p>
+
+      <h2>The Year 2038 Computational Threshold (Y2038)</h2>
+      <p>
+        Legacy 32-bit systems store the epoch as a signed 32-bit integer. The maximum integer value is <code>2,147,483,647</code>, which elapses on <strong>January 19, 2038 at 03:14:07 UTC</strong>. Beyond this point, 32-bit integer counters overflow into negative numbers, causing systems to misinterpret the date as December 13, 1901. Modern 64-bit systems allocate a signed 64-bit integer, extending the operational ceiling by approximately 292 billion years.
+      </p>
+
+      <h2>Unit Scale Detection Reference</h2>
+      <ul>
+        <li><strong>Seconds (10 digits):</strong> Standard POSIX timestamp (e.g. <code>1774000000</code>).</li>
+        <li><strong>Milliseconds (13 digits):</strong> Standard JavaScript <code>Date.now()</code> and Java timestamps.</li>
+        <li><strong>Microseconds (16 digits):</strong> High-precision C++ / Python profiling logs.</li>
+        <li><strong>Nanoseconds (19 digits):</strong> Linux kernel traces, Go <code>time.Now().UnixNano()</code>, and OpenTelemetry spans.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Guarantee</h2>
+      <p>
+        Unlike remote conversion APIs, BitDark processes timestamp arithmetic strictly inside your browser's local memory heap using native JavaScript <code>Date</code> and <code>BigInt</code> objects. No time data, request payloads, or system parameters are transmitted across the network.
+      </p>
+    </article>
+
+    <!-- Footer -->
+    <footer class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity & developer utilities.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </footer>
+  </main>
+
+  <script>
+    // Robust IP Telemetry with Localhost and Multiple Endpoint Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      // Local testing environments
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
+      try {
+        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (res4.ok) {
+          const data4 = await res4.json();
+          ipv4El.textContent = data4.ip;
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection (Primary: api64.ipify, Fallback: ipv6.icanhazip)
+      try {
+        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error("Primary failed");
+        }
+      } catch {
+        try {
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Live Ticker Logic
+    let tickerActive = true;
+    const liveSecEl = document.getElementById("liveSec");
+    const liveMsEl = document.getElementById("liveMs");
+    const liveUtcEl = document.getElementById("liveUtc");
+    const btnToggleTicker = document.getElementById("btnToggleTicker");
+    const btnCopyLive = document.getElementById("btnCopyLive");
+
+    function updateLiveTicker() {
+      if (!tickerActive) return;
+      const now = new Date();
+      const ms = now.getTime();
+      const sec = Math.floor(ms / 1000);
+
+      liveSecEl.textContent = sec;
+      liveMsEl.textContent = ms;
+      liveUtcEl.textContent = now.toUTCString();
+    }
+    setInterval(updateLiveTicker, 1000);
+    updateLiveTicker();
+
+    btnToggleTicker.addEventListener("click", () => {
+      tickerActive = !tickerActive;
+      btnToggleTicker.textContent = tickerActive ? "Pause" : "Resume";
+      if (tickerActive) updateLiveTicker();
+    });
+
+    btnCopyLive.addEventListener("click", () => {
+      navigator.clipboard.writeText(liveSecEl.textContent);
+      const originalText = btnCopyLive.textContent;
+      btnCopyLive.textContent = "Copied!";
+      setTimeout(() => { btnCopyLive.textContent = originalText; }, 1500);
+    });
+
+    // Helper: Format Relative Time
+    function formatRelativeTime(targetDate) {
+      const diffSec = Math.floor((targetDate.getTime() - Date.now()) / 1000);
+      const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+      const absSec = Math.abs(diffSec);
+      if (absSec < 60) return rtf.format(diffSec, "second");
+      const diffMin = Math.round(diffSec / 60);
+      if (Math.abs(diffMin) < 60) return rtf.format(diffMin, "minute");
+      const diffHr = Math.round(diffMin / 60);
+      if (Math.abs(diffHr) < 24) return rtf.format(diffHr, "hour");
+      const diffDay = Math.round(diffHr / 24);
+      if (Math.abs(diffDay) < 30) return rtf.format(diffDay, "day");
+      const diffMonth = Math.round(diffDay / 30.44);
+      if (Math.abs(diffMonth) < 12) return rtf.format(diffMonth, "month");
+      const diffYear = Math.round(diffDay / 365.25);
+      return rtf.format(diffYear, "year");
+    }
+
+    // Helper: Week of Year calculation
+    function getWeekOfYear(d) {
+      const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNum = target.getUTCDay() || 7;
+      target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+      return Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+    }
+
+    // Helper: Day of Year calculation
+    function getDayOfYear(d) {
+      const start = new Date(Date.UTC(d.getUTCFullYear(), 0, 0));
+      const diff = d - start;
+      return Math.floor(diff / 86400000);
+    }
+
+    // Converter: Epoch -> Human Date
+    const inputEpoch = document.getElementById("inputEpoch");
+    const selectUnit = document.getElementById("selectUnit");
+    const btnConvertEpoch = document.getElementById("btnConvertEpoch");
+    const btnSetNowEpoch = document.getElementById("btnSetNowEpoch");
+    const epochResults = document.getElementById("epochResults");
+
+    const valIso = document.getElementById("valIso");
+    const valRfc = document.getElementById("valRfc");
+    const valLocal = document.getElementById("valLocal");
+    const valRelative = document.getElementById("valRelative");
+    const valBreakdown = document.getElementById("valBreakdown");
+    const valHex = document.getElementById("valHex");
+
+    function executeEpochToDate() {
+      let raw = inputEpoch.value.trim();
+      if (!raw) return;
+
+      // Clean non-numeric characters (support minus for pre-1970)
+      raw = raw.replace(/[^0-9\-]/g, "");
+      if (!raw || raw === "-") return;
+
+      let unit = selectUnit.value;
+      let numericVal = Number(raw);
+
+      // Auto-detect unit based on digit length
+      if (unit === "auto") {
+        const len = raw.replace("-", "").length;
+        if (len <= 11) unit = "s";
+        else if (len <= 14) unit = "ms";
+        else if (len <= 17) unit = "us";
+        else unit = "ns";
+      }
+
+      let dateMs = 0;
+      let integerSec = 0;
+
+      if (unit === "s") {
+        dateMs = numericVal * 1000;
+        integerSec = Math.floor(numericVal);
+      } else if (unit === "ms") {
+        dateMs = numericVal;
+        integerSec = Math.floor(numericVal / 1000);
+      } else if (unit === "us") {
+        dateMs = numericVal / 1000;
+        integerSec = Math.floor(numericVal / 1000000);
+      } else if (unit === "ns") {
+        dateMs = numericVal / 1000000;
+        integerSec = Math.floor(numericVal / 1000000000);
+      }
+
+      const dateObj = new Date(dateMs);
+
+      if (isNaN(dateObj.getTime())) {
+        alert("Invalid epoch timestamp entered. Please enter a valid numerical value.");
+        return;
+      }
+
+      valIso.textContent = dateObj.toISOString();
+      valRfc.textContent = dateObj.toUTCString();
+      valLocal.textContent = dateObj.toString();
+      valRelative.textContent = formatRelativeTime(dateObj);
+
+      const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dateObj.getUTCDay()];
+      const dayYear = getDayOfYear(dateObj);
+      const weekYear = getWeekOfYear(dateObj);
+      const year = dateObj.getUTCFullYear();
+      const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+
+      valBreakdown.textContent = `${dayOfWeek} | Day ${dayYear} of Year | Week ${weekYear} | Leap Year: ${isLeap ? "Yes" : "No"}`;
+
+      // Hexadecimal rendering
+      try {
+        const hexStr = "0x" + BigInt(integerSec).toString(16).toUpperCase();
+        valHex.textContent = hexStr;
+      } catch {
+        valHex.textContent = "N/A";
+      }
+
+      epochResults.style.display = "grid";
+    }
+
+    btnConvertEpoch.addEventListener("click", executeEpochToDate);
+    inputEpoch.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") executeEpochToDate();
+    });
+
+    btnSetNowEpoch.addEventListener("click", () => {
+      inputEpoch.value = Math.floor(Date.now() / 1000);
+      selectUnit.value = "s";
+      executeEpochToDate();
+    });
+
+    // Converter: Date -> Epoch
+    const inputDateTime = document.getElementById("inputDateTime");
+    const selectDateTz = document.getElementById("selectDateTz");
+    const btnConvertDate = document.getElementById("btnConvertDate");
+    const dateResults = document.getElementById("dateResults");
+    const resSec = document.getElementById("resSec");
+    const resMs = document.getElementById("resMs");
+    const resDateIso = document.getElementById("resDateIso");
+
+    // Populate default current datetime-local
+    function setInitialDateTimeInput() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      inputDateTime.value = now.toISOString().slice(0, 19);
+    }
+    setInitialDateTimeInput();
+
+    function executeDateToEpoch() {
+      const val = inputDateTime.value;
+      if (!val) return;
+
+      let dateObj;
+      if (selectDateTz.value === "utc") {
+        dateObj = new Date(val + "Z");
+      } else {
+        dateObj = new Date(val);
+      }
+
+      if (isNaN(dateObj.getTime())) {
+        alert("Please select a valid date and time.");
+        return;
+      }
+
+      const ms = dateObj.getTime();
+      const sec = Math.floor(ms / 1000);
+
+      resSec.textContent = sec;
+      resMs.textContent = ms;
+      resDateIso.textContent = dateObj.toISOString();
+
+      dateResults.style.display = "grid";
+    }
+
+    btnConvertDate.addEventListener("click", executeDateToEpoch);
+
+    // Global copy button handler for result cards
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.classList.contains("btn-copy-tiny")) {
+        const targetId = e.target.getAttribute("data-target");
+        const el = document.getElementById(targetId);
+        if (el) {
+          navigator.clipboard.writeText(el.textContent);
+          const original = e.target.textContent;
+          e.target.textContent = "Copied!";
+          setTimeout(() => { e.target.textContent = original; }, 1200);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
