@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  
+  <title>Offline SVG Sanitizer & XSS Defanger — Client-Side Security | BitDark</title>
+  <meta name="title" content="Offline SVG Sanitizer & XSS Defanger — Client-Side Security | BitDark" />
+  <meta name="description" content="Sanitize SVG vectors, strip inline scripts, event handlers, foreignObject injection, and external entity exploits locally in memory. Zero network egress." />
+  <meta name="keywords" content="svg sanitizer, defang svg xss, local svg cleaner, strip script from svg, client side svg parser, bitdark forensics" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/svg-sanitizer" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--atom-amber); }
+
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+
+    .orbit-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--atom-cyan);
+      box-shadow: 0 0 6px var(--atom-cyan);
+      flex-shrink: 0;
+    }
+
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { 
+      max-width: 1100px; 
+      width: 100%;
+      margin: 0 auto; 
+      padding: 24px 16px 60px; 
+      flex: 1;
+    }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      word-break: break-word;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { 
+      font-size: clamp(1.35rem, 4vw, 1.8rem); 
+      color: var(--atom-heading); 
+      margin-bottom: 6px; 
+      line-height: 1.25;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 0.92rem; 
+      max-width: 800px;
+    }
+
+    /* Tool Card & Dropzone */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: clamp(14px, 3vw, 24px);
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .dropzone {
+      border: 2px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: clamp(24px, 5vw, 36px) 16px;
+      text-align: center;
+      cursor: pointer;
+      background-color: var(--atom-bg);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .dropzone.dragover {
+      border-color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .file-input-hidden { display: none; }
+
+    /* Results Workspace */
+    .results-area { margin-top: 24px; display: none; }
+    
+    .status-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+    }
+    .status-found {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+    .status-clean {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px;
+      border-radius: 4px;
+    }
+    .meta-label { 
+      font-size: 0.72rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 4px; 
+    }
+    .meta-val { 
+      font-size: 0.84rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
+    }
+
+    .dual-pane {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 800px) {
+      .dual-pane {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .pane-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .pane-col span {
+      margin-bottom: 6px;
+    }
+
+    .viewer-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      height: 320px;
+      overflow-y: auto;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--atom-heading);
+      line-height: 1.5;
+    }
+
+    .preview-box {
+      background-color: #ffffff;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 16px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .log-box {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.76rem;
+      max-height: 160px;
+      overflow-y: auto;
+      overflow-x: auto;
+      margin-bottom: 20px;
+      word-break: break-word;
+    }
+    .log-entry { margin-bottom: 4px; }
+    .log-removed { color: var(--atom-coral); }
+    .log-ok { color: var(--atom-green); }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      transition: opacity 0.2s;
+      flex: 1 1 auto;
+      text-align: center;
+      max-width: 260px;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+
+    /* Operational Boundaries & Disclaimer Callout */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 32px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Docs Section */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 28px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { 
+      color: var(--atom-heading); 
+      font-size: 1.15rem; 
+      margin-bottom: 10px; 
+      margin-top: 20px; 
+    }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    @media (min-width: 600px) {
+      .bottom-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / svg-sanitizer
+    </nav>
+
+    <div class="tool-header">
+      <h1>SVG Sanitizer & XSS Defanger</h1>
+      <p>Clean malicious vectors, inline script tags, recursive entity injections, and event handlers locally in browser memory.</p>
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <div class="tool-card" id="toolWorkspace">
+      <div class="dropzone" id="dropArea">
+        <span class="dropzone-icon">🛡️</span>
+        <p><strong>Click to choose an SVG file</strong> or drag & drop it here</p>
+        <span class="dropzone-hint">XML DOM parsing, zero tracking, memory-only execution</span>
+        <input type="file" id="filePicker" class="file-input-hidden" accept=".svg,image/svg+xml" />
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">File Name & Original Size</div>
+            <div class="meta-val" id="metaFile">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 (Sanitized)</div>
+            <div class="meta-val" id="metaHash">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Threats Neutralized</div>
+            <div class="meta-val" id="metaThreats">0</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Sanitized File Size</div>
+            <div class="meta-val" id="metaCleanSize">-</div>
+          </div>
+        </div>
+
+        <div class="meta-label" style="margin-bottom: 6px;">Remediation & Triage Audit Trail:</div>
+        <div class="log-box" id="auditLog"></div>
+
+        <div class="dual-pane">
+          <div class="pane-col">
+            <span class="meta-label">Sanitized SVG XML Source</span>
+            <div class="viewer-box" id="rawViewer">Processing vector...</div>
+          </div>
+          <div class="pane-col">
+            <span class="meta-label">Sandboxed Preview (Scripts Blocked)</span>
+            <div class="preview-box" id="previewContainer"></div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-atom" id="btnDownloadSvg">Download Sanitized SVG</button>
+          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mandatory Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Disclaimer & Usage Boundaries
+      </div>
+      <p>
+        <strong>BitDark.net is not responsible for any security vulnerabilities, data loss, incomplete sanitization, or render issues resulting from the use of this utility.</strong> This client-side tool executes rule-based DOM element stripping in your browser memory for preliminary triage. Because XML parsers, SVG rendering engines, and browser security contexts vary, complex nesting or zero-day polyglot injections may require defense-in-depth measures. Always validate vectors server-side before storing or distributing user-supplied files.
+      </p>
+    </aside>
+
+    <!-- Technical & Educational Content -->
+    <article class="doc-section">
+      <h2>Why SVGs Are Vectors for Cross-Site Scripting (XSS)</h2>
+      <p>Scalable Vector Graphics (SVG) are XML-based documents rather than raster image buffers. Because the W3C SVG specification fully integrates DOM Level 2 scripting, style sheets, and hyperlinking, an SVG can execute JavaScript when rendered directly or embedded improperly.</p>
+      <ul>
+        <li><strong>Inline Executables:</strong> Tags such as <code>&lt;script&gt;</code>, <code>&lt;foreignObject&gt;</code>, <code>&lt;iframe&gt;</code>, and <code>&lt;use&gt;</code> references to external resources can execute arbitrary scripts.</li>
+        <li><strong>Event Handlers:</strong> Inline attributes including <code>onload</code>, <code>onerror</code>, <code>onclick</code>, and <code>onmouseover</code> trigger script execution upon document load or interaction.</li>
+        <li><strong>Hyperlink Hijacking:</strong> <code>&lt;a href="javascript:..."&gt;</code> payloads bypass standard image perimeter filters.</li>
+        <li><strong>Entity Expansion (XXE):</strong> Custom <code>&lt;!DOCTYPE&gt;</code> declarations and internal entity definitions can consume browser resources (Billion Laughs attack) or attempt SSRF/local file reads.</li>
+      </ul>
+
+      <h2>Sanitization Protocol</h2>
+      <p>BitDark's sanitizer parses input via the native browser <code>DOMParser</code> in an isolated XML context. It recursively walks every node, strips external entity references, removes forbidden tags via localName checking, purges event listener attributes, cleans <code>href</code> attributes containing executable pseudo-protocols, and reconstructs a safe SVG tree.</p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Robust Asynchronous Telemetry with Hard 2.5s Timeout Abort
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // Fetch IPv4
+      (async () => {
+        try {
+          const c = new AbortController();
+          const t = setTimeout(() => c.abort(), 2500);
+          const res = await fetch("https://api.ipify.org?format=json", { cache: "no-store", signal: c.signal });
+          clearTimeout(t);
+          if (!res.ok) throw new Error();
+          const d = await res.json();
+          ipv4El.textContent = d.ip;
+        } catch {
+          try {
+            const fb = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
+            const ip = (await fb.text()).trim();
+            ipv4El.textContent = ip || "Offline";
+          } catch {
+            ipv4El.textContent = "Offline";
+          }
+        }
+      })();
+
+      // Fetch IPv6 independently with strict abort to prevent perpetual loading on IPv4 networks
+      (async () => {
+        try {
+          const c = new AbortController();
+          const t = setTimeout(() => c.abort(), 2500);
+          const res = await fetch("https://ipv6.icanhazip.com", { cache: "no-store", signal: c.signal });
+          clearTimeout(t);
+          if (!res.ok) throw new Error();
+          const ip = (await res.text()).trim();
+          ipv6El.textContent = ip.includes(":") ? ip : "Not Supported";
+        } catch {
+          try {
+            const c2 = new AbortController();
+            const t2 = setTimeout(() => c2.abort(), 2500);
+            const res2 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store", signal: c2.signal });
+            clearTimeout(t2);
+            const d2 = await res2.json();
+            ipv6El.textContent = d2.ip.includes(":") ? d2.ip : "Not Supported";
+          } catch {
+            ipv6El.textContent = "Not Supported";
+          }
+        }
+      })();
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Sanitizer Elements & State
+    const dropArea = document.getElementById("dropArea");
+    const filePicker = document.getElementById("filePicker");
+    const resultsArea = document.getElementById("resultsArea");
+    const statusBanner = document.getElementById("statusBanner");
+    const metaFile = document.getElementById("metaFile");
+    const metaHash = document.getElementById("metaHash");
+    const metaThreats = document.getElementById("metaThreats");
+    const metaCleanSize = document.getElementById("metaCleanSize");
+    const auditLog = document.getElementById("auditLog");
+    const rawViewer = document.getElementById("rawViewer");
+    const previewContainer = document.getElementById("previewContainer");
+    const btnReset = document.getElementById("btnReset");
+    const btnDownloadSvg = document.getElementById("btnDownloadSvg");
+
+    let sanitizedSvgContent = "";
+    let previewObjectUrl = null;
+    let activeFileName = "sanitized.svg";
+
+    dropArea.addEventListener("click", () => filePicker.click());
+
+    ["dragenter", "dragover"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(evt => {
+      dropArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+      });
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processSvgFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processSvgFile(e.target.files[0]);
+      }
+    });
+
+    btnReset.addEventListener("click", () => {
+      resultsArea.style.display = "none";
+      dropArea.style.display = "block";
+      filePicker.value = "";
+      rawViewer.textContent = "Processing vector...";
+      auditLog.innerHTML = "";
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
+      previewContainer.innerHTML = "";
+      sanitizedSvgContent = "";
+    });
+
+    async function processSvgFile(file) {
+      activeFileName = file.name ? `clean-${file.name}` : "sanitized.svg";
+      dropArea.style.display = "none";
+      resultsArea.style.display = "block";
+      auditLog.innerHTML = "";
+
+      metaFile.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      metaHash.textContent = "Computing hash...";
+      metaThreats.textContent = "Scanning...";
+      metaCleanSize.textContent = "Calculating...";
+
+      try {
+        const rawText = await file.text();
+        sanitizeSvg(rawText);
+      } catch (err) {
+        auditLog.innerHTML = `<div class="log-entry log-removed">[!] Error reading file: ${escapeHtml(err.message)}</div>`;
+        rawViewer.textContent = "Failed to parse input file.";
+      }
+    }
+
+    async function sanitizeSvg(rawXml) {
+      const logs = [];
+      let threatCount = 0;
+
+      // 1. Strip DOCTYPE and ENTITY declarations to mitigate XXE and Billion Laughs DOS
+      let preCleaned = rawXml;
+      if (/<!DOCTYPE[\s\S]*?>/gi.test(preCleaned)) {
+        preCleaned = preCleaned.replace(/<!DOCTYPE[\s\S]*?>/gi, "");
+        logs.push("[REMOVED] <!DOCTYPE ...> entity definition (XXE Vector)");
+        threatCount++;
+      }
+
+      if (/<!ENTITY[\s\S]*?>/gi.test(preCleaned)) {
+        preCleaned = preCleaned.replace(/<!ENTITY[\s\S]*?>/gi, "");
+        logs.push("[REMOVED] <!ENTITY ...> declaration (Entity Expansion Vector)");
+        threatCount++;
+      }
+
+      // 2. Parse into XML DOM
+      const parser = new DOMParser();
+      let xmlDoc;
+      try {
+        xmlDoc = parser.parseFromString(preCleaned, "image/svg+xml");
+      } catch (e) {
+        xmlDoc = parser.parseFromString(preCleaned, "text/xml");
+      }
+
+      const parseError = xmlDoc.querySelector("parsererror");
+      if (parseError) {
+        auditLog.innerHTML = `<div class="log-entry log-removed">[!] XML Parsing Error: Malformed SVG structure</div>`;
+        rawViewer.textContent = preCleaned;
+        return;
+      }
+
+      const root = xmlDoc.documentElement;
+      if (!root || (root.localName || root.tagName).toLowerCase() !== "svg") {
+        auditLog.innerHTML = `<div class="log-entry log-removed">[!] Root element is not &lt;svg&gt;</div>`;
+        rawViewer.textContent = "Invalid SVG payload.";
+        return;
+      }
+
+      // Prohibited dangerous tags
+      const dangerousTags = [
+        "script", "foreignobject", "iframe", "object", "embed", "applet",
+        "audio", "video", "canvas", "meta", "link", "base", "form", "input",
+        "button", "textarea", "select", "style"
+      ];
+
+      // Remove forbidden elements (evaluating localName to stop namespace evasion)
+      const allElements = Array.from(root.querySelectorAll("*"));
+      allElements.forEach(el => {
+        const tagLocal = (el.localName || el.tagName).toLowerCase();
+        if (dangerousTags.includes(tagLocal)) {
+          el.remove();
+          logs.push(`[STRIPPED] &lt;${tagLocal}&gt; executable element`);
+          threatCount++;
+        }
+      });
+
+      // Walk all nodes (including root <svg>) using a static snapshot array to prevent mutation shifts
+      const nodesToCheck = [root, ...Array.from(root.querySelectorAll("*"))];
+
+      nodesToCheck.forEach(node => {
+        const attrsToRemove = [];
+        const nodeTagName = (node.localName || node.tagName).toLowerCase();
+
+        for (let i = 0; i < node.attributes.length; i++) {
+          const attr = node.attributes[i];
+          const attrName = attr.name.toLowerCase();
+          const attrLocal = (attr.localName || attr.name).toLowerCase();
+          const attrVal = attr.value.trim().toLowerCase();
+
+          // Strip event listeners (onclick, onload, onerror, onbegin, onend, etc.)
+          if (attrName.startsWith("on") || attrLocal.startsWith("on")) {
+            attrsToRemove.push({ name: attr.name, ns: attr.namespaceURI, val: attr.value });
+            logs.push(`[STRIPPED] ${attr.name}="${attr.value}" event listener on &lt;${nodeTagName}&gt;`);
+            threatCount++;
+          }
+          // Strip javascript:, data:, vbscript: pseudo protocols on URIs, SMIL values, and animations
+          else if (attrLocal === "href" || attrLocal.endsWith(":href") || attrLocal === "src" || attrLocal === "values" || attrLocal === "to" || attrLocal === "from" || attrLocal === "by") {
+            const cleanVal = attrVal.replace(/[\x00-\x20\s]/g, "");
+            if (/^(javascript|vbscript|data):/i.test(cleanVal)) {
+              attrsToRemove.push({ name: attr.name, ns: attr.namespaceURI, val: attr.value });
+              logs.push(`[STRIPPED] Executable URI scheme on ${attr.name} in &lt;${nodeTagName}&gt;`);
+              threatCount++;
+            }
+          }
+          // Clean dangerous inline style attributes containing expression(), javascript:, or url()
+          else if (attrLocal === "style") {
+            if (/expression|javascript|url\s*\(|behavior/i.test(attrVal)) {
+              attrsToRemove.push({ name: attr.name, ns: attr.namespaceURI, val: attr.value });
+              logs.push(`[STRIPPED] Malicious CSS expression in style attribute on &lt;${nodeTagName}&gt;`);
+              threatCount++;
+            }
+          }
+        }
+
+        // Execute deletions safely using both standard and namespaced methods
+        attrsToRemove.forEach(a => {
+          node.removeAttribute(a.name);
+          if (a.ns) {
+            const localPart = a.name.includes(":") ? a.name.split(":").pop() : a.name;
+            node.removeAttributeNS(a.ns, localPart);
+          }
+        });
+      });
+
+      // Ensure xmlns is present on root
+      if (!root.getAttribute("xmlns")) {
+        root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      }
+
+      // Serialize sanitized SVG tree
+      const serializer = new XMLSerializer();
+      sanitizedSvgContent = serializer.serializeToString(root);
+
+      // Compute SHA-256 Checksum of clean buffer
+      const enc = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", enc.encode(sanitizedSvgContent));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+      metaHash.textContent = `${hashHex.slice(0, 10)}...${hashHex.slice(-8)}`;
+      metaThreats.textContent = threatCount.toString();
+      metaCleanSize.textContent = `${(enc.encode(sanitizedSvgContent).length / 1024).toFixed(2)} KB`;
+
+      // Status Banner
+      if (threatCount > 0) {
+        statusBanner.className = "status-banner status-found";
+        statusBanner.innerHTML = `<span>⚠️ ${threatCount} Threat Vector(s) Neutralized</span> <span>Sanitized</span>`;
+      } else {
+        statusBanner.className = "status-banner status-clean";
+        statusBanner.innerHTML = `<span>✓ No Active Threat Vectors Located</span> <span>Clean SVG</span>`;
+        logs.push("[OK] All elements checked. No dangerous entities or listeners detected.");
+      }
+
+      // Render Logs
+      auditLog.innerHTML = logs.map(l => {
+        const isDanger = l.startsWith("[STRIPPED]") || l.startsWith("[REMOVED]");
+        return `<div class="log-entry ${isDanger ? 'log-removed' : 'log-ok'}">${escapeHtml(l)}</div>`;
+      }).join("");
+
+      // Render Output
+      rawViewer.textContent = sanitizedSvgContent;
+
+      // Render Safe Sandboxed Preview via Object URL in <img> (Strict Execution Isolation)
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+      }
+      const svgBlob = new Blob([sanitizedSvgContent], { type: "image/svg+xml;charset=utf-8" });
+      previewObjectUrl = URL.createObjectURL(svgBlob);
+      previewContainer.innerHTML = `<img src="${previewObjectUrl}" alt="Sanitized Vector Preview" />`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    btnDownloadSvg.addEventListener("click", () => {
+      if (!sanitizedSvgContent) return;
+      const blob = new Blob([sanitizedSvgContent], { type: "image/svg+xml;charset=utf-8" });
+      const dlAnchor = document.createElement("a");
+      dlAnchor.href = URL.createObjectURL(blob);
+      dlAnchor.download = activeFileName;
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      URL.revokeObjectURL(dlAnchor.href);
+    });
+  </script>
+</body>
+</html>
