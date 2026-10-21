@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  
+
   <title>Contact Us — BitDark Operations</title>
   <meta name="title" content="Contact Us — BitDark Operations" />
   <meta name="description" content="Direct, zero-third-party contact dispatch portal for BitDark Operations. Submit security advisories, bug disclosures, and general feedback directly to engineering." />
   <meta name="keywords" content="contact bitdark, security advisory, bug disclosure, zero-telemetry contact, privacy gateway" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://bitdark.net/contact.html" />
+
+  <!-- Cloudflare Turnstile API Script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     :root {
@@ -30,7 +33,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
+
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
@@ -42,7 +45,6 @@
       flex-direction: column;
     }
 
-    /* Navbar matching BitDark Template */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
@@ -68,7 +70,7 @@
       white-space: nowrap;
     }
     .brand span { color: var(--atom-amber); }
-    
+
     .trust-badge {
       justify-self: center;
       display: inline-flex;
@@ -87,7 +89,7 @@
       width: 7px; height: 7px; border-radius: 50%;
       background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
     }
-    
+
     .ip-pill-nav {
       justify-self: end;
       background-color: var(--atom-gutter);
@@ -104,7 +106,6 @@
     .ip-pill-nav strong { color: var(--atom-amber); }
     .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
     .wrapper { 
       max-width: 1100px; 
       width: 100%;
@@ -112,7 +113,7 @@
       padding: 32px 20px 60px; 
       flex: 1;
     }
-    
+
     .breadcrumb {
       font-family: var(--font-code);
       font-size: 0.78rem;
@@ -121,7 +122,7 @@
     }
     .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
-    
+
     .tool-header { margin-bottom: 24px; }
     .tool-header h1 { 
       font-size: clamp(1.4rem, 4vw, 1.8rem); 
@@ -132,7 +133,6 @@
     .tool-header h1 span { color: var(--atom-amber); }
     .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
 
-    /* Tool Card & Workspace */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
@@ -154,6 +154,7 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
+    .form-group label span { color: var(--atom-coral); }
 
     /* 16px font-size prevents mobile Safari auto-zooming */
     .form-control {
@@ -168,12 +169,8 @@
       font-family: var(--font-ui);
       outline: none;
       transition: border-color 0.15s;
-      -webkit-appearance: none;
-      appearance: none;
     }
-    .form-control:focus {
-      border-color: var(--atom-border-focus);
-    }
+    .form-control:focus { border-color: var(--atom-border-focus); }
 
     select.form-control {
       cursor: pointer;
@@ -182,6 +179,7 @@
       background-position: right 14px center;
       background-size: 16px;
       padding-right: 40px;
+      -webkit-appearance: none;
     }
 
     textarea.form-control {
@@ -192,119 +190,49 @@
       line-height: 1.6;
     }
 
-    /* Kinetic Verification Gate Box */
-    .kinetic-verify-box {
-      background-color: var(--atom-bg);
-      border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 16px;
+    .hidden-trap { display: none !important; }
+
+    .turnstile-box {
       margin-bottom: 20px;
-    }
-    .kinetic-title {
-      font-family: var(--font-code);
-      font-size: 0.78rem;
-      color: var(--atom-amber);
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      overflow-x: auto;
     }
 
-    .slider-track {
-      position: relative;
+    .btn-submit {
       width: 100%;
-      height: 48px;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      border-radius: 24px;
-      overflow: hidden;
-      user-select: none;
-      touch-action: none;
-    }
-    .slider-text {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-code);
-      font-size: 0.82rem;
-      color: var(--atom-muted);
-      pointer-events: none;
-    }
-    .slider-thumb {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background-color: var(--atom-cyan);
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #1e2227;
-      font-weight: bold;
-      transition: background-color 0.2s;
-    }
-    .slider-thumb:active {
-      cursor: grabbing;
-      background-color: var(--atom-amber);
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-      display: none;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    .btn-action {
-      flex: 1;
       min-height: 48px;
-      padding: 12px 18px;
+      background-color: var(--atom-amber);
+      color: #1e2227;
       font-weight: 700;
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      font-family: var(--font-ui);
       transition: opacity 0.15s ease-in-out;
     }
-    .btn-action:hover { opacity: 0.9; }
-    
-    .btn-gmail {
-      background-color: var(--atom-coral);
-      color: #ffffff;
-    }
-    .btn-client {
-      background-color: var(--atom-amber);
-      color: #1e2227;
-    }
+    .btn-submit:hover { opacity: 0.9; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .alert {
+    .status-msg {
       display: none;
-      padding: 12px 14px;
+      padding: 14px;
       border-radius: 4px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      margin-top: 12px;
+      font-size: 0.84rem;
+      margin-bottom: 18px;
       line-height: 1.5;
     }
-    .alert-warn {
-      background-color: rgba(224, 108, 117, 0.12);
+    .status-success {
+      background: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-error {
+      background: rgba(224, 108, 117, 0.12);
       border: 1px solid var(--atom-coral);
       color: var(--atom-coral);
     }
 
-    /* Operational Boundaries & Disclaimer Callout */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
@@ -328,28 +256,6 @@
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
-    }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; font-family: var(--font-code); }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
-      font-family: var(--font-code);
-      background-color: var(--atom-bg);
-      border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
-      color: var(--atom-cyan);
-    }
-
-    /* Footer */
     .bottom-bar {
       margin-top: 40px;
       padding-top: 20px;
@@ -364,32 +270,22 @@
     .bottom-bar a { color: var(--atom-text); text-decoration: none; }
     .bottom-bar a:hover { color: var(--atom-amber); }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
       .navbar { padding: 10px 16px; }
-      .nav-inner {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        gap: 8px;
-      }
-      .brand { justify-self: center; }
-      .trust-badge { justify-self: center; }
-      .ip-pill-nav { justify-self: center; }
+      .nav-inner { grid-template-columns: 1fr; justify-items: center; gap: 8px; }
       .wrapper { padding: 20px 14px 40px; }
       .tool-card { padding: 18px 14px; }
-      .action-buttons { flex-direction: column; }
       .bottom-bar { flex-direction: column; text-align: center; gap: 10px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navbar matching BitDark Template -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
       <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+        <span class="orbit-dot"></span> Zero-Telemetry Gateway
       </div>
       <div class="ip-pill-nav">
         <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
@@ -399,87 +295,67 @@
     </div>
   </header>
 
-  <!-- Main Container -->
   <main class="wrapper">
     <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/about.html">System Info</a> / contact
+      <a href="/">Home</a> / contact
     </nav>
 
     <div class="tool-header">
       <h1>Contact <span>BitDark Operations</span></h1>
-      <p>Direct communication channel. Zero third-party trackers, zero cloud intermediaries, and complete privacy.</p>
+      <p>Direct communication channel. Encrypted serverless relay, zero telemetry.</p>
     </div>
 
-    <!-- Active Form Card -->
     <div class="tool-card">
+      <div id="statusSuccess" class="status-msg status-success">
+        ✓ Transmission delivered successfully to BitDark operations.
+      </div>
+      <div id="statusError" class="status-msg status-error">
+        ⚠️ Failed to deliver message. Please complete the verification challenge.
+      </div>
+
       <form id="contactForm" autocomplete="off">
+        <!-- Invisible Honeypot Trap -->
+        <input type="text" name="botcheck" class="hidden-trap" tabindex="-1" autocomplete="off" />
+
         <div class="form-group">
           <label for="topic">Inquiry Classification <span>*</span></label>
           <select id="topic" class="form-control" required>
             <option value="Security Advisory / Bug Disclosure">Security Advisory / Bug Disclosure</option>
             <option value="Tool Feedback / Suggestion">Tool Feedback / Feature Proposal</option>
             <option value="Tool False Positive Report">Tool False Positive / Heuristic Bug</option>
-            <option value="Legal &amp; Compliance Inquiry">Legal, DMCA &amp; Compliance</option>
-            <option value="General Publisher Inquiry">General Inbound Inquiry</option>
+            <option value="Legal &amp; Compliance">Legal, DMCA &amp; Compliance</option>
+            <option value="General Inbound">General Inbound Inquiry</option>
           </select>
         </div>
 
         <div class="form-group">
+          <label for="senderEmail">Return Email (Optional)</label>
+          <input type="email" id="senderEmail" class="form-control" placeholder="name@domain.com (Leave blank for anonymous)" />
+        </div>
+
+        <div class="form-group">
           <label for="messageBody">Message Payload <span>*</span></label>
-          <textarea id="messageBody" class="form-control" placeholder="Provide details regarding your inquiry, reproduction steps for bugs, or tool feedback..." required spellcheck="true"></textarea>
+          <textarea id="messageBody" class="form-control" placeholder="Provide details regarding your security advisory, bug reproduction steps, or feedback..." required></textarea>
         </div>
 
-        <!-- Kinetic Proof of Human Interaction -->
-        <div class="kinetic-verify-box">
-          <div class="kinetic-title">
-            <span>Human Presence Verification Gate</span>
-            <span id="gateStatus" style="color: var(--atom-muted);">Locked</span>
-          </div>
-          
-          <div class="slider-track" id="sliderTrack">
-            <div class="slider-text" id="sliderText">Drag slider right to verify human presence</div>
-            <div class="slider-thumb" id="sliderThumb">➔</div>
-          </div>
-          <div id="kineticAlert" class="alert alert-warn"></div>
+        <!-- Cloudflare Turnstile Widget (Blocks Bots) -->
+        <div class="turnstile-box">
+          <div class="cf-turnstile" data-sitekey="YOUR_TURNSTILE_SITE_KEY" data-theme="dark"></div>
         </div>
 
-        <!-- Direct Dispatch Links -->
-        <div class="action-buttons" id="actionButtons">
-          <a id="btnOpenGmail" target="_blank" rel="noopener noreferrer" class="btn-action btn-gmail">
-            Open in Gmail Web
-          </a>
-          <a id="btnOpenDefault" class="btn-action btn-client">
-            Default Mail App
-          </a>
-        </div>
+        <button type="submit" id="btnSubmit" class="btn-submit">Dispatch Secure Message</button>
       </form>
     </div>
 
-    <!-- Usage & Liability Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Direct Communication &amp; Privacy Notice
+        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
       </div>
       <p>
-        <strong>bitdark.net is not responsible:</strong> Transmissions initiated from this interface execute directly via your selected mail provider. BitDark operates on a strict zero-telemetry architecture; no user messages, IP addresses, or telemetry packets are ever logged, stored, or routed through intermediate cloud databases.
+        <strong>bitdark.net is not responsible:</strong> Transmissions routed through this gateway execute securely via encrypted serverless relays. BitDark operates on a strict zero-telemetry architecture; no visitor IP addresses or message contents are saved in persistent public databases.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How the Zero-Egress Gateway Works</h2>
-      <p>Most online contact portals utilize third-party SaaS forwarders or server-side relational databases that record visitor IP addresses, browser fingerprints, and cleartext message bodies. BitDark eliminates these attack surfaces by utilizing in-browser client composition:</p>
-      <ul>
-        <li><strong>Memory Obfuscation:</strong> Operational inbox addresses are assembled dynamically in active memory, preventing automated headless web crawlers from scraping cleartext addresses.</li>
-        <li><strong>Kinetic Motor Verification:</strong> To mitigate automated submission abuse without intrusive third-party analytics or cookies, BitDark measures continuous acceleration variance and micro-velocity fluctuations during user interaction.</li>
-        <li><strong>Direct Client Handoff:</strong> Verified submissions transfer formatted payloads directly to your active browser session or native operating system email client via RFC 2368 URI standards.</li>
-      </ul>
-
-      <h2>Editorial Standards &amp; Vulnerability Disclosure</h2>
-      <p>BitDark follows coordinated vulnerability disclosure practices. When reporting potential edge cases, parser bypasses, or security bugs, please provide minimal reproducible examples or sample payloads so our engineering desk can replicate and harden local heuristics.</p>
-    </article>
-
-    <!-- Bottom Bar Navigation matching BitDark Template -->
     <div class="bottom-bar">
       <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
       <nav style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -495,7 +371,7 @@
   </main>
 
   <script>
-    // Dual-Stack IP Detection matching BitDark Template
+    // Dual-Stack IP Detection
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
@@ -506,169 +382,82 @@
         return;
       }
 
-      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
       try {
         const res4 = await fetch("https://api4.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
+        if (res4.ok) ipv4El.textContent = (await res4.json()).ip;
+        else throw new Error();
       } catch {
         try {
           const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
           ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
+        } catch { ipv4El.textContent = "Offline"; }
       }
 
-      // IPv6 Detection
       try {
         const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
         if (res6.ok) {
           const d6 = await res6.json();
           ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
+        } else throw new Error();
       } catch {
         try {
           const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
           const text6 = (await fb6.text()).trim();
           ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
+        } catch { ipv6El.textContent = "Not Supported"; }
       }
     }
     window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Obfuscated email reconstruction (bitdarklabs@gmail.com)
-    const _0xpartA = [98, 105, 116, 100, 97, 114, 107, 108, 97, 98, 115];
-    const _0xpartB = [103, 109, 97, 105, 108, 46, 99, 111, 109];
-    function getDecodedTarget() {
-      const u = String.fromCharCode(..._0xpartA);
-      const d = String.fromCharCode(..._0xpartB);
-      return `${u}@${d}`;
-    }
+    // Form Submission Handler
+    const WORKER_ENDPOINT = "https://bitdark-contact-api.aruncseng.workers.dev"; // Your Worker URL
+    const form = document.getElementById("contactForm");
+    const btnSubmit = document.getElementById("btnSubmit");
+    const statusSuccess = document.getElementById("statusSuccess");
+    const statusError = document.getElementById("statusError");
 
-    // Kinetic Slider & Behavioral Anti-Bot Engine
-    const track = document.getElementById("sliderTrack");
-    const thumb = document.getElementById("sliderThumb");
-    const sliderText = document.getElementById("sliderText");
-    const gateStatus = document.getElementById("gateStatus");
-    const actionButtons = document.getElementById("actionButtons");
-    const kineticAlert = document.getElementById("kineticAlert");
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
 
-    let isDragging = false;
-    let startX = 0;
-    let startTime = 0;
-    let dragPoints = [];
-    let isHumanVerified = false;
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = "Verifying & Dispatching...";
+      statusSuccess.style.display = "none";
+      statusError.style.display = "none";
 
-    function startDrag(e) {
-      if (isHumanVerified) return;
-      isDragging = true;
-      startX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      startTime = performance.now();
-      dragPoints = [{ x: startX, t: startTime }];
-      kineticAlert.style.display = "none";
-    }
+      const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
 
-    function doDrag(e) {
-      if (!isDragging || isHumanVerified) return;
-      const currentX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
-      const rect = track.getBoundingClientRect();
-      const maxDelta = rect.width - 48;
-      let delta = currentX - startX;
+      const payload = {
+        category: document.getElementById("topic").value,
+        email: document.getElementById("senderEmail").value.trim(),
+        message: document.getElementById("messageBody").value.trim(),
+        botcheck: form.querySelector('[name="botcheck"]').value,
+        turnstile_token: turnstileToken
+      };
 
-      if (delta < 0) delta = 0;
-      if (delta > maxDelta) delta = maxDelta;
+      try {
+        const res = await fetch(WORKER_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      thumb.style.transform = `translateX(${delta}px)`;
-      dragPoints.push({ x: currentX, t: performance.now() });
+        const data = await res.json();
 
-      if (delta >= maxDelta - 2) {
-        completeDrag();
-      }
-    }
-
-    function completeDrag() {
-      isDragging = false;
-      const duration = performance.now() - startTime;
-
-      let hasMicroVariations = false;
-      if (dragPoints.length > 5) {
-        for (let i = 2; i < dragPoints.length; i++) {
-          const v1 = (dragPoints[i-1].x - dragPoints[i-2].x) / (dragPoints[i-1].t - dragPoints[i-2].t || 1);
-          const v2 = (dragPoints[i].x - dragPoints[i-1].x) / (dragPoints[i].t - dragPoints[i-1].t || 1);
-          if (Math.abs(v2 - v1) > 0.01) {
-            hasMicroVariations = true;
-            break;
-          }
+        if (res.ok && data.success) {
+          statusSuccess.style.display = "block";
+          form.reset();
+          if (typeof turnstile !== "undefined") turnstile.reset();
+        } else {
+          statusError.textContent = data.error || "Delivery failed. Please complete the CAPTCHA.";
+          statusError.style.display = "block";
         }
+      } catch (err) {
+        statusError.textContent = "Network error: Connection to secure gateway failed.";
+        statusError.style.display = "block";
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Dispatch Secure Message";
       }
-
-      if (duration < 250 || !hasMicroVariations) {
-        thumb.style.transform = "translateX(0px)";
-        kineticAlert.textContent = "Autonomous gesture detected. Please drag using continuous manual movement.";
-        kineticAlert.style.display = "block";
-        return;
-      }
-
-      isHumanVerified = true;
-      gateStatus.textContent = "Verified";
-      gateStatus.style.color = "var(--atom-green)";
-      sliderText.textContent = "✓ Verified Human";
-      thumb.style.backgroundColor = "var(--atom-green)";
-      thumb.textContent = "✓";
-      buildDispatchLinks();
-    }
-
-    function cancelDrag() {
-      if (!isHumanVerified) {
-        isDragging = false;
-        thumb.style.transform = "translateX(0px)";
-      }
-    }
-
-    thumb.addEventListener("mousedown", startDrag);
-    window.addEventListener("mousemove", doDrag);
-    window.addEventListener("mouseup", cancelDrag);
-
-    thumb.addEventListener("touchstart", startDrag, { passive: true });
-    window.addEventListener("touchmove", doDrag, { passive: true });
-    window.addEventListener("touchend", cancelDrag);
-
-    // Build Email Links
-    function buildDispatchLinks() {
-      const topic = document.getElementById("topic").value;
-      const rawMsg = document.getElementById("messageBody").value.trim();
-
-      const target = getDecodedTarget();
-      const subject = encodeURIComponent(`[BitDark Contact] ${topic}`);
-      const body = encodeURIComponent(
-        `Classification: ${topic}\n\n` +
-        `Message Payload:\n${rawMsg || "No message body specified."}\n\n` +
-        `---\nTransmitted via BitDark.net Contact Gateway`
-      );
-
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subject}&body=${body}`;
-      const mailtoUrl = `mailto:${target}?subject=${subject}&body=${body}`;
-
-      document.getElementById("btnOpenGmail").href = gmailUrl;
-      document.getElementById("btnOpenDefault").href = mailtoUrl;
-
-      actionButtons.style.display = "flex";
-    }
-
-    document.getElementById("messageBody").addEventListener("input", () => {
-      if (isHumanVerified) buildDispatchLinks();
-    });
-    document.getElementById("topic").addEventListener("change", () => {
-      if (isHumanVerified) buildDispatchLinks();
     });
   </script>
 </body>
