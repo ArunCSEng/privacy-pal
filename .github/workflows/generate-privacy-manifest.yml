@@ -1,0 +1,118 @@
+name: Auto-Generate Privacy Tools Manifest
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/privacy/**/index.html'
+
+# Prevent concurrent runs from stacking up in the queue
+concurrency:
+  group: privacy-manifest-${{ github.ref }}
+  cancel-in-progress: true
+
+# Grant permission to commit updated manifest.json back to the repository
+permissions:
+  contents: write
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 # Prevents runner hangs
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Scan Directory & Generate tools/privacy/manifest.json
+        run: |
+          python3 -c "
+          import os, json, re
+
+          base_dir = 'tools/privacy'
+          manifest_path = os.path.join(base_dir, 'manifest.json')
+
+          # Baseline IDs already hardcoded in tools/privacy/index.html to avoid duplicates
+          BASELINE_IDS = {
+              'exif-scrub', 'pdf-cleaner', 'utm-cleaner', 'stego-extract',
+              'pii-redactor', 'fingerprint-audit', 'gpc-signal', 'media-meta',
+              'onion-check', 'clipboard-hijack', 'webrtc-leak', 'email-masker',
+              'referrer-audit', 'storage-nuker', 'anti-ocr'
+          }
+
+          tools = []
+
+          if os.path.exists(base_dir):
+              for entry in sorted(os.listdir(base_dir)):
+                  tool_dir = os.path.join(base_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+
+                  # Skip root index.html, non-directories, and files
+                  if not os.path.isdir(tool_dir):
+                      continue
+
+                  # Skip tools already included in the baseline set
+                  if entry in BASELINE_IDS:
+                      continue
+
+                  if os.path.exists(index_path):
+                      with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Extract Clean Title
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+                      if title_match:
+                          raw_title = title_match.group(1)
+                          # Clean brand suffixes (e.g. 'Tool Name — BitDark' -> 'Tool Name')
+                          clean_title = re.split(r'[—|–|-]', raw_title)[0].strip()
+                      else:
+                          clean_title = entry.replace('-', ' ').title()
+
+                      # Extract Description
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE)
+                      clean_desc = desc_match.group(1).strip() if desc_match else 'Zero-log client-side privacy tool.'
+
+                      # Determine Subcategory Tag based on path or content
+                      sub = 'browser'
+                      content_lower = content.lower()
+                      if any(k in content_lower for k in ['exif', 'gps', 'metadata', 'pdf', 'image']):
+                          sub = 'metadata'
+                      elif any(k in content_lower for k in ['webrtc', 'utm', 'tracking', 'referrer', 'leak']):
+                          sub = 'tracking'
+                      elif any(k in content_lower for k in ['redact', 'pii', 'secret', 'mask', 'scrub']):
+                          sub = 'redaction'
+
+                      tools.append({
+                          'id': entry,
+                          'name': clean_title,
+                          'desc': clean_desc,
+                          'sub': sub,
+                          'engine': 'In-Memory',
+                          'url': f'/tools/privacy/{entry}'
+                      })
+
+          with open(manifest_path, 'w', encoding='utf-8') as out:
+              json.dump(tools, out, indent=2)
+
+          print(f'Successfully compiled {len(tools)} dynamic privacy tool(s) to {manifest_path}')
+          "
+
+      - name: Commit & Push Manifest (Zero-Loop Safe)
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/privacy/manifest.json
+          
+          # Only commit if changes exist; [skip ci] prevents recursive action triggers
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(privacy): auto-update /tools/privacy/manifest.json [skip ci]"
+            git push origin main
+          else
+            echo "No manifest changes detected. Skipping commit."
+          fi
