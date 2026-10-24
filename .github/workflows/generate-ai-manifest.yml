@@ -1,0 +1,59 @@
+name: Auto-Generate AI Tools Manifest
+
+on:
+  push:
+    paths:
+      - 'tools/ai/**/index.html'
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate tools/ai/manifest.json
+        run: |
+          python3 -c "
+          import os, json, re
+
+          tools = []
+          base_dir = 'tools/ai'
+          
+          for entry in sorted(os.listdir(base_dir)):
+              tool_dir = os.path.join(base_dir, entry)
+              index_path = os.path.join(tool_dir, 'index.html')
+              
+              # Ignore the hub itself and non-directories
+              if entry == 'index.html' or not os.path.isdir(tool_dir):
+                  continue
+                  
+              if os.path.exists(index_path):
+                  with open(index_path, 'r', encoding='utf-8') as f:
+                      content = f.read()
+                      
+                  title_match = re.search(r'<title>(.*?)<\/title>', content, re.IGNORECASE)
+                  desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE)
+                  
+                  raw_title = title_match.group(1).split('—')[0].split('|')[0].strip() if title_match else entry
+                  desc = desc_match.group(1).strip() if desc_match else 'Client-side AI defense utility.'
+                  
+                  tools.append({
+                      'id': entry,
+                      'name': raw_title,
+                      'desc': desc,
+                      'sub': 'prompt',
+                      'engine': 'In-Memory',
+                      'url': f'/tools/ai/{entry}'
+                  })
+
+          with open('tools/ai/manifest.json', 'w', encoding='utf-8') as out:
+              json.dump(tools, out, indent=2)
+          "
+
+      - name: Commit & Push Manifest
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/ai/manifest.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(ai): auto-update /tools/ai/manifest.json [skip ci]" && git push)
