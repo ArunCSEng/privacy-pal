@@ -31,7 +31,7 @@ jobs:
       - name: Scan Directory & Generate tools/auth/tools.yml
         run: |
           python3 -c "
-          import os, re
+          import os, re, html
 
           base_dir = 'tools/auth'
           yaml_path = os.path.join(base_dir, 'tools.yml')
@@ -58,32 +58,44 @@ jobs:
                       with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
                           content = f.read()
 
-                      # Extract Clean Title
+                      # 1. Extract Clean Title and decode pre-existing HTML entities (avoids &amp; double-escaping)
                       title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
                       if title_match:
                           raw_title = title_match.group(1)
                           clean_title = re.split(r'[—|–|-]', raw_title)[0].strip()
                       else:
                           clean_title = entry.replace('-', ' ').title()
+                      clean_title = html.unescape(clean_title)
 
-                      # Extract Meta Description
+                      # 2. Extract Meta Description and decode HTML entities
                       desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE)
                       clean_desc = desc_match.group(1).strip() if desc_match else 'Client-side application security utility.'
+                      clean_desc = html.unescape(clean_desc)
 
-                      # Determine Subcategory Tag based on content or folder name
-                      sub = 'tokens'
-                      content_lower = content.lower()
-                      if any(k in content_lower for k in ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']):
-                          sub = 'headers'
-                      elif any(k in content_lower for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password']):
+                      # 3. Accurately assign subcategory using slug/title (avoids HTML markup matching <header>)
+                      path_lower = entry.lower()
+                      title_lower = clean_title.lower()
+                      text_to_check = f'{path_lower} {title_lower}'
+
+                      if any(k in text_to_check for k in ['jwk', 'jwt', 'token', 'secret']):
+                          sub = 'tokens'
+                      elif any(k in text_to_check for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password', 'identity', 'auth']):
                           sub = 'identity'
-                      elif any(k in content_lower for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
+                      elif any(k in text_to_check for k in ['csp', 'cors', 'sri', 'cookie', 'hsts', 'header', 'policy']):
+                          sub = 'headers'
+                      elif any(k in text_to_check for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
                           sub = 'sanitization'
+                      else:
+                          sub = 'tokens'
+
+                      # Escape inner quotes for safe YAML string output
+                      escaped_name = clean_title.replace('\"', '\\\"')
+                      escaped_desc = clean_desc.replace('\"', '\\\"')
 
                       tools.append({
                           'id': entry,
-                          'name': clean_title,
-                          'desc': clean_desc,
+                          'name': escaped_name,
+                          'desc': escaped_desc,
                           'sub': sub,
                           'engine': 'In-Memory',
                           'url': f'/tools/auth/{entry}'
