@@ -24,7 +24,7 @@
   <meta name="twitter:title" content="Privacy &amp; OSINT Defense Tools — BitDark" />
   <meta name="twitter:description" content="Defensive privacy utilities executing entirely inside browser volatile memory. Zero server uploads." />
 
-  <!-- Structured JSON-LD Data (Collection & FAQ Schemas for AdSense / Search Quality) -->
+  <!-- Structured JSON-LD Data: Tool-Specific FAQ and Collection Schemas -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -34,7 +34,7 @@
         "@id": "https://bitdark.net/tools/privacy/#webpage",
         "url": "https://bitdark.net/tools/privacy/",
         "name": "BitDark Privacy & OSINT Defense Hub",
-        "description": "Collection of client-side, zero-log privacy auditing, metadata scrubbing, and anti-fingerprinting utilities.",
+        "description": "Collection of client-side, zero-telemetry privacy auditing, metadata scrubbing, and anti-fingerprinting utilities.",
         "publisher": {
           "@type": "Organization",
           "name": "BitDark.NET",
@@ -47,26 +47,50 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Are personal photos, documents, or sanitized texts uploaded to any server?",
+            "name": "How does the EXIF & Metadata Stripper remove GPS tags without uploading photos?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All media byte manipulation, EXIF redaction, PII regex scrubbing, and canvas steganography analysis take place purely in your local browser sandbox memory (RAM). Disconnecting your internet connection will not stop these tools from executing."
+              "text": "The tool reads image binary buffers into local browser memory via the HTML5 FileReader and Canvas APIs. It draws the raw pixel array onto an offscreen canvas and re-encodes the image as a clean raster without writing back the APP1, EXIF, or XMP metadata segments, ensuring zero bytes ever leave your machine."
             }
           },
           {
             "@type": "Question",
-            "name": "How does BitDark's browser fingerprint audit differ from external testers?",
+            "name": "Does the PII & Secret Redactor retain copies of redacted API keys or personal data?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Most online fingerprint scanners harvest your browser hashes to build centralized marketing databases. BitDark reads and visualizes your local WebGL, Canvas, and AudioContext entropy entirely in-memory without collecting, persisting, or transmitting the data anywhere."
+              "text": "No. The PII Redactor processes text purely in-memory using compiled JavaScript regular expressions. It scrubs AWS keys, Bearer tokens, emails, IPv4 addresses, and phone numbers in local RAM, discarding the original buffer immediately after sanitization."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the automatic tool catalog synchronization work?",
+            "name": "How does the WebRTC Local IP Leak Checker detect internal network exposure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The page performs an asynchronous background check against /tools/privacy/manifest.json. When new tools are deployed to that category, they are automatically parsed, merged into the display grid, and cached locally without requiring manual updates to index.html."
+              "text": "The tool initializes a temporary RTCPeerConnection in your browser to request local Interactive Connectivity Establishment (ICE) candidates. It parses the resulting SDP offers locally to inspect whether your private LAN IP (e.g., 192.168.x.x or 10.x.x.x) is leaked past VPN or proxy tunnels."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What parameters are stripped by the URL Tracking Cleaner?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The URL Tracking Cleaner strips marketing and analytics query parameters such as utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid, mc_eid, and cross-site click IDs using native browser URL parsing, leaving only the clean destination address."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Browser Fingerprint Audit calculate entropy signatures?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It probes local browser rendering characteristics—such as WebGL renderer strings, Canvas 2D geometric fill differences, AudioContext oscillator frequency shifts, and installed font fallbacks. It computes a local cryptographic hash of these entropy vectors without saving or transmitting the signature to any third party."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can these privacy tools be operated completely offline without an internet connection?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Once this page finishes loading, all underlying JavaScript engines, Canvas transformers, and binary parsers remain cached in browser memory. You can disconnect your network connection or enable Airplane Mode, and every tool in this suite will continue to function normally."
             }
           }
         ]
@@ -75,7 +99,7 @@
   }
   </script>
 
-  <!-- UNCOMMENT & INSERT YOUR ADSENSE SCRIPT TAG WHEN READY -->
+  <!-- UNCOMMENT & INSERT ADSENSE SCRIPT TAG WHEN READY -->
   <!-- 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> 
   -->
@@ -185,11 +209,72 @@
       .ip-pill-nav { font-size: 0.70rem; padding: 4px 8px; }
     }
 
-    /* Container Wrapper */
+    /* Top Category Bar with Live Counts */
+    .top-category-bar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      width: 100%;
+    }
+    .category-scroll-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+    }
+    .category-scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+    .cat-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 7px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      flex-shrink: 0;
+    }
+    .cat-pill-btn:hover {
+      border-color: var(--atom-amber);
+      color: #fff;
+      background-color: #2c313a;
+    }
+    .cat-pill-btn.active {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+      background-color: var(--atom-gutter);
+      box-shadow: 0 0 8px rgba(229, 192, 123, 0.15);
+    }
+    .cat-pill-count {
+      color: var(--atom-muted);
+      font-size: 0.76rem;
+      transition: color 0.15s;
+    }
+    .cat-pill-btn:hover .cat-pill-count,
+    .cat-pill-btn.active .cat-pill-count {
+      color: var(--atom-amber);
+    }
+
+    /* Main Layout */
     .wrapper {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 28px 18px 60px;
+      padding: 24px 18px 60px;
     }
 
     /* Breadcrumbs */
@@ -244,7 +329,7 @@
       line-height: 1.6;
     }
 
-    /* Search & Filter Toolbar */
+    /* Search Toolbar */
     .search-bar-row {
       max-width: 720px;
       margin: 0 auto 18px;
@@ -257,7 +342,7 @@
       border-radius: 6px;
       padding: 14px 50px 14px 16px;
       color: #fff;
-      font-size: 16px; /* Prevents auto-zoom on mobile */
+      font-size: 16px; /* Prevents auto-zoom on mobile iOS */
       font-family: var(--font-code);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -397,11 +482,9 @@
       font-size: 0.68rem;
     }
 
-    /* =========================================================
-       ZERO-CLS ADSENSE CONTAINER (100% hidden until filled)
-       ========================================================= */
+    /* Zero-CLS AdSense Container */
     .ad-container-slot {
-      display: none; /* Hidden by default with 0px height */
+      display: none;
       margin: 28px auto;
       text-align: center;
       width: 100%;
@@ -409,20 +492,16 @@
       min-height: 0;
       transition: opacity 0.3s ease;
     }
-
-    /* Reveals automatically once AdSense renders an iframe or filled status */
     .ad-container-slot:has(iframe),
     .ad-container-slot:has(ins[data-ad-status="filled"]),
     .ad-container-slot.ad-revealed {
       display: block !important;
       min-height: 90px;
     }
-
     .ad-container-slot ins.adsbygoogle {
       display: block;
       margin: 0 auto;
     }
-
     .ad-label {
       font-family: var(--font-code);
       font-size: 0.65rem;
@@ -432,7 +511,7 @@
       margin-bottom: 4px;
     }
 
-    /* Limitation of Liability Disclaimer Panel */
+    /* Disclaimer Panel */
     .disclaimer-panel {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
@@ -455,7 +534,7 @@
       gap: 8px;
     }
 
-    /* Educational Architecture Section (Prevents Thin-Content Flags) */
+    /* Educational Section */
     .edu-section {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
@@ -496,7 +575,7 @@
       margin-bottom: 6px;
     }
 
-    /* Collapsible FAQ Section */
+    /* FAQ Section */
     .faq-section {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
@@ -536,7 +615,7 @@
       line-height: 1.6;
     }
 
-    /* Global Trust Navigation Footer */
+    /* Footer */
     .bottom-bar {
       margin-top: 40px;
       padding-top: 22px;
@@ -573,7 +652,7 @@
 </head>
 <body>
 
-  <!-- Cockpit Navigation Bar -->
+  <!-- Top Cockpit Bar -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
@@ -589,6 +668,13 @@
       </div>
     </div>
   </header>
+
+  <!-- Top Category Bar (Dynamic Auto-Updating Counts) -->
+  <nav class="top-category-bar" aria-label="Ecosystem Directory Navigation">
+    <div class="category-scroll-container" id="categoryNavContainer">
+      <!-- Injected via JavaScript with live counts -->
+    </div>
+  </nav>
 
   <main class="wrapper">
     <!-- Breadcrumb Hierarchy -->
@@ -646,14 +732,14 @@
       <span id="toolCountLabel">15 Tools Available</span>
       <div class="sync-pill" id="syncStatusPill">
         <span class="sync-dot"></span>
-        <span id="syncText">Auto-Sync Active (/tools/privacy/manifest.json)</span>
+        <span id="syncText">Auto-Sync Active (/tools/privacy/tools.yml)</span>
       </div>
     </div>
 
     <!-- Privacy Tools Directory Grid -->
     <div class="tools-grid" id="toolsGrid"></div>
 
-    <!-- Prominent Liability & Operational Disclaimer -->
+    <!-- Limitation of Liability Disclaimer Panel -->
     <section class="disclaimer-panel">
       <h3>⚠️ Limitation of Liability &amp; Operational Disclaimer</h3>
       <p>
@@ -664,7 +750,7 @@
       </p>
     </section>
 
-    <!-- Educational Depth Section (Prevents Thin-Content Flags) -->
+    <!-- Educational Depth Section -->
     <article class="edu-section">
       <h2>Understanding Client-Side Privacy Auditing &amp; Zero Egress</h2>
       <p>
@@ -677,8 +763,8 @@
           <p>Every tool in this directory processes files, credentials, and image headers locally in volatile memory using HTML5 Canvas, Web Streams, and DataView APIs. Disconnecting your device from the internet will not interrupt tool availability.</p>
         </div>
         <div class="edu-card">
-          <h4>Dynamic Tool Discovery</h4>
-          <p>When new privacy utilities are published under <code>/tools/privacy/</code>, this hub synchronizes via <code>manifest.json</code> automatically, registering and rendering the new tools without manual code edits to the hub.</p>
+          <h4>Dynamic YAML Discovery</h4>
+          <p>When new privacy utilities are published under <code>/tools/privacy/</code>, this hub synchronizes via <code>tools.yml</code> automatically, registering and rendering the new tools without manual code edits to the hub.</p>
         </div>
         <div class="edu-card">
           <h4>Ad Script Isolation</h4>
@@ -687,20 +773,32 @@
       </div>
     </article>
 
-    <!-- Interactive FAQ Section (Boosts E-E-A-T and SEO) -->
+    <!-- Interactive FAQ Section (Tool-Specific) -->
     <section class="faq-section">
-      <h2>Frequently Asked Questions</h2>
+      <h2>Frequently Asked Questions About Privacy Tools</h2>
       <details class="faq-item">
-        <summary>Are personal photos, documents, or sanitized texts uploaded to any server?</summary>
-        <p>No. All media byte manipulation, EXIF redaction, PII regex scrubbing, and canvas steganography analysis take place purely in your local browser sandbox memory (RAM). Disconnecting your internet connection will not stop these tools from executing.</p>
+        <summary>How does the EXIF &amp; Metadata Stripper remove GPS tags without uploading photos?</summary>
+        <p>The tool reads image binary buffers into local browser memory via the HTML5 FileReader and Canvas APIs. It draws the raw pixel array onto an offscreen canvas and re-encodes the image as a clean raster without writing back the APP1, EXIF, or XMP metadata segments, ensuring zero bytes ever leave your machine.</p>
       </details>
       <details class="faq-item">
-        <summary>How does BitDark's browser fingerprint audit differ from external testers?</summary>
-        <p>Most online fingerprint scanners harvest your browser hashes to build centralized marketing databases. BitDark reads and visualizes your local WebGL, Canvas, and AudioContext entropy entirely in-memory without collecting, persisting, or transmitting the data anywhere.</p>
+        <summary>Does the PII &amp; Secret Redactor retain copies of redacted API keys or personal data?</summary>
+        <p>No. The PII Redactor processes text purely in-memory using compiled JavaScript regular expressions. It scrubs AWS keys, Bearer tokens, emails, IPv4 addresses, and phone numbers in local RAM, discarding the original buffer immediately after sanitization.</p>
       </details>
       <details class="faq-item">
-        <summary>How does the automatic catalog synchronization work?</summary>
-        <p>The client makes an asynchronous check to <code>/tools/privacy/manifest.json</code>. When new tools are added to that JSON array, they are merged into your local view and cached in your browser's local storage automatically.</p>
+        <summary>How does the WebRTC Local IP Leak Checker detect internal network exposure?</summary>
+        <p>The tool initializes a temporary RTCPeerConnection in your browser to request local Interactive Connectivity Establishment (ICE) candidates. It parses the resulting SDP offers locally to inspect whether your private LAN IP (e.g., 192.168.x.x or 10.x.x.x) is leaked past VPN or proxy tunnels.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What parameters are stripped by the URL Tracking Cleaner?</summary>
+        <p>The URL Tracking Cleaner strips marketing and analytics query parameters such as <code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>gclid</code>, <code>fbclid</code>, <code>msclkid</code>, <code>mc_eid</code>, and cross-site click IDs using native browser URL parsing, leaving only the clean destination address.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How does the Browser Fingerprint Audit calculate entropy signatures?</summary>
+        <p>It probes local browser rendering characteristics—such as WebGL renderer strings, Canvas 2D geometric fill differences, AudioContext oscillator frequency shifts, and installed font fallbacks. It computes a local cryptographic hash of these entropy vectors without saving or transmitting the signature to any third party.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can these privacy tools be operated completely offline without an internet connection?</summary>
+        <p>Yes. Once this page finishes loading, all underlying JavaScript engines, Canvas transformers, and binary parsers remain cached in browser memory. You can disconnect your network connection or enable Airplane Mode, and every tool in this suite will continue to function normally.</p>
       </details>
     </section>
 
@@ -744,7 +842,29 @@
   </main>
 
   <script>
-    // 1. Baseline Registered Privacy & OSINT Tools Catalog
+    // 1. Ecosystem Baseline Tallies for Global Category Header
+    const ECOSYSTEM_BASELINES = {
+      ai: 15,
+      privacy: 15,
+      crypto: 15,
+      auth: 15,
+      network: 15,
+      encoding: 15,
+      forensics: 10
+    };
+
+    // Category Metadata for the Top Navigation Bar
+    const CATEGORY_DEFINITIONS = [
+      { key: "ai", label: "AI Defense", url: "/tools/ai/" },
+      { key: "privacy", label: "Privacy & OSINT", url: "/tools/privacy/" },
+      { key: "crypto", label: "Crypto & Vault", url: "/tools/crypto/" },
+      { key: "auth", label: "AppSec & Tokens", url: "/tools/auth/" },
+      { key: "network", label: "Network & Infra", url: "/tools/network/" },
+      { key: "encoding", label: "Encoders", url: "/tools/encoding/" },
+      { key: "forensics", label: "File Forensics", url: "/tools/forensics/" }
+    ];
+
+    // 2. Baseline Registered Privacy & OSINT Tools Catalog (15 Core Tools)
     const BASE_PRIVACY_TOOLS = [
       {
         id: "exif-scrub",
@@ -878,7 +998,25 @@
     const filterButtons = document.querySelectorAll(".filter-btn");
     const syncText = document.getElementById("syncText");
 
-    // 2. Render Directory Cards
+    // 3. Render Top Category Navigation Bar with Dynamic Counts
+    function updateTopCategoryBar() {
+      const container = document.getElementById("categoryNavContainer");
+      if (!container) return;
+
+      ECOSYSTEM_BASELINES.privacy = privacyCatalog.length;
+
+      container.innerHTML = CATEGORY_DEFINITIONS.map(cat => {
+        const count = ECOSYSTEM_BASELINES[cat.key] || 0;
+        const isActive = cat.key === "privacy" ? "active" : "";
+        return `
+          <a href="${cat.url}" class="cat-pill-btn ${isActive}" data-cat="${cat.key}">
+            ${cat.label} <span class="cat-pill-count">(${count})</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    // 4. Render Directory Cards
     function renderPrivacyCatalog() {
       const filtered = privacyCatalog.filter(tool => {
         const matchesSub = activeSubfilter === "all" || tool.sub === activeSubfilter;
@@ -921,7 +1059,7 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
-    // 3. Search and Subfilter Handlers
+    // 5. Search and Subfilter Handlers
     toolSearch.addEventListener("input", (e) => {
       searchQuery = e.target.value.trim();
       renderPrivacyCatalog();
@@ -943,12 +1081,45 @@
       }
     });
 
-    // 4. Auto-Sync Engine for Future Tools Published under /tools/privacy/
-    async function syncFutureTools() {
-      const MANIFEST_URL = "/tools/privacy/manifest.json";
-      const CACHE_KEY = "bitdark_privacy_dynamic_tools";
+    // 6. In-Browser Lightweight Native YAML Parser (Zero Dependencies)
+    function parseSimpleYamlTools(yamlText) {
+      const items = [];
+      let currentItem = null;
+      const lines = yamlText.split(/\r?\n/);
 
-      // Load cached dynamic tools from previous visits
+      for (let rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line || line.startsWith("#")) continue;
+
+        if (line.startsWith("- ")) {
+          if (currentItem && currentItem.id) items.push(currentItem);
+          currentItem = {};
+          const rest = line.slice(2).trim();
+          if (rest.includes(":")) {
+            const idx = rest.indexOf(":");
+            const k = rest.slice(0, idx).trim();
+            const v = rest.slice(idx + 1).trim().replace(/^["'](.*)["']$/, "$1");
+            currentItem[k] = v;
+          }
+          continue;
+        }
+
+        const colonIdx = line.indexOf(":");
+        if (colonIdx !== -1 && currentItem) {
+          const k = line.slice(0, colonIdx).trim();
+          const v = line.slice(colonIdx + 1).trim().replace(/^["'](.*)["']$/, "$1");
+          currentItem[k] = v;
+        }
+      }
+      if (currentItem && currentItem.id) items.push(currentItem);
+      return items;
+    }
+
+    // 7. Auto-Sync Engine: Fetches tools.yml (with Fallback to manifest.yml)
+    async function syncFutureToolsFromYaml() {
+      const YAML_URL = "/tools/privacy/tools.yml";
+      const CACHE_KEY = "bitdark_privacy_dynamic_yaml_tools";
+
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -958,19 +1129,29 @@
         console.warn("Storage cache read failed", e);
       }
 
-      // Fetch remote manifest with cache-busting
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        const response = await fetch(`${MANIFEST_URL}?_t=${Date.now()}`, {
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        let response = await fetch(`${YAML_URL}?_t=${Date.now()}`, {
           cache: "no-store",
           signal: controller.signal
         });
         clearTimeout(timeoutId);
 
+        if (!response.ok) {
+          const fallbackCtrl = new AbortController();
+          const fbTimeout = setTimeout(() => fallbackCtrl.abort(), 2000);
+          response = await fetch(`/tools/privacy/manifest.yml?_t=${Date.now()}`, {
+            cache: "no-store",
+            signal: fallbackCtrl.signal
+          });
+          clearTimeout(fbTimeout);
+        }
+
         if (response.ok) {
-          const remoteTools = await response.json();
+          const rawYaml = await response.text();
+          const remoteTools = parseSimpleYamlTools(rawYaml);
           if (Array.isArray(remoteTools) && remoteTools.length > 0) {
             mergeTools(remoteTools);
             localStorage.setItem(CACHE_KEY, JSON.stringify(remoteTools));
@@ -984,6 +1165,7 @@
       }
 
       renderPrivacyCatalog();
+      updateTopCategoryBar();
     }
 
     function mergeTools(newTools) {
@@ -1004,7 +1186,7 @@
       });
     }
 
-    // 5. Dual-Stack IPv4 & IPv6 Telemetry Engine with Fallbacks
+    // 8. Dual-Stack IPv4 & IPv6 Telemetry Engine with Fallbacks
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
@@ -1077,7 +1259,7 @@
       })();
     }
 
-    // 6. Ad Slot Observer: Reveals containers only when an ad iframe is injected
+    // 9. Mutation Observer for Zero-CLS Ad Container Reveal
     function setupAdObserver() {
       const adSlots = document.querySelectorAll(".ad-container-slot");
       adSlots.forEach(slot => {
@@ -1095,8 +1277,9 @@
     // Initialize Page
     window.addEventListener("DOMContentLoaded", () => {
       detectUserIPs();
+      updateTopCategoryBar();
       renderPrivacyCatalog();
-      syncFutureTools();
+      syncFutureToolsFromYaml();
       setupAdObserver();
     });
   </script>
