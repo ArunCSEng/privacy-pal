@@ -1,0 +1,90 @@
+name: Auto-Generate AppSec Tools Manifest
+
+on:
+  push:
+    paths:
+      - 'tools/auth/**/index.html'
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate tools/auth/manifest.json
+        run: |
+          python3 -c "
+          import os, json, re, html
+
+          tools = []
+          base_dir = 'tools/auth'
+          
+          # Baseline IDs already hardcoded in tools/auth/index.html
+          BASELINE_IDS = {
+              'jwt-offline', 'jwt-brute', 'csp-builder', 'sri-builder',
+              'cors-sim', 'sec-headers', 'cookie-audit', 'pkce-gen',
+              'secret-scanner', 'x509-decoder', 'tls-cipher', 'saml-decode',
+              'zxcvbn-lab', 'xss-escaper', 'sql-sanitizer'
+          }
+
+          if os.path.exists(base_dir):
+              for entry in sorted(os.listdir(base_dir)):
+                  tool_dir = os.path.join(base_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+                  
+                  # Ignore the hub itself, non-directories, and baseline tools
+                  if entry == 'index.html' or not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
+                      continue
+                      
+                  if os.path.exists(index_path):
+                      with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+                          
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
+                      
+                      # Strip brand suffixes and unescape HTML entities (&amp; -> &)
+                      if title_match:
+                          raw_title = title_match.group(1).strip()
+                          clean_title = re.split(r'\s+[—|–|-]\s+', raw_title)[0].strip()
+                          clean_title = html.unescape(clean_title)
+                      else:
+                          clean_title = entry.replace('-', ' ').title()
+                          
+                      desc = html.unescape(desc_match.group(1).strip()) if desc_match else 'Client-side application security utility.'
+                      desc = re.sub(r'\s+', ' ', desc)
+
+                      # Content-aware subcategory matching
+                      content_lower = content.lower()
+                      entry_lower = entry.lower()
+                      if any(k in entry_lower or k in content_lower for k in ['jwk', 'jwks', 'jwt', 'token', 'secret', 'bearer']):
+                          sub = 'tokens'
+                      elif any(k in entry_lower or k in content_lower for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password', 'entropy']):
+                          sub = 'identity'
+                      elif any(k in entry_lower or k in content_lower for k in ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']):
+                          sub = 'headers'
+                      elif any(k in entry_lower or k in content_lower for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
+                          sub = 'sanitization'
+                      else:
+                          sub = 'tokens'
+                      
+                      tools.append({
+                          'id': entry,
+                          'name': clean_title,
+                          'desc': desc,
+                          'sub': sub,
+                          'engine': 'In-Memory',
+                          'url': f'/tools/auth/{entry}'
+                      })
+
+          with open('tools/auth/manifest.json', 'w', encoding='utf-8') as out:
+              json.dump(tools, out, indent=2)
+          "
+
+      - name: Commit & Push Manifest
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/auth/manifest.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(auth): auto-update /tools/auth/manifest.json [skip ci]" && git push)
