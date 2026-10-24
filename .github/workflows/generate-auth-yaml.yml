@@ -1,0 +1,117 @@
+name: Auto-Generate AppSec Tools YAML
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/auth/**/index.html'
+
+concurrency:
+  group: auth-yaml-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-yaml:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Scan Directory & Generate tools/auth/tools.yml
+        run: |
+          python3 -c "
+          import os, re
+
+          base_dir = 'tools/auth'
+          yaml_path = os.path.join(base_dir, 'tools.yml')
+
+          # Baseline IDs already hardcoded in tools/auth/index.html
+          BASELINE_IDS = {
+              'jwt-offline', 'jwt-brute', 'csp-builder', 'sri-builder',
+              'cors-sim', 'sec-headers', 'cookie-audit', 'pkce-gen',
+              'secret-scanner', 'x509-decoder', 'tls-cipher', 'saml-decode',
+              'zxcvbn-lab', 'xss-escaper', 'sql-sanitizer'
+          }
+
+          tools = []
+
+          if os.path.exists(base_dir):
+              for entry in sorted(os.listdir(base_dir)):
+                  tool_dir = os.path.join(base_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+
+                  if not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
+                      continue
+
+                  if os.path.exists(index_path):
+                      with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Extract Clean Title
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+                      if title_match:
+                          raw_title = title_match.group(1)
+                          clean_title = re.split(r'[—|–|-]', raw_title)[0].strip()
+                      else:
+                          clean_title = entry.replace('-', ' ').title()
+
+                      # Extract Meta Description
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE)
+                      clean_desc = desc_match.group(1).strip() if desc_match else 'Client-side application security utility.'
+
+                      # Determine Subcategory Tag based on content or folder name
+                      sub = 'tokens'
+                      content_lower = content.lower()
+                      if any(k in content_lower for k in ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']):
+                          sub = 'headers'
+                      elif any(k in content_lower for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password']):
+                          sub = 'identity'
+                      elif any(k in content_lower for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
+                          sub = 'sanitization'
+
+                      tools.append({
+                          'id': entry,
+                          'name': clean_title,
+                          'desc': clean_desc,
+                          'sub': sub,
+                          'engine': 'In-Memory',
+                          'url': f'/tools/auth/{entry}'
+                      })
+
+          # Write clean YAML formatted file
+          with open(yaml_path, 'w', encoding='utf-8') as out:
+              out.write('# BitDark Auto-Generated Dynamic AppSec Tools\n')
+              for t in tools:
+                  out.write(f'- id: \"{t[\"id\"]}\"\n')
+                  out.write(f'  name: \"{t[\"name\"]}\"\n')
+                  out.write(f'  desc: \"{t[\"desc\"]}\"\n')
+                  out.write(f'  sub: \"{t[\"sub\"]}\"\n')
+                  out.write(f'  engine: \"{t[\"engine\"]}\"\n')
+                  out.write(f'  url: \"{t[\"url\"]}\"\n\n')
+
+          print(f'Successfully compiled {len(tools)} dynamic tool(s) to {yaml_path}')
+          "
+
+      - name: Commit & Push tools.yml (Zero CI Loops)
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/auth/tools.yml
+          
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(auth): auto-update /tools/auth/tools.yml [skip ci]"
+            git push origin main
+          else
+            echo "No YAML changes detected. Skipping commit."
+          fi
