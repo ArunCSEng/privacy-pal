@@ -24,7 +24,7 @@
   <meta name="twitter:title" content="AI Defense & Forensics Tools — BitDark" />
   <meta name="twitter:description" content="Air-gapped AI security utilities running 100% in local memory. Scrub prompts, inspect tokens, and verify manifests." />
 
-  <!-- Structured JSON-LD Data (Collection & FAQ Schemas for AdSense / Search Quality) -->
+  <!-- Structured JSON-LD Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -75,7 +75,7 @@
   }
   </script>
 
-  <!-- UNCOMMENT & INSERT YOUR ADSENSE SCRIPT TAG WHEN READY -->
+  <!-- UNCOMMENT & INSERT ADSENSE TAG WHEN READY -->
   <!-- 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> 
   -->
@@ -185,11 +185,74 @@
       .ip-pill-nav { font-size: 0.70rem; padding: 4px 8px; }
     }
 
+    /* =========================================================
+       DYNAMIC CATEGORY BAR (TOP)
+       ========================================================= */
+    .top-category-bar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      width: 100%;
+    }
+    .category-scroll-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+    }
+    .category-scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+    .cat-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 7px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      flex-shrink: 0;
+    }
+    .cat-pill-btn:hover {
+      border-color: var(--atom-amber);
+      color: #fff;
+      background-color: #2c313a;
+    }
+    .cat-pill-btn.active {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+      background-color: var(--atom-gutter);
+      box-shadow: 0 0 8px rgba(229, 192, 123, 0.15);
+    }
+    .cat-pill-count {
+      color: var(--atom-muted);
+      font-size: 0.76rem;
+      transition: color 0.15s;
+    }
+    .cat-pill-btn:hover .cat-pill-count,
+    .cat-pill-btn.active .cat-pill-count {
+      color: var(--atom-amber);
+    }
+
     /* Container Wrapper */
     .wrapper {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 28px 18px 60px;
+      padding: 24px 18px 60px;
     }
 
     /* Breadcrumbs */
@@ -257,7 +320,7 @@
       border-radius: 6px;
       padding: 14px 50px 14px 16px;
       color: #fff;
-      font-size: 16px; /* Prevents auto-zoom on mobile */
+      font-size: 16px;
       font-family: var(--font-code);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -401,7 +464,7 @@
        ZERO-CLS ADSENSE CONTAINER (100% hidden until filled)
        ========================================================= */
     .ad-container-slot {
-      display: none; /* Hidden by default with 0px height */
+      display: none;
       margin: 28px auto;
       text-align: center;
       width: 100%;
@@ -409,20 +472,16 @@
       min-height: 0;
       transition: opacity 0.3s ease;
     }
-
-    /* Reveals smoothly once AdSense renders an iframe or filled status */
     .ad-container-slot:has(iframe),
     .ad-container-slot:has(ins[data-ad-status="filled"]),
     .ad-container-slot.ad-revealed {
       display: block !important;
       min-height: 90px;
     }
-
     .ad-container-slot ins.adsbygoogle {
       display: block;
       margin: 0 auto;
     }
-
     .ad-label {
       font-family: var(--font-code);
       font-size: 0.65rem;
@@ -573,7 +632,7 @@
 </head>
 <body>
 
-  <!-- Cockpit Navigation Bar -->
+  <!-- Top Cockpit Bar -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
@@ -589,6 +648,13 @@
       </div>
     </div>
   </header>
+
+  <!-- Top Category Bar (Dynamic Auto-Updating Counts) -->
+  <nav class="top-category-bar" aria-label="Ecosystem Directory Navigation">
+    <div class="category-scroll-container" id="categoryNavContainer">
+      <!-- Injected via JavaScript with live counts -->
+    </div>
+  </nav>
 
   <main class="wrapper">
     <!-- Breadcrumb Hierarchy -->
@@ -744,7 +810,29 @@
   </main>
 
   <script>
-    // 1. Baseline Registered AI Tools Catalog
+    // 1. Ecosystem Baseline Tallies for Global Category Header
+    const ECOSYSTEM_BASELINES = {
+      ai: 15,
+      privacy: 15,
+      crypto: 15,
+      auth: 15,
+      network: 15,
+      encoding: 15,
+      forensics: 10
+    };
+
+    // Category Metadata for the Top Navigation Bar
+    const CATEGORY_DEFINITIONS = [
+      { key: "ai", label: "AI Defense", url: "/tools/ai/" },
+      { key: "privacy", label: "Privacy & OSINT", url: "/tools/privacy/" },
+      { key: "crypto", label: "Crypto & Vault", url: "/tools/crypto/" },
+      { key: "auth", label: "AppSec & Tokens", url: "/tools/auth/" },
+      { key: "network", label: "Network & Infra", url: "/tools/network/" },
+      { key: "encoding", label: "Encoders", url: "/tools/encoding/" },
+      { key: "forensics", label: "File Forensics", url: "/tools/forensics/" }
+    ];
+
+    // 2. Baseline Registered AI Tools Catalog
     const BASE_AI_TOOLS = [
       {
         id: "c2pa-manifest",
@@ -878,7 +966,26 @@
     const filterButtons = document.querySelectorAll(".filter-btn");
     const syncText = document.getElementById("syncText");
 
-    // 2. Render Directory Cards
+    // 3. Render Top Category Navigation Bar with Dynamic Counts
+    function updateTopCategoryBar() {
+      const container = document.getElementById("categoryNavContainer");
+      if (!container) return;
+
+      // Update current AI count based on active local toolset length
+      ECOSYSTEM_BASELINES.ai = aiCatalog.length;
+
+      container.innerHTML = CATEGORY_DEFINITIONS.map(cat => {
+        const count = ECOSYSTEM_BASELINES[cat.key] || 0;
+        const isActive = cat.key === "ai" ? "active" : "";
+        return `
+          <a href="${cat.url}" class="cat-pill-btn ${isActive}" data-cat="${cat.key}">
+            ${cat.label} <span class="cat-pill-count">(${count})</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    // 4. Render Local Directory Cards
     function renderAICatalog() {
       const filtered = aiCatalog.filter(tool => {
         const matchesSub = activeSubfilter === "all" || tool.sub === activeSubfilter;
@@ -921,7 +1028,7 @@
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
-    // 3. Search and Subfilter Handlers
+    // 5. Search & Sub-Filter Listeners
     toolSearch.addEventListener("input", (e) => {
       searchQuery = e.target.value.trim();
       renderAICatalog();
@@ -943,12 +1050,11 @@
       }
     });
 
-    // 4. Auto-Sync Engine for Future Tools Published under /tools/ai/
+    // 6. Dynamic Discovery & Manifest Synchronization
     async function syncFutureTools() {
       const MANIFEST_URL = "/tools/ai/manifest.json";
       const CACHE_KEY = "bitdark_ai_dynamic_tools";
 
-      // Load cached tools from previous visits
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -958,7 +1064,6 @@
         console.warn("Storage cache read failed", e);
       }
 
-      // Fetch remote manifest with cache-busting
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -983,7 +1088,9 @@
         syncText.textContent = "Catalog Synchronized";
       }
 
+      // Re-render catalog and update top category counts
       renderAICatalog();
+      updateTopCategoryBar();
     }
 
     function mergeTools(newTools) {
@@ -1004,7 +1111,7 @@
       });
     }
 
-    // 5. Dual-Stack IPv4 & IPv6 Telemetry Engine with Fallbacks
+    // 7. Dual-Stack IPv4 & IPv6 Telemetry Engine with Fallbacks
     async function detectUserIPs() {
       const ipv4El = document.getElementById("ipv4Display");
       const ipv6El = document.getElementById("ipv6Display");
@@ -1030,7 +1137,7 @@
         }
       };
 
-      // IPv4 Discovery
+      // IPv4
       (async () => {
         try {
           const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
@@ -1053,7 +1160,7 @@
         }
       })();
 
-      // IPv6 Discovery
+      // IPv6
       (async () => {
         try {
           const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
@@ -1077,7 +1184,7 @@
       })();
     }
 
-    // 6. Ad Slot Observer: Reveals containers only when an ad iframe is injected
+    // 8. Mutation Observer for Zero-CLS Ad Container Reveal
     function setupAdObserver() {
       const adSlots = document.querySelectorAll(".ad-container-slot");
       adSlots.forEach(slot => {
@@ -1092,9 +1199,10 @@
       });
     }
 
-    // Initialize Page
+    // Initialization
     window.addEventListener("DOMContentLoaded", () => {
       detectUserIPs();
+      updateTopCategoryBar();
       renderAICatalog();
       syncFutureTools();
       setupAdObserver();
