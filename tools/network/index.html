@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>Network & Infrastructure Architecture — Client-Side Security Suite | BitDark</title>
+  <meta name="title" content="Network & Infrastructure Architecture — Client-Side Security Suite | BitDark" />
+  <meta name="description" content="Free client-side network diagnostic and infrastructure defense tools. Calculate IPv4/IPv6 CIDR subnets, analyze SPF/DMARC records, trace MIME email headers, and decode DNS packets entirely in local browser RAM." />
+  <meta name="keywords" content="network tools online, cidr subnet calculator, ipv6 subnet calculator, spf record generator, dmarc validator, email header analyzer, dns wire format hex decoder, mtu overhead calculator, client side network diagnostics" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/network/" />
+  <meta property="og:title" content="Network & Infrastructure Utilities — BitDark" />
+  <meta property="og:description" content="100% client-side network calculation and infrastructure auditing tools running in volatile memory without remote API dependencies." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/network/" />
+  <meta name="twitter:title" content="Network & Infrastructure Utilities — BitDark" />
+  <meta name="twitter:description" content="Client-side subnet calculation, packet wire decoding, email header analysis, and DNS record evaluation." />
+
+  <!-- Structured JSON-LD Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": "https://bitdark.net/tools/network/#webpage",
+        "url": "https://bitdark.net/tools/network/",
+        "name": "BitDark Network & Infrastructure Hub",
+        "description": "Directory of client-side, zero-telemetry network address calculation, DNS parsing, infrastructure auditing, and email header tracing utilities.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://bitdark.net/tools/network/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Are network packet dumps, email headers, or CIDR blocks uploaded to any server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All subnet calculations, MIME email header traces, syslog parsing, and DNS wire-format decodings execute purely in your local browser memory. Zero packets or data payloads leave your machine."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does this network directory auto-update when new utilities are published?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Upon loading, this directory asynchronously queries /tools/network/manifest.json. Whenever new utilities are deployed under /tools/network/, they are automatically discovered, registered, and displayed with a 'New' badge without requiring manual HTML changes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can Google AdSense or external scripts inspect network payloads analyzed by these tools?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Third-party advertising scripts are restricted to isolated DOM containers and cannot access local memory buffers, Web Workers, or JavaScript closures used to parse network data."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- UNCOMMENT & INSERT ADSENSE TAG WHEN READY -->
+  <!-- 
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> 
+  -->
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --atom-purple: #c678dd;
+
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Top Cockpit Navigation Bar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--atom-cyan);
+      box-shadow: 0 0 6px var(--atom-cyan);
+    }
+
+    .ip-pill-nav {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.74rem;
+      color: var(--atom-text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); font-weight: 600; }
+    .ip-divider { color: var(--atom-border); margin: 0 2px; }
+
+    @media (max-width: 860px) {
+      .navbar { padding: 10px 14px; }
+      .nav-inner { justify-content: space-between; }
+      .trust-badge { order: 3; width: 100%; justify-content: center; margin-top: 2px; }
+      .ip-pill-nav { font-size: 0.70rem; padding: 4px 8px; }
+    }
+
+    /* Dynamic Category Bar */
+    .top-category-bar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      width: 100%;
+    }
+    .category-scroll-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+    }
+    .category-scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+    .cat-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 7px 14px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      flex-shrink: 0;
+    }
+    .cat-pill-btn:hover {
+      border-color: var(--atom-amber);
+      color: #fff;
+      background-color: #2c313a;
+    }
+    .cat-pill-btn.active {
+      border-color: var(--atom-amber);
+      color: var(--atom-amber);
+      background-color: var(--atom-gutter);
+      box-shadow: 0 0 8px rgba(229, 192, 123, 0.15);
+    }
+    .cat-pill-count {
+      color: var(--atom-muted);
+      font-size: 0.76rem;
+      transition: color 0.15s;
+    }
+    .cat-pill-btn:hover .cat-pill-count,
+    .cat-pill-btn.active .cat-pill-count {
+      color: var(--atom-amber);
+    }
+
+    /* Layout Wrapper */
+    .wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 18px 60px;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumb-nav {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .breadcrumb-nav a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .breadcrumb-nav a:hover { color: var(--atom-amber); }
+    .breadcrumb-nav span.current { color: var(--atom-cyan); }
+
+    /* Category Hero */
+    .category-hero {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .badge-hub {
+      display: inline-block;
+      background: rgba(86, 182, 194, 0.12);
+      color: var(--atom-cyan);
+      border: 1px solid rgba(86, 182, 194, 0.3);
+      padding: 3px 12px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .category-hero h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    .category-hero p {
+      color: var(--atom-text);
+      font-size: 0.98rem;
+      max-width: 780px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    /* Search & Sub-Filter Toolbar */
+    .search-bar-row {
+      max-width: 720px;
+      margin: 0 auto 18px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 14px 50px 14px 16px;
+      color: #fff;
+      font-size: 16px; /* Protects against iOS Safari auto-zoom */
+      font-family: var(--font-code);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--atom-border-focus);
+      box-shadow: 0 0 10px rgba(82, 139, 255, 0.25);
+    }
+    .key-hint {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 3px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      color: var(--atom-amber);
+      font-family: var(--font-code);
+      pointer-events: none;
+    }
+
+    /* Sub-filters */
+    .subfilter-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .filter-btn {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 7px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--atom-amber);
+      color: #fff;
+      background-color: var(--atom-bg);
+    }
+
+    /* Sync Indicator */
+    .sync-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--atom-muted);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--atom-surface);
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--atom-border);
+      color: var(--atom-green);
+    }
+    .sync-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--atom-green);
+      border-radius: 50%;
+    }
+
+    /* Tools Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+      min-width: 0;
+    }
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 130px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 130px;
+    }
+    .tool-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+    .card-top { margin-bottom: 12px; }
+    .card-title {
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: var(--atom-heading);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--atom-text);
+      line-height: 1.45;
+    }
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      font-family: var(--font-code);
+      margin-top: 10px;
+    }
+    .engine-tag { color: var(--atom-cyan); }
+    .tag-dynamic {
+      background: rgba(152, 195, 121, 0.15);
+      color: var(--atom-green);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.68rem;
+    }
+
+    /* =========================================================
+       ZERO-CLS ADSENSE CONTAINER (100% hidden until filled)
+       ========================================================= */
+    .ad-container-slot {
+      display: none !important;
+      margin: 0 auto;
+      text-align: center;
+      width: 100%;
+      max-width: 970px;
+      min-height: 0;
+      height: 0;
+      padding: 0;
+      border: none;
+      overflow: hidden;
+      transition: opacity 0.3s ease;
+    }
+    /* Reveals instantly when Google injects an ad iframe or sets filled status */
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]),
+    .ad-container-slot.ad-revealed {
+      display: block !important;
+      min-height: 90px;
+      height: auto;
+      margin: 28px auto;
+      padding: 8px 0;
+    }
+    .ad-container-slot ins.adsbygoogle {
+      display: block;
+      margin: 0 auto;
+    }
+    .ad-label {
+      font-family: var(--font-code);
+      font-size: 0.65rem;
+      color: var(--atom-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* Disclaimer Panel */
+    .disclaimer-panel {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 36px;
+      font-size: 0.82rem;
+      color: var(--atom-text);
+      line-height: 1.6;
+    }
+    .disclaimer-panel strong { color: var(--atom-heading); }
+    .disclaimer-panel h3 {
+      font-size: 0.95rem;
+      color: var(--atom-amber);
+      font-family: var(--font-code);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Educational Section */
+    .edu-section {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 36px;
+    }
+    .edu-section h2 {
+      font-size: 1.18rem;
+      color: var(--atom-heading);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .edu-section p {
+      font-size: 0.86rem;
+      color: var(--atom-text);
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .edu-card {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 16px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .edu-card h4 {
+      color: var(--atom-cyan);
+      font-family: var(--font-code);
+      font-size: 0.86rem;
+      margin-bottom: 6px;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 36px;
+    }
+    .faq-section h2 {
+      font-size: 1.18rem;
+      color: var(--atom-heading);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--atom-border);
+      padding: 14px 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item summary {
+      cursor: pointer;
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      color: var(--atom-amber);
+      outline: none;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .faq-item summary::-webkit-details-marker {
+      color: var(--atom-cyan);
+    }
+    .faq-item p {
+      font-size: 0.84rem;
+      color: var(--atom-text);
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 22px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+    }
+    .footer-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      color: var(--atom-muted);
+    }
+    .footer-nav a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-nav a:hover { color: var(--atom-amber); }
+    .footer-sep { color: var(--atom-border); }
+
+    @media (max-width: 600px) {
+      .category-hero h1 { font-size: 1.65rem; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .bottom-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Cockpit Bar -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+
+      <div class="trust-badge" title="All utilities execute client-side inside browser sandbox memory.">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+
+      <div class="ip-pill-nav" id="ipTracker">
+        <span>IPv4: <strong id="ipv4Display">Detecting...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Detecting...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top Category Bar (Dynamic Auto-Updating Counts) -->
+  <nav class="top-category-bar" aria-label="Ecosystem Directory Navigation">
+    <div class="category-scroll-container" id="categoryNavContainer">
+      <!-- Injected via JavaScript with dynamic counts -->
+    </div>
+  </nav>
+
+  <main class="wrapper">
+    <!-- Breadcrumb Hierarchy -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/#tools">Tools</a>
+      <span>/</span>
+      <span class="current">Network &amp; Infra</span>
+    </nav>
+
+    <!-- Hub Header -->
+    <section class="category-hero">
+      <div class="badge-hub">Domain Directory: /tools/network/</div>
+      <h1>Network &amp; Infrastructure Architecture</h1>
+      <p>Evaluate IP subnetting, resolve CIDR overlaps, audit SPF and DMARC DNS policies, deconstruct raw email MIME relay hops, and decode raw DNS wire packets directly in volatile browser memory.</p>
+
+      <div class="search-bar-row">
+        <input 
+          type="text" 
+          id="toolSearch" 
+          class="search-input" 
+          placeholder="Filter network tools (e.g., 'cidr', 'spf', 'dmarc', 'dns', 'mac', 'mtu')..." 
+          aria-label="Filter network tools"
+          autocomplete="off"
+        />
+        <span class="key-hint">/</span>
+      </div>
+
+      <div class="subfilter-row" id="subfilterGroup">
+        <button class="filter-btn active" data-sub="all">All Network Tools</button>
+        <button class="filter-btn" data-sub="ip">IP &amp; Subnetting</button>
+        <button class="filter-btn" data-sub="dns">DNS &amp; Mail Relay</button>
+        <button class="filter-btn" data-sub="infra">Infra &amp; Protocols</button>
+      </div>
+    </section>
+
+    <!-- TOP AD SLOT: Auto-hidden until AdSense is loaded and filled -->
+    <div class="ad-container-slot" id="topAdSlot">
+      <div class="ad-label">Advertisement</div>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <!-- Real-time Synchronization Status Header -->
+    <div class="sync-status">
+      <span id="toolCountLabel">15 Tools Available</span>
+      <div class="sync-pill" id="syncStatusPill">
+        <span class="sync-dot"></span>
+        <span id="syncText">Auto-Sync Active (/tools/network/manifest.json)</span>
+      </div>
+    </div>
+
+    <!-- Network Tools Directory Grid -->
+    <div class="tools-grid" id="toolsGrid"></div>
+
+    <!-- Liability Disclaimer Panel -->
+    <section class="disclaimer-panel">
+      <h3>⚠️ Limitation of Liability &amp; Operational Disclaimer</h3>
+      <p>
+        <strong>BitDark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages, network routing loops, IP collision outages, firewall policy misconfigurations, or mail delivery failures resulting from the use or inability to use tools hosted under <code>/tools/network/</code>.
+      </p>
+      <p style="margin-top: 8px;">
+        All subnet calculations, routing evaluations, DNS wire parsings, and header tracers execute exclusively in client-side memory using your browser's JavaScript runtime and bitwise manipulation. Client-side tools do not query live network gateways or perform active packet injections. Users are solely responsible for testing network topologies, verifying routing ACLs in staging environments, and confirming RFC compliance before production deployment.
+      </p>
+    </section>
+
+    <!-- Educational Depth Section -->
+    <article class="edu-section">
+      <h2>Understanding In-Memory Network Diagnostics</h2>
+      <p>
+        Traditional online network lookup and CIDR calculation tools transmit IP addresses, internal subnet ranges, and proprietary configuration dumps to remote cloud servers. This exposes sensitive internal network topologies, RFC 1918 private ranges, and routing strategies to third-party interception or server log retention.
+      </p>
+
+      <div class="edu-grid">
+        <div class="edu-card">
+          <h4>Deterministic Bitwise Evaluation</h4>
+          <p>Every subnet mask boundary, CIDR broadcast IP, and wildcard mask calculation is computed using native 32-bit and 128-bit bitwise logic in browser RAM, ensuring zero latency and zero external data leaks.</p>
+        </div>
+        <div class="edu-card">
+          <h4>Deterministic Manifest Discovery</h4>
+          <p>When new network diagnostic tools are deployed under <code>/tools/network/</code>, this directory automatically discovers and registers them via <code>manifest.json</code> without requiring manual code modifications or interface rebuilds.</p>
+        </div>
+        <div class="edu-card">
+          <h4>Ad Script Memory Isolation</h4>
+          <p>Third-party advertising scripts (including Google AdSense) are strictly confined to sandboxed layout elements and are completely prevented from accessing your network configurations, MIME dumps, or routing tables.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- Interactive FAQ Section -->
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <details class="faq-item">
+        <summary>Are network packet dumps, email headers, or CIDR blocks uploaded to any server?</summary>
+        <p>No. All subnet calculations, MIME email header traces, syslog parsing, and DNS wire-format decodings execute purely in your local browser memory. Zero packets or data payloads leave your machine.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How does this network directory auto-update when new utilities are published?</summary>
+        <p>Upon loading, this directory asynchronously queries <code>/tools/network/manifest.json</code>. Whenever new utilities are deployed under <code>/tools/network/</code>, they are automatically discovered, registered, and displayed with a 'New' badge without requiring manual HTML changes.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can Google AdSense or external scripts inspect network payloads analyzed by these tools?</summary>
+        <p>No. Third-party advertising scripts are restricted to isolated DOM containers and cannot access local memory buffers, Web Workers, or JavaScript closures used to parse network data.</p>
+      </details>
+    </section>
+
+    <!-- BOTTOM AD SLOT: Auto-hidden until AdSense is loaded and filled -->
+    <div class="ad-container-slot" id="bottomAdSlot">
+      <div class="ad-label">Advertisement</div>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="0987654321"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+
+    <!-- Global Trust Navigation Footer -->
+    <footer class="bottom-bar">
+      <div style="color: var(--atom-muted);">
+        BitDark — Zero telemetry, client-side cybersecurity suite.
+      </div>
+      <nav class="footer-nav">
+        <a href="/">Home</a>
+        <span class="footer-sep">·</span>
+        <a href="/blog">Blog</a>
+        <span class="footer-sep">·</span>
+        <a href="/about.html">About</a>
+        <span class="footer-sep">·</span>
+        <a href="/faq.html">FAQ</a>
+        <span class="footer-sep">·</span>
+        <a href="/contact.html">Contact</a>
+        <span class="footer-sep">·</span>
+        <a href="/privacy.html">Privacy</a>
+        <span class="footer-sep">·</span>
+        <a href="/terms.html">Terms</a>
+        <span class="footer-sep">·</span>
+        <span>© 2026 BitDark.NET</span>
+      </nav>
+    </footer>
+  </main>
+
+  <script>
+    // 1. Ecosystem Baselines for Global Category Header
+    const ECOSYSTEM_BASELINES = {
+      ai: 15,
+      privacy: 15,
+      crypto: 15,
+      auth: 15,
+      network: 15,
+      encoding: 15,
+      forensics: 10
+    };
+
+    // Category Metadata for Top Navigation Bar
+    const CATEGORY_DEFINITIONS = [
+      { key: "ai", label: "AI Defense", url: "/tools/ai/" },
+      { key: "privacy", label: "Privacy & OSINT", url: "/tools/privacy/" },
+      { key: "crypto", label: "Crypto & Vault", url: "/tools/crypto/" },
+      { key: "auth", label: "AppSec & Tokens", url: "/tools/auth/" },
+      { key: "network", label: "Network & Infra", url: "/tools/network/" },
+      { key: "encoding", label: "Encoders", url: "/tools/encoding/" },
+      { key: "forensics", label: "File Forensics", url: "/tools/forensics/" }
+    ];
+
+    // 2. Baseline Registered Network Tools Catalog
+    const BASE_NETWORK_TOOLS = [
+      {
+        id: "cidr-calc",
+        name: "IPv4/IPv6 Subnet & CIDR Calculator",
+        desc: "Calculate host boundaries, netmasks, usable IPs, and broadcast addresses locally.",
+        sub: "ip",
+        engine: "Bitwise JS",
+        url: "/tools/network/cidr-calculator"
+      },
+      {
+        id: "cidr-overlap",
+        name: "CIDR Overlap & Collision Resolver",
+        desc: "Analyze routing blocks to find overlapping or conflicting subnets.",
+        sub: "ip",
+        engine: "Bitwise JS",
+        url: "/tools/network/cidr-overlap"
+      },
+      {
+        id: "email-headers",
+        name: "Raw Email MIME Header Tracer",
+        desc: "Parse raw .eml files to extract delivery relays, SPF, and DKIM reports.",
+        sub: "dns",
+        engine: "MIME Parser",
+        url: "/tools/network/email-headers"
+      },
+      {
+        id: "dmarc-gen",
+        name: "DMARC Record Builder & Linter",
+        desc: "Generate hardened DMARC TXT records with policy and aggregation tags.",
+        sub: "dns",
+        engine: "Linter",
+        url: "/tools/network/dmarc-generator"
+      },
+      {
+        id: "spf-decomp",
+        name: "SPF Mechanism Deconstructor",
+        desc: "Break down complex SPF records to guarantee lookup totals stay under 10.",
+        sub: "dns",
+        engine: "DNS Logic",
+        url: "/tools/network/spf-deconstructor"
+      },
+      {
+        id: "ip-obfuscate",
+        name: "IP Address Representation Converter",
+        desc: "Convert IPs to Dword, Octal, and Hex notation to audit WAF filters.",
+        sub: "ip",
+        engine: "Bitwise JS",
+        url: "/tools/network/ip-converter"
+      },
+      {
+        id: "dns-wire",
+        name: "DNS Wire-Format Hex Decoder",
+        desc: "Decode binary DNS packet dumps into queries, responses, and TTL flags.",
+        sub: "dns",
+        engine: "Packet Decode",
+        url: "/tools/network/dns-wire-format"
+      },
+      {
+        id: "mtu-overhead",
+        name: "MTU / MSS Tunnel Overhead Calc",
+        desc: "Calculate MTU constraints across WireGuard, IPsec, and GRE tunnels.",
+        sub: "infra",
+        engine: "Math",
+        url: "/tools/network/mtu-overhead"
+      },
+      {
+        id: "asn-map",
+        name: "BGP ASN & Prefix Visualizer",
+        desc: "Parse routing table fragments to map Autonomous System peer relationships.",
+        sub: "infra",
+        engine: "Array Matcher",
+        url: "/tools/network/asn-visualizer"
+      },
+      {
+        id: "mac-lookup",
+        name: "MAC Address OUI Vendor Lookup",
+        desc: "Map network interface hardware addresses against IEEE vendor registries.",
+        sub: "infra",
+        engine: "Local DB",
+        url: "/tools/network/mac-lookup"
+      },
+      {
+        id: "nginx-lint",
+        name: "Nginx Hardening Linter",
+        desc: "Scan Nginx server blocks for missing headers and insecure proxy setups.",
+        sub: "infra",
+        engine: "Regex Parser",
+        url: "/tools/network/nginx-linter"
+      },
+      {
+        id: "docker-audit",
+        name: "Docker Compose Security Linter",
+        desc: "Audit container configurations for privileged flags and socket binds.",
+        sub: "infra",
+        engine: "YAML Parser",
+        url: "/tools/network/docker-auditor"
+      },
+      {
+        id: "cron-explainer",
+        name: "Crontab Expression Explainer",
+        desc: "Translate cron expressions into human-readable schedules with next-run dates.",
+        sub: "infra",
+        engine: "Cron Parser",
+        url: "/tools/network/crontab-tester"
+      },
+      {
+        id: "syslog-parse",
+        name: "RFC 5424 Syslog Parser",
+        desc: "Extract facilities, severity ratings, and ISO timestamps from raw syslog lines.",
+        sub: "infra",
+        engine: "RFC Parser",
+        url: "/tools/network/syslog-parser"
+      },
+      {
+        id: "ua-deconstruct",
+        name: "User-Agent Header Deconstructor",
+        desc: "Expose client platform, rendering engine, and architecture details locally.",
+        sub: "infra",
+        engine: "Parser",
+        url: "/tools/network/user-agent"
+      }
+    ];
+
+    let networkCatalog = [...BASE_NETWORK_TOOLS];
+    let activeSubfilter = "all";
+    let searchQuery = "";
+
+    const toolsGrid = document.getElementById("toolsGrid");
+    const toolSearch = document.getElementById("toolSearch");
+    const toolCountLabel = document.getElementById("toolCountLabel");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const syncText = document.getElementById("syncText");
+
+    // 3. Render Top Category Navigation Bar with Dynamic Counts
+    function updateTopCategoryBar() {
+      const container = document.getElementById("categoryNavContainer");
+      if (!container) return;
+
+      ECOSYSTEM_BASELINES.network = networkCatalog.length;
+
+      container.innerHTML = CATEGORY_DEFINITIONS.map(cat => {
+        const count = ECOSYSTEM_BASELINES[cat.key] || 0;
+        const isActive = cat.key === "network" ? "active" : "";
+        return `
+          <a href="${cat.url}" class="cat-pill-btn ${isActive}" data-cat="${cat.key}">
+            ${cat.label} <span class="cat-pill-count">(${count})</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    // 4. Render Local Directory Cards
+    function renderNetworkCatalog() {
+      const filtered = networkCatalog.filter(tool => {
+        const matchesSub = activeSubfilter === "all" || tool.sub === activeSubfilter;
+        const q = searchQuery.toLowerCase();
+        const matchesQuery = tool.name.toLowerCase().includes(q) ||
+                             tool.desc.toLowerCase().includes(q) ||
+                             tool.engine.toLowerCase().includes(q);
+        return matchesSub && matchesQuery;
+      });
+
+      toolCountLabel.textContent = `${filtered.length} of ${networkCatalog.length} Network Tools Displayed`;
+
+      if (filtered.length === 0) {
+        toolsGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; color: var(--atom-muted); padding: 48px 0; font-family: var(--font-code);">
+            No network tools match "${escapeHtml(searchQuery)}".
+          </div>`;
+        return;
+      }
+
+      toolsGrid.innerHTML = filtered.map(tool => `
+        <a href="${tool.url}" class="tool-card">
+          <div class="card-top">
+            <div class="card-title">
+              <span>${escapeHtml(tool.name)}</span>
+              ${tool.isDynamic ? '<span class="tag-dynamic">New</span>' : ''}
+            </div>
+            <div class="card-desc">${escapeHtml(tool.desc)}</div>
+          </div>
+          <div class="card-bottom">
+            <span class="engine-tag">${escapeHtml(tool.engine)}</span>
+            <span style="color: var(--atom-muted); text-transform: uppercase;">${escapeHtml(tool.sub)}</span>
+          </div>
+        </a>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      const div = document.createElement("div");
+      div.innerText = str;
+      return div.innerHTML;
+    }
+
+    // 5. Search & Sub-Filter Listeners
+    toolSearch.addEventListener("input", (e) => {
+      searchQuery = e.target.value.trim();
+      renderNetworkCatalog();
+    });
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeSubfilter = btn.dataset.sub;
+        renderNetworkCatalog();
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement !== toolSearch) {
+        e.preventDefault();
+        toolSearch.focus();
+      }
+    });
+
+    // 6. Dynamic Discovery & Manifest Synchronization
+    async function syncFutureTools() {
+      const MANIFEST_URL = "/tools/network/manifest.json";
+      const CACHE_KEY = "bitdark_network_dynamic_tools";
+
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          mergeTools(JSON.parse(cached));
+        }
+      } catch (e) {
+        console.warn("Storage cache read failed", e);
+      }
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const response = await fetch(`${MANIFEST_URL}?_t=${Date.now()}`, {
+          cache: "no-store",
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const remoteTools = await response.json();
+          if (Array.isArray(remoteTools) && remoteTools.length > 0) {
+            mergeTools(remoteTools);
+            localStorage.setItem(CACHE_KEY, JSON.stringify(remoteTools));
+            syncText.textContent = `Auto-Synced (${networkCatalog.length} tools registered)`;
+          }
+        } else {
+          syncText.textContent = "Catalog Synchronized";
+        }
+      } catch (err) {
+        syncText.textContent = "Catalog Synchronized";
+      }
+
+      renderNetworkCatalog();
+      updateTopCategoryBar();
+    }
+
+    function mergeTools(newTools) {
+      newTools.forEach(tool => {
+        if (!tool.id || !tool.name || !tool.url) return;
+        const exists = networkCatalog.some(existing => existing.id === tool.id || existing.url === tool.url);
+        if (!exists) {
+          networkCatalog.push({
+            id: tool.id,
+            name: tool.name,
+            desc: tool.desc || "Client-side network diagnostic utility.",
+            sub: tool.sub || "infra",
+            engine: tool.engine || "In-Memory",
+            url: tool.url,
+            isDynamic: true
+          });
+        }
+      });
+    }
+
+    // 7. Dual-Stack IPv4 & IPv6 Telemetry Engine with Fallbacks
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || 
+          window.location.hostname === "localhost" || 
+          window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (err) {
+          clearTimeout(timer);
+          throw err;
+        }
+      };
+
+      // IPv4
+      (async () => {
+        try {
+          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
+          if (res4.ok) {
+            const data4 = await res4.json();
+            ipv4El.textContent = data4.ip;
+            return;
+          }
+          throw new Error("api.ipify failed");
+        } catch {
+          try {
+            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
+            if (fb4.ok) {
+              const text4 = (await fb4.text()).trim();
+              ipv4El.textContent = text4 || "Offline / Blocked";
+              return;
+            }
+          } catch {}
+          ipv4El.textContent = "Offline / Blocked";
+        }
+      })();
+
+      // IPv6
+      (async () => {
+        try {
+          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
+          if (res6.ok) {
+            const data6 = await res6.json();
+            ipv6El.textContent = data6.ip && data6.ip.includes(":") ? data6.ip : "Not Supported";
+            return;
+          }
+          throw new Error("api6.ipify failed");
+        } catch {
+          try {
+            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
+            if (fb6.ok) {
+              const text6 = (await fb6.text()).trim();
+              ipv6El.textContent = text6 && text6.includes(":") ? text6 : "Not Supported";
+              return;
+            }
+          } catch {}
+          ipv6El.textContent = "Not Supported";
+        }
+      })();
+    }
+
+    // 8. Mutation Observer for Zero-CLS Ad Container Reveal
+    function setupAdObserver() {
+      const adSlots = document.querySelectorAll(".ad-container-slot");
+      adSlots.forEach(slot => {
+        const observer = new MutationObserver(() => {
+          const ins = slot.querySelector("ins.adsbygoogle");
+          if (ins && (ins.getAttribute("data-ad-status") === "filled" || slot.querySelector("iframe"))) {
+            slot.classList.add("ad-revealed");
+            observer.disconnect();
+          }
+        });
+        observer.observe(slot, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-ad-status"] });
+      });
+    }
+
+    // Initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      detectUserIPs();
+      updateTopCategoryBar();
+      renderNetworkCatalog();
+      syncFutureTools();
+      setupAdObserver();
+    });
+  </script>
+</body>
+</html>
