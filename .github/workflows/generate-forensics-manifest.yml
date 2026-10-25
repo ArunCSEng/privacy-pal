@@ -1,0 +1,118 @@
+name: Auto-Generate Forensics Tools Manifest
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/forensics/**/index.html'
+  workflow_dispatch:
+
+concurrency:
+  group: forensics-manifest-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Scan Directory & Generate tools/forensics/manifest.json
+        run: |
+          python3 -c "
+          import os, json, re, html
+
+          base_dir = 'tools/forensics'
+          manifest_path = os.path.join(base_dir, 'manifest.json')
+
+          # Baseline IDs already hardcoded in tools/forensics/index.html to avoid duplicates
+          BASELINE_IDS = {
+              'magic-bytes', 'strings-extract', 'pe-elf-inspect', 'zip-slip',
+              'sqlite-reader', 'pcap-viewer', 'svg-xss', 'wasm-wat',
+              'registry-hive', 'tar-inspector'
+          }
+
+          tools = []
+
+          if os.path.exists(base_dir):
+              for entry in sorted(os.listdir(base_dir)):
+                  tool_dir = os.path.join(base_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+
+                  # Skip root hub index.html, non-directories, and baseline catalog items
+                  if entry == 'index.html' or not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
+                      continue
+
+                  if os.path.exists(index_path):
+                      with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Extract Clean Title and decode HTML entities (&amp; -> &)
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
+                      if title_match:
+                          raw_title = title_match.group(1).strip()
+                          clean_title = re.split(r'\s+[—|–|-]\s+', raw_title)[0].strip()
+                          clean_title = html.unescape(clean_title)
+                      else:
+                          clean_title = entry.replace('-', ' ').title()
+
+                      # Extract Meta Description and decode HTML entities
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
+                      if desc_match:
+                          clean_desc = html.unescape(desc_match.group(1).strip())
+                          clean_desc = re.sub(r'\s+', ' ', clean_desc)
+                      else:
+                          clean_desc = 'Client-side file forensics utility.'
+
+                      # Content-aware Subcategory Tag mapping
+                      check_str = f'{entry.lower()} {clean_title.lower()} {clean_desc.lower()}'
+                      if any(k in check_str for k in ['tar', 'zip', 'archive', 'gzip', 'bzip', 'container', 'iso']):
+                          sub = 'archive'
+                      elif any(k in check_str for k in ['sqlite', 'db', 'sql', 'svg', 'xml', 'database', 'json']):
+                          sub = 'data'
+                      elif any(k in check_str for k in ['pcap', 'packet', 'network', 'registry', 'hive', 'memory', 'dump']):
+                          sub = 'system'
+                      else:
+                          sub = 'binary'
+
+                      tools.append({
+                          'id': entry,
+                          'name': clean_title,
+                          'desc': clean_desc,
+                          'sub': sub,
+                          'engine': 'In-Memory',
+                          'url': f'/tools/forensics/{entry}'
+                      })
+
+          with open(manifest_path, 'w', encoding='utf-8') as out:
+              json.dump(tools, out, indent=2)
+
+          print(f'Successfully compiled {len(tools)} dynamic forensics tool(s) to {manifest_path}')
+          "
+
+      - name: Commit & Push Manifest (Zero-Loop Safe)
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/forensics/manifest.json
+          
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(forensics): auto-update /tools/forensics/manifest.json [skip ci]"
+            git push origin main
+          else
+            echo "No manifest changes detected. Skipping commit."
+          fi
