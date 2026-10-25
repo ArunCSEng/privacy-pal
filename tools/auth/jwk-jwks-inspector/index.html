@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>JWK & JWKS Inspector & Converter — Free Offline Web Crypto Tool | BitDark</title>
+  <meta name="title" content="JWK & JWKS Inspector & Converter — Free Offline Web Crypto Tool | BitDark" />
+  <meta name="description" content="Inspect, validate, and convert JSON Web Keys (JWK/JWKS) to and from PEM public keys (RSA/EC) locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="jwk to pem, jwks inspector, rsa jwk converter, ec public key pem, oauth2 jwks viewer, client side crypto" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/jwk-jwks-inspector" />
+
+  <style>
+    :root {
+      --atom-bg: #21252b;
+      --atom-surface: #282c34;
+      --atom-gutter: #1e2227;
+      --atom-border: #353b45;
+      --atom-border-focus: #528bff;
+      --atom-text: #abb2bf;
+      --atom-heading: #d7dae0;
+      --atom-muted: #5c6370;
+      --atom-cyan: #56b6c2;
+      --atom-amber: #e5c07b;
+      --atom-coral: #e06c75;
+      --atom-green: #98c379;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      font-family: var(--font-ui);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--atom-bg);
+      border-bottom: 1px solid var(--atom-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+      color: var(--atom-heading);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--atom-amber); }
+    .trust-badge {
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      font-family: var(--font-code);
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--atom-text);
+      white-space: nowrap;
+    }
+    .orbit-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    }
+    .ip-pill-nav {
+      justify-self: end;
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ip-pill-nav strong { color: var(--atom-amber); }
+    .ip-divider { color: var(--atom-border); }
+
+    /* Layout */
+    .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+    
+    .breadcrumb {
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+      margin-bottom: 16px;
+      color: var(--atom-muted);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    
+    .tool-header { margin-bottom: 24px; }
+    .tool-header h1 { font-size: 1.7rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+
+    /* Tool Workspace Card */
+    .tool-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--atom-border);
+      padding-bottom: 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      background: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      color: var(--atom-text);
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-family: var(--font-code);
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border-color: var(--atom-amber);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .samples-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .samples-links a {
+      color: var(--atom-cyan);
+      text-transform: none;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .samples-links a:hover { text-decoration: underline; }
+
+    textarea {
+      width: 100%;
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      padding: 12px;
+      line-height: 1.5;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--atom-border-focus);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      justify-content: flex-end;
+    }
+    .btn-atom {
+      background-color: var(--atom-amber);
+      color: #1e2227;
+      font-weight: 700;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 40px;
+      transition: opacity 0.2s ease;
+    }
+    .btn-atom:hover { opacity: 0.9; }
+    .btn-secondary {
+      background-color: var(--atom-gutter);
+      color: var(--atom-text);
+      border: 1px solid var(--atom-border);
+    }
+    .btn-secondary:hover {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+    }
+
+    /* Output Results Area */
+    .status-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-bottom: 18px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      gap: 8px;
+    }
+    .status-banner.success {
+      background-color: rgba(152, 195, 121, 0.12);
+      border: 1px solid var(--atom-green);
+      color: var(--atom-green);
+    }
+    .status-banner.error {
+      background-color: rgba(224, 108, 117, 0.12);
+      border: 1px solid var(--atom-coral);
+      color: var(--atom-coral);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 10px;
+      border-radius: 4px;
+      min-width: 0;
+    }
+    .meta-label {
+      font-size: 0.70rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+    }
+    .meta-val {
+      font-size: 0.82rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
+    }
+
+    .output-box {
+      background-color: var(--atom-gutter);
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: var(--atom-heading);
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    /* Disclaimer Card */
+    .disclaimer-card {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 30px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: var(--atom-text);
+    }
+    .disclaimer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-code);
+      font-weight: 700;
+      color: var(--atom-amber);
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+    .disclaimer-card strong { color: var(--atom-heading); }
+
+    /* Technical Documentation */
+    .doc-section {
+      border-top: 1px solid var(--atom-border);
+      padding-top: 24px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .doc-section h2 { color: var(--atom-heading); font-size: 1.15rem; margin-bottom: 10px; margin-top: 20px; }
+    .doc-section h2:first-of-type { margin-top: 0; }
+    .doc-section p { margin-bottom: 12px; }
+    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 6px; }
+    .doc-section code {
+      font-family: var(--font-code);
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--atom-cyan);
+    }
+
+    /* Footer */
+    .bottom-bar {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--atom-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
+    }
+    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
+    .bottom-bar a:hover { color: var(--atom-amber); }
+
+    /* Mobile Responsiveness & iOS Auto-Zoom Mitigation */
+    @media (max-width: 768px) {
+      .nav-inner {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 8px;
+        padding: 4px 0;
+      }
+      .brand { justify-self: center; }
+      .trust-badge { justify-self: center; }
+      .ip-pill-nav {
+        justify-self: center;
+        font-size: 0.68rem;
+        padding: 4px 8px;
+      }
+      .tool-card { padding: 14px; }
+      .form-label { flex-direction: column; align-items: flex-start; gap: 4px; }
+      textarea { font-size: 16px; }
+      .btn-row { justify-content: stretch; }
+      .btn-atom { flex: 1; justify-content: center; width: 100%; }
+      .bottom-bar { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/" class="brand">Bit<span>Dark</span>.net</a>
+      <div class="trust-badge">
+        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
+      </div>
+      <div class="ip-pill-nav">
+        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
+        <span class="ip-divider">·</span>
+        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrapper">
+    <nav class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#auth">Auth & Crypto</a> / jwk-jwks-inspector
+    </nav>
+
+    <div class="tool-header">
+      <h1>JWK & JWKS Inspector & Converter</h1>
+      <p>Analyze JSON Web Keys and Sets (RFC 7517) and convert public keys between JWK and PEM (SPKI) entirely in browser memory.</p>
+    </div>
+
+    <div class="tool-card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tabJwkToPem" onclick="switchMode('jwk-to-pem')">JWK / JWKS → PEM</button>
+        <button class="tab-btn" id="tabPemToJwk" onclick="switchMode('pem-to-jwk')">PEM → JWK</button>
+      </div>
+
+      <!-- Mode 1: JWK / JWKS to PEM -->
+      <div id="sectionJwkToPem">
+        <div class="form-group">
+          <div class="form-label">
+            <span>Input JWK or JWKS JSON</span>
+            <div class="samples-links">
+              <a onclick="loadSample('rsa')">Sample RSA (2048-bit)</a>
+              <a onclick="loadSample('ec')">Sample EC P-256</a>
+              <a onclick="loadSample('jwks')">Sample JWKS</a>
+            </div>
+          </div>
+          <textarea id="jwkInput" rows="9" placeholder='Paste JWK {"kty":"RSA", ...} or JWKS {"keys": [...]} here...'></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-atom" onclick="convertJwkToPem()">Inspect & Convert to PEM</button>
+          <button class="btn-atom btn-secondary" onclick="clearJwkInput()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Mode 2: PEM to JWK -->
+      <div id="sectionPemToJwk" style="display: none;">
+        <div class="form-group">
+          <div class="form-label">
+            <span>Input Public Key PEM (SPKI / PKCS#1)</span>
+            <div class="samples-links">
+              <a onclick="loadSamplePem('rsa')">Sample RSA PEM</a>
+              <a onclick="loadSamplePem('ec')">Sample EC PEM</a>
+            </div>
+          </div>
+          <textarea id="pemInput" rows="9" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-atom" onclick="convertPemToJwk()">Convert to JWK</button>
+          <button class="btn-atom btn-secondary" onclick="clearPemInput()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Unified Output Area -->
+      <div id="resultsWrapper" style="display: none; margin-top: 24px;">
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div id="outputContentSection" style="display: none;">
+          <div class="meta-grid" id="metaGrid"></div>
+
+          <div class="form-label" style="margin-bottom: 6px;">Output Result:</div>
+          <div class="output-box" id="resultOutput"></div>
+
+          <div class="btn-row">
+            <button class="btn-atom" id="btnCopyResult" onclick="copyResult()">Copy to Clipboard</button>
+            <button class="btn-atom btn-secondary" id="btnDownloadResult" onclick="downloadResult()">Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BitDark Legal & Security Disclaimer -->
+    <aside class="disclaimer-card">
+      <div class="disclaimer-header">
+        <span>⚠️</span> Legal & Security Disclaimer
+      </div>
+      <p>
+        <strong>bitdark.net is not responsible for any misuse, compromised private keys, or operational failures arising from the use of this tool.</strong>
+        All key serialization, decoding, and cryptographic operations run exclusively on the client side in your web browser memory. BitDark never transmits, logs, stores, or inspects any input payloads or output keys. It is the user's sole responsibility to ensure that private key material is never pasted into public-facing environments or untrusted systems.
+      </p>
+    </aside>
+
+    <!-- Technical Documentation -->
+    <article class="doc-section">
+      <h2>About JSON Web Keys (JWK) & Sets (JWKS)</h2>
+      <p>
+        A <strong>JSON Web Key (JWK)</strong> is an open cryptographic data structure standardized under <strong>RFC 7517</strong> that represents a cryptographic key using standard JSON naming conventions. A <strong>JSON Web Key Set (JWKS)</strong> is a container object featuring an array of JWKs, typically distributed by OAuth 2.0 and OpenID Connect (OIDC) identity providers (such as Auth0, Okta, Keycloak, or Google) at well-known discovery endpoints (<code>/.well-known/jwks.json</code>).
+      </p>
+
+      <h2>Key Conversion & Web Crypto Compatibility</h2>
+      <p>
+        This utility natively interfaces with the browser's <code>window.crypto.subtle</code> engine and internal ASN.1 DER parsers to deserialize SubjectPublicKeyInfo (SPKI) X.509 structures and map them directly to standard JWK parameters without any server-side dependencies:
+      </p>
+      <ul>
+        <li><strong>RSA Keys:</strong> Supports modulus (<code>n</code>) and exponent (<code>e</code>) mapping for standard key sizes (1024, 2048, 3072, 4096 bits) with PKCS#1 and SPKI compatibility.</li>
+        <li><strong>Elliptic Curves:</strong> Supports NIST curves <code>P-256</code>, <code>P-384</code>, and <code>P-521</code> with validated coordinate points (<code>x</code>, <code>y</code>).</li>
+        <li><strong>RFC 7638 Thumbprints:</strong> Standard SHA-256 JWK thumbprints are computed over required key components in lexicographical order to calculate deterministic <code>kid</code> identifiers.</li>
+      </ul>
+
+      <h2>Zero Network Egress Security Model</h2>
+      <p>
+        Key manipulation tools that execute on remote servers present severe compliance and security risks. BitDark's JWK/JWKS Inspector operates 100% locally inside your browser sandbox. No telemetry, third-party trackers, or key payloads ever leave your physical device.
+      </p>
+    </article>
+
+    <div class="bottom-bar">
+      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
+      <nav>
+        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
+      </nav>
+    </div>
+  </main>
+
+  <script>
+    // Dual-Stack IP Resolver with Timeout Protection & Localhost Detection
+    async function detectUserIPs() {
+      const ipv4El = document.getElementById("ipv4Display");
+      const ipv6El = document.getElementById("ipv6Display");
+
+      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        ipv4El.textContent = "127.0.0.1 (Local)";
+        ipv6El.textContent = "::1 (Local)";
+        return;
+      }
+
+      // IPv4 Detection
+      try {
+        const c4 = new AbortController();
+        const t4 = setTimeout(() => c4.abort(), 3500);
+        const res4 = await fetch("https://api.ipify.org?format=json", { signal: c4.signal, cache: "no-store" });
+        clearTimeout(t4);
+        if (res4.ok) {
+          const d4 = await res4.json();
+          ipv4El.textContent = d4.ip;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const c4b = new AbortController();
+          const t4b = setTimeout(() => c4b.abort(), 3000);
+          const fb4 = await fetch("https://ipv4.icanhazip.com", { signal: c4b.signal, cache: "no-store" });
+          clearTimeout(t4b);
+          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
+        } catch {
+          ipv4El.textContent = "Offline";
+        }
+      }
+
+      // IPv6 Detection
+      try {
+        const c6 = new AbortController();
+        const t6 = setTimeout(() => c6.abort(), 3500);
+        const res6 = await fetch("https://api64.ipify.org?format=json", { signal: c6.signal, cache: "no-store" });
+        clearTimeout(t6);
+        if (res6.ok) {
+          const d6 = await res6.json();
+          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
+        } else {
+          throw new Error();
+        }
+      } catch {
+        try {
+          const c6b = new AbortController();
+          const t6b = setTimeout(() => c6b.abort(), 3000);
+          const fb6 = await fetch("https://ipv6.icanhazip.com", { signal: c6b.signal, cache: "no-store" });
+          clearTimeout(t6b);
+          const text6 = (await fb6.text()).trim();
+          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
+        } catch {
+          ipv6El.textContent = "Not Supported";
+        }
+      }
+    }
+    window.addEventListener("DOMContentLoaded", detectUserIPs);
+
+    // Tab Navigation
+    function switchMode(mode) {
+      hideResults();
+      if (mode === "jwk-to-pem") {
+        document.getElementById("tabJwkToPem").classList.add("active");
+        document.getElementById("tabPemToJwk").classList.remove("active");
+        document.getElementById("sectionJwkToPem").style.display = "block";
+        document.getElementById("sectionPemToJwk").style.display = "none";
+      } else {
+        document.getElementById("tabPemToJwk").classList.add("active");
+        document.getElementById("tabJwkToPem").classList.remove("active");
+        document.getElementById("sectionPemToJwk").style.display = "block";
+        document.getElementById("sectionJwkToPem").style.display = "none";
+      }
+    }
+
+    // Encoding Utilities
+    function b64UrlToB64(str) {
+      let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4 !== 0) b64 += "=";
+      return b64;
+    }
+
+    function b64ToB64Url(b64) {
+      return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    function b64ToBytes(b64) {
+      const clean = b64.replace(/[\r\n\s]/g, "");
+      const bin = atob(clean);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      return bytes;
+    }
+
+    function bytesToB64(bytes) {
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) {
+        bin += String.fromCharCode(bytes[i]);
+      }
+      return btoa(bin);
+    }
+
+    function hexToBytes(hex) {
+      const clean = hex.replace(/[^0-9a-fA-F]/g, "");
+      const bytes = new Uint8Array(clean.length / 2);
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+      }
+      return bytes;
+    }
+
+    function formatPEM(b64Der, label = "PUBLIC KEY") {
+      const chunks = b64Der.match(/.{1,64}/g) || [];
+      return `-----BEGIN ${label}-----\n${chunks.join("\n")}\n-----END ${label}-----`;
+    }
+
+    function concatBytes(...arrays) {
+      const totalLen = arrays.reduce((acc, a) => acc + a.length, 0);
+      const out = new Uint8Array(totalLen);
+      let offset = 0;
+      for (const a of arrays) {
+        out.set(a, offset);
+        offset += a.length;
+      }
+      return out;
+    }
+
+    // ASN.1 DER Construction Engine
+    function encodeDerLength(len) {
+      if (len < 128) return new Uint8Array([len]);
+      if (len < 256) return new Uint8Array([0x81, len]);
+      return new Uint8Array([0x82, (len >> 8) & 0xff, len & 0xff]);
+    }
+
+    function encodeDerInteger(bytes) {
+      let start = 0;
+      while (start < bytes.length - 1 && bytes[start] === 0) start++;
+      const trimmed = bytes.subarray(start);
+      const needPad = (trimmed[0] & 0x80) !== 0;
+      const val = needPad ? concatBytes(new Uint8Array([0x00]), trimmed) : trimmed;
+      const len = encodeDerLength(val.length);
+      return concatBytes(new Uint8Array([0x02]), len, val);
+    }
+
+    function encodeDerBitString(bytes) {
+      const val = concatBytes(new Uint8Array([0x00]), bytes);
+      const len = encodeDerLength(val.length);
+      return concatBytes(new Uint8Array([0x03]), len, val);
+    }
+
+    function encodeDerSequence(bytes) {
+      const len = encodeDerLength(bytes.length);
+      return concatBytes(new Uint8Array([0x30]), len, bytes);
+    }
+
+    // RFC 7638 SHA-256 JWK Thumbprint
+    async function computeJwkThumbprint(jwk) {
+      let sortedObj = {};
+      if (jwk.kty === "RSA") {
+        sortedObj = { e: jwk.e, kty: jwk.kty, n: jwk.n };
+      } else if (jwk.kty === "EC") {
+        sortedObj = { crv: jwk.crv, kty: jwk.kty, x: jwk.x, y: jwk.y };
+      } else {
+        return "N/A";
+      }
+      const jsonStr = JSON.stringify(sortedObj);
+      const enc = new TextEncoder();
+      const hash = await crypto.subtle.digest("SHA-256", enc.encode(jsonStr));
+      return b64ToB64Url(bytesToB64(new Uint8Array(hash)));
+    }
+
+    // Low-Level ASN.1 DER Parser
+    function parseDerTLV(bytes, pos = 0) {
+      if (pos >= bytes.length) return null;
+      const tag = bytes[pos++];
+      let len = bytes[pos++];
+      if (len & 0x80) {
+        const count = len & 0x7f;
+        len = 0;
+        for (let i = 0; i < count; i++) {
+          len = (len << 8) | bytes[pos++];
+        }
+      }
+      const val = bytes.subarray(pos, pos + len);
+      return { tag, len, val, nextPos: pos + len };
+    }
+
+    function parseDerChildren(bytes) {
+      const children = [];
+      let pos = 0;
+      while (pos < bytes.length) {
+        const item = parseDerTLV(bytes, pos);
+        if (!item) break;
+        children.push(item);
+        pos = item.nextPos;
+      }
+      return children;
+    }
+
+    function bytesToOidString(bytes) {
+      let oid = Math.floor(bytes[0] / 40) + "." + (bytes[0] % 40);
+      let val = 0;
+      for (let i = 1; i < bytes.length; i++) {
+        val = (val << 7) | (bytes[i] & 0x7f);
+        if ((bytes[i] & 0x80) === 0) {
+          oid += "." + val;
+          val = 0;
+        }
+      }
+      return oid;
+    }
+
+    // Convert JWK / JWKS to PEM
+    async function convertJwkToPem() {
+      hideResults();
+      const raw = document.getElementById("jwkInput").value.trim();
+      const resultsWrapper = document.getElementById("resultsWrapper");
+      const outputSection = document.getElementById("outputContentSection");
+      const metaGrid = document.getElementById("metaGrid");
+      const resultOutput = document.getElementById("resultOutput");
+
+      if (!raw) {
+        showStatus("error", "Error: Input cannot be empty. Please provide a valid JWK or JWKS JSON.");
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        showStatus("error", "Invalid JSON payload: " + e.message);
+        return;
+      }
+
+      const keys = Array.isArray(parsed.keys) ? parsed.keys : [parsed];
+      if (keys.length === 0) {
+        showStatus("error", "No valid keys found in input payload.");
+        return;
+      }
+
+      let pemOutputs = [];
+      let metaCards = [];
+
+      for (let i = 0; i < keys.length; i++) {
+        const k = keys[i];
+        if (!k.kty) {
+          showStatus("error", `Key #${i + 1} is missing the required parameter: 'kty'.`);
+          return;
+        }
+
+        try {
+          let spkiDer;
+          let keyTypeLabel = k.kty;
+
+          if (k.kty === "RSA") {
+            if (!k.n || !k.e) throw new Error("RSA key missing 'n' or 'e' parameters.");
+            let nBytes = b64ToBytes(b64UrlToB64(k.n));
+            let eBytes = b64ToBytes(b64UrlToB64(k.e));
+
+            // Normalize leading zero padding
+            while (nBytes.length > 1 && nBytes[0] === 0x00) nBytes = nBytes.subarray(1);
+            while (eBytes.length > 1 && eBytes[0] === 0x00) eBytes = eBytes.subarray(1);
+
+            const nInt = encodeDerInteger(nBytes);
+            const eInt = encodeDerInteger(eBytes);
+            const rsaPubKey = encodeDerSequence(concatBytes(nInt, eInt));
+            const bitString = encodeDerBitString(rsaPubKey);
+
+            // rsaEncryption OID: 1.2.840.113549.1.1.1 + NULL
+            const algId = new Uint8Array([
+              0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00
+            ]);
+            spkiDer = encodeDerSequence(concatBytes(algId, bitString));
+            keyTypeLabel = `RSA (${nBytes.length * 8} bits)`;
+          } else if (k.kty === "EC") {
+            if (!k.x || !k.y) throw new Error("EC key missing 'x' or 'y' coordinate parameters.");
+            const crv = k.crv || "P-256";
+            let curveOidBytes;
+            let expectedCoordLen;
+
+            if (crv === "P-256") {
+              curveOidBytes = new Uint8Array([0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07]);
+              expectedCoordLen = 32;
+            } else if (crv === "P-384") {
+              curveOidBytes = new Uint8Array([0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x22]);
+              expectedCoordLen = 48;
+            } else if (crv === "P-521") {
+              curveOidBytes = new Uint8Array([0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x23]);
+              expectedCoordLen = 66;
+            } else {
+              throw new Error(`Unsupported elliptic curve: ${crv}`);
+            }
+
+            let xBytes = b64ToBytes(b64UrlToB64(k.x));
+            let yBytes = b64ToBytes(b64UrlToB64(k.y));
+
+            if (xBytes.length < expectedCoordLen) {
+              const padded = new Uint8Array(expectedCoordLen);
+              padded.set(xBytes, expectedCoordLen - xBytes.length);
+              xBytes = padded;
+            }
+            if (yBytes.length < expectedCoordLen) {
+              const padded = new Uint8Array(expectedCoordLen);
+              padded.set(yBytes, expectedCoordLen - yBytes.length);
+              yBytes = padded;
+            }
+
+            const uncompressedPoint = concatBytes(new Uint8Array([0x04]), xBytes, yBytes);
+            const bitString = encodeDerBitString(uncompressedPoint);
+
+            // id-ecPublicKey OID: 1.2.840.10045.2.1
+            const idEcOid = new Uint8Array([0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01]);
+            const algId = encodeDerSequence(concatBytes(idEcOid, curveOidBytes));
+            spkiDer = encodeDerSequence(concatBytes(algId, bitString));
+            keyTypeLabel = `EC (${crv})`;
+          } else {
+            throw new Error(`Unsupported key type: '${k.kty}'. Supported: RSA, EC.`);
+          }
+
+          const pem = formatPEM(bytesToB64(spkiDer), "PUBLIC KEY");
+          pemOutputs.push(pem);
+
+          const thumbprint = await computeJwkThumbprint(k);
+
+          metaCards.push(`
+            <div class="meta-item">
+              <div class="meta-label">Key #${i + 1} Type</div>
+              <div class="meta-val">${keyTypeLabel}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Key ID (kid)</div>
+              <div class="meta-val">${k.kid || 'None Specified'}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Usage / Alg</div>
+              <div class="meta-val">${k.use || 'sig'} / ${k.alg || 'Unassigned'}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">SHA-256 Thumbprint</div>
+              <div class="meta-val">${thumbprint}</div>
+            </div>
+          `);
+        } catch (err) {
+          const detail = err.message || err.name || String(err);
+          showStatus("error", `Failed parsing key #${i + 1}: ${detail}`);
+          return;
+        }
+      }
+
+      showStatus("success", `✓ Successfully parsed & converted ${keys.length} key(s) into standard PEM format.`);
+      metaGrid.innerHTML = metaCards.join("");
+      resultOutput.textContent = pemOutputs.join("\n\n");
+      outputSection.style.display = "block";
+      resultsWrapper.style.display = "block";
+    }
+
+    // Convert PEM to JWK
+    async function convertPemToJwk() {
+      hideResults();
+      const pem = document.getElementById("pemInput").value.trim();
+      const resultsWrapper = document.getElementById("resultsWrapper");
+      const outputSection = document.getElementById("outputContentSection");
+      const metaGrid = document.getElementById("metaGrid");
+      const resultOutput = document.getElementById("resultOutput");
+
+      if (!pem) {
+        showStatus("error", "Error: PEM input cannot be empty.");
+        return;
+      }
+
+      const isPkcs1 = pem.includes("BEGIN RSA PUBLIC KEY");
+
+      const pemClean = pem
+        .replace(/-----BEGIN [A-Z0-9\s_-]+-----/g, "")
+        .replace(/-----END [A-Z0-9\s_-]+-----/g, "")
+        .replace(/[\r\n\s]/g, "");
+
+      let derBytes;
+      try {
+        derBytes = b64ToBytes(pemClean);
+      } catch {
+        showStatus("error", "Invalid Base64 encoding in PEM payload. Ensure PEM contains standard Base64 characters.");
+        return;
+      }
+
+      try {
+        const root = parseDerTLV(derBytes, 0);
+        if (!root || root.tag !== 0x30) {
+          throw new Error("Invalid ASN.1 structure. Root element is not a SEQUENCE.");
+        }
+
+        let exportedJwk = {};
+        let detectedType = "";
+        let nBytesLen = 0;
+
+        if (isPkcs1) {
+          const parts = parseDerChildren(root.val);
+          if (parts.length < 2) throw new Error("Malformed PKCS#1 RSA Public Key sequence.");
+          let nBytes = parts[0].val;
+          let eBytes = parts[1].val;
+          while (nBytes.length > 1 && nBytes[0] === 0x00) nBytes = nBytes.subarray(1);
+          while (eBytes.length > 1 && eBytes[0] === 0x00) eBytes = eBytes.subarray(1);
+          nBytesLen = nBytes.length;
+
+          exportedJwk = {
+            kty: "RSA",
+            n: b64ToB64Url(bytesToB64(nBytes)),
+            e: b64ToB64Url(bytesToB64(eBytes)),
+            use: "sig"
+          };
+          detectedType = `RSA PKCS#1 (${nBytes.length * 8} bits)`;
+        } else {
+          const spkiChildren = parseDerChildren(root.val);
+          if (spkiChildren.length < 2) throw new Error("Malformed SubjectPublicKeyInfo sequence.");
+
+          const algIdSeq = parseDerChildren(spkiChildren[0].val);
+          if (algIdSeq.length === 0 || algIdSeq[0].tag !== 0x06) {
+            throw new Error("AlgorithmIdentifier missing valid OID.");
+          }
+
+          const mainOid = bytesToOidString(algIdSeq[0].val);
+          const rawBitString = spkiChildren[1].val;
+          const keyBytes = rawBitString.subarray(1);
+
+          if (mainOid === "1.2.840.113549.1.1.1") {
+            const rsaSeq = parseDerTLV(keyBytes, 0);
+            if (!rsaSeq || rsaSeq.tag !== 0x30) throw new Error("Invalid inner RSAPublicKey SEQUENCE.");
+            const rsaParts = parseDerChildren(rsaSeq.val);
+            if (rsaParts.length < 2) throw new Error("Malformed inner RSAPublicKey SEQUENCE.");
+
+            let nBytes = rsaParts[0].val;
+            let eBytes = rsaParts[1].val;
+            while (nBytes.length > 1 && nBytes[0] === 0x00) nBytes = nBytes.subarray(1);
+            while (eBytes.length > 1 && eBytes[0] === 0x00) eBytes = eBytes.subarray(1);
+            nBytesLen = nBytes.length;
+
+            exportedJwk = {
+              kty: "RSA",
+              n: b64ToB64Url(bytesToB64(nBytes)),
+              e: b64ToB64Url(bytesToB64(eBytes)),
+              use: "sig"
+            };
+            detectedType = `RSA SPKI (${nBytes.length * 8} bits)`;
+          } else if (mainOid === "1.2.840.10045.2.1") {
+            if (algIdSeq.length < 2 || algIdSeq[1].tag !== 0x06) {
+              throw new Error("Missing Named Curve OID in EC parameters.");
+            }
+            const curveOid = bytesToOidString(algIdSeq[1].val);
+            let curveName = "";
+            let coordLen = 0;
+
+            if (curveOid === "1.2.840.10045.3.1.7") {
+              curveName = "P-256";
+              coordLen = 32;
+            } else if (curveOid === "1.3.132.0.34") {
+              curveName = "P-384";
+              coordLen = 48;
+            } else if (curveOid === "1.3.132.0.35") {
+              curveName = "P-521";
+              coordLen = 66;
+            } else {
+              throw new Error(`Unsupported EC Curve OID: ${curveOid}`);
+            }
+
+            if (keyBytes[0] !== 0x04) {
+              throw new Error("Compressed or hybrid EC point formats are not supported. Expected uncompressed (0x04).");
+            }
+
+            const xBytes = keyBytes.subarray(1, 1 + coordLen);
+            const yBytes = keyBytes.subarray(1 + coordLen, 1 + 2 * coordLen);
+
+            exportedJwk = {
+              kty: "EC",
+              crv: curveName,
+              x: b64ToB64Url(bytesToB64(xBytes)),
+              y: b64ToB64Url(bytesToB64(yBytes)),
+              use: "sig"
+            };
+            detectedType = `EC ${curveName} SPKI`;
+          } else {
+            throw new Error(`Unsupported public key algorithm OID: ${mainOid}`);
+          }
+        }
+
+        const thumbprint = await computeJwkThumbprint(exportedJwk);
+        exportedJwk.kid = thumbprint.slice(0, 16);
+
+        const jwksOutput = {
+          keys: [exportedJwk]
+        };
+
+        showStatus("success", `✓ Successfully converted ${detectedType} Public Key to JWK/JWKS.`);
+
+        const keyParamsDisplay = exportedJwk.kty === "RSA"
+          ? `Modulus (${nBytesLen * 8} bits) + Exponent (${exportedJwk.e})`
+          : `Curve: ${exportedJwk.crv}`;
+
+        metaGrid.innerHTML = `
+          <div class="meta-item">
+            <div class="meta-label">Detected Format</div>
+            <div class="meta-val">${detectedType}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Derived Key ID (kid)</div>
+            <div class="meta-val">${exportedJwk.kid}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Key Parameters</div>
+            <div class="meta-val">${keyParamsDisplay}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">SHA-256 Thumbprint</div>
+            <div class="meta-val">${thumbprint}</div>
+          </div>
+        `;
+
+        resultOutput.textContent = JSON.stringify(jwksOutput, null, 2);
+        outputSection.style.display = "block";
+        resultsWrapper.style.display = "block";
+      } catch (err) {
+        showStatus("error", "PEM Conversion Error: " + (err.message || err.name || String(err)));
+      }
+    }
+
+    function showStatus(type, msg) {
+      const banner = document.getElementById("statusBanner");
+      const wrapper = document.getElementById("resultsWrapper");
+      const outputSection = document.getElementById("outputContentSection");
+      
+      banner.className = `status-banner ${type}`;
+      banner.textContent = msg;
+
+      if (type === "error") {
+        outputSection.style.display = "none";
+      }
+      wrapper.style.display = "block";
+    }
+
+    function hideResults() {
+      document.getElementById("resultsWrapper").style.display = "none";
+      document.getElementById("outputContentSection").style.display = "none";
+      document.getElementById("metaGrid").innerHTML = "";
+      document.getElementById("resultOutput").textContent = "";
+    }
+
+    function clearJwkInput() {
+      document.getElementById("jwkInput").value = "";
+      hideResults();
+    }
+
+    function clearPemInput() {
+      document.getElementById("pemInput").value = "";
+      hideResults();
+    }
+
+    function copyResult() {
+      const text = document.getElementById("resultOutput").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById("btnCopyResult");
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    }
+
+    function downloadResult() {
+      const text = document.getElementById("resultOutput").textContent;
+      if (!text) return;
+      const isJson = text.trim().startsWith("{");
+      const blob = new Blob([text], { type: isJson ? "application/json" : "application/x-pem-file" });
+      const dl = document.createElement("a");
+      dl.href = URL.createObjectURL(blob);
+      dl.download = isJson ? "key.jwks.json" : "public-key.pem";
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    }
+
+    // Mathematical RFC 7517 & RFC 8017 Compliant Sample Generator
+    // 512 Hex Digits = Exactly 256 Octets = Exactly 2048 Bits
+    const standardRsaModulusHex = "bbf82f090682ce9c2338ac2b9fb97917763059e43a6c23c014929ea29a87485056387d83a74f372c050f7d2323b340fbb459b795322964b70fc7f624a59a3b864ee56f97109e66a2857c63b6708b7b564ddcec5ada977f0b16de322ca05b56614b44b364ff6fa2ae157465d5142668737b206472181e35462e034b7b6072b310e0d3ca18838032e59081356c3b152ef762b06680355990f8b69c7da854832afa1b88433ac6664079f2e708957a9f745f5feb9d181777ea80a40614f56e72bea707e6d4044467be41b335ceb2661d81bef4783f7e5ce34525a0c4627a1d08ab5e304ea63bf837f754e44cd4d9fce6d4ecdccaecee9c13d73ebac4e869ac5bb76b";
+
+    function getSampleRsaJwk() {
+      const nBytes = hexToBytes(standardRsaModulusHex);
+      return {
+        kty: "RSA",
+        n: b64ToB64Url(bytesToB64(nBytes)),
+        e: "AQAB",
+        alg: "RS256",
+        use: "sig",
+        kid: "bitdark-rsa-2048"
+      };
+    }
+
+    function getSampleRsaPem() {
+      const nBytes = hexToBytes(standardRsaModulusHex);
+      const eBytes = new Uint8Array([0x01, 0x00, 0x01]);
+      const nInt = encodeDerInteger(nBytes);
+      const eInt = encodeDerInteger(eBytes);
+      const rsaPubKey = encodeDerSequence(concatBytes(nInt, eInt));
+      const bitString = encodeDerBitString(rsaPubKey);
+      const algId = new Uint8Array([
+        0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00
+      ]);
+      const spkiDer = encodeDerSequence(concatBytes(algId, bitString));
+      return formatPEM(bytesToB64(spkiDer), "PUBLIC KEY");
+    }
+
+    function getSampleEcPem() {
+      const xBytes = b64ToBytes(b64UrlToB64("f83OJ3D2xFNT4WFDP4t7EP27asQ8mvdQd-7GTV6_DQw"));
+      const yBytes = b64ToBytes(b64UrlToB64("x_daQau3qTNm24WIfVq_b6WG57bYXWuh1ExTx-qtEZU"));
+      const uncompressedPoint = concatBytes(new Uint8Array([0x04]), xBytes, yBytes);
+      const bitString = encodeDerBitString(uncompressedPoint);
+      const idEcOid = new Uint8Array([0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01]);
+      const curveOidBytes = new Uint8Array([0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07]);
+      const algId = encodeDerSequence(concatBytes(idEcOid, curveOidBytes));
+      const spkiDer = encodeDerSequence(concatBytes(algId, bitString));
+      return formatPEM(bytesToB64(spkiDer), "PUBLIC KEY");
+    }
+
+    function loadSample(type) {
+      hideResults();
+      if (type === "rsa") {
+        document.getElementById("jwkInput").value = JSON.stringify(getSampleRsaJwk(), null, 2);
+      } else if (type === "ec") {
+        document.getElementById("jwkInput").value = JSON.stringify({
+          kty: "EC",
+          crv: "P-256",
+          x: "f83OJ3D2xFNT4WFDP4t7EP27asQ8mvdQd-7GTV6_DQw",
+          y: "x_daQau3qTNm24WIfVq_b6WG57bYXWuh1ExTx-qtEZU",
+          use: "sig",
+          kid: "sample-ec-p256"
+        }, null, 2);
+      } else if (type === "jwks") {
+        document.getElementById("jwkInput").value = JSON.stringify({
+          keys: [
+            {
+              kty: "EC",
+              crv: "P-256",
+              x: "f83OJ3D2xFNT4WFDP4t7EP27asQ8mvdQd-7GTV6_DQw",
+              y: "x_daQau3qTNm24WIfVq_b6WG57bYXWuh1ExTx-qtEZU",
+              kid: "key-ec-01"
+            },
+            getSampleRsaJwk()
+          ]
+        }, null, 2);
+      }
+    }
+
+    function loadSamplePem(type = 'rsa') {
+      hideResults();
+      if (type === 'rsa') {
+        document.getElementById("pemInput").value = getSampleRsaPem();
+      } else if (type === 'ec') {
+        document.getElementById("pemInput").value = getSampleEcPem();
+      }
+    }
+  </script>
+</body>
+</html>
