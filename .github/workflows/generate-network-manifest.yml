@@ -1,0 +1,112 @@
+name: Auto-Generate Network Tools Manifest
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/network/**/index.html'
+
+concurrency:
+  group: network-manifest-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Scan Directory & Generate tools/network/manifest.json
+        run: |
+          python3 -c "
+          import os, json, re, html
+
+          base_dir = 'tools/network'
+          manifest_path = os.path.join(base_dir, 'manifest.json')
+
+          # Baseline IDs already hardcoded in tools/network/index.html to avoid duplicates
+          BASELINE_IDS = {
+              'cidr-calc', 'cidr-overlap', 'email-headers', 'dmarc-gen',
+              'spf-decomp', 'ip-obfuscate', 'dns-wire', 'mtu-overhead',
+              'asn-map', 'mac-lookup', 'nginx-lint', 'docker-audit',
+              'cron-explainer', 'syslog-parse', 'ua-deconstruct'
+          }
+
+          tools = []
+
+          if os.path.exists(base_dir):
+              for entry in sorted(os.listdir(base_dir)):
+                  tool_dir = os.path.join(base_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+
+                  # Skip root index.html, non-directories, and files
+                  if not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
+                      continue
+
+                  if os.path.exists(index_path):
+                      with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Extract Clean Title and decode HTML entities (&amp; -> &)
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
+                      if title_match:
+                          raw_title = title_match.group(1).strip()
+                          clean_title = re.split(r'\s+[—|–|-]\s+', raw_title)[0].strip()
+                          clean_title = html.unescape(clean_title)
+                      else:
+                          clean_title = entry.replace('-', ' ').title()
+
+                      # Extract Description
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
+                      clean_desc = html.unescape(desc_match.group(1).strip()) if desc_match else 'Client-side network diagnostic utility.'
+                      clean_desc = re.sub(r'\s+', ' ', clean_desc)
+
+                      # Determine Subcategory Tag based on slug or description
+                      check_str = f'{entry.lower()} {clean_title.lower()} {clean_desc.lower()}'
+                      if any(k in check_str for k in ['cidr', 'subnet', 'ipv4', 'ipv6', 'mask', 'broadcast', 'ip']):
+                          sub = 'ip'
+                      elif any(k in check_str for k in ['dns', 'spf', 'dmarc', 'dkim', 'email', 'mime', 'mx']):
+                          sub = 'dns'
+                      else:
+                          sub = 'infra'
+
+                      tools.append({
+                          'id': entry,
+                          'name': clean_title,
+                          'desc': clean_desc,
+                          'sub': sub,
+                          'engine': 'In-Memory',
+                          'url': f'/tools/network/{entry}'
+                      })
+
+          with open(manifest_path, 'w', encoding='utf-8') as out:
+              json.dump(tools, out, indent=2)
+
+          print(f'Successfully compiled {len(tools)} dynamic network tool(s) to {manifest_path}')
+          "
+
+      - name: Commit & Push Manifest (Zero-Loop Safe)
+        run: |
+          git config --global user.name "BitDark Bot"
+          git config --global user.email "bot@bitdark.net"
+          git add tools/network/manifest.json
+          
+          # Only commit if changes exist; [skip ci] prevents recursive action triggers
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(network): auto-update /tools/network/manifest.json [skip ci]"
+            git push origin main
+          else
+            echo "No manifest changes detected. Skipping commit."
+          fi
