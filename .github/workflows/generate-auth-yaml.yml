@@ -1,90 +1,120 @@
-name: Auto-Generate AppSec Tools Manifest
+name: Auto-Generate Privacy Tools Manifest
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'tools/auth/**/index.html'
+      - 'tools/privacy/**/index.html'
+
+# Cancel running jobs when multiple commits are pushed in quick succession
+concurrency:
+  group: privacy-manifest-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   build-manifest:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Generate tools/auth/manifest.json
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Scan Directory & Generate tools/privacy/manifest.json
         run: |
           python3 -c "
           import os, json, re, html
 
-          tools = []
-          base_dir = 'tools/auth'
-          
-          # Baseline IDs already hardcoded in tools/auth/index.html
+          base_dir = 'tools/privacy'
+          manifest_path = os.path.join(base_dir, 'manifest.json')
+
+          # Baseline IDs already hardcoded in tools/privacy/index.html
           BASELINE_IDS = {
-              'jwt-offline', 'jwt-brute', 'csp-builder', 'sri-builder',
-              'cors-sim', 'sec-headers', 'cookie-audit', 'pkce-gen',
-              'secret-scanner', 'x509-decoder', 'tls-cipher', 'saml-decode',
-              'zxcvbn-lab', 'xss-escaper', 'sql-sanitizer'
+              'exif-scrub', 'pdf-cleaner', 'utm-cleaner', 'stego-extract',
+              'pii-redactor', 'fingerprint-audit', 'gpc-signal', 'media-meta',
+              'onion-check', 'clipboard-hijack', 'webrtc-leak', 'email-masker',
+              'referrer-audit', 'storage-nuker', 'anti-ocr'
           }
+
+          tools = []
 
           if os.path.exists(base_dir):
               for entry in sorted(os.listdir(base_dir)):
                   tool_dir = os.path.join(base_dir, entry)
                   index_path = os.path.join(tool_dir, 'index.html')
-                  
-                  # Ignore the hub itself, non-directories, and baseline tools
+
+                  # Ignore root index.html, non-directories, and hardcoded baseline tools
                   if entry == 'index.html' or not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
                       continue
-                      
+
                   if os.path.exists(index_path):
                       with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
                           content = f.read()
-                          
+
+                      # Extract Clean Title and decode HTML entities (&amp; -> &)
                       title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
-                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
-                      
-                      # Strip brand suffixes and unescape HTML entities (&amp; -> &)
                       if title_match:
                           raw_title = title_match.group(1).strip()
                           clean_title = re.split(r'\s+[—|–|-]\s+', raw_title)[0].strip()
                           clean_title = html.unescape(clean_title)
                       else:
                           clean_title = entry.replace('-', ' ').title()
-                          
-                      desc = html.unescape(desc_match.group(1).strip()) if desc_match else 'Client-side application security utility.'
-                      desc = re.sub(r'\s+', ' ', desc)
 
-                      # Content-aware subcategory matching
+                      # Extract Meta Description and decode HTML entities
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
+                      if desc_match:
+                          clean_desc = html.unescape(desc_match.group(1).strip())
+                          clean_desc = re.sub(r'\s+', ' ', clean_desc)
+                      else:
+                          clean_desc = 'Zero-log client-side privacy tool.'
+
+                      # Determine Subcategory Tag based on slug or page content
                       content_lower = content.lower()
                       entry_lower = entry.lower()
-                      if any(k in entry_lower or k in content_lower for k in ['jwk', 'jwks', 'jwt', 'token', 'secret', 'bearer']):
-                          sub = 'tokens'
-                      elif any(k in entry_lower or k in content_lower for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password', 'entropy']):
-                          sub = 'identity'
-                      elif any(k in entry_lower or k in content_lower for k in ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']):
-                          sub = 'headers'
-                      elif any(k in entry_lower or k in content_lower for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
-                          sub = 'sanitization'
+                      if any(k in entry_lower or k in content_lower for k in ['exif', 'gps', 'metadata', 'pdf', 'image', 'tag']):
+                          sub = 'metadata'
+                      elif any(k in entry_lower or k in content_lower for k in ['webrtc', 'utm', 'tracking', 'referrer', 'leak', 'eml']):
+                          sub = 'tracking'
+                      elif any(k in entry_lower or k in content_lower for k in ['redact', 'pii', 'secret', 'mask', 'scrub']):
+                          sub = 'redaction'
                       else:
-                          sub = 'tokens'
-                      
+                          sub = 'browser'
+
                       tools.append({
                           'id': entry,
                           'name': clean_title,
-                          'desc': desc,
+                          'desc': clean_desc,
                           'sub': sub,
                           'engine': 'In-Memory',
-                          'url': f'/tools/auth/{entry}'
+                          'url': f'/tools/privacy/{entry}'
                       })
 
-          with open('tools/auth/manifest.json', 'w', encoding='utf-8') as out:
+          # Write primary manifest.json
+          with open(manifest_path, 'w', encoding='utf-8') as out:
               json.dump(tools, out, indent=2)
+
+          print(f'Successfully compiled {len(tools)} dynamic tool(s) to {manifest_path}')
           "
 
-      - name: Commit & Push Manifest
+      - name: Commit & Push manifest.json
         run: |
           git config --global user.name "BitDark Bot"
           git config --global user.email "bot@bitdark.net"
-          git add tools/auth/manifest.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(auth): auto-update /tools/auth/manifest.json [skip ci]" && git push)
+          git add tools/privacy/manifest.json
+          
+          # Only commit if changes exist; [skip ci] prevents recursive pipeline triggers
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(privacy): auto-update /tools/privacy/manifest.json [skip ci]"
+            git push origin main
+          else
+            echo "No manifest changes detected. Skipping commit."
+          fi
