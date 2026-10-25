@@ -1,22 +1,21 @@
-name: Auto-Generate Privacy Tools Manifest
+name: Auto-Generate AppSec Tools YAML
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'tools/privacy/**/index.html'
+      - 'tools/auth/**/index.html'
 
-# Cancel running jobs when multiple commits are pushed in quick succession
 concurrency:
-  group: privacy-manifest-${{ github.ref }}
+  group: auth-yaml-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  build-manifest:
+  build-yaml:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -29,20 +28,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Scan Directory & Generate tools/privacy/manifest.json
+      - name: Scan Directory & Generate tools/auth/tools.yml
         run: |
           python3 -c "
-          import os, json, re, html
+          import os, re
 
-          base_dir = 'tools/privacy'
-          manifest_path = os.path.join(base_dir, 'manifest.json')
+          base_dir = 'tools/auth'
+          yaml_path = os.path.join(base_dir, 'tools.yml')
 
-          # Baseline IDs already hardcoded in tools/privacy/index.html
+          # Baseline IDs already hardcoded in tools/auth/index.html
           BASELINE_IDS = {
-              'exif-scrub', 'pdf-cleaner', 'utm-cleaner', 'stego-extract',
-              'pii-redactor', 'fingerprint-audit', 'gpc-signal', 'media-meta',
-              'onion-check', 'clipboard-hijack', 'webrtc-leak', 'email-masker',
-              'referrer-audit', 'storage-nuker', 'anti-ocr'
+              'jwt-offline', 'jwt-brute', 'csp-builder', 'sri-builder',
+              'cors-sim', 'sec-headers', 'cookie-audit', 'pkce-gen',
+              'secret-scanner', 'x509-decoder', 'tls-cipher', 'saml-decode',
+              'zxcvbn-lab', 'xss-escaper', 'sql-sanitizer'
           }
 
           tools = []
@@ -52,42 +51,34 @@ jobs:
                   tool_dir = os.path.join(base_dir, entry)
                   index_path = os.path.join(tool_dir, 'index.html')
 
-                  # Ignore root index.html, non-directories, and hardcoded baseline tools
-                  if entry == 'index.html' or not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
+                  if not os.path.isdir(tool_dir) or entry in BASELINE_IDS:
                       continue
 
                   if os.path.exists(index_path):
                       with open(index_path, 'r', encoding='utf-8', errors='ignore') as f:
                           content = f.read()
 
-                      # Extract Clean Title and decode HTML entities (&amp; -> &)
-                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
+                      # Extract Clean Title
+                      title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
                       if title_match:
-                          raw_title = title_match.group(1).strip()
-                          clean_title = re.split(r'\s+[—|–|-]\s+', raw_title)[0].strip()
-                          clean_title = html.unescape(clean_title)
+                          raw_title = title_match.group(1)
+                          clean_title = re.split(r'[—|–|-]', raw_title)[0].strip()
                       else:
                           clean_title = entry.replace('-', ' ').title()
 
-                      # Extract Meta Description and decode HTML entities
-                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE | re.DOTALL)
-                      if desc_match:
-                          clean_desc = html.unescape(desc_match.group(1).strip())
-                          clean_desc = re.sub(r'\s+', ' ', clean_desc)
-                      else:
-                          clean_desc = 'Zero-log client-side privacy tool.'
+                      # Extract Meta Description
+                      desc_match = re.search(r'<meta\s+name=[\"\']description[\"\']\s+content=[\"\'](.*?)[\"\']', content, re.IGNORECASE)
+                      clean_desc = desc_match.group(1).strip() if desc_match else 'Client-side application security utility.'
 
-                      # Determine Subcategory Tag based on slug or page content
+                      # Determine Subcategory Tag based on content or folder name
+                      sub = 'tokens'
                       content_lower = content.lower()
-                      entry_lower = entry.lower()
-                      if any(k in entry_lower or k in content_lower for k in ['exif', 'gps', 'metadata', 'pdf', 'image', 'tag']):
-                          sub = 'metadata'
-                      elif any(k in entry_lower or k in content_lower for k in ['webrtc', 'utm', 'tracking', 'referrer', 'leak', 'eml']):
-                          sub = 'tracking'
-                      elif any(k in entry_lower or k in content_lower for k in ['redact', 'pii', 'secret', 'mask', 'scrub']):
-                          sub = 'redaction'
-                      else:
-                          sub = 'browser'
+                      if any(k in content_lower for k in ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']):
+                          sub = 'headers'
+                      elif any(k in content_lower for k in ['pkce', 'saml', 'x509', 'tls', 'cert', 'oauth', 'password']):
+                          sub = 'identity'
+                      elif any(k in content_lower for k in ['sanitize', 'escape', 'xss', 'sql', 'injection']):
+                          sub = 'sanitization'
 
                       tools.append({
                           'id': entry,
@@ -95,26 +86,32 @@ jobs:
                           'desc': clean_desc,
                           'sub': sub,
                           'engine': 'In-Memory',
-                          'url': f'/tools/privacy/{entry}'
+                          'url': f'/tools/auth/{entry}'
                       })
 
-          # Write primary manifest.json
-          with open(manifest_path, 'w', encoding='utf-8') as out:
-              json.dump(tools, out, indent=2)
+          # Write clean YAML formatted file
+          with open(yaml_path, 'w', encoding='utf-8') as out:
+              out.write('# BitDark Auto-Generated Dynamic AppSec Tools\n')
+              for t in tools:
+                  out.write(f'- id: \"{t[\"id\"]}\"\n')
+                  out.write(f'  name: \"{t[\"name\"]}\"\n')
+                  out.write(f'  desc: \"{t[\"desc\"]}\"\n')
+                  out.write(f'  sub: \"{t[\"sub\"]}\"\n')
+                  out.write(f'  engine: \"{t[\"engine\"]}\"\n')
+                  out.write(f'  url: \"{t[\"url\"]}\"\n\n')
 
-          print(f'Successfully compiled {len(tools)} dynamic tool(s) to {manifest_path}')
+          print(f'Successfully compiled {len(tools)} dynamic tool(s) to {yaml_path}')
           "
 
-      - name: Commit & Push manifest.json
+      - name: Commit & Push tools.yml (Zero CI Loops)
         run: |
           git config --global user.name "BitDark Bot"
           git config --global user.email "bot@bitdark.net"
-          git add tools/privacy/manifest.json
+          git add tools/auth/tools.yml
           
-          # Only commit if changes exist; [skip ci] prevents recursive pipeline triggers
           if ! git diff --quiet || ! git diff --staged --quiet; then
-            git commit -m "chore(privacy): auto-update /tools/privacy/manifest.json [skip ci]"
+            git commit -m "chore(auth): auto-update /tools/auth/tools.yml [skip ci]"
             git push origin main
           else
-            echo "No manifest changes detected. Skipping commit."
+            echo "No YAML changes detected. Skipping commit."
           fi
