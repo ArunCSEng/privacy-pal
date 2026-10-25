@@ -1,0 +1,181 @@
+name: Auto-Generate Tools Catalogs (All Categories)
+
+# One workflow for every category folder under tools/
+#   tools/auth/<new-tool>/index.html     -> tools/auth/tools.yml
+#   tools/crypto/<new-tool>/index.html   -> tools/crypto/tools.yml
+#   tools/<any-new-category>/...         -> picked up automatically
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/**/index.html'
+      - '.github/workflows/tools-catalog.yml'
+  workflow_dispatch:   # "Run workflow" button in the Actions tab
+
+concurrency:
+  group: tools-catalog-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-catalogs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate tools.yml for every category
+        shell: python
+        run: |
+          import os, re
+          from html.parser import HTMLParser
+
+          TOOLS_ROOT = 'tools'
+
+          # Optional keyword hints per category: sub-key -> words.
+          # Keys MUST match the data-sub values of that category's filter buttons.
+          # Categories not listed here still work: they use <meta name="bitdark:sub">,
+          # then any data-sub key found in the folder name/title, then the first button.
+          SUB_KEYWORDS = {
+              'auth': [
+                  ('headers',      ['csp', 'cors', 'header', 'cookie', 'sri', 'hsts']),
+                  ('identity',     ['pkce', 'saml', 'x509', 'x.509', 'tls', 'cert', 'oauth', 'password']),
+                  ('sanitization', ['sanitiz', 'escape', 'xss', 'sql', 'injection']),
+                  ('tokens',       ['jwt', 'token', 'secret']),
+              ],
+          }
+
+          class PageMeta(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)   # decodes &amp; etc.
+                  self.title, self.desc, self.sub, self.engine = '', '', '', ''
+                  self._in_title = False
+
+              def handle_starttag(self, tag, attrs):
+                  a = {k.lower(): (v or '') for k, v in attrs}
+                  if tag == 'title':
+                      self._in_title = True
+                  elif tag == 'meta':
+                      name = a.get('name', '').lower()
+                      val = a.get('content', '').strip()
+                      if name == 'description' and not self.desc:
+                          self.desc = val
+                      elif name == 'bitdark:sub':
+                          self.sub = val.lower()
+                      elif name == 'bitdark:engine':
+                          self.engine = val
+
+              def handle_endtag(self, tag):
+                  if tag == 'title':
+                      self._in_title = False
+
+              def handle_data(self, data):
+                  if self._in_title:
+                      self.title += data
+
+          def read(path):
+              with open(path, encoding='utf-8', errors='ignore') as f:
+                  return f.read()
+
+          def clean(value):
+              # One line, no double quotes: valid YAML and safe for parseSimpleYaml()
+              value = ' '.join(str(value).split())
+              return value.replace('\\', '/').replace('"', "'")
+
+          def build_category(cat):
+              cat_dir = os.path.join(TOOLS_ROOT, cat)
+              hub_path = os.path.join(cat_dir, 'index.html')
+              hub = read(hub_path) if os.path.isfile(hub_path) else ''
+
+              # Baseline tools = every url: "/tools/<cat>/<slug>" already hardcoded
+              # in the category page. Detected automatically - nothing to maintain.
+              baseline = set(re.findall(
+                  r'''url\s*:\s*["']/tools/%s/([^"'/?#]+)''' % re.escape(cat), hub))
+
+              # Filter buttons on the category page, e.g. data-sub="tokens"
+              subs = [s for s in re.findall(r'data-sub\s*=\s*["\']([^"\']+)["\']', hub)
+                      if s != 'all']
+              subs = list(dict.fromkeys(subs))   # dedupe, keep order
+              default_sub = subs[0] if subs else 'general'
+              hints = SUB_KEYWORDS.get(cat, [])
+
+              tools = []
+              for entry in sorted(os.listdir(cat_dir)):
+                  tool_dir = os.path.join(cat_dir, entry)
+                  index_path = os.path.join(tool_dir, 'index.html')
+                  if (not os.path.isdir(tool_dir) or entry in baseline
+                          or entry.startswith(('.', '_')) or not os.path.isfile(index_path)):
+                      continue
+
+                  p = PageMeta()
+                  p.feed(read(index_path))
+
+                  # Split only on spaced separators: "Anti-CSRF Lab — BitDark" -> "Anti-CSRF Lab"
+                  raw_title = ' '.join(p.title.split())
+                  name = re.split(r'\s+[—–|-]\s+', raw_title)[0].strip() if raw_title else ''
+                  name = name or entry.replace('-', ' ').title()
+                  desc = p.desc or 'Client-side security utility.'
+
+                  # Category: meta override > keyword hints > data-sub key in text > default
+                  haystack = f'{entry} {name} {desc}'.lower()
+                  sub = p.sub if (p.sub and (not subs or p.sub in subs)) else ''
+                  if not sub:
+                      sub = next((k for k, words in hints
+                                  if (not subs or k in subs) and any(w in haystack for w in words)), '')
+                  if not sub:
+                      sub = next((s for s in subs if s.lower() in haystack), default_sub)
+
+                  tools.append({
+                      'id': entry,
+                      'name': name,
+                      'desc': desc,
+                      'sub': sub,
+                      'engine': p.engine or 'In-Memory',
+                      'url': f'/tools/{cat}/{entry}',   # no trailing slash, same as hardcoded tools
+                  })
+
+              out_path = os.path.join(cat_dir, 'tools.yml')
+              with open(out_path, 'w', encoding='utf-8') as out:
+                  out.write(f'# BitDark Auto-Generated Dynamic Tools: /tools/{cat}/\n')
+                  for t in tools:
+                      for i, key in enumerate(('id', 'name', 'desc', 'sub', 'engine', 'url')):
+                          out.write(f'{"- " if i == 0 else "  "}{key}: "{clean(t[key])}"\n')
+                      out.write('\n')
+
+              print(f'[{cat}] baseline={len(baseline)}  new={len(tools)}  -> {out_path}')
+              for t in tools:
+                  print(f"    + {t['id']}  [{t['sub']}]  {t['name']}")
+
+          if not os.path.isdir(TOOLS_ROOT):
+              raise SystemExit(f'{TOOLS_ROOT}/ not found')
+
+          for cat in sorted(os.listdir(TOOLS_ROOT)):
+              if os.path.isdir(os.path.join(TOOLS_ROOT, cat)) and not cat.startswith(('.', '_')):
+                  build_category(cat)
+
+      - name: Commit & Push catalogs
+        run: |
+          git config user.name "BitDark Bot"
+          git config user.email "bot@bitdark.net"
+          git add tools/*/tools.yml
+
+          if git diff --staged --quiet; then
+            echo "No catalog changes. Skipping commit."
+            exit 0
+          fi
+
+          # No [skip ci]: GITHUB_TOKEN pushes never re-trigger workflows (no loop),
+          # and [skip ci] would stop Cloudflare Pages / Netlify deploying this commit.
+          git commit -m "chore(tools): update category catalogs"
+          git pull --rebase origin main
+          git push origin main
