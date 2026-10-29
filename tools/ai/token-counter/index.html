@@ -7,9 +7,107 @@
   <title>Context Window Token Calculator — Free Offline AI Utility | BitDark</title>
   <meta name="title" content="Context Window Token Calculator — Free Offline AI Utility | BitDark" />
   <meta name="description" content="Calculate prompt tokens, context limits, and cost projections locally in browser memory across GPT-4o, Claude 3.5, Gemini 1.5/2.0, Llama 3, and DeepSeek. Zero network egress." />
-  <meta name="keywords" content="token counter online, context window calculator, offline tiktoken, estimate llm cost, gpt-4o token count, claude 3 token calculator, deepseek tokens, zero log token counter" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/ai/token-counter" />
+  <meta name="keywords" content="token counter online, context window calculator, offline tiktoken, estimate llm cost, gpt-4o token count, claude 3.5 sonnet token calculator, deepseek tokens, zero log token counter, bpe tokenizer, llm context saturation" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/ai/token-counter/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/ai/token-counter/" />
+  <meta property="og:title" content="Context Window Token Calculator — Free Offline AI Utility | BitDark" />
+  <meta property="og:description" content="Estimate prompt tokens, context window saturation boundaries, and API inference costs offline in browser RAM. Zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/ai/token-counter/" />
+  <meta name="twitter:title" content="Context Window Token Calculator | BitDark" />
+  <meta name="twitter:description" content="Compute BPE subwords, context limits, and token budgets locally in memory. 100% Client-Side with zero tracking or telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Context Window Token Calculator",
+        "url": "https://bitdark.net/tools/ai/token-counter/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive AI developer utility to estimate Byte-Pair Encoding (BPE) prompt tokens, evaluate context saturation boundaries, and calculate model inference costs directly in local browser RAM without network egress."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Byte-Pair Encoding Architecture, Tokenization Mechanics, and Context Window Budgeting in Frontier LLMs",
+        "url": "https://bitdark.net/tools/ai/token-counter/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-10",
+        "dateModified": "2026-10-30",
+        "description": "An exhaustive technical analysis of subword tokenization algorithms (BPE, WordPiece, SentencePiece), context window pressure, multi-turn chat template overhead, and compute cost optimization across modern foundation models."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a token in the context of Large Language Models?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A token is the atomic unit of data processed by a Large Language Model. Rather than ingesting raw characters or complete grammatical words, LLMs partition text into subword fragments using algorithms such as Byte-Pair Encoding (BPE). In general English prose, one token represents roughly 4 characters or 0.75 words."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do different LLM providers yield different token counts for the exact same prompt?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Each model architecture utilizes a distinct vocabulary dictionary and training tokenizer. For instance, OpenAI's GPT-4o uses the o200k_base tokenizer with a 200,000-token vocabulary, whereas Llama 3 uses a 128,000-token vocabulary and older models use cl100k_base. Larger vocabularies compress non-English scripts, technical code, and whitespace much more efficiently."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens if a prompt exceeds a model's context window limit?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When a prompt exceeds the context window, the model API either rejects the request with an HTTP 400 ContextWindowExceeded error or silently truncates the earliest tokens. Truncation can delete core system instructions, schema rules, and few-shot examples, leading to security failures and hallucinations."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the BitDark Token Calculator transmit prompt payloads to third-party servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All calculations, regex subword splitting, and memory estimations are computed locally inside your browser's private JavaScript runtime."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does code indentation and whitespace impact LLM context consumption?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Indentation whitespace in formats like Python and YAML can consume excessive tokens if the tokenizer does not merge repeated spaces into single tokens. Minifying JSON payloads and stripping redundant blank lines can reduce token overhead by 15% to 35%."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,16 +124,17 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -43,180 +142,224 @@
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .config-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
     .form-group label {
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--atom-heading);
       font-weight: 600;
     }
     .form-group select, .form-group input {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 8px 12px;
+      border-radius: 6px;
+      padding: 12px 14px;
       color: #fff;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS auto-zooming */
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      min-height: 44px;
     }
     .form-group select:focus, .form-group input:focus {
       border-color: var(--atom-border-focus);
+      box-shadow: 0 0 6px rgba(82, 139, 255, 0.3);
     }
 
     /* Metric Dashboard Cards */
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .metric-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 100px;
     }
     .metric-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .metric-val {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
+      word-break: break-all;
     }
     .metric-sub {
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       color: var(--atom-text);
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     /* Progress Context Gauge */
     .gauge-wrapper {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 14px 18px;
     }
     .gauge-head {
       display: flex;
       justify-content: space-between;
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 6px;
+      font-size: 0.82rem;
+      margin-bottom: 8px;
     }
     .gauge-bar-bg {
-      height: 8px;
+      height: 10px;
       background-color: var(--atom-surface);
-      border-radius: 4px;
+      border-radius: 5px;
       overflow: hidden;
     }
     .gauge-bar-fill {
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, var(--atom-cyan), var(--atom-green));
-      border-radius: 4px;
-      transition: width 0.2s, background-color 0.2s;
+      border-radius: 5px;
+      transition: width 0.2s ease, background-color 0.2s ease;
     }
 
     /* Textarea & Token Visualization */
@@ -224,31 +367,33 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
     }
     .editor-box {
       width: 100%;
-      height: 240px;
+      height: 260px;
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.85rem;
-      line-height: 1.5;
+      font-size: 16px; /* Prevents iOS auto-zooming */
+      line-height: 1.6;
       resize: vertical;
       outline: none;
+      transition: border-color 0.2s;
     }
     .editor-box:focus { border-color: var(--atom-border-focus); }
 
     .btn-row {
       display: flex;
       justify-content: flex-end;
-      margin-top: 14px;
-      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      gap: 14px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -256,127 +401,348 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
-      background-color: var(--atom-bg);
-      border: 1px solid var(--atom-border);
+      background-color: var(--atom-border);
       color: var(--atom-text);
     }
-    .btn-secondary:hover { border-color: var(--atom-amber); color: #fff; }
+    .btn-secondary:hover { 
+      background-color: #424953; 
+      color: var(--atom-heading); 
+    }
 
-    /* Operational Boundaries &  Callout */
-    .-card {
+    /* Forensic Disclaimer Card */
+    .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
-    .-header {
+    .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
-    .-card strong { color: var(--atom-heading); }
+    .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2600px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Telemetry Removed) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Logs
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#ai">AI Defense</a> / token-counter
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/ai/">AI Defense</a>
+      <span class="sep">/</span>
+      <span class="current">Token Counter</span>
     </nav>
 
     <div class="tool-header">
       <h1>Context Window Token Calculator</h1>
-      <p>Estimate Byte-Pair Encoding (BPE) prompt tokens, evaluate context saturation boundaries, and project operational compute costs offline in memory.</p>
+      <p>Estimate Byte-Pair Encoding (BPE) prompt tokens, evaluate context saturation boundaries, and project operational compute costs offline in local memory across GPT-4o, Claude 3.5, Gemini 1.5/2.0, Meta Llama 3, and DeepSeek architectures.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card" id="toolWorkspace">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Context Window Token Calculator">
       <div class="config-grid">
         <div class="form-group">
           <label for="modelSelect">Target Architecture & Model</label>
           <select id="modelSelect">
-            <option value="gpt-4o">OpenAI GPT-4o / o1 (128k context)</option>
-            <option value="claude-35">Anthropic Claude 3.5 Sonnet (200k context)</option>
-            <option value="gemini-15">Google Gemini 1.5 Pro / 2.0 (1M context)</option>
-            <option value="llama-3">Meta Llama 3 / 3.3 (128k context)</option>
+            <option value="gpt-4o">OpenAI GPT-4o / o1 / o3 (128k context)</option>
+            <option value="claude-35">Anthropic Claude 3.5 Sonnet / 3.7 (200k context)</option>
+            <option value="gemini-15">Google Gemini 1.5 Pro / 2.0 Flash (1M context)</option>
+            <option value="llama-3">Meta Llama 3.1 / 3.3 (128k context)</option>
             <option value="deepseek-v3">DeepSeek V3 / R1 (64k context)</option>
             <option value="legacy-gpt4">Legacy GPT-4 (8k context)</option>
           </select>
         </div>
         <div class="form-group">
           <label for="rateOverride">Input Cost / 1M Tokens ($)</label>
-          <input type="number" id="rateOverride" step="0.01" value="2.50" />
+          <input type="number" id="rateOverride" step="0.01" value="2.50" aria-label="API pricing rate per million tokens" />
         </div>
       </div>
 
@@ -424,96 +790,552 @@
         <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
         <button class="btn-atom" id="btnCopy">Copy Prompt</button>
       </div>
-    </div>
+    </section>
 
-    <!-- Forensic Boundaries Disclaimer -->
+    <!-- Forensic Boundaries & Legal Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Context Truncation & Tokenization Boundaries
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>Client-side heuristic token estimation provides an approximation, not a provider-certified bill of inference.</strong> Token counts vary depending on proprietary subword vocabularies (e.g., OpenAI cl100k_base/o200k_base vs. SentencePiece vs. Byte-fallback BPE), chat templating markers (<code>&lt;|im_start|&gt;</code>), and multi-turn message wrapper overhead. Multi-byte UTF-8, Asian languages, and minified source code typically incur higher token-to-character ratios. Never rely exclusively on local estimation for hard system-message truncation boundaries without defensive padding. BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this tool.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Client-side heuristic token estimation provides an approximation, not a provider-certified bill of inference.</strong> Token counts vary depending on proprietary subword vocabularies (such as OpenAI cl100k_base/o200k_base vs. SentencePiece vs. Byte-fallback BPE), chat templating markers (<code>&lt;|im_start|&gt;</code>), and multi-turn message wrapper overhead. Multi-byte UTF-8, non-Latin scripts, mathematical symbols, and minified source code frequently incur higher token-to-character ratios. Never rely exclusively on local estimation for hard system-message truncation boundaries without defensive padding buffers.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How BPE Tokenization Operates</h2>
-      <p>Modern Large Language Models (LLMs) do not process human-readable text directly as characters or words. Instead, input streams are converted into integers via Byte-Pair Encoding (BPE) algorithms:</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Mechanics of Large Language Model Tokenization</h2>
+      <p>
+        At the mathematical foundation of modern Natural Language Processing (NLP) and Large Language Models (LLMs), neural networks do not understand human prose, syntax, or punctuation directly. While humans conceptualize language through phonetic syllables, grammatical words, and semantic phrases, transformer neural networks operate entirely on multi-dimensional floating-point vector embeddings. Before an LLM can calculate self-attention matrices or predict the next most probable sequence completion, the incoming character stream must undergo a discrete transformation known as <strong>tokenization</strong>.
+      </p>
+      <p>
+        Tokenization is the algorithmic process of parsing an arbitrary sequence of bytes or characters into a standardized series of integer identifiers known as <strong>tokens</strong>. These integers serve as direct index pointers into the model's vocabulary embedding matrix ($\mathbf{W}_e \in \mathbb{R}^{V \times d}$), where $V$ denotes the total vocabulary capacity (often between 32,000 and 200,000 distinct tokens) and $d$ represents the hidden embedding dimension.
+      </p>
+      <p>
+        Historically, computational linguists experimented with character-level tokenization and word-level tokenization. Character-level tokenization eliminates out-of-vocabulary (OOV) errors because every character in an alphabet maps to a token; however, it explodes sequence length exponentially, saturating the quadratic $\mathcal{O}(N^2)$ computational complexity of classic transformer attention mechanisms. Conversely, full-word tokenization minimizes sequence length but requires an infinite vocabulary dictionary to capture misspellings, morphological derivations, inflections, and technical jargon, leading to memory bloat and frequent unknown token markers (<code>&lt;unk&gt;</code>).
+      </p>
+      <p>
+        To balance sequence efficiency with vocabulary constraint, modern frontier models—including OpenAI GPT-4o, Anthropic Claude 3.5, Google Gemini, Meta Llama 3, and DeepSeek—rely almost universally on <strong>subword tokenization</strong>, predominantly powered by variants of <strong>Byte-Pair Encoding (BPE)</strong>.
+      </p>
+
+      <h2>How Byte-Pair Encoding (BPE) Functions Under the Hood</h2>
+      <p>
+        Originally developed in 1994 by Philip Gage as a lossless data compression technique, Byte-Pair Encoding was adapted for neural machine translation by Rico Sennrich et al. in 2015. BPE builds an optimal vocabulary dictionary through iterative frequency analysis over massive multi-terabyte pre-training corpora.
+      </p>
+
+      <h3>1. The Iterative Merge Process</h3>
+      <p>
+        The construction of a BPE tokenizer follows a deterministic bottom-up agglomerative procedure:
+      </p>
+      <ol>
+        <li>
+          <strong>Base Vocabulary Initialization:</strong> The tokenizer initializes its vocabulary with all individual base characters or the 256 individual byte values of the UTF-8 specification. Every word in the training corpus is initially partitioned into isolated characters.
+        </li>
+        <li>
+          <strong>Pair Frequency Counting:</strong> The algorithm scans the entire corpus and tabulates the frequency of every co-occurring adjacent symbol pair (e.g., <code>('t', 'h')</code>, <code>('e', 'r')</code>).
+        </li>
+        <li>
+          <strong>Greedy Merge Selection:</strong> The most frequently occurring adjacent pair in the dataset is identified. A new single token representing that concatenated pair is created and added to the vocabulary dictionary. For instance, if <code>('i', 'n')</code> occurs most frequently, it merges into <code>'in'</code>.
+        </li>
+        <li>
+          <strong>Corpus Replacement:</strong> All occurrences of the pair in the corpus are replaced with the newly formed composite token.
+        </li>
+        <li>
+          <strong>Target Termination:</strong> Steps 2 through 4 repeat iteratively until the vocabulary reaches a predefined target threshold (e.g., 32,000 tokens for Llama 1/2, 100,000 tokens for GPT-4, or 200,000 tokens for GPT-4o).
+        </li>
+      </ol>
+
+      <pre><code>Base UTF-8 Bytes:
+['u', 'n', 'c', 'o', 'n', 'd', 'i', 't', 'i', 'o', 'n', 'a', 'l']
+
+Iteration 1 (Merge 't' + 'i' -> 'ti'):
+['u', 'n', 'c', 'o', 'n', 'd', 'i', 'ti', 'o', 'n', 'a', 'l']
+
+Iteration 2 (Merge 'ti' + 'o' + 'n' -> 'tion'):
+['u', 'n', 'c', 'o', 'n', 'd', 'i', 'tion', 'a', 'l']
+
+Iteration 3 (Merge 'u' + 'n' -> 'un'):
+['un', 'c', 'o', 'n', 'd', 'i', 'tion', 'a', 'l']
+
+Final Token Partition for "unconditional":
+[Token 1: "un"], [Token 2: "cond"], [Token 3: "ition"], [Token 4: "al"]</code></pre>
+
+      <h3>2. Byte-Level Fallback and Regex Pre-Segmentation</h3>
+      <p>
+        Modern tokenizers (such as OpenAI's <code>tiktoken</code> implementing <code>cl100k_base</code> and <code>o200k_base</code>) utilize <strong>Byte-Level BPE</strong>. Instead of splitting text into Unicode codepoints, the input is converted directly into raw UTF-8 bytes. Because any arbitrary character—from emojis (<code>🛡️</code>) to mathematical symbols ($\nabla$) and CJK kanji (<code>サイバー</code>)—can be represented as 1 to 4 UTF-8 bytes, the vocabulary never encounters an unknown token. If a character was never merged during training, the tokenizer simply emits its raw constituent byte tokens.
+      </p>
+      <p>
+        Furthermore, production tokenizers apply complex regular expression pre-segmentation patterns prior to BPE merging. These rules prevent punctuation from binding inappropriately to alphanumeric characters across word boundaries (e.g., ensuring that <code>"hello!"</code> splits into <code>"hello"</code> and <code>"!"</code> rather than merging into an obscure joint token).
+      </p>
+
+      <h2>Tokenization Paradigms: BPE vs WordPiece vs SentencePiece vs Unigram</h2>
+      <p>
+        While Byte-Pair Encoding dominates generative LLMs, several competing subword algorithms exist across machine learning architectures:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Primary Implementations</th>
+              <th>Vocabulary Construction</th>
+              <th>Tokenization Strategy</th>
+              <th>Key Strengths & Trade-offs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Byte-Pair Encoding (BPE)</strong></td>
+              <td>GPT-4o (o200k), Claude 3.5, Llama 3, DeepSeek</td>
+              <td>Greedy frequency merges of character/byte pairs</td>
+              <td>Deterministic longest-match subword replacement</td>
+              <td>Compact representations, no unknown tokens, optimal for English code.</td>
+            </tr>
+            <tr>
+              <td><strong>WordPiece</strong></td>
+              <td>BERT, DistilBERT, Electra</td>
+              <td>Maximizes likelihood of training data under unigram LM</td>
+              <td>Prefix/subword matching with <code>##</code> markers</td>
+              <td>Excellent semantic granularity; requires whitespace pre-tokenization.</td>
+            </tr>
+            <tr>
+              <td><strong>Unigram Language Model</strong></td>
+              <td>T5, ALBERT, SentencePiece Unigram</td>
+              <td>Initializes huge vocabulary, iteratively prunes tokens that minimize perplexity loss</td>
+              <td>Probabilistic Viterbi path segmentation</td>
+              <td>Allows subword regularization during training to improve model robustness.</td>
+            </tr>
+            <tr>
+              <td><strong>SentencePiece</strong></td>
+              <td>LLaMA (v1/v2), Gemma, Mistral, Whisper</td>
+              <td>Container framework wrapping BPE or Unigram; treats whitespace as <code>_</code></td>
+              <td>Language-agnostic byte-fallback parsing</td>
+              <td>Does not require language-specific pre-tokenizers; universal script support.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Vocabulary Size vs. Compression Efficiency: Frontier Model Comparison</h2>
+      <p>
+        A major architectural trend in recent frontier LLMs is the aggressive expansion of tokenizer vocabulary size. While legacy models like GPT-2 and LLaMA 1 used vocabularies of approximately 32,000 to 50,000 tokens, modern architectures have scaled up to 128,000 and 200,000 tokens:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Foundation Model</th>
+              <th>Tokenizer Architecture</th>
+              <th>Vocabulary Capacity</th>
+              <th>Maximum Context Window</th>
+              <th>Avg. Chars / Token (English)</th>
+              <th>Code / Multilingual Efficiency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>OpenAI GPT-4o / o1 / o3</strong></td>
+              <td>Byte-Level BPE (<code>o200k_base</code>)</td>
+              <td>200,000 tokens</td>
+              <td>128,000 tokens</td>
+              <td>~3.7 – 4.1 chars</td>
+              <td><strong>Exceptional:</strong> Up to 30% fewer tokens in non-Latin scripts.</td>
+            </tr>
+            <tr>
+              <td><strong>Anthropic Claude 3.5 Sonnet</strong></td>
+              <td>Proprietary Subword BPE</td>
+              <td>~131,000 tokens</td>
+              <td>200,000 tokens</td>
+              <td>~3.6 – 3.9 chars</td>
+              <td><strong>High:</strong> Highly optimized for code indentation and reasoning.</td>
+            </tr>
+            <tr>
+              <td><strong>Google Gemini 1.5 Pro / 2.0</strong></td>
+              <td>SentencePiece Multi-modal BPE</td>
+              <td>~256,000 tokens</td>
+              <td>1,048,576 tokens</td>
+              <td>~3.8 – 4.2 chars</td>
+              <td><strong>Massive:</strong> Native multi-modal token alignment across text/audio.</td>
+            </tr>
+            <tr>
+              <td><strong>Meta Llama 3 / 3.1 / 3.3</strong></td>
+              <td>Tiktoken-compatible BPE</td>
+              <td>128,256 tokens</td>
+              <td>128,000 tokens</td>
+              <td>~3.7 – 4.0 chars</td>
+              <td><strong>Very High:</strong> 15% token reduction over Llama 2's 32k tokenizer.</td>
+            </tr>
+            <tr>
+              <td><strong>DeepSeek V3 / R1</strong></td>
+              <td>Byte-Level BPE</td>
+              <td>~102,400 tokens</td>
+              <td>64,000 tokens</td>
+              <td>~3.6 – 3.8 chars</td>
+              <td><strong>Optimized:</strong> High density on mathematical notation and CJK characters.</td>
+            </tr>
+            <tr>
+              <td><strong>Legacy GPT-4 (cl100k)</strong></td>
+              <td>Byte-Level BPE (<code>cl100k_base</code>)</td>
+              <td>100,277 tokens</td>
+              <td>8,192 / 32,768 tokens</td>
+              <td>~3.5 – 3.8 chars</td>
+              <td>Standard baseline across classic generative pipelines.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>How to Use the BitDark Context Window Calculator</h2>
+      <p>
+        Monitoring token consumption is essential for preventing silent context truncation and controlling operational cloud costs. Follow these steps to audit your prompts:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Target Model Architecture:</strong> Choose the target foundation model from the dropdown. This dynamically updates the maximum context limit (e.g., 128k for GPT-4o, 200k for Claude 3.5, or 1M for Gemini 1.5) and adjusts the underlying BPE character-to-token divisor.
+        </li>
+        <li>
+          <strong>Verify or Override Inference Pricing:</strong> Review the default API input rate per million tokens ($/1M). If your organization benefits from negotiated enterprise volume discounts, fine-tuned model rates, or batched inference discounts, type your custom rate directly into the input field.
+        </li>
+        <li>
+          <strong>Input Prompt Payload:</strong> Type or paste your prompt, raw text, system instructions, or structured JSON payload into the editor. The calculator processes the stream in real-time.
+        </li>
+        <li>
+          <strong>Analyze Saturation & Costs:</strong> Examine the real-time metrics cards:
+          <ul>
+            <li><code>Estimated Tokens</code>: Total subword chunks calculated via high-precision heuristic BPE pattern matching.</li>
+            <li><code>Context Saturation Gauge</code>: Visual bar indicating what percentage of the model's total context window is consumed. If saturation crosses 70%, the bar turns amber; at 90%, it turns coral to warn of imminent truncation.</li>
+            <li><code>Single Invocation Egress Cost</code>: Expected compute egress billing for a single API call containing this prompt.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Copy or Clear:</strong> Use "Copy Prompt" to copy the exact payload to your clipboard, or "Clear" to reset the workspace.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Engineering Scenarios</h2>
+      <p>
+        Token budgeting is a fundamental discipline across production artificial intelligence engineering:
+      </p>
       <ul>
-        <li><strong>Subword Splitting:</strong> Common English words frequently map to a single token (e.g., "authentication"), whereas rare vocabulary, code identifiers (e.g., <code>camelCaseFunc</code>), and non-Latin scripts are partitioned into multiple fragments.</li>
-        <li><strong>Character Ratios:</strong> In standard English prose, 1 token roughly corresponds to 4 characters or 0.75 words. In structured JSON or Python code, token density surges due to punctuation and indentation spacing.</li>
-        <li><strong>Context Window Pressure:</strong> Exceeding an LLM's maximum context length results in catastrophic attention degradation or silent pre-prompt truncation, leading to loss of system instructions and hallucinated tool calls.</li>
+        <li>
+          <strong>Retrieval-Augmented Generation (RAG) Architecture:</strong> When dynamically injecting vector database chunks into an LLM prompt, engineers must ensure the aggregated document payload does not crowd out the system instructions or exhaust the model's output generation budget.
+        </li>
+        <li>
+          <strong>Autonomous Agent System Prompts:</strong> Production AI agents utilize dense system prompts containing tool specifications, JSON schemas, safety guardrails, and role descriptions. Measuring token footprint allows developers to minimize per-turn latency and recurrent operational costs.
+        </li>
+        <li>
+          <strong>Cost Estimation for Enterprise Data Pipelines:</strong> Before running offline batch classification or embedding over 500,000 customer support tickets, calculating exact token counts enables accurate financial budgeting and vendor comparison.
+        </li>
+        <li>
+          <strong>Context Truncation Risk Mitigation:</strong> In multi-turn chat architectures, failing to track token saturation can cause message arrays to exceed provider limits, triggering catastrophic API rejection errors or silent context trimming.
+        </li>
+        <li>
+          <strong>Prompt Optimization and Redundancy Auditing:</strong> Comparing alternative prompt structures side-by-side helps identify verbose boilerplate, redundant examples, and poorly tokenized schemas, trimming latency without compromising reasoning quality.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Guarantee</h2>
-      <p>Traditional tokenization endpoints send your prompt payloads to backend API servers for calculation. BitDark's Token Calculator computes metrics locally within browser RAM via deterministic BPE subword heuristics. No text or telemetry ever leaves your device.</p>
+      <h2>Worked Example: Anatomy of a Subword Token Breakdown</h2>
+      <p>
+        To visualize how text partitions across subword boundaries, consider the following system instruction fragment commonly deployed in enterprise cybersecurity tooling:
+      </p>
+      <pre><code>"Initialize the PKI authorization validator: verify_x509_cert(depth=3, strict_revocation=True)."</code></pre>
+
+      <p>
+        In standard English prose, this string contains 12 words and 94 characters. A human might assume it costs 12 tokens. However, when processed through a Byte-Pair Encoding tokenizer (e.g., <code>cl100k_base</code> / <code>o200k_base</code>), it is partitioned into 22 distinct tokens:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Subword Chunk</th>
+              <th>Token Type</th>
+              <th>Character Length</th>
+              <th>Architectural Reason for Partition</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>"Initialize"</code></td>
+              <td>Full Word</td>
+              <td>10 chars</td>
+              <td>Common dictionary vocabulary term.</td>
+            </tr>
+            <tr>
+              <td><code>" the"</code></td>
+              <td>Merged Word</td>
+              <td>4 chars</td>
+              <td>Leading whitespace is merged directly with high-frequency word.</td>
+            </tr>
+            <tr>
+              <td><code>" PK"</code></td>
+              <td>Subword Acronym</td>
+              <td>3 chars</td>
+              <td>Upper-case identifier paired with leading space.</td>
+            </tr>
+            <tr>
+              <td><code>"I"</code></td>
+              <td>Single Character</td>
+              <td>1 char</td>
+              <td>Remaining letter of acronym.</td>
+            </tr>
+            <tr>
+              <td><code>" authorization"</code></td>
+              <td>Full Word</td>
+              <td>14 chars</td>
+              <td>High-frequency technical term in enterprise corpus.</td>
+            </tr>
+            <tr>
+              <td><code>" validator"</code></td>
+              <td>Full Word</td>
+              <td>10 chars</td>
+              <td>Standard developer terminology.</td>
+            </tr>
+            <tr>
+              <td><code>":"</code></td>
+              <td>Punctuation</td>
+              <td>1 char</td>
+              <td>Regex pre-segmentation isolates punctuation.</td>
+            </tr>
+            <tr>
+              <td><code>" verify"</code></td>
+              <td>Subword Stem</td>
+              <td>7 chars</td>
+              <td>Base verb with leading space.</td>
+            </tr>
+            <tr>
+              <td><code>"_"</code></td>
+              <td>Punctuation</td>
+              <td>1 char</td>
+              <td>Snake_case separator treated as independent token.</td>
+            </tr>
+            <tr>
+              <td><code>"x"</code>, <code>"509"</code></td>
+              <td>Identifier / Digits</td>
+              <td>4 chars</td>
+              <td>Alphanumeric boundaries partition letters from numerical values.</td>
+            </tr>
+            <tr>
+              <td><code>"_cert"</code></td>
+              <td>Subword Suffix</td>
+              <td>5 chars</td>
+              <td>Snake_case code fragment.</td>
+            </tr>
+            <tr>
+              <td><code>"("</code>, <code>"depth"</code>, <code>"="</code>, <code>"3"</code>, <code>","</code></td>
+              <td>Function Syntax</td>
+              <td>8 chars</td>
+              <td>Each operator, parameter, and separator forms an individual token.</td>
+            </tr>
+            <tr>
+              <td><code>" strict"</code>, <code>"_"</code>, <code>"rev"</code>, <code>"ocation"</code></td>
+              <td>Compound Identifier</td>
+              <td>17 chars</td>
+              <td>Split across underscore and morphological root/suffix.</td>
+            </tr>
+            <tr>
+              <td><code>"="</code>, <code>"True"</code>, <code>")."</code></td>
+              <td>Assignment & Closure</td>
+              <td>8 chars</td>
+              <td>Boolean value and closing punctuation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Prompt Engineering Strategies to Minimize Token Consumption</h2>
+      <p>
+        Optimizing prompts to maximize semantic density while minimizing token overhead directly reduces API operational costs and latency:
+      </p>
+      <ul>
+        <li>
+          <strong>Minify Structured Schemas:</strong> JSON and YAML payloads often include expansive indentation spaces and descriptive field keys. Replacing verbose keys with compact equivalents (e.g., <code>"user_identification_number"</code> $\rightarrow$ <code>"uid"</code>) and removing cosmetic whitespace can reduce JSON token weight by up to 35%.
+        </li>
+        <li>
+          <strong>Replace Few-Shot Examples with Structured Constraints:</strong> Providing ten full conversational examples consumes thousands of tokens per API call. Replacing repetitive examples with explicit negative constraints, regex grammar specifications, or Pydantic output schemas achieves equal or superior instruction-following at a fraction of the token budget.
+        </li>
+        <li>
+          <strong>Leverage Prompt Caching:</strong> Frontier providers (including Anthropic, OpenAI, and Google) offer automatic prompt caching. By placing large, immutable system prompts and static documentation at the very top of the message payload, repeated invocations receive up to a 75% to 90% pricing discount on cached input tokens.
+        </li>
+        <li>
+          <strong>Avoid Repeated Punctuation and ASCII Borders:</strong> Decorative markdown dividers (such as <code>====================================</code>) break into multiple sequential tokens. Standard markdown headers (<code>###</code>) convey identical semantic hierarchy with 90% fewer tokens.
+        </li>
+      </ul>
+
+      <h2>Common Pitfalls and Cost Estimation Mistakes</h2>
+      <p>
+        Engineering teams scaling LLM workloads frequently encounter avoidable budgeting and architectural errors:
+      </p>
+      <ul>
+        <li>
+          <strong>Ignoring Chat Template Framing Overhead:</strong> Sending a raw string via a provider's Chat Completions API wraps the text in special chat markup (such as <code>&lt;|im_start|&gt;system\n...&lt;|im_end|&gt;\n&lt;|im_start|&gt;user\n...</code>). In multi-turn conversations with multiple function definitions, chat framing and tool call schemas can easily add 200 to 1,500 invisible tokens per request.
+        </li>
+        <li>
+          <strong>Assuming 1 Word Equals 1 Token in Non-English Languages:</strong> In English, 1 token roughly corresponds to 0.75 words. In non-Latin scripts (such as Arabic, Devanagari, Japanese, or Cyrillic), a single word can fracture into 3 to 8 subword byte fragments, inflating inference costs by 300% to 500% unless using modern wide-vocabulary models like GPT-4o.
+        </li>
+        <li>
+          <strong>Forgetting Quadratic Attention Latency:</strong> While modern models support context windows of 128k to 1M tokens, processing a 100,000-token prompt increases Time-To-First-Token (TTFT) significantly compared to a 2,000-token prompt due to the computational demands of processing extensive key-value (KV) attention caches.
+        </li>
+        <li>
+          <strong>Confusing Input Token Rates with Output Token Rates:</strong> Generation (output) tokens are typically priced 3x to 5x higher than ingestion (input) tokens by model providers. Budgeting models must track input prompt tokens and anticipated output completion tokens separately.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between cl100k_base and o200k_base tokenizers?</div>
+          <div class="faq-answer">
+            <code>cl100k_base</code> is the Byte-Pair Encoding tokenizer used by GPT-4 and GPT-3.5 Turbo, featuring a vocabulary of 100,277 tokens. <code>o200k_base</code> is the newer tokenizer introduced with GPT-4o and OpenAI o-series models, featuring an expanded vocabulary of 200,000 tokens. The larger vocabulary allows GPT-4o to compress code, mathematical formulas, and non-English languages using significantly fewer tokens.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does code consume more tokens per line than standard conversational text?</div>
+          <div class="faq-answer">
+            Source code contains high densities of punctuation marks (<code>{}[]()=&lt;&gt;;:</code>), mixed naming conventions (<code>camelCase</code>, <code>snake_case</code>), and varied indentation spacing. Because tokenizers prioritize common human language words, programming syntax fragments into smaller subwords and individual character tokens, resulting in higher token-to-character ratios.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What causes "context window truncation" in production AI apps?</div>
+          <div class="faq-answer">
+            Context window truncation occurs when the combined sum of system instructions, conversation history, retrieved documents (RAG), and requested output tokens exceeds the model's hard maximum limit. When this happens, API providers either reject the call outright with an error or silently truncate the earliest tokens, often erasing critical system instructions.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does BitDark calculate tokens without sending data to an API server?</div>
+          <div class="faq-answer">
+            BitDark uses a client-side Byte-Pair Encoding (BPE) heuristic algorithm executed directly in your browser's private JavaScript engine. It evaluates regex word boundaries, alphanumeric clusters, multi-byte Unicode groupings, and subword divisors locally in volatile memory, ensuring zero network egress and zero prompt logging.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does prompt caching reduce context window saturation?</div>
+          <div class="faq-answer">
+            No. Prompt caching significantly reduces API financial costs and processing latency for repeated prompt prefixes, but cached tokens still occupy slots within the model's physical context window. A 100k cached prompt still consumes 100k tokens of the model's total context limit.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why do non-Latin alphabets consume more tokens than English?</div>
+          <div class="faq-answer">
+            Historically, pre-training datasets consisted primarily of English text, causing tokenizers to merge English character pairs into full words while leaving non-Latin scripts (Arabic, Cyrillic, Hindi, CJK) unmerged. In older tokenizers, non-Latin characters decompose into individual UTF-8 byte tokens, consuming up to 3 to 5 times more tokens per sentence.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related AI Safety & Developer Tooling</h3>
+        <div class="related-grid">
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Inspector</div>
+            <div class="related-card-desc">Inspect and verify Coalition for Content Provenance authenticity manifests in AI images offline.</div>
+          </a>
+          <a href="/tools/ai/prompt-scanner/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> Prompt Injection Scanner</div>
+            <div class="related-card-desc">Evaluate prompts for jailbreaks, role overrides, system instruction leaks, and escape payloads.</div>
+          </a>
+          <a href="/tools/ai/zero-width-detector/" class="related-card">
+            <div class="related-card-title"><span>[0w]</span> Zero-Width Prompt Scanner</div>
+            <div class="related-card-desc">Detect and strip invisible unicode characters and hidden steganographic prompt injection vectors.</div>
+          </a>
+          <a href="/tools/ai/llms-txt-builder/" class="related-card">
+            <div class="related-card-title"><span>[📄]</span> llms.txt & Crawler Builder</div>
+            <div class="related-card-desc">Generate standardized llms.txt markdown indexes and robots.txt rules for AI crawler control.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🔒]</span> PII & Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, credentials, email addresses, and phone numbers before submitting data to LLMs.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking sensitive credentials to third parties.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // 1. Dual-Endpoint IP Telemetry Engine
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // 2. LLM Architecture Presets
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. LLM Architecture Presets & Pricing Specs
     const MODEL_SPECS = {
       "gpt-4o": { maxContext: 128000, defaultRate: 2.50, bpeRatio: 3.7 },
       "claude-35": { maxContext: 200000, defaultRate: 3.00, bpeRatio: 3.6 },
-      "gemini-15": { maxContext: 1000000, defaultRate: 1.25, bpeRatio: 3.8 },
+      "gemini-15": { maxContext: 1048576, defaultRate: 1.25, bpeRatio: 3.8 },
       "llama-3": { maxContext: 128000, defaultRate: 0.20, bpeRatio: 3.7 },
       "deepseek-v3": { maxContext: 64000, defaultRate: 0.14, bpeRatio: 3.65 },
       "legacy-gpt4": { maxContext: 8192, defaultRate: 30.00, bpeRatio: 3.9 }
@@ -547,11 +1369,11 @@
     rateOverride.addEventListener("input", calculateMetrics);
     promptInput.addEventListener("input", calculateMetrics);
 
-    // High-Precision BPE Token Heuristic Engine
+    // High-Precision Client-Side BPE Token Heuristic Engine
     function calculateTokens(text, bpeDivisor) {
       if (!text || text.length === 0) return 0;
 
-      // Match whitespace words, non-ASCII multi-byte clusters, punctuation, and digits
+      // Partition whitespace clusters, words, numbers, and punctuation
       const tokensMatched = text.match(/[\p{L}]+|[0-9]+|[^\s\p{L}0-9]+|\s+/gu);
       if (!tokensMatched) return Math.ceil(text.length / bpeDivisor);
 
@@ -559,13 +1381,13 @@
       for (let i = 0; i < tokensMatched.length; i++) {
         const item = tokensMatched[i];
         if (/^\s+$/.test(item)) {
-          // Whitespace chunks
+          // Whitespace sequences: 4 spaces typically compress to ~1 token
           estimate += Math.ceil(item.length / 4);
         } else if (/[^\x00-\x7F]/.test(item)) {
-          // Multibyte unicode / CJK characters generate ~1 token per char
+          // Multibyte unicode / CJK / Emojis generate ~1 token per char
           estimate += item.length;
         } else if (item.length > 4) {
-          // Subwords partition every ~3.6 chars
+          // Subwords partition according to model BPE compression divisor
           estimate += Math.ceil(item.length / bpeDivisor);
         } else {
           estimate += 1;
@@ -588,7 +1410,7 @@
       // Calculate Tokens
       const estimatedTokens = calculateTokens(text, model.bpeRatio);
 
-      // Ratios & Time
+      // Ratios & Reading Velocity
       const charRatio = estimatedTokens > 0 ? (charCount / estimatedTokens).toFixed(2) : "0.0";
       const secondsRead = Math.ceil(wordCount / 3.3); // ~200 WPM
 
@@ -596,7 +1418,7 @@
       const saturationPercent = (estimatedTokens / model.maxContext) * 100;
       const remainingCapacity = Math.max(0, model.maxContext - estimatedTokens);
 
-      // Cost Projection
+      // Cost Projection ($ per single prompt ingestion)
       const singleInvocationCost = (estimatedTokens / 1000000) * ratePerMillion;
 
       // Update UI Counters
@@ -628,9 +1450,9 @@
       }
     }
 
-    // Button Actions
+    // Interactive Button Handlers
     btnSample.addEventListener("click", () => {
-      promptInput.value = `You are an enterprise AI Security Auditor. Your mandate is to analyze codebases for zero-day vulnerabilities, deserialization flaws, and misconfigured access controls.\n\nReview the following authorization handler schema:\n{\n  "auth_type": "OAuth2_PKCE",\n  "allowed_scopes": ["read:profile", "write:audit"],\n  "strict_jwt_validation": true\n}\n\nDeliver the analysis in clear sections with concrete remediation steps.`;
+      promptInput.value = `You are an enterprise AI Security Auditor. Your mandate is to analyze codebases for zero-day vulnerabilities, deserialization flaws, and misconfigured access controls.\n\nReview the following authorization handler schema:\n{\n  "auth_type": "OAuth2_PKCE",\n  "allowed_scopes": ["read:profile", "write:audit"],\n  "strict_jwt_validation": true,\n  "rate_limit_per_minute": 120,\n  "enforce_mfa_stepup": true\n}\n\nDeliver the analysis in clear sections with concrete remediation steps, code examples, and edge case scenarios.`;
       calculateMetrics();
     });
 
@@ -647,8 +1469,12 @@
       setTimeout(() => { btnCopy.textContent = originalText; }, 1500);
     });
 
-    // Initialize Calculations
-    calculateMetrics();
+    // Initialize Page Observers & Initial Calculation
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+      calculateMetrics();
+    });
   </script>
 </body>
 </html>
