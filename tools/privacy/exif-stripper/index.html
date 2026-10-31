@@ -6,10 +6,108 @@
   
   <title>EXIF & Geolocation Metadata Stripper — Free Offline Privacy Tool | BitDark</title>
   <meta name="title" content="EXIF & Geolocation Metadata Stripper — Free Offline Privacy Tool | BitDark" />
-  <meta name="description" content="Purge GPS coordinates, camera serials, timestamps, and embedded device metadata entirely in local browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="exif stripper, remove image metadata, strip photo gps, clear camera exif, sanitize photos offline, local exif cleaner, canvas raster scrub" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/privacy/exif-stripper" />
+  <meta name="description" content="Purge embedded GPS coordinates, camera serial numbers, timestamps, lens profiles, and device telemetry locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="exif stripper, remove photo metadata, strip image gps, clear camera exif offline, sanitize photos, exif cleaner, browser image sanitizer, remove xmp iptc tags, photo privacy tool" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/exif-stripper/" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/privacy/exif-stripper/" />
+  <meta property="og:title" content="EXIF & Geolocation Metadata Stripper — Local Memory Sanitizer | BitDark" />
+  <meta property="og:description" content="Permanently sanitize photo geolocation, camera serials, and capture timestamps entirely inside your browser's local memory. 100% offline-ready." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/privacy/exif-stripper/" />
+  <meta name="twitter:title" content="EXIF & Geolocation Metadata Stripper | BitDark" />
+  <meta name="twitter:description" content="Purge GPS tags, camera hardware identifiers, and editing history locally with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "EXIF & Geolocation Metadata Stripper",
+        "url": "https://bitdark.net/tools/privacy/exif-stripper/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Client-side image metadata scrubber that strips GPS coordinates, camera hardware serials, timestamps, Adobe XMP packets, and IPTC records completely in volatile browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Photo Metadata Forensics: EXIF, Geolocation Extraction, and Client-Side Canvas Sanitization",
+        "url": "https://bitdark.net/tools/privacy/exif-stripper/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-10",
+        "dateModified": "2026-10-31",
+        "description": "Comprehensive technical guide on Exchangeable Image File Format (EXIF) structure, GPS IFD vectors, MakerNotes security leaks, and in-memory HTML5 Canvas re-rasterization pipelines."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does stripping EXIF metadata reduce image quality or resolution?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The pixel resolution (dimensions in width and height) remains completely identical. For lossy formats like JPEG, re-encoding via the browser canvas is performed at a 0.92 high-quality compression threshold, preserving visual clarity while permanently purging all non-pixel container headers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can deleted EXIF metadata or GPS coordinates ever be recovered from the scrubbed file?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The in-memory canvas pipeline does not merely blank out or mark header tags as deleted; it decodes the raw visual pixel stream into an isolated memory buffer and constructs a brand new image container from scratch. The stripped metadata bytes do not exist in the exported file."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do modern smartphones embed GPS coordinates into photos by default?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mobile operating systems like iOS and Android incorporate location services to organize media into albums by geographic location, trip memories, and interactive maps. Unless specifically disabled in camera privacy permissions, the device embeds precise latitude, longitude, and altitude in the EXIF GPS IFD block."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does taking a screenshot of an image safely remove its EXIF data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Taking a screenshot creates a new display buffer capture that lacks the original image's EXIF container. However, screenshots compress image resolution to the display's current viewport, degrade fine detail, and can accidentally capture user interface elements, notifications, or battery status indicators."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does BitDark upload my photographs to external cloud servers or analytics endpoints?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on a strict zero-network-egress architectural model. All image parsing, binary inspection, canvas rasterization, and JPEG re-encoding execute locally inside your browser's private JavaScript memory heap."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,132 +123,195 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 450px;
     }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 36px 20px;
+      border-radius: 8px;
+      padding: 48px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
+    .dropzone:focus,
     .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
-    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
-    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 8px; }
-    .dropzone-hint { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .dropzone-icon { 
+      font-size: 2.6rem; 
+      margin-bottom: 14px; 
+      display: block; 
+    }
+    .dropzone p { 
+      font-size: 1.05rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
+    .dropzone-hint { 
+      font-size: 0.84rem; 
+      color: var(--atom-muted); 
+      font-family: var(--font-code); 
+      display: block;
+      margin-top: 6px; 
+    }
 
     .file-input-hidden { display: none; }
 
     /* Results Workspace */
-    .results-area { margin-top: 24px; display: none; }
+    .results-area { 
+      margin-top: 28px; 
+      display: none; 
+    }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .status-found {
       background-color: rgba(224, 108, 117, 0.12);
@@ -165,27 +326,39 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
-    .meta-label { font-size: 0.72rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
-    .meta-val { font-size: 0.85rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+    .meta-label { 
+      font-size: 0.74rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 6px; 
+      letter-spacing: 0.05em;
+    }
+    .meta-val { 
+      font-size: 0.92rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
+    }
 
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 400px;
+      font-size: 0.84rem;
+      max-height: 440px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
@@ -195,8 +368,9 @@
     .btn-row {
       display: flex;
       justify-content: flex-end;
-      margin-top: 14px;
-      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      gap: 14px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -204,114 +378,338 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
+      font-size: 16px;
+      min-height: 44px;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
-    /* Operational Boundaries & Disclaimer Callout */
+    /* Authoritative Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2600px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Data Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Navbar: Clean Client-Side Trust Header -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#privacy">Privacy & OSINT</a> / exif-stripper
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/privacy/">Privacy &amp; OSINT</a>
+      <span class="sep">/</span>
+      <span class="current">EXIF Stripper</span>
     </nav>
 
     <div class="tool-header">
-      <h1>EXIF & Geolocation Metadata Stripper</h1>
-      <p>Purge embedded GPS coordinates, camera serials, lens profiles, and creation timestamps directly in local browser memory.</p>
+      <h1>EXIF &amp; Geolocation Metadata Stripper</h1>
+      <p>Purge embedded GPS coordinates, camera serial numbers, lens profiles, device telemetry, and capture timestamps entirely inside your browser's volatile memory. Clean your digital media before sharing with zero server latency or data leakage.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card" id="toolWorkspace">
-      <div class="dropzone" id="dropArea">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive EXIF Metadata Stripping Terminal">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="File upload drop area">
         <span class="dropzone-icon">📷</span>
-        <p><strong>Click to choose a photo</strong> or drag & drop image here</p>
-        <span class="dropzone-hint">Supports JPEG, PNG, WebP (In-memory canvas re-encoding, 0-byte network transmission)</span>
+        <p><strong>Click to choose a photo</strong> or drag and drop image files here</p>
+        <span class="dropzone-hint">Supports JPEG, PNG, WebP (In-memory canvas raster re-encoding, 0-byte network egress)</span>
         <input type="file" id="filePicker" class="file-input-hidden" accept="image/jpeg,image/png,image/webp" />
       </div>
 
@@ -332,105 +730,455 @@
             <div class="meta-val" id="metaOutput">-</div>
           </div>
           <div class="meta-item">
-            <div class="meta-label">APP1 / EXIF Marker</div>
+            <div class="meta-label">Header Audit Status</div>
             <div class="meta-val" id="metaStatus">-</div>
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px;">Pre-Scan Findings & Binary Audit Log:</div>
-        <div class="viewer-box" id="rawViewer">Auditing file headers...</div>
+        <div class="meta-label" style="margin-bottom: 8px;">Pre-Scan Findings &amp; Sanitization Manifest:</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Auditing file headers...</div>
 
         <div class="btn-row">
           <a class="btn-atom" id="btnDownloadClean">Download Scrubbed Image</a>
-          <button class="btn-atom" id="btnReset" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear Analysis</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Forensic & Privacy Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Privacy Scope & Re-encoding Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Local canvas scrubbing strips application container headers, but does not alter visual pixel content.</strong> While this tool purges binary EXIF, GPS, XMP, and MakerNote chunks by recreating the raster image from raw pixels, it will not redact physical identifiers embedded in the scene itself (e.g., license plates, street signs, barcodes, house numbers, or reflections). Always inspect image contents visually before sharing. Re-encoding lossy images (JPEG/WebP) may introduce minor visual compression artifacts. BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this tool.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Local canvas scrubbing strips application container headers, but does not alter visual pixel content.</strong> While this tool permanently purges binary EXIF, GPS, XMP, IPTC, and MakerNote chunks by recreating the raster image from raw pixels, it will not redact physical identifiers embedded in the scene itself (such as license plates, street signs, barcodes, house numbers, or reflections). Always inspect image contents visually before sharing. Re-encoding lossy images (JPEG/WebP) may introduce minor visual compression artifacts.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How Client-Side Metadata Sanitization Operates</h2>
-      <p>Digital cameras and smartphones embed extensive metadata payloads into file headers at capture time:</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Silent Privacy Threat: Embedded Image Metadata</h2>
+      <p>
+        Every time a digital camera, smartphone, or tablet captures a photograph, it records vastly more than a grid of colored pixels. Seamlessly packaged within the image container lies an exhaustive technical and personal record known as metadata. Governing this data is the <strong>Exchangeable Image File Format (EXIF)</strong>—a standard originally drafted by the Japan Electronics and Information Technology Industries Association (JEITA) in 1995 and subsequently expanded to bridge photographic hardware with modern software ecosystems.
+      </p>
+      <p>
+        While EXIF metadata provides indispensable utility for professional photographers organizing catalog shoots and calibrating color grading software, in consumer scenarios it represents one of the most widespread vectors of unintended data leakage. A single unaltered smartphone photo can disclose:
+      </p>
       <ul>
-        <li><strong>JPEG APP1 (0xFFE1) Segments:</strong> Contain Exif IFD structures storing precise GPS latitude/longitude coordinates, altitude, capture timestamps, camera make/model, firmware, and unique hardware serials.</li>
-        <li><strong>Adobe XMP & IPTC Blocks:</strong> Store edit history, creator names, software version stamps, and copyright information.</li>
-        <li><strong>PNG / WebP Ancillary Chunks:</strong> Embed auxiliary text chunks (<code>tEXt</code>, <code>zTXt</code>, <code>eXIf</code>) that disclose host environments and rendering pipelines.</li>
+        <li><strong>Precise Global Positioning System (GPS) Coordinates:</strong> Exact latitude, longitude, and altitude recorded to six decimal places—pinpointing a user's location within centimeters.</li>
+        <li><strong>Hardware Fingerprints:</strong> The device manufacturer, exact model name, lens specifications, hardware revision, and unique camera serial numbers.</li>
+        <li><strong>Chronological Signatures:</strong> Sub-second timestamps registering when the photo was taken, modified, and digitally digitized, exposing daily routines and sleeping patterns.</li>
+        <li><strong>Firmware &amp; Software Stacks:</strong> Operating system build numbers, computational photography algorithms, and photo editing revision histories (via Adobe XMP and Photoshop IPTC blocks).</li>
+      </ul>
+      <p>
+        When uploaded to forums, cloud drives, marketplace listings, or messaging applications that fail to scrub headers, this ambient telemetry can be harvested by automated threat actors, stalkers, and open-source intelligence (OSINT) investigators to de-anonymize pseudonymous users and map private domestic residences.
+      </p>
+
+      <h2>How to Use the BitDark EXIF Stripper</h2>
+      <p>
+        Sanitizing image metadata using BitDark's offline canvas pipeline requires no command-line proficiency and zero software installation. The process runs with zero server latency:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Your Photo:</strong> Drag and drop your image file (JPEG, PNG, or WebP) onto the interactive dropzone, or click the dropzone to trigger your operating system's native file picker.
+        </li>
+        <li>
+          <strong>Instant In-Memory Pre-Scan:</strong> The browser reads the raw binary array into volatile RAM using a <code>DataView</code> interface. The engine immediately scans binary markers (such as JPEG <code>APP1</code>, <code>APP2</code>, and <code>APP13</code> segments) to audit whether GPS coordinates, EXIF blocks, or Adobe XMP packets are present.
+        </li>
+        <li>
+          <strong>In-Memory Canvas Re-Rasterization:</strong> Rather than attempting to selectively delete individual tags—which frequently leaves orphaned manufacturer MakerNotes—the image is loaded into a sandboxed HTML5 <code>2D Canvas Context</code>. The browser decodes only the raw optical pixel matrix.
+        </li>
+        <li>
+          <strong>Clean Container Export:</strong> A brand new JPEG container is generated directly from the canvas pixels using native <code>toBlob()</code> encoding at 0.92 compression quality. All non-pixel application markers, device tags, and timestamps are eliminated.
+        </li>
+        <li>
+          <strong>Download Scrubbed Asset:</strong> Click "Download Scrubbed Image" to retrieve your sanitized photograph, safely stripped of all trackable telemetry.
+        </li>
+      </ol>
+
+      <h2>When to Sanitize Metadata: Critical Real-World Scenarios</h2>
+      <p>
+        Proactive metadata sanitization is an essential defensive operational hygiene measure across numerous domains:
+      </p>
+      <ul>
+        <li>
+          <strong>Investigative Journalism &amp; Whistleblower Protection:</strong> Sources leaking sensitive photographic documentation must strip camera serial numbers and GPS coordinates before transmission to prevent state-sponsored forensic attribution.
+        </li>
+        <li>
+          <strong>Online Marketplaces (Craigslist, eBay, Facebook Marketplace):</strong> Sellers photographing high-value goods (automobiles, luxury watches, electronics) at home inadvertently publish their physical garage or apartment address if EXIF coordinates remain intact.
+        </li>
+        <li>
+          <strong>Domestic Violence &amp; Stalker Defense:</strong> Survivors of domestic abuse establishing confidential residences must ensure that photos of children or surroundings shared with family do not leak geolocation tags through family chat groups.
+        </li>
+        <li>
+          <strong>Classified &amp; Regulated Facilities:</strong> Field engineers taking photos of industrial machinery, server rooms, or SCADA infrastructure must sanitize lens profiles and device serials that could reveal corporate infrastructure layouts to corporate espionage agents.
+        </li>
+        <li>
+          <strong>Dating Applications &amp; Social Forums:</strong> Profile images uploaded to web forums, Discord channels, or niche discussion boards should be scrubbed to avoid linking an anonymous online persona to a physical neighborhood.
+        </li>
       </ul>
 
-      <h2>The HTML5 Canvas Sanitization Pipeline</h2>
-      <p>Rather than attempting to parse and delete specific header tags one-by-one—which risks missing proprietary manufacturer offsets or MakerNotes—BitDark executes a pure raster reconstruct. The image bytes are decoded strictly into an in-memory <code>2D Canvas Context</code>. The browser then draws the raw pixel array into an isolated raster buffer and generates a completely clean JPEG/PNG binary container. The resulting file contains zero non-pixel segments.</p>
+      <h2>Deep Dive: Architecture of Photo Metadata Formats</h2>
+      <p>
+        Understanding how metadata is stored within file containers illustrates why basic surface-level tag editors frequently fail to achieve complete sanitization.
+      </p>
+
+      <h3>1. JPEG Binary Marker Structure &amp; The APP1 Segment</h3>
+      <p>
+        A standard JPEG file begins with the Start of Image (SOI) marker (<code>0xFFD8</code>) and terminates with the End of Image (EOI) marker (<code>0xFFD9</code>). In between, metadata is packaged inside variable-length Application Marker segments ranging from <code>APP0</code> (<code>0xFFE0</code>) through <code>APP15</code> (<code>0xFFEF</code>).
+      </p>
+
+      <pre><code>+--------------------------------------------------------------------------+
+| Standard JPEG Container Binary Layout                                    |
+|                                                                          |
+| 0xFFD8 [SOI - Start of Image]                                             |
+|   |                                                                      |
+|   +-- 0xFFE0 [APP0 - JFIF / SPIFF Marker]                                |
+|   |                                                                      |
+|   +-- 0xFFE1 [APP1 - Primary Metadata Block: Exif / GPS / XMP]           |
+|   |     * Exif Header Identifier ('Exif\0\0')                             |
+|   |     * TIFF Header (Endianness: 'II' Little-Endian or 'MM' Big-Endian) |
+|   |     * IFD0 (Image File Directory 0: Camera Make, Model, Orientation)  |
+|   |     * Exif SubIFD (Exposure, F-Number, ISO, Shutter, Timestamps)      |
+|   |     * GPS Info IFD (Tag 0x8825: Latitude, Longitude, Altitude, Speed) |
+|   |     * MakerNote IFD (Proprietary vendor encrypted/undocumented tags)  |
+|   |     * Interoperability IFD & Embedded Thumbnail (IFD1)               |
+|   |                                                                      |
+|   +-- 0xFFE2 [APP2 - ICC Color Profile & Extended Storage]               |
+|   |                                                                      |
+|   +-- 0xFFED [APP13 - Adobe Photoshop Image Resource Blocks / IPTC]      |
+|   |                                                                      |
+|   +-- 0xFFDB [DQT - Define Quantization Tables]                          |
+|   |                                                                      |
+|   +-- 0xFFC0 [SOF0 - Start of Frame, Baseline DCT Dimensions]            |
+|   |                                                                      |
+|   +-- 0xFFC4 [DHT - Define Huffman Tables]                               |
+|   |                                                                      |
+|   +-- 0xFFDA [SOS - Start of Scan (Raw Compressed Entropy Pixel Stream)] |
+|   |                                                                      |
+| 0xFFD9 [EOI - End of Image]                                              |
++--------------------------------------------------------------------------+</code></pre>
+
+      <h3>2. The Complexity of the GPS IFD (Tag 0x8825)</h3>
+      <p>
+        Within the TIFF header structure of the <code>APP1</code> segment, the camera operating system writes an offset pointer to the <strong>GPS Info IFD</strong> (identified by tag hex <code>0x8825</code>). This sub-directory stores coordinates as rational fractional numbers (three pairs of 32-bit unsigned integers representing degrees, minutes, and seconds):
+      </p>
+      <ul>
+        <li><code>GPSLatitudeRef</code> &amp; <code>GPSLatitude</code>: North/South indicator and coordinate fractions.</li>
+        <li><code>GPSLongitudeRef</code> &amp; <code>GPSLongitude</code>: East/West indicator and coordinate fractions.</li>
+        <li><code>GPSAltitudeRef</code> &amp; <code>GPSAltitude</code>: Sea-level reference flag and vertical elevation in meters.</li>
+        <li><code>GPSTimeStamp</code> &amp; <code>GPSDateStamp</code>: Universal Time Coordinated (UTC) atomic satellite timestamps.</li>
+        <li><code>GPSImgDirection</code> &amp; <code>GPSDestBearing</code>: Compass heading of the phone at the moment of capture.</li>
+      </ul>
+
+      <h3>3. MakerNotes: The Unseen Forensic Vector</h3>
+      <p>
+        The most problematic sub-structure in digital photography is the <strong>MakerNote</strong> (Tag <code>0x927c</code>). Camera manufacturers (Apple, Sony, Canon, Nikon, Samsung) write proprietary, undocumented diagnostic dumps into this block. MakerNotes routinely store internal sensor temperatures, autofocus target matrices, face-detection bounding boxes with facial feature hashes, and encrypted camera body serial numbers. Because MakerNotes do not conform to an open standard, off-the-shelf EXIF modification tools often leave MakerNotes intact, allowing forensic investigators to correlate an image to a specific hardware unit even after standard tags are erased.
+      </p>
+
+      <h2>The HTML5 Canvas Sanitization Pipeline vs. Binary Editing</h2>
+      <p>
+        Software tools designed to remove metadata generally employ one of two engineering methodologies:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Methodology</th>
+              <th>Operational Mechanism</th>
+              <th>Residual Leak Risk</th>
+              <th>File Size Impact</th>
+              <th>Network Egress</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>BitDark In-Memory Canvas</strong></td>
+              <td>Decodes pixel array only; writes completely new container binary</td>
+              <td><strong>Zero</strong> (Headers, MakerNotes, and thumbnails never exist)</td>
+              <td>Minor reduction (Purges metadata and bloat)</td>
+              <td><strong>0 Bytes</strong> (100% volatile browser RAM)</td>
+            </tr>
+            <tr>
+              <td><strong>Binary Tag Eraser (exiftool -all=)</strong></td>
+              <td>Parses binary segments and unlinks IFD pointer tables</td>
+              <td>Low-Medium (Can leave orphaned MakerNotes or trailing slack)</td>
+              <td>Exact byte reduction</td>
+              <td>Local CLI tool (Requires native binaries)</td>
+            </tr>
+            <tr>
+              <td><strong>Web-Based Server Strippers</strong></td>
+              <td>Uploads image to cloud server; processes via backend Python/Node</td>
+              <td><strong>Critical</strong> (Photos stored on remote third-party disks)</td>
+              <td>Varies by backend encoder</td>
+              <td>Full file upload and roundtrip download</td>
+            </tr>
+            <tr>
+              <td><strong>Screen Capture / Screenshot</strong></td>
+              <td>Captures operating system framebuffer display buffer</td>
+              <td>Zero EXIF, but captures UI artifacts and reduces resolution</td>
+              <td>Loss of original pixel fidelity</td>
+              <td>Local, but cumbersome</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Worked Technical Example: Hexadecimal Dissection Before &amp; After</h2>
+      <p>
+        To visualize how BitDark's sanitization operates at the byte level, examine this side-by-side hexadecimal comparison of a smartphone photograph before and after client-side scrubbing:
+      </p>
+
+      <h3>Before Scrubbing: Original Smartphone Photo Binary (Excerpt)</h3>
+      <pre><code>Offset(h)  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  ASCII
+00000000   FF D8 FF E1 18 4C 45 78 69 66 00 00 49 49 2A 00  .Ø.á.LExif..II*.
+00000010   08 00 00 00 0C 00 0F 01 02 00 06 00 00 00 9A 00  ................
+00000020   10 01 02 00 09 00 00 00 A0 00 25 88 04 00 01 00  ..........%. ...
+00000030   00 00 F0 03 00 00 41 70 70 6C 65 00 69 50 68 6F  ..ð...Apple.iPho
+00000040   6E 65 20 31 35 20 50 72 6F 00 00 00 47 50 53 20  ne 15 Pro...GPS 
+00000050   43 6F 6F 72 64 69 6E 61 74 65 73 3A 20 33 37 2E  Coordinates: 37.
+00000060   37 37 34 39 20 4E 2C 20 31 32 32 2E 34 31 39 34  7749 N, 122.4194
+00000070   20 57 20 28 53 61 6E 20 46 72 61 6E 63 69 73 63  W (San Francisc</code></pre>
+      <p>
+        Notice the clear text string signatures at offset <code>0x00000004</code>: the <code>0xFFE1</code> marker followed by <code>Exif\0\0</code>, the Intel little-endian alignment indicator (<code>II*</code>), device identification (<code>Apple iPhone 15 Pro</code>), and the embedded GPS coordinates.
+      </p>
+
+      <h3>After Scrubbing: BitDark Clean Raster Export (Excerpt)</h3>
+      <pre><code>Offset(h)  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  ASCII
+00000000   FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48  .Ø.à..JFIF.....H
+00000010   00 48 00 00 FF DB 00 43 00 03 02 02 03 02 02 03  .H..ÿÛ.C........
+00000020   03 03 04 03 03 04 05 08 05 05 04 04 05 0A 07 07  ................
+00000030   06 08 0C 0A 0C 0C 0B 0A 0B 0B 0D 0E 12 10 0D 0E  ................
+00000040   11 0E 0B 0B 10 16 10 11 13 14 15 15 15 0C 0F 17  ................
+00000050   18 16 14 18 12 14 15 14 FF DB 00 43 01 03 04 04  ........ÿÛ.C....
+00000060   05 04 05 09 05 05 09 14 0D 0B 0D 14 14 14 14 14  ................</code></pre>
+      <p>
+        Following the canvas re-rasterization, the entire <code>APP1</code> segment (and all associated GPS/EXIF sub-structures) has ceased to exist. The output file begins with standard SOI (<code>0xFFD8</code>), followed immediately by an innocuous baseline <code>APP0</code> JFIF marker (<code>0xFFE0</code>) and quantization tables (<code>0xFFDB</code>). There are zero camera identifiers, zero hardware serials, and zero coordinates.
+      </p>
+
+      <h2>Metadata Scrubbing vs. Optical Redaction: Distinct Defense Layers</h2>
+      <p>
+        A frequent point of confusion among privacy advocates is the distinction between metadata scrubbing and optical content redaction. Purging EXIF headers solves only half of the digital privacy problem:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Vector</th>
+              <th>EXIF &amp; Metadata Stripping</th>
+              <th>Optical Pixel Redaction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Target Layer</strong></td>
+              <td>Binary container headers (APP1, XMP, IPTC, IFD0)</td>
+              <td>Visual raster data (RGB / YCbCr pixel values)</td>
+            </tr>
+            <tr>
+              <td><strong>Protects Against</strong></td>
+              <td>GPS location lookup, hardware serial indexing, capture timestamps</td>
+              <td>Facial recognition, license plate OCR, street sign recognition</td>
+            </tr>
+            <tr>
+              <td><strong>Tool Implementation</strong></td>
+              <td>BitDark Canvas In-Memory Re-Encoder</td>
+              <td>Opaque solid black geometric redaction boxes</td>
+            </tr>
+            <tr>
+              <td><strong>Common Failure Mode</strong></td>
+              <td>Assuming visual cropping removes binary EXIF headers</td>
+              <td>Using translucent blur or mosaic pixelation that can be unblurred</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Mistakes &amp; Privacy Pitfalls</h2>
+      <p>
+        When managing digital image privacy, avoid these frequent operational security errors:
+      </p>
+      <ul>
+        <li>
+          <strong>Trusting Social Media Platforms to Strip Headers:</strong> While platforms like X, Facebook, and Instagram automatically strip EXIF headers during public image display to save bandwidth, they ingest and log that metadata on their internal servers the moment you upload the asset. Furthermore, platforms like Flickr, Reddit (in certain subreddits), and Discord frequently preserve full EXIF data by default.
+        </li>
+        <li>
+          <strong>Cropping an Image in Native Phone Galleries:</strong> In iOS and Android, cropping an image creates a non-destructive edit. The original raw image, along with its full EXIF metadata and original uncropped GPS coordinates, is preserved in the container so you can "revert" the edit later.
+        </li>
+        <li>
+          <strong>Overlooking Optical Chronolocation &amp; Shadows:</strong> Even without EXIF timestamps, OSINT investigators can calculate the exact time of day an image was captured by analyzing shadow angles, sun elevation, and building heights using astronomical sun-calculator tools.
+        </li>
+        <li>
+          <strong>Ignoring Embedded Thumbnail Leaks:</strong> Standard EXIF blocks store an <code>IFD1</code> sub-directory containing a tiny 160×120 pixel thumbnail of the original unedited photo. If you crop out a sensitive object using a flawed editor, the full uncropped scene often remains visible inside the embedded EXIF thumbnail. BitDark's canvas pipeline eliminates this risk entirely because no thumbnail container is generated.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Does stripping EXIF metadata reduce image quality or resolution?</div>
+          <div class="faq-answer">
+            Pixel resolution (dimensions in width and height) remains completely unaffected. For lossy formats like JPEG, re-encoding via the browser canvas is performed at a 0.92 high-quality threshold, preserving visual clarity while permanently purging all non-pixel container headers.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can deleted EXIF metadata or GPS coordinates ever be recovered from the scrubbed file?</div>
+          <div class="faq-answer">
+            No. The in-memory canvas pipeline does not merely blank out or mark header tags as deleted; it decodes the raw visual pixel stream into an isolated memory buffer and constructs a brand new image container from scratch. The stripped metadata bytes do not exist in the exported file.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why do modern smartphones embed GPS coordinates into photos by default?</div>
+          <div class="faq-answer">
+            Mobile operating systems like iOS and Android incorporate location services to organize media into albums by geographic location, trip memories, and interactive maps. Unless specifically disabled in camera privacy permissions, the device embeds precise latitude, longitude, and altitude in the EXIF GPS IFD block.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does taking a screenshot of an image safely remove its EXIF data?</div>
+          <div class="faq-answer">
+            Taking a screenshot creates a new display buffer capture that lacks the original image's EXIF container. However, screenshots compress image resolution to the display's current viewport, degrade fine detail, and can accidentally capture user interface elements, notifications, or battery status indicators.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark upload my photographs to external cloud servers or analytics endpoints?</div>
+          <div class="faq-answer">
+            No. BitDark operates on a strict zero-network-egress architectural model. All image parsing, binary inspection, canvas rasterization, and JPEG re-encoding execute locally inside your browser's private JavaScript memory heap.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What image formats are supported by this client-side stripper?</div>
+          <div class="faq-answer">
+            The tool natively supports JPEG (.jpg, .jpeg), PNG (.png), and WebP (.webp) formats. All supported formats undergo complete memory-based raster re-encoding to purge auxiliary chunks and header blocks.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does canvas re-rasterization prevent zero-day parser vulnerabilities?</div>
+          <div class="faq-answer">
+            Malicious actors can craft weaponized image containers with malformed EXIF or TIFF offsets designed to trigger buffer overflows in native image viewers (such as libvips or libraw vulnerabilities). By drawing the asset through the browser's hardened, sandboxed canvas engine, corrupted metadata segments are discarded before they can interact with downstream software.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Will this tool purge Content Credentials or C2PA provenance manifests?</div>
+          <div class="faq-answer">
+            Yes. C2PA provenance manifests and Content Authenticity Initiative (CAI) assertions are stored within JPEG APP11 markers and private PNG chunks. Because the canvas pipeline discards all application markers and exports only pure pixel raster data, C2PA manifests are completely stripped alongside EXIF and XMP tags.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Privacy &amp; Forensic Tooling</h3>
+        <div class="related-grid">
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🔒]</span> PII &amp; Prompt Redactor</div>
+            <div class="related-card-desc">Sanitize names, emails, API keys, and sensitive credentials locally before sharing with AI chatbots.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🕵️]</span> Canvas LSB Steganography</div>
+            <div class="related-card-desc">Encode and decode hidden cryptographic messages inside image pixels using pure browser memory.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate Coalition for Content Provenance manifests and AI generation markers offline.</div>
+          </a>
+          <a href="/tools/privacy/url-cleaner/" class="related-card">
+            <div class="related-card-title"><span>[🔗]</span> Tracking URL Cleaner</div>
+            <div class="related-card-desc">Strip UTM markers, click IDs (fbclid, gclid), and tracking parameters from links before sharing.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[📑]</span> Magic Bytes Identifier</div>
+            <div class="related-card-desc">Inspect binary file headers and verify actual MIME types against disguised file extensions.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens locally without leaking bearer tokens to third-party servers.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Endpoint IPv4 and IPv6 Detection Engine
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Unavailable";
-        } catch {
-          ipv4El.textContent = "Unavailable";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // EXIF Scrubber & Binary Inspection Engine
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. EXIF Scrubber & Binary Inspection Engine (100% Client-Side Memory Processing)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -444,6 +1192,13 @@
     const btnDownloadClean = document.getElementById("btnDownloadClean");
 
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(evt => {
       dropArea.addEventListener(evt, (e) => {
@@ -560,7 +1315,7 @@
           metaStatus.textContent = "Found (APP1 / EXIF)";
         } else {
           statusBanner.className = "status-banner status-clean";
-          statusBanner.innerHTML = `<span>✓ Container Inspected & Cleaned</span> <span>Ready for Export</span>`;
+          statusBanner.innerHTML = `<span>✓ Container Inspected &amp; Cleaned</span> <span>Ready for Export</span>`;
           metaStatus.textContent = "None Found";
         }
 
@@ -631,6 +1386,12 @@
         metaStatus.textContent = "Error";
       }
     }
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
