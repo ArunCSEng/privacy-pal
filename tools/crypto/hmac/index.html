@@ -6,10 +6,108 @@
   
   <title>HMAC Generator &amp; Keyed-Hash Verifier — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="HMAC Generator &amp; Keyed-Hash Verifier — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Generate and verify Hash-based Message Authentication Codes (HMAC-SHA256, HMAC-SHA512, HMAC-SHA384, HMAC-SHA1) with secret keys locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="hmac generator, hmac sha256 calculator, keyed hash authenticator, message authentication code, offline hmac verifier, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/crypto/hmac" />
+  <meta name="description" content="Compute and verify Hash-based Message Authentication Codes (HMAC-SHA256, HMAC-SHA512, HMAC-SHA384, HMAC-SHA1) with secret keys locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="hmac generator, hmac sha256 calculator, keyed hash authenticator, message authentication code, offline hmac verifier, rfc 2104, webhook signature verification, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/hmac/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/crypto/hmac/" />
+  <meta property="og:title" content="HMAC Generator &amp; Keyed-Hash Verifier — Local Memory Parser | BitDark" />
+  <meta property="og:description" content="Generate and verify Hash-based Message Authentication Codes (HMAC) locally in browser memory with zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/crypto/hmac/" />
+  <meta name="twitter:title" content="HMAC Generator &amp; Keyed-Hash Verifier | BitDark" />
+  <meta name="twitter:description" content="Generate and verify HMAC signatures locally in browser RAM. 100% Client-Side with zero tracking or telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "HMAC Generator & Keyed-Hash Verifier",
+        "url": "https://bitdark.net/tools/crypto/hmac/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Cryptographic utility to generate, calculate, and verify Hash-based Message Authentication Codes (HMAC-SHA256, HMAC-SHA512, HMAC-SHA384, HMAC-SHA1) directly in client-side memory using the native W3C Web Cryptography API."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "HMAC Cryptographic Architecture, Message Integrity, and Signature Verification",
+        "url": "https://bitdark.net/tools/crypto/hmac/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-03-20",
+        "dateModified": "2026-11-02",
+        "description": "Exhaustive technical analysis of RFC 2104 and FIPS 198 Hash-based Message Authentication Codes (HMAC), inner/outer padding transformations, length extension vulnerability mitigation, and constant-time verification protocols."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is an HMAC and how does it differ from a standard cryptographic hash?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A standard cryptographic hash (such as SHA-256) takes an arbitrary input and produces a fixed-size digest without requiring any secret key. Anyone can recalculate that hash. An HMAC (Hash-based Message Authentication Code) incorporates a shared secret key alongside the input data using a nested two-pass hashing construction. This guarantees both data integrity (the data was not modified) and data authenticity (only a party possessing the shared secret could have created the authentication tag)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why can't I just concatenate a secret key and a message into a standard hash like hash(key + message)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Simple prefix concatenation hash(key || message) is fatally vulnerable to length extension attacks when used with Merkle-Damgård hash functions (such as MD5, SHA-1, SHA-256, and SHA-512). An eavesdropping adversary can append arbitrary unauthorized data to the end of the original message and compute a valid signature without knowing the secret key. HMAC completely prevents this by employing a rigorous inner and outer padding nested construction."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the recommended secret key length for HMAC-SHA256?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "According to RFC 2104, the secret key should have an entropy length at least equal to the output size of the underlying hash function. For HMAC-SHA256, the recommended key length is 32 bytes (256 bits). Keys shorter than this reduce security margins, while keys longer than the block size (64 bytes for SHA-256) are pre-hashed down to the hash output size."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What causes HMAC verification mismatches when testing webhooks or API requests?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The most common causes of verification mismatches include encoding discrepancies (treating a hex-encoded key as raw UTF-8 text or vice versa), whitespace or newline normalization issues in JSON payloads, reordering of serialized object keys, and using non-raw request bodies (e.g., parsing JSON before computing the hash instead of validating the exact raw byte stream)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my secret keys or payloads sent to any remote BitDark server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped, zero-network-egress security model. All cryptographic transformations, key imports, and HMAC signatures execute locally inside your browser's private memory space via the native W3C Web Cryptography API (crypto.subtle)."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,99 +123,140 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .form-grid {
@@ -133,36 +272,40 @@
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.04em;
     }
+    /* 16px font sizing prevents iOS Safari auto-zooming */
     .form-group input, .form-group select, .form-group textarea {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
       border-radius: 4px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px;
       outline: none;
+      transition: border-color 0.2s;
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--atom-border-focus);
     }
     .form-group textarea {
-      height: 120px;
+      height: 125px;
       resize: vertical;
+      line-height: 1.5;
     }
 
     .inline-btn-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
     .inline-btn-group input {
       flex: 1;
@@ -171,9 +314,9 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-top: 10px;
+      margin-top: 14px;
     }
 
     .btn-atom {
@@ -182,30 +325,41 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 22px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
     /* Results Workspace */
-    .results-area { margin-top: 20px; }
+    .results-area { margin-top: 24px; }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 22px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -220,25 +374,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
       margin-bottom: 4px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -247,110 +402,324 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 380px;
+      font-size: 0.84rem;
+      max-height: 420px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
       line-height: 1.6;
     }
 
-    /* Operational Disclaimer */
+    /* Authoritative Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2600px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / hmac
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/crypto/">Cryptography</a>
+      <span class="sep">/</span>
+      <span class="current">HMAC Generator</span>
     </nav>
 
     <div class="tool-header">
       <h1>HMAC Generator &amp; Keyed-Hash Verifier</h1>
-      <p>Compute and verify Hash-based Message Authentication Codes (HMAC) across standard cryptographic hash functions locally in browser memory.</p>
+      <p>Compute, inspect, and verify Hash-based Message Authentication Codes (HMAC) across standard cryptographic hash functions locally in browser memory. Validate webhook signatures, API tokens, and message payloads with zero server latency or data leakage.</p>
     </div>
 
-    <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
+    <!-- Active Tool Workspace (Preserved Functionality) -->
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive HMAC Workspace">
       <div class="form-grid">
         <div class="form-group">
           <label for="hashAlgo">Hash Algorithm</label>
@@ -376,7 +745,7 @@
         <label for="secretKey">Secret Key</label>
         <div class="inline-btn-group">
           <input type="text" id="secretKey" placeholder="Enter authentication secret key or click generate..." spellcheck="false" autocomplete="off" />
-          <button class="btn-atom btn-secondary" id="btnGenKey">Generate Key</button>
+          <button class="btn-atom btn-secondary" id="btnGenKey" type="button">Generate Key</button>
         </div>
       </div>
 
@@ -391,9 +760,9 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn-atom" id="btnCompute">Compute HMAC</button>
-        <button class="btn-atom btn-secondary" id="btnCopy">Copy Output</button>
-        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+        <button class="btn-atom" id="btnCompute" type="button">Compute HMAC</button>
+        <button class="btn-atom btn-secondary" id="btnCopy" type="button">Copy Output</button>
+        <button class="btn-atom btn-secondary" id="btnClear" type="button">Clear</button>
       </div>
 
       <div class="results-area">
@@ -421,105 +790,497 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Structured HMAC Signature Package:</div>
-        <div class="viewer-box" id="rawViewer">Signatures and authentication results will appear here...</div>
+        <div class="meta-label" style="margin-bottom: 6px;">Structured HMAC Signature Package:</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Signatures and authentication results will appear here...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, verification errors, corrupted authentication tags, unauthorized key exposure, or transmission discrepancies. HMAC constructions are sensitive to secret key entropy and key management practices; low-entropy secrets can be vulnerable to offline brute-force and dictionary attacks. All calculations execute strictly in client-side memory via the native W3C Web Cryptography API without network transmission.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Cryptographic Boundary Notice:</strong> HMAC constructions are strictly dependent on secret key entropy, secure key distribution, and side-channel-resistant verification logic. Generating an HMAC tag using low-entropy, human-memorable passwords leaves systems vulnerable to offline brute-force and dictionary attacks. Furthermore, comparing HMAC strings in software using standard variable-time comparison operators (such as JavaScript's <code>===</code>) introduces timing side-channel vulnerabilities in production server architectures. All transformations run exclusively inside client volatile RAM via the W3C Web Cryptography API with zero remote telemetry.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How HMAC Authentication Operates</h2>
-      <p>A Hash-based Message Authentication Code (HMAC, defined in RFC 2104 and FIPS 198) uses a symmetric secret key in combination with an iterative cryptographic hash function. HMAC prevents length extension attacks that affect naive hash constructions like $\text{hash}(key \parallel message)$:</p>
-      <ul>
-        <li><strong>Inner Hash Pass:</strong> The secret key is XORed with an inner pad ($ipad$, byte <code>0x36</code> repeated), followed by the message.</li>
-        <li><strong>Outer Hash Pass:</strong> The secret key is XORed with an outer pad ($opad$, byte <code>0x5C</code> repeated), followed by the digest of the inner hash pass:</li>
-      </ul>
-      <p>$$\text{HMAC}(K, m) = H\bigl((K \oplus opad) \parallel H((K \oplus ipad) \parallel m)\bigr)$$</p>
+    <!-- Comprehensive Technical Authority Article (2500+ Words) -->
+    <article class="article-container">
+      <h2>The Mechanics of Symmetric Message Authentication</h2>
+      <p>
+        In modern networked computing, data integrity and origin authentication represent two inseparable pillars of secure communication. While public-key asymmetric digital signatures (such as RSA-PSS or ECDSA) provide non-repudiation, their mathematical complexity imposes substantial computational and bandwidth overhead. In high-throughput environments—such as RESTful API gateways, microservice event streaming, financial webhook delivery, and distributed session storage—symmetric authentication mechanisms are required to achieve sub-millisecond validation latencies.
+      </p>
+      <p>
+        A <strong>Hash-based Message Authentication Code (HMAC)</strong>, standardized internationally in <strong>RFC 2104</strong> and NIST <strong>FIPS PUB 198-1</strong>, fulfills this operational role. An HMAC is a cryptographic construction that calculates a fixed-length authentication tag over an arbitrary-length message using a shared secret key and an underlying cryptographic hash function (such as SHA-256, SHA-512, or SHA-384). 
+      </p>
+      <p>
+        Unlike plain cryptographic hash functions that produce an identical digest for anyone holding the payload, HMAC ensures that only an entity in possession of the exact shared secret key can produce a matching authentication tag. If an attacker modifies even a single bit of the transmitted payload, or attempts to spoof the sender without knowing the secret, the resulting tag fails verification completely.
+      </p>
 
-      <h2>Key Selection and Security Considerations</h2>
-      <p>The security of an HMAC implementation depends heavily on the strength of the underlying hash function and the randomness of the secret key:</p>
+      <h2>How to Use the BitDark HMAC Generator &amp; Verifier</h2>
+      <p>
+        This utility operates on a strict zero-egress architectural model, allowing security engineers, developers, and auditors to compute and verify message authentication tags in a private, sandboxed environment:
+      </p>
+      <ol>
+        <li>
+          <strong>Select the Hashing Algorithm:</strong> Choose your target cryptographic primitive from the dropdown. <code>HMAC-SHA-256</code> is the industry standard for modern webhooks (e.g., Stripe, GitHub, Shopify) and JWT HS256 signatures. <code>HMAC-SHA-512</code> provides enhanced security margins and optimal performance on 64-bit microprocessors.
+        </li>
+        <li>
+          <strong>Define Secret Key Encoding:</strong> Specify how your secret key is represented:
+          <ul>
+            <li><code>Plaintext (UTF-8)</code>: Evaluates the literal text string as character byte encodings.</li>
+            <li><code>Hexadecimal</code>: Parses raw hex strings (e.g., generated cryptographic tokens or binary secrets).</li>
+            <li><code>Base64</code>: Parses standard Base64-encoded binary key buffers.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Enter or Generate a Secret Key:</strong> Paste your known shared secret into the input field, or click "Generate Key" to create a cryptographically secure 256-bit pseudo-random key using the browser's hardware-seeded entropy pool (<code>crypto.getRandomValues</code>).
+        </li>
+        <li>
+          <strong>Input the Message Payload:</strong> Paste the exact string or byte sequence to authenticate. Note that whitespace, trailing newlines, and character encoding directly alter the cryptographic output.
+        </li>
+        <li>
+          <strong>Optional Verification Matching:</strong> If you are debugging an incoming webhook or validating an external system's signature, paste the expected digest (in Hex or Base64) into the verification input. The tool dynamically performs an automated comparator check and outputs an affirmative or negative match verdict.
+        </li>
+        <li>
+          <strong>Export the Signature Package:</strong> Inspect the structured JSON output displaying hexadecimal and Base64 digests, bit-lengths, and byte sizes, or click "Copy Output" for clipboard ingestion.
+        </li>
+      </ol>
+
+      <h2>When to Use HMAC: Real-World Engineering Scenarios</h2>
+      <p>
+        HMAC constructions are ubiquitously embedded across modern software architectures, serving as the frontline defense against tampering and unauthorized command injection:
+      </p>
       <ul>
-        <li><strong>Key Length:</strong> Keys should have at least the same bit-length as the output size of the chosen hash function (e.g., 256 bits for SHA-256). Keys shorter than this standard lower the effective security threshold.</li>
-        <li><strong>Algorithm Choice:</strong> HMAC-SHA-256 and HMAC-SHA-512 are universally recommended for modern applications, API signature verification (such as AWS Signature V4 and Webhooks), and JSON Web Signatures (HS256).</li>
+        <li>
+          <strong>Third-Party Webhook Verification:</strong> Payment gateways and developer platforms (including Stripe, GitHub, Slack, and PayPal) deliver automated JSON event notifications across the public internet. To ensure an incoming HTTP POST request actually originated from the payment gateway and was not forged by a malicious actor, the sender computes an HMAC-SHA256 signature of the raw request payload using a shared webhook secret and transmits it in an HTTP header (e.g., <code>Stripe-Signature</code> or <code>X-Hub-Signature-256</code>).
+        </li>
+        <li>
+          <strong>Cloud API Request Signing:</strong> Cloud service providers, most notably Amazon Web Services with <strong>AWS Signature Version 4 (SigV4)</strong>, do not transmit long-lived secret access keys over the wire. Instead, API clients generate a canonical request string (including HTTP method, URI, query parameters, headers, and payload hash) and sign it using a multi-stage HMAC-SHA256 derivation tree anchored to the secret access key.
+        </li>
+        <li>
+          <strong>JSON Web Tokens (JWT / JWS):</strong> In RFC 7519 authentication architectures, the <code>HS256</code> (HMAC using SHA-256) signature algorithm binds the token header and claims payload to a symmetric server secret, preventing client-side privilege escalation (such as modifying <code>"role": "user"</code> to <code>"role": "admin"</code>).
+        </li>
+        <li>
+          <strong>Stateful Anti-CSRF Tokens:</strong> Web application frameworks bind user session identifiers, timestamps, and route paths using HMAC tokens to block cross-site request forgery attacks without requiring excessive server-side database lookups.
+        </li>
+        <li>
+          <strong>Secure Cookies &amp; Session Serialization:</strong> Frameworks like Ruby on Rails, Express.js, and Django sign serialized session cookies using HMAC to prevent clients from tampering with session data stored client-side.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Authentication secrets and message payloads evaluated in this utility never leave your local environment. Computations run exclusively through the local <code>crypto.subtle</code> browser interface. No telemetry, analytic trackers, or logging mechanisms exist on this endpoint.</p>
+      <h2>Deep Dive: The RFC 2104 Nested Hash Construction</h2>
+      <p>
+        To understand why HMAC is engineered in its specific format, one must first explore why intuitive, naive hashing constructions fail.
+      </p>
+
+      <h3>The Length Extension Attack on Naive Constructions</h3>
+      <p>
+        When early software engineers sought to authenticate messages, the obvious intuitive solution was to prepend a secret key to the message and hash the concatenated string:
+      </p>
+      <pre><code>Tag = Hash(SecretKey || Message)  /* DANGEROUS: DO NOT USE IN PRODUCTION */</code></pre>
+      <p>
+        While this appears secure at first glance, it is fundamentally broken against an attacker who understands the internal mathematics of the <strong>Merkle-Damgård construction</strong>. 
+      </p>
+      <p>
+        Iterative hash functions like MD5, SHA-1, SHA-256, and SHA-512 process input data in sequential, fixed-size blocks (e.g., 64 bytes for SHA-256). The internal state of the hash function after processing block $i$ serves as the initialization vector ($IV$) for processing block $i+1$. When the hashing finishes, the final internal state is emitted directly as the digest.
+      </p>
+      <p>
+        In a <strong>Length Extension Attack</strong>, an eavesdropping adversary intercepts the authentic message $M$ and its naive signature $S = \text{Hash}(K \parallel M)$. Although the adversary does not know the secret key $K$, they know the exact digest $S$. Because $S$ represents the internal register state of the hash engine after consuming $K \parallel M$, the attacker can initialize a local hash engine with state $S$, append additional malicious data $M_{\text{evil}}$, apply proper Merkle-Damgård padding, and compute:
+      </p>
+      <pre><code>S' = Hash(K || M || Padding || M_evil)</code></pre>
+      <p>
+        The resulting digest $S'$ is a 100% mathematically valid signature for the extended message, and the receiving server will accept the forged payload without error!
+      </p>
+
+      <h3>The Mathematical Formulation of HMAC</h3>
+      <p>
+        To permanently defeat length extension attacks without redesigning underlying hash primitives, Mihir Bellare, Ran Canetti, and Hugo Krawczyk published the nested HMAC construction in 1996. RFC 2104 defines HMAC using two constant byte paddings:
+      </p>
+      <ul>
+        <li><strong>Inner Pad ($ipad$):</strong> The byte <code>0x36</code> repeated $B$ times (where $B$ is the block size of the hash function in bytes).</li>
+        <li><strong>Outer Pad ($opad$):</strong> The byte <code>0x5C</code> repeated $B$ times.</li>
+      </ul>
+      <p>
+        The formal mathematical equation for HMAC over a key $K$ and message $m$ is:
+      </p>
+      <p>$$\text{HMAC}(K, m) = H\Bigl((K' \oplus opad) \parallel H\bigl((K' \oplus ipad) \parallel m\bigr)\Bigr)$$</p>
+      <p>Where:</p>
+      <ul>
+        <li>$H$ is the underlying cryptographic hash function (e.g., SHA-256).</li>
+        <li>$B$ is the block byte-length of $H$ ($B = 64$ for SHA-256; $B = 128$ for SHA-512).</li>
+        <li>$L$ is the output byte-length of $H$ ($L = 32$ for SHA-256; $L = 64$ for SHA-512).</li>
+        <li>$K'$ is the normalized key derived from $K$:
+          <ul>
+            <li>If $\text{length}(K) > B$, then $K' = H(K)$ padded with trailing zeros to length $B$.</li>
+            <li>If $\text{length}(K) \le B$, then $K'$ is $K$ padded with trailing zeros to length $B$.</li>
+          </ul>
+        </li>
+        <li>$\oplus$ denotes the bitwise XOR operation.</li>
+        <li>$\parallel$ denotes byte-level concatenation.</li>
+      </ul>
+
+      <pre><code>+-------------------------------------------------------------------------------+
+|                            HMAC ARCHITECTURE FLOW                             |
++-------------------------------------------------------------------------------+
+|                                                                               |
+|   Secret Key (K) ---> [ Length > B ? ] ---> Yes: H(K) \                       |
+|                             |                           +-> Zero-Pad to B -> K'
+|                             +-------------> No:   K   /                       |
+|                                                                               |
+|   K' (+) ipad (0x36) ---------> Inner Key Pad (K_in)                          |
+|                                      |                                        |
+|   Message (m) -----------------------+---> [ Concatenate & Hash ]             |
+|                                                    |                          |
+|                                            Inner Digest (H_in)                |
+|                                                    |                          |
+|   K' (+) opad (0x5C) ---------> Outer Key Pad (K_out)                         |
+|                                      |             |                          |
+|                                      +-------------+---> [ Hash ]             |
+|                                                            |                  |
+|                                                    Final HMAC Tag             |
++-------------------------------------------------------------------------------+</code></pre>
+      <p>
+        Because the inner digest $H_{\text{in}}$ is completely re-hashed inside the outer pass with a distinct key $K' \oplus opad$, an attacker who intercepts the final output cannot inspect or extend the inner hash state. The outer hash functions as an impenetrable cryptographic barrier.
+      </p>
+
+      <h2>Cryptographic Parameters &amp; Hash Specifications</h2>
+      <p>
+        Different hashing primitives impose specific internal block sizes, output dimensions, and collision resistance thresholds. The table below details standard HMAC parameters:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Block Size ($B$)</th>
+              <th>Output Digest ($L$)</th>
+              <th>Security Level (Collision)</th>
+              <th>Primary Production Use Cases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>HMAC-SHA-256</strong></td>
+              <td>64 bytes (512 bits)</td>
+              <td>32 bytes (256 bits)</td>
+              <td>128 bits</td>
+              <td>Stripe webhooks, GitHub API, AWS SigV4, JWT HS256, OAuth 2.0</td>
+            </tr>
+            <tr>
+              <td><strong>HMAC-SHA-512</strong></td>
+              <td>128 bytes (1024 bits)</td>
+              <td>64 bytes (512 bits)</td>
+              <td>256 bits</td>
+              <td>High-security financial ledgers, JWT HS512, Linux crypt(3)</td>
+            </tr>
+            <tr>
+              <td><strong>HMAC-SHA-384</strong></td>
+              <td>128 bytes (1024 bits)</td>
+              <td>48 bytes (384 bits)</td>
+              <td>192 bits</td>
+              <td>NSA Suite B, US Government Top Secret compliance, TLS 1.3</td>
+            </tr>
+            <tr>
+              <td><strong>HMAC-SHA-1</strong></td>
+              <td>64 bytes (512 bits)</td>
+              <td>20 bytes (160 bits)</td>
+              <td>Legacy (&lt; 80 bits)</td>
+              <td>Legacy Git commits, older AWS requests, TOTP / HOTP RFC 4226</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Step-by-Step Worked Example: RFC 4231 Test Vector</h2>
+      <p>
+        To illustrate the exact operational transformation, consider Test Vector 2 from <strong>RFC 4231</strong>, which defines standard HMAC-SHA256 test vectors:
+      </p>
+      <h4>1. Input Parameters</h4>
+      <ul>
+        <li><strong>Secret Key:</strong> <code>"Jefe"</code> (4 ASCII bytes: <code>0x4A 0x65 0x66 0x65</code>)</li>
+        <li><strong>Message:</strong> <code>"what do ya want for nothing?"</code> (28 ASCII bytes)</li>
+      </ul>
+
+      <h4>2. Step 1: Key Normalization to Block Size ($B = 64$)</h4>
+      <p>
+        Since the key <code>"Jefe"</code> is 4 bytes (less than 64 bytes), it is padded with 60 bytes of binary zeros (<code>0x00</code>):
+      </p>
+      <pre><code>K' = 4a65666500000000000000000000000000000000000000000000000000000000
+     0000000000000000000000000000000000000000000000000000000000000000</code></pre>
+
+      <h4>3. Step 2: Inner Key Pad XOR ($K' \oplus ipad$)</h4>
+      <p>
+        Every byte of $K'$ is XORed with <code>0x36</code>. For the first four bytes:
+      </p>
+      <ul>
+        <li><code>0x4A ^ 0x36 = 0x7C</code></li>
+        <li><code>0x65 ^ 0x36 = 0x53</code></li>
+        <li><code>0x66 ^ 0x36 = 0x50</code></li>
+        <li><code>0x65 ^ 0x36 = 0x53</code></li>
+      </ul>
+      <p>The remaining 60 zero bytes XORed with <code>0x36</code> become <code>0x36</code> repeated 60 times.</p>
+
+      <h4>4. Step 3: Inner Hash Computation</h4>
+      <p>
+        The inner pad is concatenated with the message string and passed to SHA-256:
+      </p>
+      <pre><code>Inner_Digest = SHA256((K' ^ ipad) || "what do ya want for nothing?")</code></pre>
+
+      <h4>5. Step 4: Outer Key Pad XOR ($K' \oplus opad$)</h4>
+      <p>
+        Every byte of $K'$ is XORed with <code>0x5C</code>:
+      </p>
+      <ul>
+        <li><code>0x4A ^ 0x5C = 0x16</code></li>
+        <li><code>0x65 ^ 0x5C = 0x39</code></li>
+        <li><code>0x66 ^ 0x5C = 0x3A</code></li>
+        <li><code>0x65 ^ 0x5C = 0x39</code></li>
+      </ul>
+      <p>The remaining 60 zero bytes XORed with <code>0x5C</code> become <code>0x5C</code> repeated 60 times.</p>
+
+      <h4>6. Step 5: Final Outer Hash Computation</h4>
+      <p>
+        The outer pad is concatenated with the 32-byte <code>Inner_Digest</code> and hashed via SHA-256 to produce the final tag:
+      </p>
+      <pre><code>HMAC-SHA256 = 5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843</code></pre>
+      <p>
+        Entering the key <code>Jefe</code> and payload <code>what do ya want for nothing?</code> into the BitDark tool above confirms this exact hexadecimal output instantaneously.
+      </p>
+
+      <h2>Cryptographic Comparison: HMAC vs. Other MACs and Signatures</h2>
+      <p>
+        Authentication primitives vary substantially across their operational attributes, key agreements, and mathematical designs:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Scheme</th>
+              <th>Underlying Primitive</th>
+              <th>Key Architecture</th>
+              <th>Non-Repudiation</th>
+              <th>Vulnerability to Timing Attacks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>HMAC</strong></td>
+              <td>Iterative Cryptographic Hash (SHA-2 / SHA-3)</td>
+              <td>Symmetric (Shared Secret)</td>
+              <td>No (Both parties hold the key)</td>
+              <td>High if verified with standard string equals</td>
+            </tr>
+            <tr>
+              <td><strong>CMAC (AES-CMAC)</strong></td>
+              <td>Symmetric Block Cipher (AES)</td>
+              <td>Symmetric (Shared Secret)</td>
+              <td>No</td>
+              <td>High if string compared</td>
+            </tr>
+            <tr>
+              <td><strong>GMAC / Poly1305</strong></td>
+              <td>Universal Hashing (Galois Field / Prime Field)</td>
+              <td>Symmetric (Requires Unique Nonce)</td>
+              <td>No</td>
+              <td>Catastrophic failure if nonces repeat</td>
+            </tr>
+            <tr>
+              <td><strong>Ed25519 / ECDSA</strong></td>
+              <td>Elliptic Curve Discrete Logarithm</td>
+              <td>Asymmetric (Private / Public Key)</td>
+              <td><strong>Yes</strong> (Only sender holds private key)</td>
+              <td>High if scalar multiplication leaks timing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Critical Implementation Vulnerabilities &amp; Best Practices</h2>
+      <p>
+        While HMAC itself has demonstrated remarkable mathematical resilience against cryptanalysis for over three decades, real-world systems frequently suffer from catastrophic implementation flaws:
+      </p>
+
+      <h3>1. Timing Side-Channel Attacks during Verification</h3>
+      <p>
+        The most pervasive software vulnerability in HMAC verification is variable-time comparison. In high-level languages like JavaScript, Python, PHP, or Java, standard string comparison operators (such as <code>a === b</code> or <code>strcmp()</code>) terminate execution at the very first byte that does not match:
+      </p>
+      <pre><code>/* VULNERABLE CODE - LEAKS TIMING INFORMATION */
+function verifyWebhook(userHmac, expectedHmac) {
+  return userHmac === expectedHmac; /* DO NOT DO THIS ON A PRODUCTION SERVER */
+}</code></pre>
+      <p>
+        An attacker monitoring network round-trip times with high-precision statistical sampling can determine byte-by-byte which characters match. If byte 0 is correct, the server takes slightly longer to reject the payload than if byte 0 is incorrect. By measuring tens of thousands of requests, adversaries can forge valid HMAC signatures without knowing the secret key.
+      </p>
+      <p>
+        <strong>Defensive Remedy:</strong> Always use a <strong>constant-time comparator</strong> function that checks all bytes regardless of mismatches, such as Node.js's <code>crypto.timingSafeEqual()</code> or Python's <code>hmac.compare_digest()</code>:
+      </p>
+      <pre><code>/* SECURE IMPLEMENTATION (NODE.JS) */
+const crypto = require('crypto');
+function verifyWebhookSecure(userBuffer, expectedBuffer) {
+  if (userBuffer.length !== expectedBuffer.length) return false;
+  return crypto.timingSafeEqual(userBuffer, expectedBuffer);
+}</code></pre>
+
+      <h3>2. Payload Ingestion &amp; Serialization Discrepancies</h3>
+      <p>
+        When verifying webhooks in frameworks like Express.js or FastAPI, developers often parse the HTTP request body into a native object (via <code>bodyParser.json()</code>) and then re-serialize it (via <code>JSON.stringify()</code>) before passing it to HMAC. 
+      </p>
+      <p>
+        This almost always fails verification in production. JSON key orders, spacing around delimiters (<code>{"key": "val"}</code> vs <code>{"key":"val"}</code>), and unicode escape characters differ between sender and receiver. <strong>Always calculate HMAC over the exact, unparsed, raw binary buffer of the incoming HTTP request.</strong>
+      </p>
+
+      <h3>3. Low-Entropy and Hardcoded Secret Keys</h3>
+      <p>
+        Because HMAC can be calculated millions of times per second on modern GPUs, using short, dictionary-based secrets (such as <code>"password123"</code> or <code>"my-api-secret"</code>) allows attackers to capture an authentic tag from a public webhook and crack the key offline in minutes. Ensure all production HMAC keys are generated from cryptographically secure pseudo-random number generators (CSPRNG) with at least 256 bits of raw entropy.
+      </p>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Can an HMAC be decrypted to reveal the original message or key?</div>
+          <div class="faq-answer">
+            No. An HMAC is a one-way cryptographic function, not an encryption algorithm. It produces a fixed-size irreversible digest. It is mathematically impossible to "decrypt" an HMAC tag back into the secret key or plaintext payload.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does HMAC-SHA1 still appear in modern authentication libraries?</div>
+          <div class="faq-answer">
+            While plain SHA-1 is vulnerable to collision attacks (demonstrated by the SHAttered project in 2017), HMAC-SHA1 remains mathematically unbroken against practical forgery attacks because collision attacks do not directly compromise the nested HMAC outer-pass construction. However, regulatory frameworks (such as NIST and PCI-DSS) mandate migrating to HMAC-SHA256 or HMAC-SHA512.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between HMAC-SHA256 and AES-GCM?</div>
+          <div class="faq-answer">
+            HMAC provides authentication and data integrity, but zero confidentiality—the message itself remains unencrypted and publicly readable. AES-GCM is an Authenticated Encryption with Associated Data (AEAD) cipher that encrypts the message (providing confidentiality) while simultaneously calculating a 128-bit authentication tag (providing integrity).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does HMAC handle keys that are longer than the block size?</div>
+          <div class="faq-answer">
+            According to RFC 2104, if a secret key's length exceeds the block size of the hash function (e.g., more than 64 bytes for SHA-256), the key is first hashed using the same hash function: <code>K' = SHA256(Key)</code>. The resulting 32-byte digest is then zero-padded to 64 bytes to serve as the effective key.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does this tool run entirely in browser memory?</div>
+          <div class="faq-answer">
+            Transmitting secret authentication keys or sensitive webhook payloads over the network to a third-party server exposes systems to interception, logging, and unauthorized access. BitDark executes all key generation, hashing, and verification strictly inside your browser's private Web Crypto memory space with zero network egress.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Cryptography &amp; Security Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#️⃣]</span> Multi-Hash Verifier</div>
+            <div class="related-card-desc">Calculate SHA-256, SHA-512, SHA-3, and MD5 file checksums simultaneously in local browser RAM.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens (HS256, RS256) without leaking bearer tokens to cloud servers.</div>
+          </a>
+          <a href="/tools/crypto/bip39/" class="related-card">
+            <div class="related-card-title"><span>[🎲]</span> BIP-39 Generator</div>
+            <div class="related-card-desc">Generate and validate cryptographically secure 12- and 24-word recovery seed phrases locally.</div>
+          </a>
+          <a href="/tools/auth/tls-ciphers/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> TLS Cipher Inspector</div>
+            <div class="related-card-desc">Decode and audit TLS 1.2 and TLS 1.3 cryptographic cipher suites and forward secrecy parameters.</div>
+          </a>
+          <a href="/tools/encoding/hex-dumper/" class="related-card">
+            <div class="related-card-title"><span>[0x]</span> In-Memory Hex Dumper</div>
+            <div class="related-card-desc">Inspect binary files, offsets, and ASCII canonical projections without server uploads.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Encoding Utilities
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Cryptographic Encodings
     function bufToHex(buffer) {
       return Array.from(new Uint8Array(buffer))
         .map(b => b.toString(16).padStart(2, "0"))
@@ -554,7 +1315,7 @@
       return bytes.buffer;
     }
 
-    // UI Bindings
+    // 4. UI Elements & Event Bindings
     const hashAlgoSelect = document.getElementById("hashAlgo");
     const keyEncodingSelect = document.getElementById("keyEncoding");
     const secretKeyInput = document.getElementById("secretKey");
@@ -671,12 +1432,10 @@
         // Verification Check
         const expected = expectedHmacInput.value.trim();
         let matchVerdict = "No comparison provided";
-        let isMatch = false;
 
         if (expected) {
           const cleanExp = expected.toLowerCase().replace(/[^0-9a-f]/g, "");
           if (cleanExp === hmacHex.toLowerCase() || expected === hmacBase64) {
-            isMatch = true;
             matchVerdict = "MATCH (Signature Authentic)";
             statusBanner.className = "status-banner status-safe";
             statusBanner.innerHTML = "<span>✓ HMAC Tag Match Verified</span> <span>Authentic</span>";
@@ -717,6 +1476,8 @@
     // Default initialization
     window.addEventListener("DOMContentLoaded", () => {
       updateAlgoMeta();
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
