@@ -7,9 +7,107 @@
   <title>PBKDF2 Key Derivation &amp; Password Hasher — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="PBKDF2 Key Derivation &amp; Password Hasher — Free Offline Cryptography Tool | BitDark" />
   <meta name="description" content="Derive cryptographic keys and compute PBKDF2 hashes using HMAC-SHA-256, HMAC-SHA-512, and HMAC-SHA-1 with customizable iterations and salts locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="pbkdf2 generator, pbkdf2 calculator, password based key derivation, rfc 8018 pbkdf2, pbkdf2 sha256, offline pbkdf2, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/crypto/pbkdf2" />
+  <meta name="keywords" content="pbkdf2 generator, pbkdf2 calculator, password based key derivation function 2, rfc 8018 pbkdf2, pbkdf2 sha256, offline pbkdf2, client side cryptography, nist sp 800 63b, web crypto api pbkdf2" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/pbkdf2/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/crypto/pbkdf2/" />
+  <meta property="og:title" content="PBKDF2 Key Derivation &amp; Password Hasher | BitDark" />
+  <meta property="og:description" content="Derive high-entropy cryptographic keys and compute PBKDF2 hashes offline via the W3C Web Cryptography API. Zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/crypto/pbkdf2/" />
+  <meta name="twitter:title" content="PBKDF2 Key Derivation &amp; Password Hasher | BitDark" />
+  <meta name="twitter:description" content="Offline PBKDF2 derivation playground for HMAC-SHA-256, HMAC-SHA-512, and HMAC-SHA-1. 100% Client-Side in browser memory." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "PBKDF2 Key Derivation & Password Hasher",
+        "url": "https://bitdark.net/tools/crypto/pbkdf2/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Cryptographic utility to derive symmetric keys and verify PBKDF2 (RFC 8018 / PKCS #5 v2.1) hashes locally in browser RAM using HMAC PRFs with zero telemetry or network calls."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Password-Based Key Derivation (PBKDF2): Cryptographic Mechanics, Work Factor Sizing, and Brute-Force Resistance",
+        "url": "https://bitdark.net/tools/crypto/pbkdf2/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-03-20",
+        "dateModified": "2026-11-01",
+        "description": "Exhaustive technical analysis of Password-Based Key Derivation Function 2 (PBKDF2, RFC 8018 / RFC 2898), Pseudorandom Functions (PRF), work factor calibration, GPU cracking economics, and NIST/OWASP iteration standards."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is PBKDF2 and why is it used instead of raw hashing functions like SHA-256?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "General-purpose cryptographic hash functions like SHA-256 and SHA-512 were designed for high throughput, allowing modern GPUs and ASIC miners to compute tens of billions of hashes per second. PBKDF2 (Password-Based Key Derivation Function 2) introduces a computational cost factor by repeatedly iterating a keyed pseudorandom function (HMAC) over the passphrase and a cryptographic salt, drastically raising the financial and computational barrier for offline dictionary and brute-force attacks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the recommended iteration count for PBKDF2 in 2026?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "According to the latest OWASP and NIST SP 800-63B guidance, the minimum baseline iteration count is 600,000 iterations for PBKDF2-HMAC-SHA-256 and 210,000 iterations for PBKDF2-HMAC-SHA-512. Higher work factors should be chosen based on target server response SLAs and client computational limits."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is a cryptographic salt strictly necessary in PBKDF2?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Salts prevent precomputed dictionary attacks, such as rainbow tables, and ensure that two users with the exact same passphrase produce entirely different derived keys. A cryptographically secure salt must be unique per credential, at least 128 bits (16 bytes) in length, and generated via a CSPRNG."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does PBKDF2 differ from memory-hard functions like Argon2id or scrypt?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PBKDF2 is CPU-bound and requires virtually zero RAM, which means specialized hardware adversaries (ASICs and high-density GPUs) can parallelize cracking attempts with massive efficiency. In contrast, modern memory-hard functions like Argon2id and scrypt require designated blocks of RAM per computation, making hardware parallelization prohibitively expensive."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tool send my password or derived keys across the network?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All key derivation, salt generation, and encoding operations are executed purely client-side inside your browser's private V8/SpiderMonkey sandbox via the native W3C Web Cryptography API (crypto.subtle). Zero bytes leave your machine."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,105 +123,146 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 16px;
     }
     @media (max-width: 768px) {
@@ -133,32 +272,38 @@
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.05em;
     }
-    .form-group input, .form-group select {
+    /* Mobile-first: 16px input sizing prevents iOS Safari auto-zooming */
+    .form-group input, 
+    .form-group select {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
       border-radius: 4px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px;
       outline: none;
+      min-height: 44px;
+      transition: border-color 0.2s ease;
     }
-    .form-group input:focus, .form-group select:focus {
+    .form-group input:focus, 
+    .form-group select:focus {
       border-color: var(--atom-border-focus);
     }
 
     .inline-btn-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
     .inline-btn-group input {
       flex: 1;
@@ -167,9 +312,9 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-top: 10px;
+      margin-top: 14px;
     }
 
     .btn-atom {
@@ -178,30 +323,41 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
     /* Results Workspace */
-    .results-area { margin-top: 20px; }
+    .results-area { margin-top: 24px; }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 6px;
       margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -216,25 +372,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -243,127 +400,341 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 380px;
+      font-size: 0.84rem;
+      max-height: 440px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
       line-height: 1.6;
     }
 
-    /* Operational Disclaimer */
+    /* Operational Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2600px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / pbkdf2
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/crypto/">Cryptography</a>
+      <span class="sep">/</span>
+      <span class="current">PBKDF2 Playground</span>
     </nav>
 
     <div class="tool-header">
       <h1>PBKDF2 Key Derivation &amp; Password Hasher</h1>
-      <p>Derive high-entropy symmetric keys and compute password hashes using PBKDF2 (RFC 8018 / RFC 2898) with HMAC-SHA-256, HMAC-SHA-512, or HMAC-SHA-1 in local browser memory via the native W3C Web Cryptography API.</p>
+      <p>Derive high-entropy symmetric keys and compute password hashes using PBKDF2 (RFC 8018 / RFC 2898 / PKCS #5 v2.1) with HMAC-SHA-256, HMAC-SHA-512, HMAC-SHA-384, or HMAC-SHA-1 in local browser memory via the native W3C Web Cryptography API.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive PBKDF2 Key Derivation Terminal">
       <div class="form-grid">
         <div class="form-group">
           <label for="hashAlgo">HMAC Pseudo-Random Function (PRF)</label>
           <select id="hashAlgo">
-            <option value="SHA-256" selected>HMAC-SHA-256 (OWASP &amp; NIST Standard)</option>
-            <option value="SHA-512">HMAC-SHA-512 (High Resistance)</option>
+            <option value="SHA-256" selected>HMAC-SHA-256 (NIST &amp; OWASP Standard)</option>
+            <option value="SHA-512">HMAC-SHA-512 (High Resistance 64-bit)</option>
             <option value="SHA-384">HMAC-SHA-384</option>
             <option value="SHA-1">HMAC-SHA-1 (Legacy RFC 2898)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="keyLength">Derived Key Bit Length</label>
+          <label for="keyLength">Derived Key Bit Length (dkLen)</label>
           <select id="keyLength">
-            <option value="256" selected>256 bits (32 Bytes — AES-256 standard)</option>
-            <option value="128">128 bits (16 Bytes — AES-128 standard)</option>
-            <option value="512">512 bits (64 Bytes — HMAC / Master Secret)</option>
+            <option value="256" selected>256 bits (32 Bytes — AES-256 GCM Standard)</option>
+            <option value="128">128 bits (16 Bytes — AES-128 Standard)</option>
+            <option value="512">512 bits (64 Bytes — HMAC Master Secret)</option>
           </select>
         </div>
       </div>
@@ -377,40 +748,40 @@
         <div class="form-group">
           <label for="saltFormat">Salt Encoding Interpretation</label>
           <select id="saltFormat">
-            <option value="utf8" selected>UTF-8 Text String</option>
-            <option value="hex">Hexadecimal Bytes</option>
+            <option value="hex" selected>Hexadecimal Bytes (Raw CSPRNG)</option>
+            <option value="utf8">UTF-8 Plain Text String</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="passwordInput">Password / Master Secret Payload</label>
-        <input type="password" id="passwordInput" placeholder="Enter password or passphrase to derive key from..." spellcheck="false" autocomplete="off" />
+        <label for="passwordInput">Password / Passphrase Secret Payload</label>
+        <input type="password" id="passwordInput" placeholder="Enter master passphrase or secret string to stretch..." spellcheck="false" autocomplete="off" />
       </div>
 
       <div class="form-group">
-        <label for="saltInput">Salt Value</label>
+        <label for="saltInput">Cryptographic Salt</label>
         <div class="inline-btn-group">
-          <input type="text" id="saltInput" placeholder="Enter custom salt or click 'Generate Salt'..." spellcheck="false" autocomplete="off" />
-          <button class="btn-atom btn-secondary" id="btnGenSalt">Generate Salt</button>
+          <input type="text" id="saltInput" placeholder="Enter salt string or click 'Generate Salt'..." spellcheck="false" autocomplete="off" />
+          <button class="btn-atom btn-secondary" id="btnGenSalt" type="button">Generate Salt</button>
         </div>
       </div>
 
       <div class="btn-row">
-        <button class="btn-atom" id="btnCompute">Derive Key (Compute PBKDF2)</button>
-        <button class="btn-atom btn-secondary" id="btnCopy">Copy Output</button>
-        <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+        <button class="btn-atom" id="btnCompute" type="button">Derive Key (Compute PBKDF2)</button>
+        <button class="btn-atom btn-secondary" id="btnCopy" type="button">Copy Output</button>
+        <button class="btn-atom btn-secondary" id="btnClear" type="button">Clear Workspace</button>
       </div>
 
       <div class="results-area">
         <div id="statusBanner" class="status-banner status-safe">
-          <span>WebCrypto PBKDF2 engine ready</span>
+          <span>WebCrypto PBKDF2 Hardware Engine Ready</span>
           <span>Idle</span>
         </div>
 
         <div class="meta-grid">
           <div class="meta-item">
-            <div class="meta-label">Selected PRF</div>
+            <div class="meta-label">Selected PRF Engine</div>
             <div class="meta-val" id="metaPrf">HMAC-SHA-256</div>
           </div>
           <div class="meta-item">
@@ -418,7 +789,7 @@
             <div class="meta-val" id="metaIterations">600,000 passes</div>
           </div>
           <div class="meta-item">
-            <div class="meta-label">Derived Length</div>
+            <div class="meta-label">Target Key Length</div>
             <div class="meta-val" id="metaDerivedLen">32 Bytes (256 bits)</div>
           </div>
           <div class="meta-item">
@@ -427,102 +798,484 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Derived Key Payload (Hex &amp; Base64 Formats):</div>
-        <div class="viewer-box" id="rawViewer">Derived cryptographic material will appear here...</div>
+        <div class="meta-label" style="margin-bottom: 8px;">Derived Key Payload &amp; Diagnostic Audit:</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Awaiting inputs. Enter passphrase and click "Derive Key"...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Operational Disclaimer Card -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Cryptographic Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, lost passphrases, unrecoverable keys, or weak iteration parameter choices. PBKDF2 is computationally intensive by design to resist GPU-accelerated dictionary and rainbow table attacks; using insufficient iteration counts drastically compromises key entropy. For modern password storage architectures, memory-hard alternatives like Argon2id or scrypt provide superior resistance against ASIC and FPGA adversaries. All operations execute strictly client-side in local browser memory via the native Web Cryptography API without network egress.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Cryptographic Operational Limitations:</strong> PBKDF2 (RFC 8018 / RFC 2898) is a computationally intensive, CPU-bound key derivation function designed to slow down offline password cracking. However, because PBKDF2 requires virtually no memory ($O(1)$ space complexity), it remains susceptible to massive parallelization on dedicated Application-Specific Integrated Circuits (ASICs) and high-density GPU mining clusters. For modern password storage architectures, memory-hard algorithms such as Argon2id (RFC 9106) or scrypt (RFC 7914) provide vastly superior defense against hardware-accelerated adversaries. All operations on BitDark run exclusively in your browser's private memory space; no secret keys, passphrases, or cryptographic materials are ever transmitted over the network.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How PBKDF2 Operates</h2>
-      <p>Password-Based Key Derivation Function 2 (PBKDF2), standardized under RFC 8018 and RFC 2898, applies a pseudorandom function (PRF)—most commonly an HMAC variant—to a secret password along with a cryptographic salt across thousands of iterative cycles:</p>
+    <!-- Long-Form Authoritative SEO Documentation -->
+    <article class="article-container">
+      <h2>The Cryptographic Foundations of Password-Based Key Derivation</h2>
+      <p>
+        In modern software architecture, security engineers routinely face a fundamental thermodynamic mismatch: human beings excel at remembering low-entropy passphrases, whereas modern symmetric ciphers (such as AES-256-GCM or ChaCha20-Poly1305) demand uniformly distributed, mathematically unpredictable 256-bit binary keys. A typical user-selected password of 10 to 14 characters contains at most 30 to 45 bits of Shannon entropy. Passing such a password directly into a symmetric cipher or storing its direct cryptographic hash in an authentication database opens the door to total system compromise.
+      </p>
+      <p>
+        A widespread architectural blunder in early internet applications was computing a simple, fast cryptographic hash of the passphrase—such as <code>MD5(password)</code>, <code>SHA-1(password)</code>, or even unsalted <code>SHA-256(password)</code>. General-purpose cryptographic hash functions were intentionally engineered for high-bandwidth data integrity verification; a modern desktop workstation equipped with consumer graphics processing units (GPUs) can compute over 10 billion SHA-256 evaluations per second. Against such throughput, an 8-character alphanumeric passphrase can be completely exhausted across the entire keyspace in minutes via brute-force or dictionary attacks.
+      </p>
+      <p>
+        To neutralize this structural vulnerability, cryptographic standards bodies introduced <strong>Key Derivation Functions (KDFs)</strong>. Specifically, <strong>Password-Based Key Derivation Function 2 (PBKDF2)</strong>, first formalized by RSA Laboratories in Public-Key Cryptography Standards (PKCS) #5 v2.0 and subsequently standardized by the IETF in <strong>RFC 2898</strong> and <strong>RFC 8018</strong>, provides a mathematically rigorous mechanism to "stretch" weak passphrases into high-entropy cryptographic keys while imposing a tunable computational work factor on prospective adversaries.
+      </p>
+
+      <h2>Mathematical Anatomy of the PBKDF2 Algorithm</h2>
+      <p>
+        PBKDF2 operates by repeatedly applying a keyed <strong>Pseudorandom Function (PRF)</strong>—overwhelmingly an HMAC variant such as HMAC-SHA-256 or HMAC-SHA-512—to a passphrase and a cryptographic salt across an iteration count $c$.
+      </p>
+      
+      <h3>1. The Core Derivation Function</h3>
+      <p>
+        Formally, the derived key $DK$ of length $dkLen$ octets is defined by:
+      </p>
+      <pre><code>DK = PBKDF2(PRF, Password, Salt, c, dkLen)</code></pre>
+      <p>
+        Where:
+      </p>
       <ul>
-        <li><strong>Formula:</strong> $DK = \text{PBKDF2}(PRF, \text{Password}, \text{Salt}, c, dkLen)$ where $c$ is the iteration count and $dkLen$ is the target key length in octets.</li>
-        <li><strong>Salt Separation:</strong> Salts defeat precomputed dictionary attacks (rainbow tables) by guaranteeing that identical passwords produce completely distinct derived keys across systems.</li>
-        <li><strong>Cost Amplification:</strong> Each iteration feeds the previous block output back through the HMAC routine, increasing the computational threshold necessary for attackers attempting offline brute-force cracking.</li>
+        <li><code>PRF</code> is an underlying pseudorandom function of two arguments with an output length of $hLen$ octets (e.g., $hLen = 32$ bytes for HMAC-SHA-256).</li>
+        <li><code>Password</code> is the master secret passphrase string or byte array.</li>
+        <li><code>Salt</code> is a cryptographically secure random octet string (minimum 128 bits / 16 bytes recommended).</li>
+        <li><code>c</code> is a positive integer specifying the iteration work factor.</li>
+        <li><code>dkLen</code> is the intended octet length of the derived key.</li>
       </ul>
 
-      <h2>Recommended Iteration Guidelines</h2>
-      <p>OWASP recommends a minimum baseline of <strong>600,000 iterations</strong> for PBKDF2-HMAC-SHA-256 and <strong>210,000 iterations</strong> for PBKDF2-HMAC-SHA-512 as of standard defense baselines. When deriving symmetric keys inside client-side browser runtimes, iterations between 100,000 and 600,000 offer high security margins without freezing UI threads.</p>
+      <h3>2. Block Splitting and Expansion</h3>
+      <p>
+        Because the target key length $dkLen$ may exceed the native output size $hLen$ of the chosen PRF, PBKDF2 concatenates derived blocks $T_i$:
+      </p>
+      <pre><code>DK = T_1 || T_2 || ... || T_l<0..r-1></code></pre>
+      <p>
+        Here, $l = \lceil dkLen / hLen \rceil$ represents the total number of blocks necessary to satisfy the requested key length, and $r = dkLen - (l - 1) \times hLen$ is the number of octets in the final block. For instance, deriving a 256-bit (32-byte) key using HMAC-SHA-256 requires exactly $l = 1$ block ($32 / 32 = 1$). If one derives a 512-bit key using HMAC-SHA-256, $l = 2$ blocks must be computed sequentially, effectively doubling the required execution time.
+      </p>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Deriving master keys or hashing user credentials over remote servers introduces severe MITM and keylogging liabilities. BitDark executes the entire key derivation pipeline within your browser's isolated JavaScript sandbox via <code>crypto.subtle.deriveBits</code>. No passphrases, salts, or resulting bitstreams are ever transmitted over the network.</p>
+      <h3>3. The Iterative Block Function $F$</h3>
+      <p>
+        Each individual block $T_i$ is computed through the function $F$:
+      </p>
+      <pre><code>T_i = F(Password, Salt, c, i) = U_1 ^ U_2 ^ U_3 ^ ... ^ U_c</code></pre>
+      <p>
+        Where:
+      </p>
+      <pre><code>U_1 = PRF(Password, Salt || INT_32_BE(i))
+U_2 = PRF(Password, U_1)
+U_3 = PRF(Password, U_2)
+...
+U_c = PRF(Password, U_{c-1})</code></pre>
+      <p>
+        In this progression, <code>INT_32_BE(i)</code> represents the 4-octet big-endian integer encoding of the block index $i$. The initial step $U_1$ hashes the salt combined with the block index using the passphrase as the HMAC key. Each successive step $U_k$ feeds the previous HMAC output directly back through the HMAC engine as the message payload, while continuously reusing the passphrase as the key. Finally, all $c$ intermediate HMAC digests ($U_1$ through $U_c$) are combined via bitwise exclusive-OR (XOR, $\oplus$).
+      </p>
+
+      <pre><code>+-------------------------------------------------------------------------------+
+| PBKDF2 Iteration Mechanics for Block T_i                                      |
+|                                                                               |
+|   Salt || i  -----> [ HMAC(Password, ...) ] -----> U_1 -----------------+     |
+|                             |                                           |     |
+|                             v                                           v     |
+|                      [ HMAC(Password, ...) ] -----> U_2 -----------> ( XOR )  |
+|                             |                                           |     |
+|                             v                                           v     |
+|                      [ HMAC(Password, ...) ] -----> U_3 -----------> ( XOR )  |
+|                             |                                           |     |
+|                             :                                           :     |
+|                             v                                           v     |
+|                      [ HMAC(Password, ...) ] -----> U_c -----------> ( XOR )  |
+|                                                                         |     |
+|                                                                         v     |
+|                                                                Block Output T_i|
++-------------------------------------------------------------------------------+</code></pre>
+
+      <h2>How to Use the BitDark PBKDF2 Playground</h2>
+      <p>
+        This diagnostic terminal allows engineers, auditors, and developers to calibrate key derivation parameters, generate cryptographically isolated symmetric keys, and inspect hash outputs locally without cloud dependencies:
+      </p>
+      <ol>
+        <li>
+          <strong>Select the HMAC PRF:</strong> Choose between <code>HMAC-SHA-256</code> (the prevailing industry baseline), <code>HMAC-SHA-512</code> (optimized for 64-bit architectures), <code>HMAC-SHA-384</code>, or legacy <code>HMAC-SHA-1</code>.
+        </li>
+        <li>
+          <strong>Define the Derived Key Length:</strong> Choose 256 bits (32 bytes) for standard AES-256 encryption, 128 bits for legacy AES-128, or 512 bits for master secret splitting and HMAC keys.
+        </li>
+        <li>
+          <strong>Configure the Work Factor (Iterations):</strong> Enter the target iteration count $c$. The default value of <code>600,000</code> reflects current NIST and OWASP production guidelines for SHA-256.
+        </li>
+        <li>
+          <strong>Provide or Generate a Salt:</strong> Enter an existing salt or click <strong>Generate Salt</strong> to generate a 16-byte (128-bit) cryptographically secure pseudorandom salt using <code>window.crypto.getRandomValues</code>. Specify whether the salt should be parsed as raw Hexadecimal bytes or a UTF-8 text string.
+        </li>
+        <li>
+          <strong>Enter Password &amp; Compute:</strong> Type your target passphrase and click <strong>Derive Key (Compute PBKDF2)</strong>. The browser's native WebCrypto engine processes the derivation and displays formatted Hexadecimal, Base64, and execution latency metrics in milliseconds.
+        </li>
+      </ol>
+
+      <h2>Operational Scenarios: When and Where to Use PBKDF2</h2>
+      <p>
+        PBKDF2 is an established cryptographic primitive deployed across mission-critical systems worldwide:
+      </p>
+      <ul>
+        <li>
+          <strong>Symmetric Key Generation for Client-Side Vaults:</strong> Web-based password managers and zero-knowledge storage engines (such as Bitwarden or 1Password) use PBKDF2 to stretch the user's master password into a 256-bit encryption key. This derived key directly encrypts data payloads via AES-256-GCM before any data is synchronized to a remote server.
+        </li>
+        <li>
+          <strong>Disk and Archive Encryption:</strong> Encrypted disk formats (such as LUKS v1) and secure archive software (including standard ZIP AES-256 and 7-Zip) historically rely on PBKDF2-HMAC-SHA-1 or SHA-256 to convert archive passwords into header keys.
+        </li>
+        <li>
+          <strong>Wi-Fi Protected Access (WPA2-PSK):</strong> The 802.11i wireless security standard derives the 256-bit Pairwise Master Key (PMK) by executing <code>PBKDF2(HMAC-SHA-1, Passphrase, SSID, 4096, 256)</code>. The 4,096-iteration count, chosen in 2004, is considered dangerously low today, which is why WPA3 migrated toward SAE (Simultaneous Authentication of Equals).
+        </li>
+        <li>
+          <strong>Cryptographic Seed Stretching (BIP-39):</strong> Cryptocurrency hardware wallets and deterministic seed generators utilize PBKDF2 with HMAC-SHA-512 and 2,048 iterations over the 12-to-24-word mnemonic sentence to compute the 512-bit master binary seed.
+        </li>
+        <li>
+          <strong>Legacy Web Application Password Authentication:</strong> Django, ASP.NET Core, and various enterprise Java frameworks implement PBKDF2-HMAC-SHA-256 as their default password storage hasher.
+        </li>
+      </ul>
+
+      <h2>Work Factor Calibration &amp; NIST / OWASP Standards</h2>
+      <p>
+        The security of PBKDF2 depends entirely on the iteration count $c$. Because hardware computational capabilities continuously expand in adherence to Moore's Law and GPU parallelism, iteration counts must be adjusted upward periodically.
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Standards Body / Year</th>
+              <th>Recommended PRF</th>
+              <th>Minimum Iterations ($c$)</th>
+              <th>Estimated Latency (Modern CPU)</th>
+              <th>Primary Threat Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>RFC 2898 (Year 2000)</strong></td>
+              <td>HMAC-SHA-1</td>
+              <td>1,000</td>
+              <td>&lt; 1 ms</td>
+              <td>Pentium III single-core CPUs</td>
+            </tr>
+            <tr>
+              <td><strong>NIST SP 800-132 (2010)</strong></td>
+              <td>HMAC-SHA-1 / SHA-256</td>
+              <td>10,000</td>
+              <td>~ 2 ms</td>
+              <td>Early GPU password cracking</td>
+            </tr>
+            <tr>
+              <td><strong>OWASP Baseline (2021)</strong></td>
+              <td>HMAC-SHA-256</td>
+              <td>310,000</td>
+              <td>~ 50 ms</td>
+              <td>Nvidia GTX 1080 / RTX 2080 clusters</td>
+            </tr>
+            <tr>
+              <td><strong>OWASP &amp; NIST (Current 2026)</strong></td>
+              <td>HMAC-SHA-256</td>
+              <td><strong>600,000</strong></td>
+              <td>~ 80–120 ms</td>
+              <td>RTX 4090 / Cloud FPGA / Hashcat</td>
+            </tr>
+            <tr>
+              <td><strong>OWASP &amp; NIST (Current 2026)</strong></td>
+              <td>HMAC-SHA-512</td>
+              <td><strong>210,000</strong></td>
+              <td>~ 70–110 ms</td>
+              <td>64-bit optimized compute pipelines</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        When selecting an iteration count for web applications, engineers must balance defense against server Denial-of-Service (DoS). If an authentication endpoint processes 500 concurrent logins per second, requiring 600,000 iterations of SHA-256 on the backend server will saturate all available CPU cores. In such architectures, offloading the initial PBKDF2 stretching pass to the client browser via WebCrypto or implementing rate-limiting reverse proxies is required.
+      </p>
+
+      <h2>Cryptographic Comparison: PBKDF2 vs. Modern KDFs</h2>
+      <p>
+        While PBKDF2 remains an approved standard under NIST FIPS compliance frameworks, the broader cryptographic community recognizes that newer, memory-hard algorithms offer vastly superior protection against custom hardware adversaries.
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Standard / RFC</th>
+              <th>Hardness Type</th>
+              <th>ASIC / GPU Resistance</th>
+              <th>FIPS 140-3 Approved</th>
+              <th>Primary Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PBKDF2</strong></td>
+              <td>RFC 8018</td>
+              <td>CPU-Bound ($O(1)$ RAM)</td>
+              <td><strong>Low:</strong> Massive ASIC &amp; GPU parallelization</td>
+              <td>Yes</td>
+              <td>Enterprise compliance, key derivation, legacy systems</td>
+            </tr>
+            <tr>
+              <td><strong>Argon2id</strong></td>
+              <td>RFC 9106</td>
+              <td>Memory-Hard &amp; CPU-Hard</td>
+              <td><strong>Extreme:</strong> Prohibitive hardware cost per core</td>
+              <td>Pending / Case-by-Case</td>
+              <td>Modern server password hashing, zero-knowledge vaults</td>
+            </tr>
+            <tr>
+              <td><strong>scrypt</strong></td>
+              <td>RFC 7914</td>
+              <td>Memory-Hard &amp; CPU-Hard</td>
+              <td><strong>High:</strong> Sequential memory access</td>
+              <td>No</td>
+              <td>Cryptocurrency protocols, archive containers</td>
+            </tr>
+            <tr>
+              <td><strong>bcrypt</strong></td>
+              <td>OpenBSD Blowfish</td>
+              <td>Memory-Bound (4 KB Cache)</td>
+              <td><strong>Medium:</strong> Defeats early GPUs; vulnerable to FPGA</td>
+              <td>No</td>
+              <td>Traditional web application credential storage</td>
+            </tr>
+            <tr>
+              <td><strong>HKDF</strong></td>
+              <td>RFC 5869</td>
+              <td>Non-Iterative (Extract-and-Expand)</td>
+              <td><strong>None:</strong> Fast by design (Requires high-entropy input)</td>
+              <td>Yes</td>
+              <td>TLS 1.3, Noise protocol, session key derivation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The critical limitation of PBKDF2 is its <strong>zero memory overhead</strong>. An adversary building a custom ASIC or FPGA array can deploy thousands of compact HMAC cores on a single silicon die. Because each PBKDF2 instance requires negligible internal register space, the attacker's hardware cost scales linearly with compute. In contrast, <strong>Argon2id</strong> allocates tens of megabytes of RAM per hash evaluation, forcing the adversary to provide massive memory bandwidth that quickly renders large-scale parallel cracking economically unfeasible.
+      </p>
+
+      <h2>Step-by-Step Worked Derivation Example</h2>
+      <p>
+        To verify deterministic interoperability between BitDark and standard cryptographic test suites (such as RFC 6070 test vectors), consider the following reference parameter set:
+      </p>
+      <pre><code>PRF: HMAC-SHA-256
+Password: "BitDarkSecret2026!" (UTF-8 bytes)
+Salt: "73616c74797365637265743132333435" (Hexadecimal: 16 bytes)
+Iterations: 100,000
+Derived Key Length: 256 bits (32 bytes)</code></pre>
+      
+      <h3>Execution Trace:</h3>
+      <ol>
+        <li>
+          <strong>Key Import:</strong> The UTF-8 string <code>BitDarkSecret2026!</code> is converted into an 18-byte binary buffer. The Web Crypto API imports this raw buffer as a cryptographic key for the <code>PBKDF2</code> algorithm.
+        </li>
+        <li>
+          <strong>Salt Deserialization:</strong> The hex salt is decoded into 16 raw octets: <code>[0x73, 0x61, 0x6c, 0x74, 0x79, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x31, 0x32, 0x33, 0x34, 0x35]</code>.
+        </li>
+        <li>
+          <strong>Initial Block Computation ($U_1$):</strong> The salt is concatenated with the big-endian 32-bit integer <code>1</code> (<code>0x00, 0x00, 0x00, 0x01</code>). An HMAC-SHA-256 operation is executed using the imported key over these 20 bytes to generate the 32-byte intermediate hash $U_1$.
+        </li>
+        <li>
+          <strong>Chaining ($U_2$ through $U_{100000}$):</strong> The engine iteratively computes $U_2 = \text{HMAC}(K, U_1)$, $U_3 = \text{HMAC}(K, U_2)$, continuing through $U_{100000}$. In-flight XOR accumulation maintains running block state:
+          <br /><code>RunningBlock = U_1 ^ U_2 ^ ... ^ U_100000</code>.
+        </li>
+        <li>
+          <strong>Final Serialization:</strong> The resulting 32-byte buffer is formatted into standard Hexadecimal and RFC 4648 Base64 strings.
+        </li>
+      </ol>
+
+      <h2>Common Mistakes and Security Pitfalls in PBKDF2 Implementations</h2>
+      <p>
+        Cryptographic vulnerabilities rarely stem from mathematical flaws in the underlying PRF; they overwhelmingly result from flawed implementation decisions:
+      </p>
+      <ul>
+        <li>
+          <strong>Using Static or Hardcoded Salts:</strong> A salt must never be reused across credentials. If multiple users share the same salt, an attacker cracking a leaked database can compute a single PBKDF2 chain and test it against all users simultaneously, entirely defeating the purpose of the salt.
+        </li>
+        <li>
+          <strong>Insufficient Iteration Counts:</strong> Retaining outdated defaults (such as 1,000 or 10,000 iterations) offers virtually zero resistance against modern GPU rigs running Hashcat. Iteration counts must be reviewed and upgraded annually.
+        </li>
+        <li>
+          <strong>Character Encoding Ambiguity (UTF-8 vs. ISO-8859-1):</strong> A passphrase containing non-ASCII characters (e.g., umlauts, accents, or emojis) produces completely different binary representations under different encodings. Applications must strictly standardize on UTF-8 normalization (e.g., Unicode NFKC or NFC) before feeding passphrases into PBKDF2.
+        </li>
+        <li>
+          <strong>Truncating Passwords:</strong> Some legacy implementations (such as early crypt libraries) truncated passwords at 72 bytes. While PBKDF2 handles arbitrary password lengths gracefully, any pre-hashing step (such as hashing the password with SHA-256 before passing it to PBKDF2) must be designed carefully to avoid introducing fixed-length collisions.
+        </li>
+        <li>
+          <strong>Confusing HKDF with PBKDF2:</strong> HKDF (RFC 5869) is designed to extract and expand high-entropy input keying material (such as Diffie-Hellman shared secrets). It is not computationally iterative and must <strong>never</strong> be used directly on low-entropy human passwords.
+        </li>
+      </ul>
+
+      <!-- Interactive Accordion FAQs -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Why should I use HMAC-SHA-512 instead of HMAC-SHA-256 for PBKDF2?</div>
+          <div class="faq-answer">
+            HMAC-SHA-512 operates natively on 64-bit integer words and uses larger internal state registers (80 rounds vs 64 rounds in SHA-256). On modern 64-bit server CPUs, SHA-512 is often faster per byte than SHA-256, yet it imposes a significantly heavier execution burden on 32-bit GPU shader cores used by attackers, offering improved defensive asymmetry.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the minimum recommended salt length?</div>
+          <div class="faq-answer">
+            NIST SP 800-132 and RFC 8018 mandate a minimum salt length of 128 bits (16 bytes). Using a 16-byte cryptographically secure random salt provides $2^{128}$ possible salt combinations, rendering global rainbow tables mathematically impossible.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I use PBKDF2 to store user passwords in a relational database?</div>
+          <div class="faq-answer">
+            Yes, PBKDF2 is an accepted standard (e.g., in Django and ASP.NET Core). However, the resulting storage string must encode the algorithm identifier, iteration count, salt, and hash output (for example, <code>pbkdf2_sha256$600000$salt$hash</code>) so that iteration counts can be upgraded transparently as hardware evolves. For new greenfield projects, Argon2id is strongly preferred.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does high iteration count freeze the browser UI?</div>
+          <div class="faq-answer">
+            Computing millions of HMAC cycles is CPU-intensive. If executed on the main UI thread, JavaScript execution blocks DOM rendering until the WebCrypto promise resolves. While the native W3C WebCrypto API processes derivations in a separate browser background thread, setting iteration counts into the tens of millions can still cause noticeable latency.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Is HMAC-SHA-1 still safe to use with PBKDF2?</div>
+          <div class="faq-answer">
+            While collision attacks against raw SHA-1 are well-documented (e.g., the SHAttered attack), HMAC-SHA-1 does not rely on collision resistance; it relies on PRF pseudorandomness. Consequently, PBKDF2-HMAC-SHA-1 is not broken in the same way raw SHA-1 is. However, because NIST has deprecated SHA-1 across all federal systems, all modern deployments should use HMAC-SHA-256 or HMAC-SHA-512.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What does "Zero Network Egress" mean for this tool?</div>
+          <div class="faq-answer">
+            "Zero Network Egress" means that no data—not your passphrase, not your custom salt, not the generated symmetric key—is ever transmitted over an HTTP connection, WebSocket, or third-party tracking beacon. All derivation occurs in your local workstation's volatile RAM via <code>crypto.subtle.deriveBits</code>. You can disconnect your internet connection entirely and this tool will continue to function.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does PBKDF2 protect against rainbow table attacks?</div>
+          <div class="faq-answer">
+            Rainbow tables rely on precomputing hash values for millions of common passwords. Because PBKDF2 incorporates a unique, random salt for every user, an attacker would have to generate an entirely new multi-terabyte rainbow table for every individual user account, neutralizing the economic viability of precomputed lookups.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I decrypt data if I forget the PBKDF2 iteration count or salt?</div>
+          <div class="faq-answer">
+            No. The mathematical beauty and brutality of cryptographic key derivation is that changing even a single bit of the salt, or altering the iteration count by 1, produces a completely unrecognizable, uncorrelated output bitstream. Without the exact salt, iteration count, and passphrase, data encrypted with the derived key is permanently unrecoverable.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Cryptography &amp; Defensive Tooling</h3>
+        <div class="related-grid">
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-256-GCM Vault</div>
+            <div class="related-card-desc">Encrypt or decrypt arbitrary files locally using authenticated AES-GCM and PBKDF2 derived keys.</div>
+          </a>
+          <a href="/tools/crypto/argon2/" class="related-card">
+            <div class="related-card-title"><span>[⚡]</span> Bcrypt &amp; Argon2 Hasher</div>
+            <div class="related-card-desc">Compute memory-hard key derivation hashes via WebAssembly to evaluate ASIC-resistant algorithms.</div>
+          </a>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#️⃣]</span> Multi-Hash Checksum</div>
+            <div class="related-card-desc">Simultaneously compute MD5, SHA-1, SHA-256, and SHA-512 hashes in memory without network uploads.</div>
+          </a>
+          <a href="/tools/crypto/hmac/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> HMAC Generator &amp; Validator</div>
+            <div class="related-card-desc">Calculate keyed-hash message authentication codes using custom secret keys and SHA hash families.</div>
+          </a>
+          <a href="/tools/crypto/bip39/" class="related-card">
+            <div class="related-card-title"><span>[🌱]</span> BIP-39 Mnemonic Generator</div>
+            <div class="related-card-desc">Generate 12 and 24-word deterministic cryptographic seeds offline with entropy visualization.</div>
+          </a>
+          <a href="/tools/crypto/rsa-generator/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> RSA Key Pair Generator</div>
+            <div class="related-card-desc">Generate PKCS#8 2048/4096-bit public and private key pairs locally via the Web Cryptography API.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Cryptographic Helpers
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Cryptographic Helper Functions
     function bufToHex(buffer) {
       return Array.from(new Uint8Array(buffer))
         .map(b => b.toString(16).padStart(2, "0"))
@@ -531,7 +1284,7 @@
 
     function hexToBuf(hex) {
       const cleanHex = hex.replace(/[^0-9a-fA-F]/g, "");
-      if (cleanHex.length % 2 !== 0) throw new Error("Invalid hex string length.");
+      if (cleanHex.length % 2 !== 0) throw new Error("Invalid hexadecimal string length (odd byte count).");
       const bytes = new Uint8Array(cleanHex.length / 2);
       for (let i = 0; i < cleanHex.length; i += 2) {
         bytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
@@ -550,11 +1303,11 @@
 
     function generateRandomSalt(len = 16) {
       const arr = new Uint8Array(len);
-      crypto.getRandomValues(arr);
+      window.crypto.getRandomValues(arr);
       return bufToHex(arr);
     }
 
-    // UI Bindings
+    // 4. UI Bindings & PBKDF2 Calculation Engine
     const hashAlgoSelect = document.getElementById("hashAlgo");
     const keyLengthSelect = document.getElementById("keyLength");
     const iterationsInput = document.getElementById("iterations");
@@ -592,20 +1345,21 @@
     btnClear.addEventListener("click", () => {
       passwordInput.value = "";
       saltInput.value = "";
-      rawViewer.textContent = "Workspace cleared.";
+      rawViewer.textContent = "Workspace cleared. Ready for new input.";
       statusBanner.className = "status-banner status-safe";
       statusBanner.innerHTML = "<span>Workspace Cleared</span> <span>Ready</span>";
     });
 
     btnCopy.addEventListener("click", async () => {
-      if (!rawViewer.textContent || rawViewer.textContent.startsWith("Workspace cleared") || rawViewer.textContent.startsWith("Derived cryptographic material")) return;
+      const text = rawViewer.textContent;
+      if (!text || text.startsWith("Workspace cleared") || text.startsWith("Awaiting inputs")) return;
       try {
-        await navigator.clipboard.writeText(rawViewer.textContent);
+        await navigator.clipboard.writeText(text);
         const originalText = btnCopy.textContent;
         btnCopy.textContent = "Copied!";
         setTimeout(() => { btnCopy.textContent = originalText; }, 1500);
       } catch {
-        alert("Clipboard copy failed. Please select text manually.");
+        alert("Clipboard copy failed. Please select and copy text manually.");
       }
     });
 
@@ -654,7 +1408,7 @@
 
         // 2. Import Password into WebCrypto Key Material
         const passwordBuffer = new TextEncoder().encode(password);
-        const baseKey = await crypto.subtle.importKey(
+        const baseKey = await window.crypto.subtle.importKey(
           "raw",
           passwordBuffer,
           { name: "PBKDF2" },
@@ -663,7 +1417,7 @@
         );
 
         // 3. Derive Bits via PBKDF2
-        const derivedBits = await crypto.subtle.deriveBits(
+        const derivedBits = await window.crypto.subtle.deriveBits(
           {
             name: "PBKDF2",
             salt: saltBuffer,
@@ -683,7 +1437,7 @@
 
         const report = {
           function: "PBKDF2 (Password-Based Key Derivation Function 2)",
-          standard: "RFC 8018 / RFC 2898 / PKCS #5 v2.1",
+          specification: "RFC 8018 / RFC 2898 / PKCS #5 v2.1",
           parameters: {
             prf: `HMAC-${hashAlgo}`,
             iterations: iterations,
@@ -697,7 +1451,8 @@
             base64: derivedBase64
           },
           benchmarks: {
-            execution_time_ms: `${elapsed} ms`
+            execution_time_ms: `${elapsed} ms`,
+            hardware_engine: "W3C Web Cryptography API (crypto.subtle)"
           },
           timestamp: new Date().toISOString()
         };
@@ -713,6 +1468,8 @@
 
     // Default initialization
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       saltInput.value = generateRandomSalt(16);
       saltFormatSelect.value = "hex";
       updateMetadata();
