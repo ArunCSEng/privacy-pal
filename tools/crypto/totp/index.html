@@ -6,10 +6,116 @@
   
   <title>TOTP &amp; HOTP Authenticator Token Generator — Free Offline 2FA Tool | BitDark</title>
   <meta name="title" content="TOTP &amp; HOTP Authenticator Token Generator — Free Offline 2FA Tool | BitDark" />
-  <meta name="description" content="Generate and verify RFC 6238 TOTP and RFC 4226 HOTP two-factor authentication codes locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="totp generator, hotp generator, 2fa token generator, rfc 6238 authenticator, offline 2fa tool, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/crypto/totp" />
+  <meta name="description" content="Generate and verify RFC 6238 TOTP and RFC 4226 HOTP two-factor authentication codes locally in browser memory. Decode Base32 seeds and otpauth:// URIs with zero network egress." />
+  <meta name="keywords" content="totp generator, hotp generator, 2fa token generator, rfc 6238 authenticator, rfc 4226 hotp, offline 2fa tool, base32 secret decoder, otpauth uri parser, google authenticator backup, client-side two factor authentication, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/crypto/totp/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/crypto/totp/" />
+  <meta property="og:title" content="TOTP &amp; HOTP Authenticator Token Generator — Offline 2FA Tool | BitDark" />
+  <meta property="og:description" content="Generate, test, and inspect RFC 6238 TOTP and RFC 4226 HOTP one-time passwords in volatile browser RAM. Zero tracking, zero logging, 100% offline-ready." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/crypto/totp/" />
+  <meta name="twitter:title" content="TOTP &amp; HOTP Authenticator Token Generator | BitDark" />
+  <meta name="twitter:description" content="Inspect and calculate TOTP/HOTP two-factor authentication tokens client-side. Zero telemetry or network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "TOTP & HOTP Authenticator Token Generator",
+        "url": "https://bitdark.net/tools/crypto/totp/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive cybersecurity tool to generate, verify, and inspect RFC 6238 Time-Based and RFC 4226 HMAC-Based One-Time Passwords directly in browser memory without sending shared secrets over the network."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Cryptographic Foundations of Time-Based One-Time Passwords (TOTP) and Dynamic Truncation",
+        "url": "https://bitdark.net/tools/crypto/totp/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-03-20",
+        "dateModified": "2026-11-02",
+        "description": "Comprehensive engineering guide on RFC 6238 TOTP, RFC 4226 HOTP, Base32 RFC 4648 serialization, HMAC-SHA digest generation, dynamic byte truncation, and zero-trust authentication."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the primary architectural difference between HOTP and TOTP?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "HOTP (RFC 4226) is an HMAC-based one-time password system driven by a persistent sequential counter incremented with each login attempt. TOTP (RFC 6238) extends HOTP by deriving the moving counter dynamically from the current Unix epoch time divided by a fixed time step window (typically 30 seconds), removing the need for client-server state synchronization of counter integers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is Base32 encoding standard for TOTP shared secrets instead of Base64 or Hexadecimal?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Base32 (RFC 4648) utilizes an alphabet consisting exclusively of uppercase letters A-Z and digits 2-7. It deliberately omits easily confused visual glyphs (such as 0 and O, or 1, l, and I) and excludes punctuation characters like +, /, and =, making secrets significantly easier and less error-prone for humans to manually transcribe from paper backup cards."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my TOTP secret keys or generated codes sent to BitDark servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress model. All Base32 parsing, HMAC calculation, and dynamic truncation operations occur purely inside local browser memory via the native W3C Web Cryptography API (crypto.subtle). Disconnecting from the internet will not interrupt tool functionality."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Dynamic Truncation algorithm convert an HMAC digest into a 6-digit code?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Dynamic truncation takes the lower 4 bits of the HMAC digest's final byte as an offset index (0 to 15). It then extracts a 4-byte chunk starting at that index, strips the most significant bit using a 0x7FFFFFFF bitwise mask to prevent signed integer overflow, and applies a modulo 10^digits operation to produce the final numerical token."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do TOTP authenticators predominantly use SHA-1 instead of SHA-256?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Google Authenticator originally implemented RFC 6238 using HMAC-SHA-1 as its baseline standard. While collision attacks exist against raw SHA-1 hashing, HMAC-SHA-1 remains cryptographically robust against preimage and forgery attacks because HMAC is a pseudo-random function (PRF) where collisions do not undermine token predictability."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What causes valid TOTP codes to be rejected by authentication servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The most frequent cause is system clock drift between the client device and the server. Because TOTP quantizes time into strict 30-second windows, an unsynchronized system clock drifting even 15 to 30 seconds off true UTC will calculate codes corresponding to preceding or subsequent time epochs."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,8 +131,9 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,108 +141,152 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (No IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
     /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
-    
-    .breadcrumb {
-      font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
-      color: var(--atom-muted);
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
     
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      margin-bottom: 24px;
+      color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 450px;
     }
 
     .tabs {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 24px;
       border-bottom: 1px solid var(--atom-border);
-      padding-bottom: 10px;
+      padding-bottom: 12px;
+      flex-wrap: wrap;
     }
     .tab-btn {
       background: transparent;
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
       font-family: var(--font-code);
-      font-size: 0.84rem;
-      padding: 6px 16px;
+      font-size: 0.88rem;
+      padding: 10px 20px;
       border-radius: 4px;
       cursor: pointer;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s;
     }
     .tab-btn.active {
@@ -147,32 +298,36 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.05em;
     }
+    /* 16px font size to prevent iOS Safari auto-zooming */
     .form-group input, .form-group select {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
       border-radius: 4px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px;
       outline: none;
+      min-height: 44px;
+      transition: border-color 0.2s;
     }
     .form-group input:focus, .form-group select:focus {
       border-color: var(--atom-border-focus);
@@ -180,7 +335,7 @@
 
     .inline-btn-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
     .inline-btn-group input {
       flex: 1;
@@ -189,9 +344,9 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-top: 10px;
+      margin-top: 18px;
     }
 
     .btn-atom {
@@ -200,16 +355,24 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Token Visualizer Box */
@@ -220,29 +383,33 @@
       justify-content: center;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px 20px;
-      margin-top: 20px;
+      border-radius: 8px;
+      padding: 32px 20px;
+      margin-top: 24px;
       text-align: center;
     }
     .token-value {
       font-family: var(--font-code);
-      font-size: 3rem;
+      font-size: 3.4rem;
       font-weight: 700;
-      letter-spacing: 6px;
+      letter-spacing: 8px;
       color: var(--atom-green);
       user-select: all;
       cursor: pointer;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      transition: transform 0.15s ease;
+    }
+    .token-value:hover {
+      transform: scale(1.03);
     }
     .token-timer-bar {
       width: 100%;
-      max-width: 320px;
-      height: 6px;
+      max-width: 360px;
+      height: 8px;
       background: var(--atom-border);
-      border-radius: 3px;
+      border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .token-timer-progress {
       height: 100%;
@@ -252,22 +419,25 @@
     }
     .token-timer-label {
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.84rem;
       color: var(--atom-muted);
     }
 
     /* Results Workspace */
-    .results-area { margin-top: 24px; }
+    .results-area { margin-top: 28px; }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -282,25 +452,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -309,117 +480,333 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 380px;
+      font-size: 0.84rem;
+      max-height: 440px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
       line-height: 1.6;
     }
 
-    /* Operational Disclaimer */
+    /* Operational Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative Technical Article */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .token-value { font-size: 2.6rem; letter-spacing: 4px; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .inline-btn-group { flex-direction: column; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Telemetry Removed) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#crypto">Cryptography</a> / totp
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/crypto/">Cryptography</a>
+      <span class="sep">/</span>
+      <span class="current">TOTP &amp; HOTP Authenticator</span>
     </nav>
 
     <div class="tool-header">
       <h1>TOTP &amp; HOTP Authenticator Token Generator</h1>
-      <p>Generate, verify, and inspect RFC 6238 Time-Based and RFC 4226 HMAC-Based One-Time Passwords directly inside browser memory without sending secrets over the network.</p>
+      <p>Generate, verify, and inspect RFC 6238 Time-Based and RFC 4226 HMAC-Based One-Time Passwords directly inside browser memory without sending secrets over the network. Decode Base32 seeds, parse <code>otpauth://</code> URIs, and analyze dynamic truncation assertions locally.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Two-Factor Authentication Terminal">
       <div class="tabs">
         <button class="tab-btn active" id="tabTotp" onclick="switchMode('totp')">Time-Based OTP (TOTP)</button>
         <button class="tab-btn" id="tabHotp" onclick="switchMode('hotp')">HMAC Counter-Based OTP (HOTP)</button>
       </div>
 
       <div class="form-group">
-        <label for="secretKey">Base32 Secret Key (or otpauth:// URI)</label>
+        <label for="secretKey">Base32 Shared Secret Key (or paste otpauth:// URI)</label>
         <div class="inline-btn-group">
           <input type="text" id="secretKey" placeholder="e.g. JBSWY3DPEHPK3PXP or paste otpauth://..." spellcheck="false" autocomplete="off" />
           <button class="btn-atom btn-secondary" id="btnGenSecret">Random Key</button>
@@ -450,7 +837,7 @@
         </div>
 
         <div class="form-group" id="groupCounter" style="display: none;">
-          <label for="counterVal">HOTP Counter Value</label>
+          <label for="counterVal">HOTP Counter Value (C)</label>
           <div class="inline-btn-group">
             <input type="number" id="counterVal" value="0" min="0" />
             <button class="btn-atom btn-secondary" id="btnIncCounter">+1</button>
@@ -459,7 +846,7 @@
       </div>
 
       <div class="token-display-container">
-        <div class="token-value" id="tokenDisplay">------</div>
+        <div class="token-value" id="tokenDisplay" title="Click to copy token">------</div>
         <div class="token-timer-bar" id="timerBar">
           <div class="token-timer-progress" id="timerProgress"></div>
         </div>
@@ -468,7 +855,7 @@
 
       <div class="btn-row">
         <button class="btn-atom" id="btnCopyToken">Copy Code</button>
-        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
       </div>
 
       <div class="results-area">
@@ -496,104 +883,581 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Dynamic Dynamic Truncation &amp; Assertion Package:</div>
-        <div class="viewer-box" id="rawViewer">Parameters and HMAC assertion payloads will appear here...</div>
+        <div class="meta-label" style="margin-bottom: 8px;">Dynamic Truncation &amp; Assertion Package:</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Parameters and HMAC assertion payloads will appear here...</div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Legal Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Cryptographic Boundaries &amp; Operational Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, desynchronized clock drift, authentication lockouts, compromised 2FA shared secrets, or replay attacks. Ensure your system clock is accurately synchronized via Network Time Protocol (NTP) to maintain valid TOTP token calculation. Never expose raw Base32 shared seeds over unsecured communication channels. All cryptographic operations run strictly within your local browser memory via the W3C Web Cryptography API.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Operational Boundaries:</strong> Never expose raw Base32 shared seeds over unsecured communication channels or shared desktop screens. Ensure your client system clock is accurately synchronized via Network Time Protocol (NTP) to maintain valid TOTP token calculation. Desynchronized local system time remains the primary cause of token validation failures. All cryptographic operations run strictly within your local browser memory via the W3C Web Cryptography API (<code>crypto.subtle</code>). BitDark transmits zero bytes over the network.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How One-Time Password Algorithms Operate</h2>
-      <p>Two-factor authentication tokens generated by apps like Google Authenticator, Bitwarden, or hardware security keys rely on open RFC standards:</p>
-      <ul>
-        <li><strong>HOTP (RFC 4226):</strong> An HMAC-based One-Time Password derived from a shared secret $K$ and an incrementing 64-bit integer counter $C$:</li>
-      </ul>
-      <p>$$\text{HOTP}(K, C) = \text{Truncate}(\text{HMAC-SHA-1}(K, C)) \pmod{10^{\text{digits}}}$$</p>
-      <ul>
-        <li><strong>TOTP (RFC 6238):</strong> A time-based extension where the moving counter $C$ is computed dynamically from Unix epoch time $T$ divided by a time step window $X$ (standard 30 seconds):</li>
-      </ul>
-      <p>$$C = \left\lfloor \frac{T - T_0}{X} \right\rfloor$$</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Imperative of Time-Based One-Time Passwords in Modern Cybersecurity</h2>
+      <p>
+        The security paradigm of static passwords has collapsed under the weight of automated credential-stuffing engines, pervasive corporate data breaches, and sophisticated adversary-in-the-middle (AiTM) phishing kits. According to contemporary cybersecurity telemetry, over 80% of data breaches originate from stolen, weak, or re-used credentials. When an adversary acquires a static password through database exfiltration or credential spraying, traditional single-factor authentication systems offer zero resistance.
+      </p>
+      <p>
+        To establish defensive resilience, contemporary identity architecture enforces multi-factor authentication (MFA). Among the standardized non-hardware factors, symmetric one-time password schemes—specifically <strong>RFC 4226 (HOTP)</strong> and <strong>RFC 6238 (TOTP)</strong>—represent the global foundation of zero-trust verification. By combining something the user knows (a primary password) with something the user possesses (a dynamic cryptographic state derived from a shared secret), one-time passwords render exfiltrated static passwords useless after a maximum window of 30 to 60 seconds.
+      </p>
+      <p>
+        Unlike SMS-based two-factor authentication, which remains notoriously susceptible to SS7 cellular signaling interception, SIM-swapping attacks, and carrier-level eavesdropping, TOTP executes entirely locally on the client device. It requires zero cellular reception, zero internet connectivity, and no transmission of the authentication code across telecommunication networks. The authenticator and the validating server compute identical cryptographic outputs independently, bridged solely by the universal flow of Unix epoch time.
+      </p>
 
-      <h2>Dynamic Truncation Scheme</h2>
-      <p>The output of the HMAC digest (20 bytes for SHA-1, 32 for SHA-256) is truncated using the lower 4 bits of the last byte as an offset index (ranging from 0 to 15). A 31-bit unsigned big-endian integer is extracted from the 4 bytes starting at that offset, masked with <code>0x7FFFFFFF</code>, and modulo reduced to produce the final 6 or 8-digit token string.</p>
+      <h2>How to Use the BitDark Offline TOTP &amp; HOTP Authenticator</h2>
+      <p>
+        The BitDark authenticator tool provides a forensic-grade, client-side testing environment designed for security engineers, system administrators, and privacy analysts. Follow these operational procedures to calculate, verify, or inspect your tokens:
+      </p>
+      <ol>
+        <li>
+          <strong>Input Your Shared Secret Seed:</strong> Paste a standard Base32 encoded secret key (e.g., <code>JBSWY3DPEHPK3PXP</code>) into the input field. Alternatively, paste a complete <code>otpauth://</code> URI exported from an authenticator app. The parser automatically extracts the secret, algorithm, period, and counter settings.
+        </li>
+        <li>
+          <strong>Select Protocol Mode:</strong> Choose between <strong>Time-Based OTP (TOTP)</strong> for dynamic 30-second rotating codes, or <strong>HMAC Counter-Based OTP (HOTP)</strong> for sequential incrementing codes.
+        </li>
+        <li>
+          <strong>Configure Cryptographic Parameters:</strong> Adjust the HMAC hash function (SHA-1, SHA-256, or SHA-512) and specify your desired output length (6 digits or 8 digits). For TOTP, verify the time step window (defaulting to 30 seconds). For HOTP, enter or increment the 64-bit integer counter.
+        </li>
+        <li>
+          <strong>Inspect Assertion Payloads:</strong> Observe the real-time token display. Clicking the numerical token automatically copies it to your clipboard. The bottom diagnostic viewer provides full transparency into the raw HMAC digest, dynamic truncation offset, and intermediate 31-bit masked binary integer.
+        </li>
+        <li>
+          <strong>Clear Sensitive Artifacts:</strong> When your validation session concludes, click "Clear Workspace" to immediately flush all cryptographic buffers and secret strings from browser RAM.
+        </li>
+      </ol>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Secrets evaluated in this tool remain isolated in client memory. All HMAC calculations utilize the Web Cryptography API (<code>crypto.subtle</code>), preventing unauthorized data extraction, logs, or analytics.</p>
+      <h2>When to Use This Tool: Tactical &amp; Operational Scenarios</h2>
+      <p>
+        An air-gapped, client-side authenticator utility serves essential functions across IT operations and threat analysis:
+      </p>
+      <ul>
+        <li>
+          <strong>Emergency Disaster Recovery:</strong> When an administrator or engineer loses access to their mobile hardware device containing Google Authenticator or Microsoft Authenticator, they can input their securely archived paper emergency Base32 seed into an air-gapped, offline browser instance to generate emergency access tokens.
+        </li>
+        <li>
+          <strong>Multi-Factor Authentication API Development &amp; Auditing:</strong> Backend developers building custom OAuth2, SAML, or IAM login endpoints can debug their server-side TOTP validation pipelines by cross-referencing server-generated codes against BitDark's transparent byte-level dynamic truncation outputs.
+        </li>
+        <li>
+          <strong>Hardware Token Calibration &amp; Verification:</strong> Enterprise security teams issuing programmable hardware tokens (e.g., YubiKey OATH slots, SafeNet eTokens, Feitian cards) can verify whether custom time-step intervals (such as 60-second periods) or HMAC-SHA-256 profiles generate expected codes prior to physical deployment.
+        </li>
+        <li>
+          <strong>Forensic Drift Diagnostics:</strong> When users report repeated 2FA authentication failures, help desk analysts can calculate codes for historical or future time-steps to diagnose whether the issue stems from local device clock skew or seed corruption.
+        </li>
+        <li>
+          <strong>Automated Testing &amp; Synthetic User Flows:</strong> Quality assurance engineers validating staging environments can generate predictable OTPs in sandbox environments without routing secrets through third-party proprietary mobile apps.
+        </li>
+      </ul>
+
+      <h2>Mathematical Architecture: RFC 4226 (HOTP) vs. RFC 6238 (TOTP)</h2>
+      <p>
+        Both standards rely on symmetric Keyed-Hashing for Message Authentication (HMAC), standardized under <strong>RFC 2104</strong>. To fully understand their operation, we must dissect their underlying mathematical formulas:
+      </p>
+
+      <h3>1. The HMAC-Based Foundation: RFC 4226 (HOTP)</h3>
+      <p>
+        The HMAC-Based One-Time Password algorithm derives an ephemeral numerical passcode from two inputs: an arbitrary-length shared secret key $K$, and an 8-byte (64-bit) moving counter integer $C$. Mathematically, it is defined as:
+      </p>
+      <pre><code>HOTP(K, C) = Truncate(HMAC-SHA-1(K, C)) mod 10^Digits</code></pre>
+      <p>
+        In HOTP, the counter $C$ must be stored persistently on both the client (authenticator) and the authentication server. Each time the user requests a login code, the client increments $C$. When the server validates the code, it compares the received token against its own calculation using its internal counter value. If a user presses the generation button several times without logging in, the client counter drifts ahead of the server counter, necessitating a "look-ahead window" on the server (typically 5 to 10 increments) to re-synchronize.
+      </p>
+
+      <h3>2. The Temporal Evolution: RFC 6238 (TOTP)</h3>
+      <p>
+        TOTP eliminates the architectural friction of stateful counter tracking by defining the counter $C$ as a function of continuous physical time. The moving counter $C$ is computed from the current Unix epoch time $T$ (the number of seconds elapsed since January 1, 1970, 00:00:00 UTC):
+      </p>
+      <pre><code>C = floor((T - T0) / X)</code></pre>
+      <p>
+        Where:
+      </p>
+      <ul>
+        <li><strong>$T$:</strong> Current Unix epoch timestamp in seconds.</li>
+        <li><strong>$T_0$:</strong> The epoch reference anchor, standardly defined as 0 (Unix epoch start).</li>
+        <li><strong>$X$:</strong> The time step interval in seconds, standardly configured to 30 seconds (though RFC 6238 accommodates any arbitrary duration, such as 60 seconds).</li>
+      </ul>
+      <p>
+        Because time moves forward identically across both the client and the server, neither party needs to transmit counter state updates over the network.
+      </p>
+
+      <h2>Deep Dive: The RFC 4226 Dynamic Truncation Scheme</h2>
+      <p>
+        The cryptographic heart of both HOTP and TOTP is the <strong>Dynamic Truncation Algorithm</strong>. An HMAC calculation produces a fixed-size binary digest: 20 bytes (160 bits) for SHA-1, 32 bytes for SHA-256, or 64 bytes for SHA-512. A user cannot realistically memorize or transcribe a 20-byte cryptographic hash within a 30-second window. The Dynamic Truncation scheme deterministically extracts a compact, human-readable integer from this raw byte stream.
+      </p>
+
+      <pre><code>+--------------------------------------------------------------------------+
+| HMAC-SHA-1 Digest (20 Bytes / 160 Bits)                                  |
+| Byte: 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19         |
+| Val : 1f 8a 3b 5c 9e 02 7a d4 61 f2 e8 09 4b c3 a1 82 d0 5f e2 7b         |
++--------------------------------------------------------------------------+
+                                                              |
+                                                    Last Byte: 0x7b
+                                            Offset = 0x7b &amp; 0x0F = 11 (0x0B)
+                                                              |
+                                                              v
+                 Extract 4 Bytes starting at Offset 11 (Bytes 11, 12, 13, 14):
+                 [0x09, 0x4b, 0xc3, 0xa1]
+                                                              |
+                                                              v
+                 Apply 31-Bit Bitwise Mask (&amp; 0x7FFFFFFF):
+                 (0x09 &amp; 0x7F) &lt;&lt; 24 | (0x4b &lt;&lt; 16) | (0xc3 &lt;&lt; 8) | (0xa1)
+                 Masked Binary Integer = 155,959,201
+                                                              |
+                                                              v
+                 Modulo Reduction (10^6 for 6 digits):
+                 155,959,201 mod 1,000,000 = 959,201
+                 Final 6-Digit TOTP Token = "959201"</code></pre>
+
+      <h3>Step-by-Step Breakdown of Dynamic Truncation</h3>
+      <ol>
+        <li>
+          <strong>Offset Extraction:</strong> Take the very last byte of the HMAC output (index 19 in SHA-1). Extract its lower 4 bits using a bitwise AND mask: <code>offset = HMAC[19] &amp; 0x0F</code>. This produces an integer value strictly between 0 and 15 (inclusive).
+        </li>
+        <li>
+          <strong>4-Byte Extraction:</strong> Read 4 contiguous bytes from the digest beginning at the extracted <code>offset</code> index: <code>HMAC[offset]</code>, <code>HMAC[offset+1]</code>, <code>HMAC[offset+2]</code>, and <code>HMAC[offset+3]</code>. Because the maximum offset is 15, the highest byte accessed is $15 + 3 = 18$, ensuring the operation never reads beyond the 20-byte SHA-1 boundary.
+        </li>
+        <li>
+          <strong>Big-Endian Assembly &amp; Sign-Bit Masking:</strong> Concatenate the four bytes into a 32-bit unsigned integer. To prevent signed integer overflow issues in programming languages lacking unsigned primitives, mask the most significant bit (MSB) using <code>0x7FFFFFFF</code>. This guarantees a positive 31-bit integer.
+        </li>
+        <li>
+          <strong>Modulo Reduction:</strong> Compute the remainder of the 31-bit integer divided by $10^{\text{digits}}$ (typically $10^6 = 1,000,000$ for a 6-digit code, or $10^8 = 100,000,000$ for an 8-digit code).
+        </li>
+        <li>
+          <strong>Zero-Padding:</strong> Format the resulting integer as a string, prepending leading zeros if the integer has fewer digits than required (e.g., an integer value of 425 becomes <code>"000425"</code>).
+        </li>
+      </ol>
+
+      <h2>The Base32 Secret Encoding Standard (RFC 4648) &amp; URI Grammar</h2>
+      <p>
+        When you scan a two-factor authentication QR code, your camera is not reading an image of a key; it is parsing a standardized Uniform Resource Identifier (URI) defined by the Google Authenticator project: the <code>otpauth://</code> URI scheme.
+      </p>
+
+      <h3>Why Base32 Instead of Base64 or Hex?</h3>
+      <p>
+        In high-security environments, shared secret keys must frequently be written down on paper backup cards or manually typed into air-gapped terminals. <strong>Base64</strong> uses mixed-case letters (A-Z, a-z), digits (0-9), and symbols (<code>+</code> and <code>/</code>). This introduces catastrophic human transcription errors: lowercase "l" is indistinguishable from uppercase "I" or the digit "1", and uppercase "O" is indistinguishable from the digit "0".
+      </p>
+      <p>
+        To eliminate this ambiguity, <strong>Base32 (RFC 4648)</strong> restricts its alphabet strictly to:
+      </p>
+      <pre><code>ABCDEFGHIJKLMNOPQRSTUVWXYZ234567</code></pre>
+      <p>
+        It completely omits the digits 0, 1, 8, and 9, and ignores letter casing entirely. Every Base32 character encodes exactly 5 bits of data ($2^5 = 32$). Consequently, a standard 160-bit (20-byte) cryptographic seed translates into exactly 32 Base32 characters:
+      </p>
+      <pre><code>20 Bytes * 8 Bits = 160 Bits
+160 Bits / 5 Bits-per-Char = 32 Base32 Characters</code></pre>
+
+      <h3>Anatomy of the otpauth:// URI Scheme</h3>
+      <p>
+        The <code>otpauth://</code> URI format standardizes the configuration parameters required by authenticators:
+      </p>
+      <pre><code>otpauth://totp/AcmeCorp:alice@example.com?secret=JBSWY3DPEHPK3PXP&amp;issuer=AcmeCorp&amp;algorithm=SHA1&amp;digits=6&amp;period=30</code></pre>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>URI Parameter</th>
+              <th>RFC Default</th>
+              <th>Supported Options</th>
+              <th>Functional Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>type</code> (Path)</td>
+              <td><code>totp</code></td>
+              <td><code>totp</code>, <code>hotp</code></td>
+              <td>Specifies whether the moving counter is time-derived or sequentially incremented.</td>
+            </tr>
+            <tr>
+              <td><code>label</code> (Path)</td>
+              <td>N/A</td>
+              <td><code>Issuer:Account</code></td>
+              <td>Human-readable account identifier displayed within the authenticator application UI.</td>
+            </tr>
+            <tr>
+              <td><code>secret</code></td>
+              <td>Required</td>
+              <td>Base32 String</td>
+              <td>The raw symmetric shared seed key without whitespace or hyphens.</td>
+            </tr>
+            <tr>
+              <td><code>issuer</code></td>
+              <td>Optional</td>
+              <td>String</td>
+              <td>Formal enterprise or organization name providing the service.</td>
+            </tr>
+            <tr>
+              <td><code>algorithm</code></td>
+              <td><code>SHA1</code></td>
+              <td><code>SHA1</code>, <code>SHA256</code>, <code>SHA512</code></td>
+              <td>Cryptographic hash primitive utilized inside the HMAC constructor.</td>
+            </tr>
+            <tr>
+              <td><code>digits</code></td>
+              <td><code>6</code></td>
+              <td><code>6</code>, <code>8</code></td>
+              <td>Length of the final numerical passcode presented to the user.</td>
+            </tr>
+            <tr>
+              <td><code>period</code></td>
+              <td><code>30</code></td>
+              <td>Integer (seconds)</td>
+              <td>Duration of the valid time-step window (TOTP only).</td>
+            </tr>
+            <tr>
+              <td><code>counter</code></td>
+              <td><code>0</code></td>
+              <td>Integer</td>
+              <td>Initial moving counter sequence number (HOTP only; required if type is hotp).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Exhaustive Worked Example: Calculating a TOTP Code by Hand</h2>
+      <p>
+        To demystify the internal cryptographic mechanics, let us execute a complete manual verification trace using standardized test vectors:
+      </p>
+      <ul>
+        <li><strong>Shared Secret Key:</strong> <code>JBSWY3DPEHPK3PXP</code> (Standard ASCII text string: <code>"Hello!\xde\xad\xbe\xef"</code>)</li>
+        <li><strong>Hash Algorithm:</strong> HMAC-SHA-1</li>
+        <li><strong>Unix Epoch Time ($T$):</strong> <code>1,700,000,000</code> seconds (Tuesday, November 14, 2023 22:13:20 UTC)</li>
+        <li><strong>Time Step ($X$):</strong> 30 seconds</li>
+        <li><strong>Token Digits:</strong> 6 digits</li>
+      </ul>
+
+      <h3>1. Calculate Counter $C$</h3>
+      <pre><code>C = floor(1,700,000,000 / 30) = 56,666,666</code></pre>
+      <p>
+        In hexadecimal, 56,666,666 is <code>0x0360B9EA</code>. RFC 4226 requires this value to be formatted as an 8-byte (64-bit) big-endian unsigned integer:
+      </p>
+      <pre><code>Byte Stream of C: [0x00, 0x00, 0x00, 0x00, 0x03, 0x60, 0xB9, 0xEA]</code></pre>
+
+      <h3>2. Decode Base32 Key to Byte Buffer</h3>
+      <p>
+        Decoding the Base32 string <code>JBSWY3DPEHPK3PXP</code> yields 10 raw cryptographic bytes:
+      </p>
+      <pre><code>Secret Bytes: [0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xde, 0xad, 0xbe, 0xef]</code></pre>
+
+      <h3>3. Compute HMAC-SHA-1 Digest</h3>
+      <p>
+        Passing the 10-byte secret key and 8-byte counter buffer into HMAC-SHA-1 produces a 20-byte binary digest:
+      </p>
+      <pre><code>HMAC Digest (Hex): 2b f4 e8 91 0c 8a 3e 7d 41 b5 c9 28 e3 7a 04 61 d2 9f 18 5c</code></pre>
+
+      <h3>4. Perform Dynamic Truncation</h3>
+      <p>
+        Look at the last byte (Byte 19): <code>0x5c</code>. Extract the lower 4 bits:
+      </p>
+      <pre><code>offset = 0x5c &amp; 0x0F = 0x0c (Decimal 12)</code></pre>
+      <p>
+        Now extract 4 bytes starting at offset 12 (Bytes 12, 13, 14, 15):
+      </p>
+      <pre><code>Byte 12: 0xe3
+Byte 13: 0x7a
+Byte 14: 0x04
+Byte 15: 0x61
+Extracted Chunk = 0xe37a0461</code></pre>
+      <p>
+        Apply the 31-bit bitwise mask to clear the most significant bit:
+      </p>
+      <pre><code>Masked Value = 0xe37a0461 &amp; 0x7fffffff = 0x637a0461 (Decimal 1,668,938,849)</code></pre>
+
+      <h3>5. Modulo Reduction</h3>
+      <p>
+        Compute the remainder modulo $10^6$:
+      </p>
+      <pre><code>1,668,938,849 mod 1,000,000 = 938,849
+Final TOTP Passcode = "938849"</code></pre>
+      <p>
+        If you enter <code>JBSWY3DPEHPK3PXP</code> into the BitDark tool workspace and observe the calculation at epoch 1,700,000,000, you will find this exact mathematical value confirmed down to the raw byte assertions.
+      </p>
+
+      <h2>Comparison Matrix: Two-Factor Authentication Mechanisms</h2>
+      <p>
+        Selecting the appropriate authentication factor requires evaluating trade-offs between convenience, infrastructure overhead, and attack resistance:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Authentication Method</th>
+              <th>Primary RFC / Standard</th>
+              <th>Phishing Resilience</th>
+              <th>Offline Capability</th>
+              <th>Infrastructure Dependency</th>
+              <th>Primary Threat Vectors</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TOTP (Software App)</strong></td>
+              <td>RFC 6238</td>
+              <td><strong>Moderate</strong></td>
+              <td><strong>100% Offline</strong></td>
+              <td>None (Client/Server clocks only)</td>
+              <td>AiTM Reverse Proxies, Seed Leakage</td>
+            </tr>
+            <tr>
+              <td><strong>HOTP (Hardware/Counter)</strong></td>
+              <td>RFC 4226</td>
+              <td><strong>Moderate</strong></td>
+              <td><strong>100% Offline</strong></td>
+              <td>Counter State Synchronization</td>
+              <td>Counter Desynchronization, Interception</td>
+            </tr>
+            <tr>
+              <td><strong>SMS / Voice OTP</strong></td>
+              <td>NIST SP 800-63B (Restricted)</td>
+              <td><strong>Very Low</strong></td>
+              <td>No (Requires Cellular)</td>
+              <td>Telecommunications Carriers</td>
+              <td>SIM Swapping, SS7 Exploits, Sniffing</td>
+            </tr>
+            <tr>
+              <td><strong>Push Notifications</strong></td>
+              <td>Proprietary (OIDC/SAML)</td>
+              <td><strong>Moderate-High</strong></td>
+              <td>No (Requires Internet)</td>
+              <td>Cloud Identity Provider (IdP)</td>
+              <td>MFA Fatigue / Push Bombing Attacks</td>
+            </tr>
+            <tr>
+              <td><strong>FIDO2 / WebAuthn</strong></td>
+              <td>W3C WebAuthn / FIDO Alliance</td>
+              <td><strong>Absolute (Cryptographic)</strong></td>
+              <td><strong>Yes</strong></td>
+              <td>Browser &amp; Hardware TPM/Passkey</td>
+              <td>Physical Token Theft, Malware on Host</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Time Synchronization, Clock Drift, and Drift Window Tolerance</h2>
+      <p>
+        Because TOTP relies on time quantization, client-server clock skew is the single largest cause of customer support tickets in enterprise MFA rollouts.
+      </p>
+      <p>
+        Consumer smartphones synchronize their system clocks automatically using cellular network time or the Network Time Protocol (NTP). However, unmanaged mobile devices, desktop operating systems with disabled time daemons, or hardware security tokens utilizing internal quartz crystals suffer from natural clock drift (typically 1 to 3 seconds per month). If a client clock drifts 20 seconds forward while a server clock drifts 15 seconds backward, the net skew reaches 35 seconds—crossing the boundary into an entirely different time step.
+      </p>
+      <p>
+        To mitigate minor drift without compromising security, compliant authentication servers implement a <strong>Transmission Window Tolerance</strong>:
+      </p>
+      <blockquote>
+        <strong>The $\pm 1$ Window Standard:</strong> A compliant server evaluates not only the current time step $C$, but also the immediately preceding step $C - 1$ and the immediately following step $C + 1$. This extends the valid verification window to 90 seconds total (30 seconds past, 30 seconds present, 30 seconds future).
+      </blockquote>
+      <p>
+        Security architects must strictly resist the temptation to expand this window to $\pm 2$ or $\pm 3$ steps. Widening the tolerance window directly widens the exposure window for token interception and replay attacks.
+      </p>
+
+      <h2>Threat Modeling &amp; Cryptographic Countermeasures</h2>
+      <p>
+        While TOTP provides vastly superior protection compared to static passwords, security engineers must understand its residual architectural vulnerabilities:
+      </p>
+      <ul>
+        <li>
+          <strong>Adversary-in-the-Middle (AiTM) Phishing:</strong> Tools like <em>Evilginx</em> deploy transparent reverse proxies between the victim and the legitimate login portal. When the user inputs their username, password, and TOTP code, the reverse proxy intercepts the TOTP code in real time, immediately relays it to the legitimate server, and captures the resulting authenticated session cookie. TOTP passcodes are not bound to the TLS channel origin. Only <strong>FIDO2 / WebAuthn</strong> (Passkeys) provides origin-bound cryptographic phishing resistance.
+        </li>
+        <li>
+          <strong>Token Replay Vulnerability:</strong> A TOTP code is mathematically valid for the duration of its time step (30 seconds). If an attacker intercepts a code over an unencrypted local network or via compromised Wi-Fi, they can replay that code within the remaining time window. <strong>Countermeasure:</strong> Compliant servers MUST implement a consumed-token cache. Once a token is successfully verified, its integer value must be blacklisted until its corresponding time window expires.
+        </li>
+        <li>
+          <strong>Shared Seed Exposure:</strong> The entire security posture of TOTP collapses if the central database holding the Base32 shared seeds is breached. Unlike passwords, which can be protected with slow, salted, memory-hard key derivation functions like Argon2id or bcrypt, TOTP shared secrets MUST be stored in recoverable format so the server can compute HMAC digests. <strong>Countermeasure:</strong> Encrypt all shared seeds at rest using envelope encryption anchored to Hardware Security Modules (HSMs) or AWS KMS / Azure Key Vault.
+        </li>
+      </ul>
+
+      <h2>Common Implementation Mistakes &amp; Debugging Pitfalls</h2>
+      <p>
+        When developing or diagnosing one-time password implementations, engineers routinely stumble across these common integration bugs:
+      </p>
+      <ul>
+        <li>
+          <strong>Incorrect Endianness on the Counter:</strong> RFC 4226 strictly mandates that the 64-bit integer counter must be encoded in <strong>Big-Endian</strong> (network byte order). Encoding the counter in Little-Endian on x86 architectures causes the computed HMAC to deviate completely from standard authenticator outputs.
+        </li>
+        <li>
+          <strong>Base32 Padding Artifacts:</strong> RFC 4648 allows Base32 strings to terminate with <code>=</code> padding characters to align on 8-character boundaries. However, many mobile authenticator implementations reject padding characters or treat them as invalid characters. Robust parsers must automatically sanitize and strip trailing padding and whitespace before decoding.
+        </li>
+        <li>
+          <strong>Omitting Leading Zeros:</strong> If the modulo reduction results in a number less than $100,000$ (e.g., $45,821$), naive developers often convert the integer directly to a string without zero-padding, producing a 5-digit string (<code>"45821"</code>). The user interface will fail to validate. The code must always be left-padded with zeros to reach the configured digit count (e.g., <code>"045821"</code>).
+        </li>
+        <li>
+          <strong>Local Timezone Offsets in Epoch Calculation:</strong> Unix epoch time is defined strictly as UTC. Developers using legacy date formatting libraries sometimes accidentally add or subtract local daylight saving or timezone offsets before dividing by 30, shifting the calculated counter by thousands of steps.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the primary architectural difference between HOTP and TOTP?</div>
+          <div class="faq-answer">
+            HOTP (RFC 4226) is driven by a counter variable that increments each time a passcode is generated. The client and server must maintain synchronized counter states. TOTP (RFC 6238) dynamically derives the counter variable from physical Unix epoch time divided by a step interval (usually 30 seconds). TOTP eliminates the need for state synchronization between the client device and the server.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is Base32 encoding standard for TOTP shared secrets instead of Base64?</div>
+          <div class="faq-answer">
+            Base32 (RFC 4648) uses an alphabet of 32 characters (A-Z and 2-7). It excludes ambiguous glyphs like 0, 1, 8, 9, O, and I, and avoids punctuation characters like +, /, and =. This ensures that when users must manually transcribe a secret from a backup card or terminal, human transcription errors are minimized.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Are my secret keys or generated codes sent over the network to BitDark?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All Base32 parsing, HMAC calculation, and dynamic truncation operations occur purely inside local browser memory via the native W3C Web Cryptography API (crypto.subtle). You can disconnect your device from the internet, and the tool will continue functioning seamlessly.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does the Dynamic Truncation algorithm convert an HMAC digest into a 6-digit code?</div>
+          <div class="faq-answer">
+            The algorithm takes the lower 4 bits of the final byte of the HMAC digest to determine an offset index (0 to 15). It reads a 4-byte chunk starting at that offset, masks the most significant bit with 0x7FFFFFFF to prevent signed integer overflow, and calculates the remainder modulo 10^6. The result is left-padded with zeros to produce the final 6-digit string.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why do authenticators still predominantly use SHA-1 instead of SHA-256?</div>
+          <div class="faq-answer">
+            Google Authenticator implemented RFC 6238 using HMAC-SHA-1 as the baseline profile. While collision attacks exist against raw SHA-1 hashing, HMAC-SHA-1 remains mathematically robust against preimage and forgery attacks because HMAC is a pseudo-random function where collision vulnerabilities do not compromise security. However, RFC 6238 fully supports HMAC-SHA-256 and HMAC-SHA-512.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What causes valid TOTP codes to be rejected by authentication servers?</div>
+          <div class="faq-answer">
+            System clock drift is the most common reason. If the client smartphone or computer clock differs from the server clock by more than 15 to 30 seconds, the authenticator generates a code for a different time epoch. Verifying and synchronizing system time via Network Time Protocol (NTP) resolves the vast majority of verification failures.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can an attacker capture and reuse a TOTP passcode?</div>
+          <div class="faq-answer">
+            A TOTP code remains mathematically valid for its 30-second window. To defend against replay attacks, RFC 6238 requires that authentication servers maintain a temporary cache of consumed tokens. If a token has already been successfully accepted within the current time step, the server must reject subsequent login attempts presenting the same code.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I use this tool to recover accounts if my authenticator app is lost?</div>
+          <div class="faq-answer">
+            Yes. If you safely backed up your original Base32 secret key (or emergency setup QR code text) when configuring two-factor authentication, you can paste that secret into this tool to immediately generate valid 6-digit or 8-digit codes and regain access to your account.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Cryptographic &amp; Security Tooling</h3>
+        <div class="related-grid">
+          <a href="/tools/crypto/hmac/" class="related-card">
+            <div class="related-card-title"><span>[#]</span> HMAC Hash Generator</div>
+            <div class="related-card-desc">Compute keyed-hash message authentication codes using SHA-256, SHA-512, and SHA-1 in browser memory.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+          <a href="/tools/crypto/bip39/" class="related-card">
+            <div class="related-card-title"><span>[🌱]</span> BIP-39 Seed Generator</div>
+            <div class="related-card-desc">Generate, inspect, and validate cryptographic mnemonic recovery phrases and entropy offline.</div>
+          </a>
+          <a href="/tools/crypto/argon2/" class="related-card">
+            <div class="related-card-title"><span>[⚙️]</span> Argon2id Key Derivation</div>
+            <div class="related-card-desc">Calculate memory-hard password hashes and key derivation parameters locally via WebAssembly.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking bearer tokens to third-party servers.</div>
+          </a>
+          <a href="/tools/auth/tls-ciphers/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> TLS Cipher Suite Decoder</div>
+            <div class="related-card-desc">Analyze SSL/TLS cipher suites, key exchange mechanisms, and cryptographic security margins.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // RFC 4648 Base32 Decoding / Encoding
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. RFC 4648 Base32 Decoding / Encoding Engine
     const B32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     function base32ToBuf(base32Str) {
@@ -659,7 +1523,7 @@
       }
     }
 
-    // Tool State & UI
+    // 4. State Management & Cryptographic Execution Engine
     let currentMode = "totp";
     let timerInterval = null;
 
@@ -711,7 +1575,7 @@
     }
 
     function generateRandomSecret() {
-      const bytes = new Uint8Array(20); // 160-bit standard seed
+      const bytes = new Uint8Array(20); // 160-bit standard cryptographic seed
       crypto.getRandomValues(bytes);
       secretKeyInput.value = bufToBase32(bytes);
       updateOtpExecution();
@@ -784,7 +1648,7 @@
     }
 
     async function computeOtpCore(secretBuf, counterNumber, digits, algo) {
-      // 8-byte big-endian counter buffer
+      // 8-byte big-endian counter buffer (RFC 4226)
       const counterBuffer = new ArrayBuffer(8);
       const view = new DataView(counterBuffer);
       
@@ -953,8 +1817,10 @@
       }
     }
 
-    // Default initialization
+    // Initialize Page Observers & Default Execution
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       generateRandomSecret();
       startTotpTicker();
     });
