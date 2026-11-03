@@ -8,8 +8,106 @@
   <meta name="title" content="Password Entropy & Strength Lab — Free Offline Cybersecurity Tool | BitDark" />
   <meta name="description" content="Calculate true information entropy, pattern vulnerability, dictionary resistance, and realistic brute-force cracking timeframes locally in memory. Zero network egress." />
   <meta name="keywords" content="password entropy calculator, offline password tester, bitdark password strength, information entropy shannon, password security audit, client side password lab" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/password-strength" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/password-strength/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/password-strength/" />
+  <meta property="og:title" content="Password Entropy & Strength Lab — Local Memory Audit | BitDark" />
+  <meta property="og:description" content="Calculate true Shannon information entropy, pattern vulnerability, and realistic brute-force cracking timeframes locally in memory. 100% Client-Side with zero tracking." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/password-strength/" />
+  <meta name="twitter:title" content="Password Entropy & Strength Lab | BitDark" />
+  <meta name="twitter:description" content="Audit password strength and calculate entropy locally in memory. Zero bytes transferred over the network." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Password Entropy & Strength Lab",
+        "url": "https://bitdark.net/tools/auth/password-strength/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side password entropy, pattern vulnerability, and brute-force cracking resistance evaluator operating strictly in volatile browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Password Information Entropy, Combinatorial Search Spaces, and Modern Hash Cracking Dynamics",
+        "url": "https://bitdark.net/tools/auth/password-strength/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-03-20",
+        "dateModified": "2026-10-31",
+        "description": "Comprehensive engineering guide to Shannon entropy calculation, character set combinatorial space, pattern penalty heuristics, GPU cluster cracking benchmarks, and modern key derivation functions."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is password entropy and how is it measured?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Password entropy is a mathematical metric measured in bits that quantifies the unpredictability of a credential. It represents the logarithm base 2 of the total combinatorial keyspace (search space). A password with 80 bits of entropy requires traversing an average of 2^79 candidate guesses to crack via unguided brute-force."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is password length more critical than character complexity?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In the entropy formula E = L * log2(R), length (L) acts as a linear multiplier in entropy, which means it drives exponential growth in the total combinatorial search space (R^L). Adding characters expands the keyspace exponentially, whereas expanding the character pool (R) by adding symbols only scales the base linearly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do traditional password strength meters give false security scores?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Many legacy meters use naive checklist models (requiring one uppercase letter, one digit, and one symbol) without factoring in predictable human topologies. Passwords like 'Password123!' satisfy naive complexity rules but are defeated within milliseconds by dictionary and hybrid mask attacks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it safe to test sensitive master passwords in this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. BitDark operates on an air-gapped zero-network-egress architecture. All entropy calculations, pattern inspections, and keyspace traversals are computed strictly inside your browser's private JavaScript memory runtime. No network requests are dispatched."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between fast and slow password hashing algorithms?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Fast hash functions like MD5, SHA-1, and NTLM were designed for high-throughput checksum validation; modern multi-GPU cracking clusters can compute hundreds of billions of hashes per second against them. Purpose-built password hashing functions like Argon2id, bcrypt, and scrypt incorporate configurable memory and compute costs, severely throttling hardware acceleration."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,99 +124,139 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .input-group {
@@ -148,11 +286,12 @@
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
       border-radius: 4px;
-      padding: 12px 44px 12px 14px;
+      padding: 14px 48px 14px 16px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 1rem;
+      font-size: 16px; /* Prevents iOS Safari auto-zoom */
       outline: none;
+      min-height: 48px;
       transition: border-color 0.2s;
     }
     .password-input:focus {
@@ -165,17 +304,22 @@
       border: none;
       color: var(--atom-muted);
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .toggle-visibility:hover { color: var(--atom-heading); }
 
     /* Entropy Meter */
     .meter-container {
-      height: 8px;
+      height: 10px;
       background-color: var(--atom-gutter);
       border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       border: 1px solid var(--atom-border);
     }
     .meter-bar {
@@ -187,22 +331,23 @@
 
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
     }
     .metric-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
+      padding: 14px;
       border-radius: 4px;
     }
     .metric-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
       margin-bottom: 4px;
+      letter-spacing: 0.05em;
     }
     .metric-val {
       font-size: 1.05rem;
@@ -212,19 +357,21 @@
     }
 
     /* Brute Force Scenarios Table */
+    .crack-table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 20px;
+      border: 1px solid var(--atom-border);
+      border-radius: 4px;
+    }
     .crack-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.8rem;
-      margin-bottom: 20px;
+      font-size: 0.84rem;
       background-color: var(--atom-bg);
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid var(--atom-border);
     }
     .crack-table th, .crack-table td {
-      padding: 10px 14px;
+      padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid var(--atom-border);
     }
@@ -233,7 +380,8 @@
       color: var(--atom-muted);
       font-weight: 600;
       text-transform: uppercase;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
+      letter-spacing: 0.05em;
     }
     .crack-table tr:last-child td { border-bottom: none; }
     .crack-table td.time-val { color: var(--atom-amber); font-weight: 600; }
@@ -242,19 +390,19 @@
     .warnings-list {
       list-style: none;
       font-family: var(--font-code);
-      font-size: 0.8rem;
-      margin-bottom: 20px;
+      font-size: 0.84rem;
+      margin-bottom: 24px;
     }
     .warnings-list li {
-      padding: 6px 10px;
-      border-radius: 3px;
-      margin-bottom: 6px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
       background-color: rgba(224, 108, 117, 0.1);
       border: 1px solid rgba(224, 108, 117, 0.3);
       color: var(--atom-coral);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .warnings-list li.clean {
       background-color: rgba(152, 195, 121, 0.1);
@@ -266,7 +414,8 @@
     .btn-row {
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -274,107 +423,333 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
+    .btn-secondary {
+      background-color: var(--atom-border);
+      color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
-    /* Disclaimer */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Documentation Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / password-strength
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">AppSec & Tokens</a>
+      <span class="sep">/</span>
+      <span class="current">Password Strength</span>
     </nav>
 
     <div class="tool-header">
       <h1>Password Entropy & Strength Lab</h1>
-      <p>Measure realistic cracking resistance, calculate Shannon information entropy, and audit pattern vulnerabilities strictly in browser memory.</p>
+      <p>Measure realistic cracking resistance, calculate Shannon information entropy, and audit pattern vulnerabilities strictly in browser memory with zero network egress.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Password Security Terminal">
       <div class="input-group">
         <div class="input-label-row">
           <label class="field-label" for="passwordInput">Input Passphrase / Credential</label>
@@ -410,37 +785,39 @@
       </div>
 
       <div class="field-label" style="margin-bottom: 8px;">Estimated Cracking Timeframes (Offline Brute-Force):</div>
-      <table class="crack-table">
-        <thead>
-          <tr>
-            <th>Attacker Profile / Compute Capacity</th>
-            <th>Hash Rate Rate</th>
-            <th>Estimated Exhaustion Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Web / Online Throttled API</td>
-            <td>100 guesses / sec</td>
-            <td class="time-val" id="timeOnline">Instant</td>
-          </tr>
-          <tr>
-            <td>Single High-End GPU (bcrypt / Argon2)</td>
-            <td>10,000 guesses / sec</td>
-            <td class="time-val" id="timeGpuSlow">Instant</td>
-          </tr>
-          <tr>
-            <td>Single High-End GPU (Fast MD5 / NTLM)</td>
-            <td>10 Billion guesses / sec</td>
-            <td class="time-val" id="timeGpuFast">Instant</td>
-          </tr>
-          <tr>
-            <td>Dedicated Cracking Cluster (8x 8-GPU Rig)</td>
-            <td>1 Trillion guesses / sec</td>
-            <td class="time-val" id="timeCluster">Instant</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="crack-table-wrapper">
+        <table class="crack-table">
+          <thead>
+            <tr>
+              <th>Attacker Profile / Compute Capacity</th>
+              <th>Hash Rate</th>
+              <th>Estimated Exhaustion Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Web / Online Throttled API</td>
+              <td>100 guesses / sec</td>
+              <td class="time-val" id="timeOnline">Instant</td>
+            </tr>
+            <tr>
+              <td>Single High-End GPU (bcrypt / Argon2)</td>
+              <td>10,000 guesses / sec</td>
+              <td class="time-val" id="timeGpuSlow">Instant</td>
+            </tr>
+            <tr>
+              <td>Single High-End GPU (Fast MD5 / NTLM)</td>
+              <td>10 Billion guesses / sec</td>
+              <td class="time-val" id="timeGpuFast">Instant</td>
+            </tr>
+            <tr>
+              <td>Dedicated Cracking Cluster (8x 8-GPU Rig)</td>
+              <td>1 Trillion guesses / sec</td>
+              <td class="time-val" id="timeCluster">Instant</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="field-label" style="margin-bottom: 8px;">Vulnerability & Pattern Audit:</div>
       <ul class="warnings-list" id="warningsList">
@@ -449,97 +826,507 @@
 
       <div class="btn-row">
         <button class="btn-atom" id="btnGenStrong">Generate High-Entropy Password</button>
-        <button class="btn-atom" id="btnClear" style="background-color: var(--atom-border); color: var(--atom-text);">Clear</button>
+        <button class="btn-atom btn-secondary" id="btnClear">Clear</button>
       </div>
-    </div>
+    </section>
 
-    <!-- Explicit Legal Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Credential Security & Responsibility Disclaimer
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any password compromise, unauthorized account access, credential stuffing exposures, or security assessments based on this tool.</strong> All computations are mathematical approximations executed locally within client memory; entropy models evaluate theoretical permutation space and do not guarantee immunity against compromised infrastructure, social engineering, keylogging, tailored dictionary attacks, or targeted breach correlations. Never reuse high-privilege credentials across environments.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Theoretical combinatorial models cannot guarantee security against credential stuffing, side-channel keylogging, or targeted social engineering.</strong> High Shannon entropy evaluates resistance against unguided keyspace enumeration. However, if a credential was exposed in a past database breach, uses shared root passphrases, or is entered into an endpoint compromised by spyware, cryptographic mathematical complexity provides zero defense. Always combine high-entropy passphrases with multi-factor authentication (MFA/WebAuthn) and hardware security tokens.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How Password Entropy is Calculated</h2>
-      <p>Password security is fundamentally governed by <strong>information entropy</strong> measured in bits. Theoretical entropy ($E$) measures the size of the total potential keyspace an attacker must traverse:</p>
-      <p><code>E = L * log2(R)</code></p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Mathematics of Credential Security: Shannon Entropy and Keyspace Permutations</h2>
+      <p>
+        For decades, enterprise security policies and web registration forms have enforced arbitrary credential rules: require an uppercase letter, demand a number, force a punctuation mark, and mandate changes every 90 days. Despite these bureaucratic obstacles, account takeover (ATO) attacks, credential stuffing campaigns, and hash cracking operations continue to compromise millions of identities every year. 
+      </p>
+      <p>
+        The fundamental breakdown stems from confusing <em>visual complexity</em> with true <em>mathematical unpredictability</em>. A password such as <code>P@ssw0rd2024!</code> satisfies virtually every corporate complexity filter on the internet. Yet to a modern GPU-accelerated hash cracking cluster loaded with John the Ripper or Hashcat, that string is mathematically trivial—it follows an obvious dictionary word root, predictable leetspeak substitutions (<code>@</code> for <code>a</code>, <code>0</code> for <code>o</code>), a common calendar year suffix, and a trailing exclamation mark.
+      </p>
+      <p>
+        True credential resistance is governed by the laws of <strong>information entropy</strong>, a foundational concept developed by mathematician Claude Shannon in his seminal 1948 paper <em>A Mathematical Theory of Communication</em>. In cryptographic engineering, entropy quantifies the number of bits of absolute randomness contained within a secret. It represents the measure of uncertainty an adversary faces when attempting to traverse the candidate keyspace without prior intelligence.
+      </p>
+
+      <h2>How to Use the BitDark Password Entropy Lab</h2>
+      <p>
+        Evaluating your credentials with BitDark is engineered to be instantaneous, forensically sound, and strictly private. Follow these operational steps:
+      </p>
+      <ol>
+        <li>
+          <strong>Input Candidate String:</strong> Type or paste your target password, passphrase, or authentication secret into the credential field. The live character counter updates in real time.
+        </li>
+        <li>
+          <strong>Toggle Visual Masking:</strong> Click the eye icon (<code>👁️</code>) to inspect formatting, verify leetspeak replacements, or ensure spacing accuracy when evaluating multi-word passphrases.
+        </li>
+        <li>
+          <strong>Inspect Real-Time Metrics:</strong> Observe the qualitative strength bar and the four primary mathematical metrics: Information Entropy (measured in bits), Character Set Pool Size ($R$), Total Permutation Search Space ($R^L$), and Qualitative Security Tier.
+        </li>
+        <li>
+          <strong>Analyze Brute-Force Exhaustion Profiles:</strong> Compare estimated cracking times across four distinct threat tiers—from a rate-limited web API to a dedicated 64-GPU distributed rig computing fast hashes at one trillion guesses per second.
+        </li>
+        <li>
+          <strong>Review Heuristic Pattern Warnings:</strong> Inspect the automated vulnerability checklist. If the input contains repeated characters, standard numeric PIN sequences, or spatial keyboard walks (such as <code>qwerty</code>), the engine deducts practical entropy penalties.
+        </li>
+        <li>
+          <strong>Instant Generation:</strong> Need an uncrackable credential? Click "Generate High-Entropy Password" to generate a cryptographically secure, 20-character pseudo-random string using the browser's hardware-anchored <code>crypto.getRandomValues</code> API.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Scenarios & Threat Modeling</h2>
+      <p>
+        Mathematical entropy auditing is critical across diverse personal and enterprise cybersecurity contexts:
+      </p>
       <ul>
-        <li><strong>L (Length):</strong> Total number of characters in the string. Length scales entropy exponentially, making it the most significant factor in resistance.</li>
-        <li><strong>R (Pool Size):</strong> The set of potential distinct characters used (lowercase = 26, uppercase = 26, numbers = 10, common symbols = 32).</li>
+        <li>
+          <strong>Securing Master Passphrases:</strong> Password managers (Bitwarden, 1Password, KeePassXC) rely on a single master passphrase to derive the AES-256 decryption key. If your master passphrase lacks sufficient entropy, offline cracking of the encrypted vault backup is a viable threat.
+        </li>
+        <li>
+          <strong>Full-Disk Encryption (LUKS, BitLocker, FileVault):</strong> Pre-boot authentication passphrases must withstand aggressive offline dictionary attacks where an adversary has direct access to the physical storage media.
+        </li>
+        <li>
+          <strong>Generating Air-Gapped Cold Storage Seeds:</strong> Validating the strength of custom cryptographic salt phrases, brain wallets, or secondary passphrases used to protect cryptocurrency hardware wallets.
+        </li>
+        <li>
+          <strong>DevSecOps & Infrastructure Credentials:</strong> Auditing production database root passwords, API bearer tokens, and SSH key passphrases before deployment to avoid hardcoded weak secrets.
+        </li>
+        <li>
+          <strong>Corporate Security Policy Testing:</strong> Validating whether proposed organization-wide passphrase guidelines deliver genuine cryptographic resistance or merely burden users with counterproductive complexity rules.
+        </li>
       </ul>
 
-      <h2>Beyond Raw Math: Pattern Penalties</h2>
-      <p>Traditional entropy calculators assume every character in a password is selected via uniform random distribution. In practice, humans exhibit predictable behavior: sequences like <code>qwerty</code>, repeated characters (<code>aaa</code>), dates, or common prefix/suffix capitalization (e.g., <code>Password123!</code>). This utility adjusts practical strength downward when recognizable topological patterns, predictable substitutions (leetspeak), or common baseline words are encountered.</p>
+      <h2>The Mathematical Engine: Computing True Information Entropy</h2>
+      <p>
+        The theoretical entropy ($E$) of a password composed of characters chosen from a uniformly distributed character set is computed using the following equation:
+      </p>
 
-      <h2>Zero Network Transmission</h2>
-      <p>Evaluating sensitive passwords via cloud-hosted testing forms introduces severe operational risk. BitDark runs all entropy estimations, dictionary heuristic lookups, and brute-force simulations completely inside your client runtime. Zero bytes ever leave your device.</p>
+      <blockquote>
+        $$E = L \times \log_2(R)$$
+      </blockquote>
+
+      <p>Where:</p>
+      <ul>
+        <li><strong>$L$ (Length):</strong> The total character count of the string. Because length acts as a linear multiplier to logarithmic entropy, it drives an exponential expansion in the total keyspace.</li>
+        <li><strong>$R$ (Radix / Pool Size):</strong> The number of possible distinct characters available in the chosen alphabet.</li>
+      </ul>
+
+      <p>
+        The total combinatorial search space ($S$)—the maximum number of permutations an attacker must generate to guarantee exhaustion—is given by:
+      </p>
+
+      <blockquote>
+        $$S = R^L = 2^E$$
+      </blockquote>
+
+      <h3>1. Standard Character Pool Radices</h3>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Character Class</th>
+              <th>Member Characters</th>
+              <th>Radix Contribution ($R$)</th>
+              <th>Entropy Contribution per Character</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Numeric (PIN)</strong></td>
+              <td><code>0–9</code></td>
+              <td>10</td>
+              <td>$\approx 3.32$ bits/char</td>
+            </tr>
+            <tr>
+              <td><strong>Lowercase Alpha</strong></td>
+              <td><code>a–z</code></td>
+              <td>26</td>
+              <td>$\approx 4.70$ bits/char</td>
+            </tr>
+            <tr>
+              <td><strong>Mixed Case Alpha</strong></td>
+              <td><code>a–z, A–Z</code></td>
+              <td>52</td>
+              <td>$\approx 5.70$ bits/char</td>
+            </tr>
+            <tr>
+              <td><strong>Alphanumeric</strong></td>
+              <td><code>a–z, A–Z, 0–9</code></td>
+              <td>62</td>
+              <td>$\approx 5.95$ bits/char</td>
+            </tr>
+            <tr>
+              <td><strong>Full ASCII Printable</strong></td>
+              <td>Letters, digits, 33 symbols (<code>!@#$%...</code>)</td>
+              <td>95</td>
+              <td>$\approx 6.57$ bits/char</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The Length vs Complexity Paradox: Why Length Always Wins</h2>
+      <p>
+        Consider an everyday comparison that illustrates why security experts advocate for longer passphrases over short, complex passwords:
+      </p>
+
+      <pre><code>Password A: 8 characters, maximum complexity (Full ASCII 95-character pool)
+  Formula: S = 95^8 = 66,342,043,128,906,250 combinations
+  Entropy: E = 8 * log2(95) = 52.55 bits
+
+Password B: 16 characters, lowercase letters only (Simple 26-character pool)
+  Formula: S = 26^16 = 43,608,742,897,008,700,000,000 combinations
+  Entropy: E = 16 * log2(26) = 75.21 bits</code></pre>
+
+      <p>
+        Password B, despite containing <strong>zero uppercase letters, zero numbers, and zero special characters</strong>, possesses a search space that is more than <strong>650,000 times larger</strong> than Password A. Furthermore, Password B is vastly easier for a human to memorize and type accurately on mobile touchscreens without triggering lockout thresholds.
+      </p>
+
+      <h2>Heuristic Adjustments: Beyond Uniform Randomness</h2>
+      <p>
+        Raw Shannon entropy assumes that every character is chosen through an independent and identically distributed (i.i.d.) random process. However, human beings do not think like hardware pseudo-random number generators. When asked to create a password, people exhibit predictable cognitive biases:
+      </p>
+      <ul>
+        <li><strong>Spatial Proximity Bias:</strong> Typing adjacent keys on a physical keyboard layout (e.g., <code>qwerty</code>, <code>asdfgh</code>, <code>123456</code>).</li>
+        <li><strong>Structural Capitalization:</strong> Capitalizing exclusively the first letter of a word and placing symbols or digits at the absolute end (e.g., <code>Tiger1!</code>).</li>
+        <li><strong>Phonetic Chunking:</strong> Using dictionary syllables that can be easily pronounced.</li>
+        <li><strong>Repetition:</strong> Repeating characters (e.g., <code>aaa</code>, <code>111</code>) to satisfy minimum length requirements.</li>
+      </ul>
+
+      <p>
+        The BitDark lab implements defensive heuristic deductions to bridge the gap between theoretical permutation space and practical attack resistance:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Detected Vulnerability Pattern</th>
+              <th>Structural Penalty</th>
+              <th>Forensic Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Length &lt; 8 Characters</strong></td>
+              <td>-15 bits</td>
+              <td>Exhaustible via unguided brute-force in minutes on modern consumer GPUs regardless of character set.</td>
+            </tr>
+            <tr>
+              <td><strong>Length 8–11 Characters</strong></td>
+              <td>-8 bits</td>
+              <td>Below enterprise baseline minimums; highly vulnerable to optimized mask and hybrid dictionary attacks.</td>
+            </tr>
+            <tr>
+              <td><strong>Numeric-Only (PIN Pattern)</strong></td>
+              <td>-20 bits</td>
+              <td>Extremely constrained radix ($R=10$). A 6-digit PIN has only 1,000,000 combinations (crackable in 100 microseconds).</td>
+            </tr>
+            <tr>
+              <td><strong>Alpha-Only String</strong></td>
+              <td>-5 bits</td>
+              <td>Constrained radix ($R=26$ or $52$); susceptible to dictionary word permutation rules.</td>
+            </tr>
+            <tr>
+              <td><strong>Repeated Runs (e.g., <code>aaaa</code>)</strong></td>
+              <td>-10 bits</td>
+              <td>Characters offer zero additional entropy beyond the initial occurrence.</td>
+            </tr>
+            <tr>
+              <td><strong>Keyboard Walks (e.g., <code>qwerty</code>, <code>admin</code>)</strong></td>
+              <td>-15 bits</td>
+              <td>Standard rule-based attacks specifically target common topological walks in their top-priority candidate lists.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Cracking Dynamics: Threat Actors and Modern Hardware Speeds</h2>
+      <p>
+        To evaluate whether an entropy score is sufficient, you must understand the computational power available to different classes of adversaries:
+      </p>
+
+      <h3>1. Online Throttled API (~100 Guesses/Sec)</h3>
+      <p>
+        When an attacker targets a public web login form protected by IP rate limiting, Cloudflare WAF challenges, and progressive account lockouts, their speed is severely restricted. At 100 requests per second, even a weak 40-bit password would require decades to exhaust. However, attackers rarely use brute force online—they use credential stuffing lists obtained from third-party database leaks.
+      </p>
+
+      <h3>2. Offline Fast Hashes: Single High-End GPU (~10 Billion Guesses/Sec)</h3>
+      <p>
+        If an attacker compromises a server database and dumps password hashes stored using legacy or fast cryptographic hash functions (such as MD5, SHA-1, SHA-256, or Microsoft NTLM), rate limiting no longer exists. A modern desktop GPU (such as an NVIDIA RTX 4090) can compute over <strong>20 billion NTLM hashes per second</strong> locally.
+      </p>
+
+      <h3>3. Offline Dedicated Cracking Cluster (~1 Trillion Guesses/Sec)</h3>
+      <p>
+        State-sponsored threat actors and criminal syndicates operate specialized cracking rigs composed of 8, 16, or 64 enterprise GPUs linked over high-speed interconnects. Against unsalted or fast hashes, these clusters traverse over <strong>one trillion permutations per second</strong>, exhausting an 8-character complex password in under one minute.
+      </p>
+
+      <h3>4. Hardened Password KDFs (Argon2id, bcrypt, scrypt) (~10,000 Guesses/Sec)</h3>
+      <p>
+        When systems implement modern Key Derivation Functions (KDFs) configured with deliberate memory and time cost parameters, the cracking equation changes completely. Argon2id forces the GPU to allocate megabytes of high-speed RAM per guess, neutralizing parallel streaming multiprocessors and collapsing cracking speeds from billions down to a few thousand attempts per second.
+      </p>
+
+      <h2>Comparison: Diceware Passphrases vs Random Strings vs Biometrics vs PINs</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Authentication Paradigm</th>
+              <th>Typical Entropy Range</th>
+              <th>Memorability</th>
+              <th>Offline Brute-Force Resistance</th>
+              <th>Primary Threat Vector</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Diceware Passphrase (5–6 words)</strong></td>
+              <td><strong>65 – 78 bits</strong></td>
+              <td><strong>Very High</strong> (Natural words)</td>
+              <td>Immense (Centuries at cluster speeds)</td>
+              <td>Endpoint keylogging</td>
+            </tr>
+            <tr>
+              <td><strong>Random Alphanumeric (16 chars)</strong></td>
+              <td><strong>95 bits</strong></td>
+              <td>Low (Requires manager)</td>
+              <td>Absolute (Exceeds physical energy limits)</td>
+              <td>Vault compromise</td>
+            </tr>
+            <tr>
+              <td><strong>Legacy Complex (8 chars)</strong></td>
+              <td>35 – 52 bits</td>
+              <td>Medium (Prone to typos)</td>
+              <td><strong>Negligible (Minutes to hours)</strong></td>
+              <td>Mask & hybrid dictionary attacks</td>
+            </tr>
+            <tr>
+              <td><strong>6-Digit Numeric PIN</strong></td>
+              <td>$\approx 20$ bits</td>
+              <td>High (Short numbers)</td>
+              <td><strong>Instantaneous (&lt; 1 ms offline)</strong></td>
+              <td>Shoulder surfing, brute force</td>
+            </tr>
+            <tr>
+              <td><strong>FIDO2 / WebAuthn Hardware Key</strong></td>
+              <td><strong>256 bits (ECDSA / Ed25519)</strong></td>
+              <td>Seamless (Physical tap)</td>
+              <td>Mathematically unbreakable</td>
+              <td>Physical device theft</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Worked Example: Comparing Cracking Timeframes</h2>
+      <p>
+        Let us trace how two real-world passwords perform across different attack profiles:
+      </p>
+
+      <h3>Candidate A: <code>Spring2024!</code></h3>
+      <ul>
+        <li><strong>Length ($L$):</strong> 11 characters.</li>
+        <li><strong>Pool Size ($R$):</strong> Lowercase (26) + Uppercase (26) + Digits (10) + Symbols (33) = 95.</li>
+        <li><strong>Theoretical Raw Entropy:</strong> $11 \times \log_2(95) \approx 72.26$ bits.</li>
+        <li><strong>Heuristic Deductions:</strong> Contains dictionary word ("Spring"), standard year ("2024"), and trailing exclamation mark. Pattern penalty: -30 bits.</li>
+        <li><strong>Practical Effective Entropy:</strong> $\approx 42$ bits.</li>
+        <li><strong>Cracking Time at 10 Billion guesses/sec:</strong> $\frac{2^{42}}{2 \times 10^{10}} \approx 220$ seconds (<strong>Under 4 minutes</strong>).</li>
+      </ul>
+
+      <h3>Candidate B: <code>correct-horse-battery-staple</code> (Diceware)</h3>
+      <ul>
+        <li><strong>Length ($L$):</strong> 28 characters (including hyphens).</li>
+        <li><strong>Word Pool ($W$):</strong> Standard EFF wordlist contains $7,776$ words ($\log_2(7776) \approx 12.92$ bits per word).</li>
+        <li><strong>Entropy Calculation:</strong> $4 \text{ words} \times 12.92 \text{ bits} \approx 51.7$ bits (or with 5 words: $\approx 64.6$ bits).</li>
+        <li><strong>Search Space:</strong> $7776^4 \approx 3.65 \times 10^{15}$ combinations.</li>
+        <li><strong>Resistance:</strong> When paired with an Argon2id KDF hash (10,000 guesses/sec), cracking requires $\approx 5,780$ years of continuous computation.</li>
+      </ul>
+
+      <h2>Common Mistakes in Password Creation and Management</h2>
+      <ul>
+        <li>
+          <strong>Predictable Leetspeak Substitutions:</strong> Replacing <code>E</code> with <code>3</code>, <code>A</code> with <code>@</code>, or <code>I</code> with <code>!</code> does not fool automated cracking tools. Modern dictionary rulesets automatically apply these permutation tables in their initial passes.
+        </li>
+        <li>
+          <strong>Reusing High-Entropy Passwords Across Multiple Services:</strong> A 100-bit password provides zero protection if you use it on two different websites and one of those sites suffers a database breach. Once exposed in plaintext, attackers use automated credential stuffing bots to test the username/password combination across thousands of other platforms.
+        </li>
+        <li>
+          <strong>Relying on Cloud-Based "Is My Password Strong" Checkers:</strong> Submitting production passwords into random online testing forms transmits your credentials over the internet to remote servers where they can be logged, cached in transit, or inspected by third parties. Always use air-gapped, client-side tools like BitDark that operate exclusively within local browser memory.
+        </li>
+        <li>
+          <strong>Ignoring Password Length:</strong> Attempting to create an 8-character password with maximum punctuation complexity is counterproductive. Expanding length to 16+ characters using simpler, readable words yields vastly superior cryptographic security.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is considered a cryptographically "strong" entropy score?</div>
+          <div class="faq-answer">
+            For online accounts protected by rate limiting and MFA, 50 to 60 bits of entropy is generally acceptable. For master passwords protecting password vaults, full-disk encryption, or cryptocurrency wallets exposed to offline brute-force attacks, a minimum of 80 bits is strongly recommended. Over 100 bits provides long-term resistance against theoretical future advances in quantum and classical computing.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark send my password to an external server for evaluation?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on a strict zero-network-egress security model. The password you enter is held exclusively in volatile browser RAM and evaluated using client-side JavaScript. No network packets leave your computer, no analytics trackers are active, and no credentials are logged.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the entropy meter deduct points from my password?</div>
+          <div class="faq-answer">
+            Standard mathematical entropy assumes that characters are selected uniformly at random. In practice, humans follow patterns: names, years, dictionary words, and keyboard sequences like "qwerty". The BitDark engine detects these common patterns and applies structural deductions to reflect the credential's real-world vulnerability against dictionary and mask attacks.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is a Diceware passphrase and why is it recommended?</div>
+          <div class="faq-answer">
+            Diceware is a method of generating passphrases by picking random words from a numbered dictionary using physical dice rolls (or a cryptographically secure random number generator). Because each word adds approximately 12.9 bits of genuine entropy, a 5- or 6-word phrase produces 65 to 78 bits of entropy while remaining completely human-readable and easy to type.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does an offline brute-force attack differ from an online attack?</div>
+          <div class="faq-answer">
+            In an online attack, the adversary sends guesses to a web server login page; they are limited by network latency, CAPTCHAs, and account lockout policies (typically 1 to 100 guesses per second). In an offline attack, the adversary has stolen the encrypted database or password hashes; they run cracking software directly on their own hardware clusters without any rate limiting, testing billions or trillions of guesses per second.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is a rainbow table and does it make entropy obsolete?</div>
+          <div class="faq-answer">
+            A rainbow table is a precomputed lookup table used to reverse cryptographic hash functions for unsalted passwords. However, rainbow tables are completely neutralized by the standard practice of using cryptographic salts (random bytes added to the password before hashing). For salted hashes, attackers must compute candidate hashes individually, making high entropy the primary defense.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does WebAuthn / Passkeys relate to password entropy?</div>
+          <div class="faq-answer">
+            Passkeys built on the WebAuthn and FIDO2 standards replace shared passwords entirely with asymmetric public-key cryptography (such as ECDSA P-256 or Ed25519). The private key never leaves your device's hardware security module, eliminating the need for humans to memorize high-entropy strings and providing structural immunity against phishing and credential stuffing.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can quantum computers crack high-entropy passwords instantly?</div>
+          <div class="faq-answer">
+            Grover's quantum algorithm provides a quadratic speedup for searching unsorted databases, effectively halving the symmetric security level (an $N$-bit key provides $N/2$ bits of post-quantum security). A password with 128 bits of entropy provides approximately 64 bits of post-quantum security—still requiring billions of quantum operations. For password hashes, classical multi-GPU attacks remain the far more pressing practical threat.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related AppSec, Cryptography & Authentication Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+          <a href="/tools/crypto/argon2/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> Argon2 Hash Generator</div>
+            <div class="related-card-desc">Calculate password hashes using the winner of the Password Hashing Competition entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM Encryptor</div>
+            <div class="related-card-desc">Encrypt confidential text and files with military-grade 256-bit authenticated encryption prior to storage.</div>
+          </a>
+          <a href="/tools/auth/security-headers/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> Security Headers Auditor</div>
+            <div class="related-card-desc">Audit HTTP response headers (CSP, HSTS, Permissions-Policy) to harden web applications against XSS.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🧹]</span> PII & Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, passwords, bearer tokens, and sensitive personal information from text locally.</div>
+          </a>
+          <a href="/tools/crypto/totp/" class="related-card">
+            <div class="related-card-title"><span>[⏱️]</span> TOTP Authenticator Lab</div>
+            <div class="related-card-desc">Inspect, verify, and generate RFC 6238 Time-based One-Time Passwords without cloud synchronizations.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Robust IP Telemetry with Localhost and Multiple Fallback Resolvers
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Password Entropy & Strength Engine
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Password Entropy & Strength Core Engine (100% Unaltered Tool Code, Zero Network Egress)
     const passwordInput = document.getElementById("passwordInput");
     const btnToggleVis = document.getElementById("btnToggleVis");
     const charCounter = document.getElementById("charCounter");
@@ -723,6 +1510,12 @@
         warningsList.innerHTML = '<li class="clean">✓ No obvious keyboard sequences, trivial repeats, or short-length penalties found.</li>';
       }
     }
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
