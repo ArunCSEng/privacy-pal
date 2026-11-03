@@ -8,8 +8,106 @@
   <meta name="title" content="SQL Injection Sanitizer & Query Escaper — Free Offline Cybersecurity Tool | BitDark" />
   <meta name="description" content="Sanitize dynamic strings, inspect parameterized query bindings, and escape SQL inputs across MySQL, PostgreSQL, SQLite, and SQL Server entirely in browser memory." />
   <meta name="keywords" content="sql injection sanitizer, sqli escaper, parameterized queries generator, mysql escape string, postgres dollar quote, sqlite sanitize, appsec tools, offline cybersecurity tools" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/sql-sanitize" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/sql-sanitize/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/sql-sanitize/" />
+  <meta property="og:title" content="SQL Injection Sanitizer & Query Escaper — In-Memory Multi-Dialect Tool | BitDark" />
+  <meta property="og:description" content="Evaluate, parameterize, and escape untrusted user input across MySQL, PostgreSQL, SQLite, and MSSQL. 100% Client-Side with zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/sql-sanitize/" />
+  <meta name="twitter:title" content="SQL Injection Sanitizer & Query Escaper | BitDark" />
+  <meta name="twitter:description" content="Evaluate, parameterize, and escape untrusted user input across MySQL, PostgreSQL, SQLite, and MSSQL in browser memory." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "SQL Injection Sanitizer & Query Escaper",
+        "url": "https://bitdark.net/tools/auth/sql-sanitize/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side query sanitization utility to evaluate, parameterize, and escape dynamic untrusted inputs across major SQL database engines entirely in volatile browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Defeating SQL Injection: Parameterized Query Abstraction, Character Encoding Pitfalls, and Dialect Escaping Mechanics",
+        "url": "https://bitdark.net/tools/auth/sql-sanitize/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-12",
+        "dateModified": "2026-11-04",
+        "description": "Exhaustive technical analysis of SQL injection vulnerabilities, AST parsing differences across database engines, prepared statements vs dynamic escaping, second-order vectors, and identifier parameterization."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why is string escaping considered inferior to parameterized prepared statements?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "String escaping treats user data as text to be concatenated into a raw query command before parsing. This approach is fragile because subtle differences in database character encodings (such as GBK/Big5 wide-byte attacks), syntax quirks, or unquoted contexts can bypass escaping filters. Prepared statements compile the relational calculus execution plan first, treating user-supplied inputs strictly as passive data literals across network protocol frames."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can prepared statements parameterize SQL table names or column identifiers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The SQL standard requires relational algebra structure—such as table names, column projections, and sorting clauses (ORDER BY)—to be declared during query compilation. Consequently, dynamic identifiers cannot use standard parameter placeholders ($1, ?). They must instead be strictly verified against server-side allowlists or wrapped in engine-specific delimiter quotes (double quotes in ANSI/PostgreSQL, backticks in MySQL, or square brackets in MSSQL)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is a second-order SQL injection attack?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A second-order SQL injection occurs when a malicious payload is successfully escaped and safely inserted into a database table, but is subsequently retrieved and concatenated without parameterization into a secondary SQL query executed later by a background worker, audit process, or administrative report."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does PostgreSQL dollar-quoting ($tag$...$tag$) prevent string injection?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PostgreSQL dollar-quoting encapsulates string literals between matching delimiter tags rather than single quotes. If an attacker injects single quotes or backslashes, they cannot break out of the string boundary unless they guess the exact unique tag sequence chosen for the wrapper."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are any database strings or queries sent over the network when using this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All parsing, transformation, regular expression evaluation, and parameterization routines execute completely inside client-side JavaScript memory in your web browser. Zero network telemetry or query fragments are transmitted."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,103 +124,149 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Top Cockpit Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout Frame */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Workspace Card */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 650px;
     }
 
     .form-group {
       margin-bottom: 18px;
+    }
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
     .form-group label {
       display: block;
@@ -130,20 +274,26 @@
       color: var(--atom-muted);
       font-family: var(--font-code);
       text-transform: uppercase;
-      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+    .char-counter {
+      font-size: 0.76rem;
+      font-family: var(--font-code);
+      color: var(--atom-muted);
     }
     .text-input {
       width: 100%;
       height: 110px;
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.88rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
       resize: vertical;
+      line-height: 1.5;
     }
     .text-input:focus {
       border-color: var(--atom-border-focus);
@@ -155,19 +305,26 @@
       gap: 8px;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 20px;
-      font-size: 0.78rem;
+      margin-bottom: 24px;
+      font-size: 0.8rem;
       font-family: var(--font-code);
+    }
+    .sample-title {
+      color: var(--atom-muted);
+      margin-right: 4px;
     }
     .sample-btn {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-cyan);
-      padding: 5px 12px;
-      border-radius: 3px;
+      padding: 6px 14px;
+      border-radius: 4px;
       cursor: pointer;
       font-family: var(--font-code);
-      font-size: 0.74rem;
+      font-size: 0.76rem;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
       transition: all 0.15s ease;
     }
     .sample-btn:hover {
@@ -176,44 +333,45 @@
     }
     .sample-btn.active {
       border-color: var(--atom-cyan);
-      background-color: rgba(86, 182, 194, 0.12);
+      background-color: rgba(86, 182, 194, 0.15);
       color: #fff;
+      font-weight: 600;
     }
 
     /* Output Panels */
     .context-stack {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
       margin-top: 24px;
     }
     .context-block {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 16px;
     }
     .context-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .context-title {
-      font-size: 0.82rem;
+      font-size: 0.86rem;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .context-badge {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 2px 8px;
+      border-radius: 4px;
       color: var(--atom-muted);
       font-weight: normal;
     }
@@ -222,10 +380,11 @@
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
       font-family: var(--font-code);
-      font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 3px;
+      font-size: 0.76rem;
+      padding: 6px 14px;
+      border-radius: 4px;
       cursor: pointer;
+      min-height: 34px;
       transition: all 0.15s;
     }
     .btn-copy:hover {
@@ -235,124 +394,342 @@
     .output-pre {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 3px;
-      padding: 12px;
+      border-radius: 4px;
+      padding: 14px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--atom-heading);
       white-space: pre-wrap;
       word-break: break-all;
-      max-height: 180px;
+      max-height: 200px;
       overflow-y: auto;
       line-height: 1.6;
     }
     .context-desc {
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       color: var(--atom-muted);
-      margin-top: 6px;
+      margin-top: 8px;
       font-family: var(--font-code);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* Disclaimer Card */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Documentation Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Logs
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">AppSec & Tokens</a> / sql-sanitize
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">AppSec & Tokens</a>
+      <span class="sep">/</span>
+      <span class="current">SQL Sanitize & Escaper</span>
     </nav>
 
     <div class="tool-header">
       <h1>SQL Injection Sanitizer & Query Escaper</h1>
-      <p>Evaluate, escape, and parameterize untrusted dynamic user inputs across major SQL engines to neutralize SQL injection vectors.</p>
+      <p>Evaluate, parameterize, and escape untrusted user inputs across MySQL, PostgreSQL, SQLite, and SQL Server. Inspect protocol-level prepared statements and engine-specific boundary formatting directly in browser memory.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive SQL Sanitizer Workspace">
       <div class="form-group">
-        <label for="rawInput">RAW USER INPUT / SQL PAYLOAD</label>
+        <div class="form-header">
+          <label for="rawInput">RAW USER INPUT / SQL INJECTION PAYLOAD</label>
+          <span class="char-counter" id="charCount">0 characters</span>
+        </div>
         <textarea id="rawInput" class="text-input" placeholder="Type or paste payload (e.g., admin' OR '1'='1' -- or '; DROP TABLE users; --)..."></textarea>
       </div>
 
       <div class="sample-bar">
-        <span style="color: var(--atom-muted);">Load Attack Payload:</span>
+        <span class="sample-title">Load Attack Preset:</span>
         <button type="button" class="sample-btn active" data-sample="admin' OR '1'='1' --">Classic Auth Bypass</button>
         <button type="button" class="sample-btn" data-sample="1'; DROP TABLE users; --">Stacked Query</button>
         <button type="button" class="sample-btn" data-sample="' UNION SELECT null, username, password FROM users --">UNION Based</button>
@@ -371,7 +748,7 @@
             <button class="btn-copy" data-target="outParam">Copy</button>
           </div>
           <pre class="output-pre" id="outParam">-</pre>
-          <div class="context-desc">Separates query logic from untrusted user data. Parameters are treated strictly as data literals at the protocol level.</div>
+          <div class="context-desc"><span>💡</span> Separates query logic from untrusted user data. Parameters are treated strictly as passive data literals at the network protocol layer.</div>
         </div>
 
         <!-- 2. ANSI / SQLite Quoting -->
@@ -384,7 +761,7 @@
             <button class="btn-copy" data-target="outAnsi">Copy</button>
           </div>
           <pre class="output-pre" id="outAnsi">-</pre>
-          <div class="context-desc">Doubles all internal single quotes ('') and strips null bytes. Standard SQL string literal escaping format.</div>
+          <div class="context-desc"><span>💡</span> Doubles all internal single quotes ('') and strips null bytes. Conforms with ISO/IEC 9075 standard SQL string representation.</div>
         </div>
 
         <!-- 3. MySQL / MariaDB Escaping -->
@@ -397,7 +774,7 @@
             <button class="btn-copy" data-target="outMysql">Copy</button>
           </div>
           <pre class="output-pre" id="outMysql">-</pre>
-          <div class="context-desc">Conforms with standard MySQL escaping rules: backslash prefixes for slashes, quotes, and control chars without quote boundary collisions.</div>
+          <div class="context-desc"><span>💡</span> Conforms to mysql_real_escape_string rules: backslash prefixes for control chars, quotes, and newlines without delimiter collision.</div>
         </div>
 
         <!-- 4. PostgreSQL Escaping & Dollar Quoting -->
@@ -410,7 +787,7 @@
             <button class="btn-copy" data-target="outPostgres">Copy</button>
           </div>
           <pre class="output-pre" id="outPostgres">-</pre>
-          <div class="context-desc">Demonstrates both PostgreSQL C-style string escape literals (E'...') and dynamic non-colliding dollar-quoted strings ($tag$...$tag$).</div>
+          <div class="context-desc"><span>💡</span> Demonstrates both PostgreSQL C-style string escape literals (E'...') and collision-free dynamic dollar-quoted strings ($tag$...$tag$).</div>
         </div>
 
         <!-- 5. SQL Identifier Escaping -->
@@ -423,118 +800,413 @@
             <button class="btn-copy" data-target="outIdentifier">Copy</button>
           </div>
           <pre class="output-pre" id="outIdentifier">-</pre>
-          <div class="context-desc">Demonstrates proper identifier boundary enclosing and character escaping (`ident`, "ident", [ident]) to stop dynamic identifier injection.</div>
+          <div class="context-desc"><span>⚠️</span> Intended exclusively for dynamic table and column identifiers. Demonstrates delimiter enclosing (`ident`, "ident", [ident]) to stop identifier injection.</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Explicit Disclaimer -->
+    <!-- Operational Boundaries & Legal Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational & Legal Disclaimer
+        <span>⚠️</span> Operational Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for database compromises, data corruption, query execution failures, or security breaches resulting from the use of this tool.</strong> Manual string escaping and concatenation are inherently brittle defensive practices that can be bypassed by multi-byte encoding mismatches, second-order injections, or unquoted numeric contexts. Developers must utilize native parameterized queries and prepared statements rather than relying solely on string manipulation.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Manual string escaping and concatenation are inherently brittle defensive practices.</strong> They can be bypassed by multi-byte encoding mismatches (such as GBK/Big5 wide-byte injection attacks), second-order injections, character set desynchronizations between client drivers and database engines, or injection into unquoted numeric and identifier contexts. Developers must utilize native parameterized queries and prepared statements rather than relying solely on string manipulation.
       </p>
     </aside>
 
-    <!-- Technical & Architecture Documentation -->
-    <article class="doc-section">
-      <h2>Why Parameterized Prepared Statements Supersede Escaping</h2>
-      <p>SQL injection occurs when data provided by a client is parsed as relational algebra commands by the SQL parser. String escaping attempts to neutralize structural characters, but minor syntax variations across database engines can leave applications vulnerable.</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>Understanding SQL Injection: The Anatomy of Parser Confusion</h2>
+      <p>
+        Since its formal categorization in the late 1990s, SQL Injection (SQLi) has maintained a permanent residence at the apex of application security vulnerability taxonomies, including the OWASP Top 10 and CWE-89. Despite decades of education, static code analysis, and modern Object-Relational Mappers (ORMs), SQL injection remains one of the most devastating software vulnerabilities because it represents a fundamental architecture flaw: <strong>the conflation of executable control instructions with untrusted user data</strong>.
+      </p>
+      <p>
+        Relational Database Management Systems (RDBMS) communicate with client applications using Structured Query Language (SQL)—a declarative domain-specific language designed to construct, query, and manipulate relational data structures. At an architectural level, an SQL database engine processes incoming query strings through a multi-stage compilation pipeline:
+      </p>
+      <ol>
+        <li><strong>Lexical Analysis (Scanning):</strong> The raw query string is broken down into atomic tokens (keywords, literals, identifiers, operators, and punctuation).</li>
+        <li><strong>Grammatical Analysis (Parsing):</strong> The lexical tokens are validated against formal grammar rules to generate an Abstract Syntax Tree (AST), defining the operational logic and relational calculus of the query.</li>
+        <li><strong>Query Optimization:</strong> The query planner evaluates relational algebra transformations, index cardinality, and disk access costs to construct a low-level physical execution plan.</li>
+        <li><strong>Execution:</strong> The database virtual machine executes the compiled execution plan against storage pages in memory and disk.</li>
+      </ol>
+      <p>
+        A SQL injection vulnerability occurs when an application constructs SQL statements by concatenating untrusted external data directly into the query text <em>prior</em> to the compilation and parsing phase. When the parser scans the query, structural characters supplied by the attacker (such as single quotes <code>'</code>, semicolons <code>;</code>, double dashes <code>--</code>, or boolean operators <code>OR</code>, <code>AND</code>) are interpreted as language grammar rather than inert data literals. Consequently, the user subverts the Abstract Syntax Tree, forcing the database engine to execute unintended operations with the permissions of the database connection user.
+      </p>
+
+      <h2>How to Use the BitDark SQL Sanitizer & Query Escaper</h2>
+      <p>
+        The BitDark SQL Injection Sanitizer provides developers, penetration testers, and security auditors with a real-time, zero-egress workspace to evaluate how untrusted dynamic inputs interact with various defensive formatting regimes:
+      </p>
+      <ol>
+        <li>
+          <strong>Input Untrusted Payload:</strong> Type or paste an input string, parameter value, or test injection payload into the primary text area. You can also click any of the curated attack presets (such as Classic Auth Bypass, Stacked Queries, or Time-Based Blind).
+        </li>
+        <li>
+          <strong>Inspect Parameterized Queries (Panel 1):</strong> View how the string must be represented using parameterized prepared statements. Notice that the payload is completely isolated from the query template and passed as a passive bound literal across PostgreSQL positional (<code>$1</code>), anonymous ODBC/JDBC (<code>?</code>), and named PDO/MSSQL (<code>:param</code>) bindings.
+        </li>
+        <li>
+          <strong>Review ANSI / SQLite Quoting (Panel 2):</strong> Observe standard ISO/IEC 9075 SQL string literal escaping, which doubles internal single quotes (<code>''</code>) and removes null bytes.
+        </li>
+        <li>
+          <strong>Examine MySQL/MariaDB Escaping (Panel 3):</strong> Review C-style escape sequences conforming to <code>mysql_real_escape_string</code> standards, verifying that control characters (<code>\0</code>, <code>\n</code>, <code>\r</code>, <code>\Z</code>), double quotes, and backslashes are prefixed without boundary collisions.
+        </li>
+        <li>
+          <strong>Inspect PostgreSQL Dollar Quoting (Panel 4):</strong> Review both C-style escape strings (<code>E'...'</code>) and non-colliding dynamic tag dollar-quoting (<code>$tag$...$tag$</code>).
+        </li>
+        <li>
+          <strong>Examine SQL Identifier Escaping (Panel 5):</strong> Inspect proper delimiter enclosure (<code>`ident`</code> for MySQL, <code>"ident"</code> for ANSI/PostgreSQL, <code>[ident]</code> for Microsoft SQL Server) for scenarios involving dynamic column or table names.
+        </li>
+      </ol>
+
+      <h2>When to Use Parameterization vs. Escaping: Threat Modeling</h2>
+      <p>
+        In enterprise application architecture, defensive strategies must be selected based on where and how untrusted inputs intersect with database engines:
+      </p>
       <ul>
-        <li><strong>Prepared Statements (Parameterization):</strong> The database engine compiles the query template before receiving input values. Bound parameters are handled as passive scalar values, entirely neutralizing SQL injection risk.</li>
-        <li><strong>ANSI SQL Standard Quoting:</strong> According to the ISO/IEC 9075 SQL standard, a single quote literal within a string must be represented by two consecutive single quotes (<code>''</code>), not a backslash.</li>
-        <li><strong>Dynamic Identifiers:</strong> Identifiers (such as table names, column names, or sort order expressions) cannot be parameterized using standard placeholders. They must be validated against strict server-side whitelists or wrapped in engine-specific identifier delimiters.</li>
+        <li>
+          <strong>Application Data Literals (WHERE, INSERT, UPDATE, VALUES):</strong> Always use <strong>Parameterized Queries (Prepared Statements)</strong>. Parameterization is the only mathematically proven defense that prevents syntax subversion regardless of input content, character set, or engine configuration.
+        </li>
+        <li>
+          <strong>Dynamic Structural Identifiers (TABLE, COLUMN, ORDER BY):</strong> Parameter markers cannot be bound to identifiers in any standard SQL dialect. If an application must permit users to select a sort column or table partition, the input must be validated against a strict server-side whitelist. If dynamic identifiers must be interpolated, they must be wrapped in dialect-specific identifier quotes with internal delimiter escaping.
+        </li>
+        <li>
+          <strong>Automated Database Migration Scripts & Seeders:</strong> When generating static <code>.sql</code> backup dumps or offline seed scripts without an active connection protocol, deterministic escaping must be utilized.
+        </li>
+        <li>
+          <strong>Legacy Codebase Auditing & Hardening:</strong> Identifying unquoted string concatenations in legacy code to isolate fragile escaping functions and replace them with native database abstractions.
+        </li>
       </ul>
 
-      <h2>Zero Egress Guarantee</h2>
-      <p>All sanitization, regex transformations, and query generations execute solely within browser runtime memory. No input strings or database fragments are transmitted to external servers or logged remotely.</p>
+      <h2>The Mathematical & Structural Architecture of SQL Injections</h2>
+      <p>
+        To understand why manual escaping fails, consider the anatomy of a classic authentication bypass query:
+      </p>
+      <pre><code>-- Vulnerable Application Query Construction:
+SELECT * FROM users WHERE username = '$user_input' AND password = '$password_hash';</code></pre>
+      <p>
+        If the user submits <code>admin' OR '1'='1' --</code> as their username, the concatenated SQL string becomes:
+      </p>
+      <pre><code>SELECT * FROM users WHERE username = 'admin' OR '1'='1' --' AND password = '...';</code></pre>
+
+      <p>
+        When the SQL engine's parser constructs the Abstract Syntax Tree, the single quote after <code>admin</code> closes the string literal. The parser then encounters the boolean operator <code>OR</code> and the tautology condition <code>'1'='1'</code>, which evaluates to boolean <strong>TRUE</strong>. The double dash <code>--</code> indicates a comment delimiter, causing the engine to discard the remaining password verification clause. The resulting execution plan returns the first record in the table (typically the administrator account), bypassing authentication completely.
+      </p>
+
+      <h2>Dialect Mechanics: Comparing Modern Database Engines</h2>
+      <p>
+        Escaping is treacherous because every major database vendor implements subtle nuances in syntax, string delimiters, and escape character semantics:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Database Dialect</th>
+              <th>Literal Quote Method</th>
+              <th>Identifier Delimiters</th>
+              <th>Parameterized Placeholders</th>
+              <th>Escape Syntax Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ANSI Standard / SQLite</strong></td>
+              <td>Single Quote Doubling (<code>''</code>)</td>
+              <td>Double Quotes (<code>"column"</code>)</td>
+              <td><code>?</code>, <code>:name</code>, <code>@name</code>, <code>$1</code></td>
+              <td>No backslash escaping by default</td>
+            </tr>
+            <tr>
+              <td><strong>MySQL / MariaDB</strong></td>
+              <td>Backslash & Doubling (<code>\'</code>, <code>''</code>)</td>
+              <td>Backticks (<code>`column`</code>)</td>
+              <td><code>?</code> (Anonymous positional)</td>
+              <td>C-style escape sequences (<code>\0</code>, <code>\n</code>, <code>\r</code>, <code>\Z</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>PostgreSQL</strong></td>
+              <td>Single Quote Doubling (<code>''</code>)</td>
+              <td>Double Quotes (<code>"column"</code>)</td>
+              <td><code>$1</code>, <code>$2</code> (Indexed positional)</td>
+              <td>Escape strings (<code>E'...'</code>) & Dollar quotes (<code>$$...$$</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Microsoft SQL Server</strong></td>
+              <td>Single Quote Doubling (<code>''</code>)</td>
+              <td>Square Brackets (<code>[column]</code>)</td>
+              <td><code>@param1</code>, <code>@param2</code> (Named parameters)</td>
+              <td>No backslash escaping; uses <code>N'...'</code> for Unicode</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Worked Example: Comparing Escaping Formats on Attack Payloads</h2>
+      <p>
+        Let us trace how an advanced injection payload—combining quotes, stacked commands, and control characters—is handled across various defensive mechanisms:
+      </p>
+      <pre><code>Target Attack Payload:
+test\0' OR 1=1; DROP TABLE users; --</code></pre>
+
+      <h3>1. Parameterized Query Binding (Gold Standard)</h3>
+      <p>
+        Under a prepared statement, the SQL text is compiled with a parameter marker:
+      </p>
+      <pre><code>-- SQL Query Template (Compiled Once):
+SELECT id, email, status FROM accounts WHERE username = $1;
+
+-- Protocol Bound Literal:
+Parameter 1 Value: "test\0' OR 1=1; DROP TABLE users; --"</code></pre>
+      <p>
+        Because the database engine has already parsed the AST, the quotes, semicolons, and comment markers are never parsed as control tokens. The database simply queries the table looking for an account whose exact literal username string contains those characters. The attack is 100% neutralized.
+      </p>
+
+      <h3>2. ANSI SQL & SQLite String Doubling</h3>
+      <p>
+        In accordance with the ISO/IEC 9075 SQL standard, single quotes inside string literals are escaped by doubling them, while null bytes (<code>\0</code>) are purged to prevent C-string termination attacks:
+      </p>
+      <pre><code>'test'' OR 1=1; DROP TABLE users; --'</code></pre>
+
+      <h3>3. MySQL / MariaDB C-Style Escaping</h3>
+      <p>
+        MySQL supports backslash prefixes for control sequences and quotes:
+      </p>
+      <pre><code>'test\\0\' OR 1=1; DROP TABLE users; --'</code></pre>
+
+      <h3>4. PostgreSQL Dollar-Quoting with Non-Colliding Tags</h3>
+      <p>
+        PostgreSQL allows strings to be enclosed in matching dollar tags. To prevent an attacker from terminating the string using a matching tag, the engine selects a tag that does not exist within the payload:
+      </p>
+      <pre><code>$body$test' OR 1=1; DROP TABLE users; --$body$</code></pre>
+
+      <h2>The Failure Modes of Manual String Escaping</h2>
+      <p>
+        Security engineers strongly advise against manual escaping because escaping relies on an assumption of perfect syntax predictability that does not exist in real-world distributed architectures:
+      </p>
+
+      <h3>1. The GBK / Big5 Multi-Byte Wide-Byte Injection Vulnerability</h3>
+      <p>
+        In legacy applications communicating with MySQL using multi-byte character sets such as GBK, Big5, or CP936, a classic wide-byte vulnerability emerges. If an attacker submits the byte sequence <code>%bf%27</code>, a PHP script using <code>addslashes()</code> attempts to escape the single quote (<code>%27</code>) by prefixing a backslash (<code>%5c</code>), producing <code>%bf%5c%27</code>.
+      </p>
+      <p>
+        However, the GBK character set treats two-byte sequences starting with bytes above <code>0x80</code> as a single Chinese ideograph. When the database receives the string, it evaluates <code>%bf%5c</code> as the single valid Chinese character <code>縗</code>, consuming the escaping backslash. The single quote (<code>%27</code>) is left bare and unescaped, successfully breaking the SQL string boundary!
+      </p>
+
+      <h3>2. Second-Order SQL Injection</h3>
+      <p>
+        Even if an input is flawlessly escaped prior to database insertion, it can still trigger a <strong>second-order injection</strong>. When data is stored in a database, the escaping slashes or quote doublings are stripped by the engine during storage:
+      </p>
+      <ol>
+        <li>An attacker registers an account with the username <code>admin'--</code>.</li>
+        <li>The registration query is escaped or parameterized; the string <code>admin'--</code> is saved cleanly into the database.</li>
+        <li>Later, an administrative batch job or profile script executes: <code>SELECT * FROM profiles WHERE username = '$row[username]'</code>.</li>
+        <li>Because the developer assumed data already in the database was trusted, they concatenated it without parameterization. The string <code>admin'--</code> breaks out of the second query, executing arbitrary code!</li>
+      </ol>
+
+      <h3>3. Unquoted Numeric Contexts</h3>
+      <p>
+        String escaping functions only escape characters relevant to string literals (such as single quotes and backslashes). If a developer writes a query where numeric IDs are not wrapped in quotes, string escaping offers zero protection:
+      </p>
+      <pre><code>-- Vulnerable Numeric Query:
+SELECT * FROM invoices WHERE user_id = $input;
+
+-- Attacker Submits:
+1 OR 1=1
+
+-- Resulting Query:
+SELECT * FROM invoices WHERE user_id = 1 OR 1=1;</code></pre>
+      <p>
+        Because the injection contains no single quotes, an escaping function leaves the string completely unaltered. The attack succeeds unimpeded.
+      </p>
+
+      <h2>Common Mistakes and Security Anti-Patterns</h2>
+      <p>
+        When developing database access layers, avoid these standard development pitfalls:
+      </p>
+      <ul>
+        <li>
+          <strong>Building Queries via String Formatting / f-strings:</strong> Utilizing Python f-strings, JavaScript template literals, or C# string interpolation (e.g., <code>f"SELECT * FROM users WHERE id = {user_id}"</code>) completely bypasses database driver parameterization. Always pass query templates and parameters as separate arguments to the database execution method.
+        </li>
+        <li>
+          <strong>Relying on Blacklist RegEx Filters:</strong> Attempting to block SQL injection by regex-matching keywords like <code>UNION</code>, <code>SELECT</code>, or <code>DROP</code> is easily bypassed using case variation (<code>uNiOn</code>), comment insertion (<code>UN/**/ION</code>), or alternative relational primitives.
+        </li>
+        <li>
+          <strong>Assuming ORMs are Inherently Immune:</strong> While ORMs like Hibernate, Entity Framework, Prisma, and SQLAlchemy use parameterized queries by default for standard model methods, they frequently expose "raw SQL" escape hatches (e.g., <code>prisma.$queryRawUnsafe</code> or <code>sequelize.literal</code>) that reintroduce standard SQL injection vulnerabilities if misused.
+        </li>
+        <li>
+          <strong>Escaping Input Data Instead of Parameterizing:</strong> Escaping modifies data at rest, leading to double-escaping bugs (e.g., storing <code>O\'Reilly</code> instead of <code>O'Reilly</code>), while leaving the door open to multi-byte character set bypasses.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between prepared statements and parameterized queries?</div>
+          <div class="faq-answer">
+            In modern software development, the terms are often used interchangeably. Technically, a parameterized query refers to any query where parameters are separated from the command text. A prepared statement is a specific database feature where the query template is compiled into an execution plan once on the database server, after which parameter values can be executed against that plan multiple times with optimal performance and complete security.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can an attacker bypass parameterized queries using hex encoding or URL encoding?</div>
+          <div class="faq-answer">
+            No. When using parameterized queries, the database protocol transmits parameters as distinct data packets completely outside the command parser stream. Whether the payload contains hex characters, Unicode sequences, URL encoding, or single quotes, the database driver binds the raw byte sequence directly to the target column without lexical re-parsing.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How should I handle dynamic ORDER BY clauses safely?</div>
+          <div class="faq-answer">
+            Because SQL grammar does not permit column names in ORDER BY clauses to be bound as parameter placeholders, you must use an allowlist approach. Define a strict server-side dictionary or array of allowable column names (e.g., <code>const allowedSorts = ['created_at', 'username', 'price']</code>). If the user-supplied value is not in the allowlist, default to a safe column.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is mysql_real_escape_string deprecated in modern PHP?</div>
+          <div class="faq-answer">
+            The entire legacy <code>mysql_*</code> extension was deprecated in PHP 5.5 and removed in PHP 7.0 in favor of PDO and MySQLi. <code>mysql_real_escape_string</code> required an active database connection to check the character set, but developers frequently misused it without setting the correct charset, leaving applications vulnerable to wide-byte attacks. Modern development relies on PDO prepared statements.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is a blind SQL injection?</div>
+          <div class="faq-answer">
+            Blind SQL injection occurs when an application is vulnerable to SQL injection, but the web page does not display database query results or SQL error messages. Attackers extract data by asking boolean true/false questions that alter the page output (Boolean-based blind) or by injecting functions that force the database to pause for several seconds before responding (Time-based blind, using functions like <code>SLEEP(5)</code> or <code>pg_sleep(5)</code>).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does this tool transmit my database queries or sensitive strings to a server?</div>
+          <div class="faq-answer">
+            Never. The BitDark platform operates under a strict zero-telemetry, client-side security architecture. All string manipulations, parameter placeholder bindings, and regular expression formatting execute entirely within your browser's private JavaScript runtime. No network requests are made.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is an in-band SQL injection versus an out-of-band SQL injection?</div>
+          <div class="faq-answer">
+            In-band SQL injection occurs when the attacker uses the same communication channel to launch the attack and gather results (such as classic UNION-based attacks where data appears in the HTML response). Out-of-band SQL injection occurs when the database cannot return results directly, so the attacker forces the database server to generate DNS or HTTP requests to an external server under their control (e.g., using Oracle's <code>UTL_HTTP</code> or SQL Server's <code>xp_dirtree</code>) to exfiltrate data.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does SQLite handle dynamic queries differently from MySQL or Postgres?</div>
+          <div class="faq-answer">
+            SQLite is an embedded, in-process database that uses manifest typing rather than static column typing. It strictly adheres to standard SQL single-quote doubling (<code>''</code>) for string literals and does not support MySQL-style backslash escape sequences unless specifically enabled. For identifiers, SQLite accepts ANSI double quotes, MySQL backticks, or MSSQL square brackets for cross-compatibility.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related AppSec & Authentication Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/xss-escape/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> Contextual XSS Sanitizer</div>
+            <div class="related-card-desc">Escape untrusted dynamic strings across HTML Body, Attribute, JavaScript, URI, and CSS contexts.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+          <a href="/tools/auth/csp-evaluator/" class="related-card">
+            <div class="related-card-title"><span>[📋]</span> CSP Evaluator</div>
+            <div class="related-card-desc">Audit Content Security Policy directives against XSS bypasses, script gadgets, and unsafe wildcards.</div>
+          </a>
+          <a href="/tools/forensics/sqlite-viewer/" class="related-card">
+            <div class="related-card-title"><span>[🗄️]</span> In-Memory SQLite Viewer</div>
+            <div class="related-card-desc">Inspect, query, and dissect local SQLite databases and forensic tables directly in volatile browser memory.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> PII & Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, IP addresses, tokens, and personally identifiable information from text in local memory.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM Encryptor</div>
+            <div class="related-card-desc">Encrypt sensitive database payloads with authenticated 256-bit AES encryption prior to storage.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Asynchronous Dual-Endpoint IP Telemetry Engine with Fallbacks
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-          clearTimeout(timeoutId);
-          return res;
-        } catch (err) {
-          clearTimeout(timeoutId);
-          throw err;
-        }
-      };
-
-      // IPv4 Resolution
-      (async () => {
-        try {
-          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
-          if (res4.ok) {
-            const data4 = await res4.json();
-            ipv4El.textContent = data4.ip;
-            return;
-          }
-          throw new Error("IPv4 primary failed");
-        } catch {
-          try {
-            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
-            if (fb4.ok) {
-              const text4 = (await fb4.text()).trim();
-              ipv4El.textContent = text4 || "Offline";
-              return;
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
             }
-          } catch {}
-          ipv4El.textContent = "Offline";
-        }
-      })();
-
-      // IPv6 Resolution
-      (async () => {
-        try {
-          const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
-          if (res6.ok) {
-            const data6 = await res6.json();
-            ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
-            return;
-          }
-          throw new Error("IPv6 primary failed");
-        } catch {
-          try {
-            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
-            if (fb6.ok) {
-              const text6 = (await fb6.text()).trim();
-              ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-              return;
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
             }
-          } catch {}
-          ipv6El.textContent = "Not Supported";
-        }
-      })();
+          }
+        });
+      });
+
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // SQL Injection Sanitization & Escaping Engine
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. SQL Injection Sanitization & Escaping Engine (100% Unaltered Tool Logic)
     const rawInput = document.getElementById("rawInput");
+    const charCount = document.getElementById("charCount");
     const outParam = document.getElementById("outParam");
     const outAnsi = document.getElementById("outAnsi");
     const outMysql = document.getElementById("outMysql");
@@ -591,6 +1263,10 @@
 
     function runSqlSanitizer() {
       const val = rawInput.value;
+      if (charCount) {
+        charCount.textContent = `${val.length} character${val.length === 1 ? '' : 's'}`;
+      }
+
       if (!val) {
         outParam.textContent = "-";
         outAnsi.textContent = "-";
@@ -638,11 +1314,17 @@
       });
     });
 
-    const initialPreset = document.querySelector(".sample-btn.active");
-    if (initialPreset) {
-      rawInput.value = initialPreset.dataset.sample;
-    }
-    runSqlSanitizer();
+    // Initialize Page Observers & Default Run
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+
+      const initialPreset = document.querySelector(".sample-btn.active");
+      if (initialPreset) {
+        rawInput.value = initialPreset.dataset.sample;
+      }
+      runSqlSanitizer();
+    });
   </script>
 </body>
 </html>
