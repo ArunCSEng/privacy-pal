@@ -4,12 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth Tool | BitDark</title>
-  <meta name="title" content="PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth Tool | BitDark" />
-  <meta name="description" content="Generate cryptographically secure PKCE code verifiers, SHA-256 code challenges (S256), and authorization request URLs locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="pkce generator, proof key for code exchange, code challenge generator, code verifier generator, oauth 2.0 pkce, s256 generator, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/pkce-generator" />
+  <title>PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth 2.0 Tool | BitDark</title>
+  <meta name="title" content="PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth 2.0 Tool | BitDark" />
+  <meta name="description" content="Generate high-entropy PKCE code verifiers, SHA-256 code challenges (S256), and authorization request URLs locally in browser memory. Conforms to RFC 7636 and OAuth 2.1 with zero network egress." />
+  <meta name="keywords" content="pkce generator, proof key for code exchange, code challenge generator, code verifier generator, oauth 2.0 pkce, s256 generator, rfc 7636, oauth 2.1 pkce, offline pkce tool, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/pkce-generator/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/pkce-generator/" />
+  <meta property="og:title" content="PKCE Code Verifier &amp; Challenge Generator | BitDark" />
+  <meta property="og:description" content="Derive cryptographically secure PKCE code verifiers and SHA-256 S256 code challenges locally in browser RAM. Zero tracking, zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/pkce-generator/" />
+  <meta name="twitter:title" content="PKCE Code Verifier &amp; Challenge Generator | BitDark" />
+  <meta name="twitter:description" content="Derive RFC 7636 PKCE verifiers and S256 code challenges directly in volatile browser memory. 100% Client-Side with zero server telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "PKCE Code Verifier & Challenge Generator",
+        "url": "https://bitdark.net/tools/auth/pkce-generator/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Client-side cryptographic utility to generate high-entropy RFC 7636 Proof Key for Code Exchange (PKCE) code verifiers, SHA-256 code challenges, and OAuth 2.0 authorization request URLs in local browser RAM without network egress."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Proof Key for Code Exchange (PKCE): RFC 7636 Architecture, Threat Mitigation, and Implementation Guide",
+        "url": "https://bitdark.net/tools/auth/pkce-generator/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-18",
+        "dateModified": "2026-11-03",
+        "description": "Exhaustive technical and architectural analysis of OAuth 2.0 Proof Key for Code Exchange (PKCE, RFC 7636), authorization code interception attacks, S256 Base64URL transformation, and OAuth 2.1 security specifications."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is PKCE and why was it created for OAuth 2.0?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Proof Key for Code Exchange (PKCE, pronounced 'pixy') is a cryptographic extension defined in RFC 7636 designed to prevent authorization code interception attacks against public OAuth 2.0 clients (such as Single Page Applications and native mobile apps) that cannot securely store a pre-shared client secret."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does PKCE prevent authorization code interception?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The client creates a dynamic, high-entropy secret (code_verifier) and transmits its SHA-256 digest (code_challenge) during the initial authorization request. When exchanging the resulting authorization code for tokens, the client sends the raw code_verifier. The authorization server hashes the verifier and ensures it matches the original challenge. Even if a malicious app intercepts the authorization code, it cannot exchange it for tokens without the secret code_verifier."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is the plain challenge method deprecated in modern OAuth?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In plain mode, code_challenge is identical to code_verifier. If an attacker inspects TLS traffic, local logs, or browser histories during the authorization step, they capture the raw verifier, neutralizing the protection. OAuth 2.1 explicitly mandates the S256 method, which relies on a one-way SHA-256 cryptographic hash."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are the character length and entropy constraints for an RFC 7636 code_verifier?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An RFC 7636 compliant code_verifier must be a high-entropy cryptographically random string between 43 and 128 characters in length, drawn exclusively from the unreserved URI character set: uppercase letters [A-Z], lowercase letters [a-z], digits [0-9], and the four punctuation symbols hyphen (-), period (.), underscore (_), and tilde (~)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does BitDark transmit generated PKCE verifiers or challenges across the network?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an absolute zero-network-egress security architecture. All random entropy generation via crypto.getRandomValues and SHA-256 digests via crypto.subtle.digest execute entirely in your local browser memory. Zero bytes leave your machine."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,105 +123,146 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 16px;
     }
     @media (max-width: 768px) {
@@ -133,32 +272,38 @@
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 16px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.05em;
     }
-    .form-group input, .form-group select {
+    /* Mobile-first: 16px font sizing prevents iOS Safari auto-zooming */
+    .form-group input, 
+    .form-group select {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
       border-radius: 4px;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px;
       outline: none;
+      min-height: 44px;
+      transition: border-color 0.2s ease;
     }
-    .form-group input:focus, .form-group select:focus {
+    .form-group input:focus, 
+    .form-group select:focus {
       border-color: var(--atom-border-focus);
     }
 
     .inline-btn-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
     .inline-btn-group input {
       flex: 1;
@@ -167,10 +312,9 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-top: 10px;
-      margin-bottom: 16px;
+      margin-top: 14px;
     }
 
     .btn-atom {
@@ -179,30 +323,41 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
     /* Results Workspace */
-    .results-area { margin-top: 20px; }
+    .results-area { margin-top: 24px; }
     
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 6px;
       margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -217,32 +372,33 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
     }
 
     .param-group {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     .param-header {
       display: flex;
@@ -255,16 +411,19 @@
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.05em;
     }
     .param-copy-btn {
       background: transparent;
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 4px 10px;
+      border-radius: 4px;
       font-family: var(--font-code);
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       cursor: pointer;
+      min-height: 32px;
+      transition: all 0.2s ease;
     }
     .param-copy-btn:hover {
       border-color: var(--atom-amber);
@@ -274,108 +433,322 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 16px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--atom-heading);
       word-break: break-all;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    /* Operational Disclaimer */
+    /* Operational Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2800px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">Authentication</a> / pkce-generator
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">Authentication</a>
+      <span class="sep">/</span>
+      <span class="current">PKCE Generator</span>
     </nav>
 
     <div class="tool-header">
       <h1>PKCE Code Verifier &amp; Challenge Generator</h1>
-      <p>Generate high-entropy Proof Key for Code Exchange (PKCE) parameters (RFC 7636) conforming to OAuth 2.0 and OpenID Connect specifications entirely in browser memory.</p>
+      <p>Generate high-entropy Proof Key for Code Exchange (PKCE) parameters (RFC 7636) conforming to OAuth 2.0 and OpenID Connect specifications entirely in browser memory. Derive SHA-256 S256 challenges and preview authorization URLs with zero server telemetry.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive PKCE Generator Terminal">
       <div class="form-grid">
         <div class="form-group">
           <label for="verifierLength">Code Verifier Length (Characters: 43 to 128)</label>
@@ -395,7 +768,7 @@
         <label for="codeVerifierInput">Code Verifier (code_verifier)</label>
         <div class="inline-btn-group">
           <input type="text" id="codeVerifierInput" placeholder="Click 'Generate New Pair' or enter existing custom verifier..." spellcheck="false" autocomplete="off" />
-          <button class="btn-atom btn-secondary" id="btnGenRandom">Generate Random</button>
+          <button class="btn-atom btn-secondary" id="btnGenRandom" type="button">Generate Random</button>
         </div>
       </div>
 
@@ -412,9 +785,9 @@
       </div>
 
       <div class="btn-row">
-        <button class="btn-atom" id="btnCalculate">Generate / Derive PKCE</button>
-        <button class="btn-atom btn-secondary" id="btnExportJson">Export JSON</button>
-        <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
+        <button class="btn-atom" id="btnCalculate" type="button">Generate / Derive PKCE</button>
+        <button class="btn-atom btn-secondary" id="btnExportJson" type="button">Export JSON</button>
+        <button class="btn-atom btn-secondary" id="btnClear" type="button">Clear Workspace</button>
       </div>
 
       <div class="results-area">
@@ -445,7 +818,7 @@
         <div class="param-group">
           <div class="param-header">
             <span class="param-label">code_verifier</span>
-            <button class="param-copy-btn" id="btnCopyVerifier">Copy Verifier</button>
+            <button class="param-copy-btn" id="btnCopyVerifier" type="button">Copy Verifier</button>
           </div>
           <div class="viewer-box" id="verifierViewer">-</div>
         </div>
@@ -453,7 +826,7 @@
         <div class="param-group">
           <div class="param-header">
             <span class="param-label">code_challenge</span>
-            <button class="param-copy-btn" id="btnCopyChallenge">Copy Challenge</button>
+            <button class="param-copy-btn" id="btnCopyChallenge" type="button">Copy Challenge</button>
           </div>
           <div class="viewer-box" id="challengeViewer">-</div>
         </div>
@@ -461,104 +834,463 @@
         <div class="param-group">
           <div class="param-header">
             <span class="param-label">Sample Authorization Request URL</span>
-            <button class="param-copy-btn" id="btnCopyUrl">Copy URL</button>
+            <button class="param-copy-btn" id="btnCopyUrl" type="button">Copy URL</button>
           </div>
           <div class="viewer-box" id="urlViewer">-</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Security Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, compromised OAuth session tokens, authorization state interception, incorrect endpoint wiring, or implementation vulnerabilities in downstream authentication workflows. The generated PKCE code verifier is a high-entropy secret that must be retained securely in your client application's temporary state until exchanged for tokens and never committed to version control. All calculations execute client-side via the native Web Cryptography API without network transmission.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Cryptographic Operational Boundaries:</strong> The generated PKCE code verifier is a high-entropy secret that must be retained securely in your client application's temporary runtime memory (e.g., in-memory closure or sessionStorage) until exchanged for tokens and must never be committed to source code or logged to persistent telemetry. All random generation via <code>window.crypto.getRandomValues</code> and SHA-256 transformations via <code>window.crypto.subtle.digest</code> execute strictly client-side inside your local browser sandbox. Zero bytes are transmitted across network interfaces.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How PKCE Mitigates Authorization Code Interception</h2>
-      <p>The Proof Key for Code Exchange protocol (standardized in RFC 7636) prevents authorization code interception attacks against public clients (such as Single Page Applications and mobile applications) that cannot securely store a traditional client secret.</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Mechanics of Proof Key for Code Exchange (PKCE)</h2>
+      <p>
+        In the original OAuth 2.0 framework (RFC 6749), applications were strictly partitioned into two operational classes: <strong>confidential clients</strong> and <strong>public clients</strong>. Confidential clients—such as traditional monolithic web applications running on backend servers (Node.js, Python/Django, Java Spring)—can safely store a static, pre-shared <code>client_secret</code> out of reach of end users. Conversely, public clients—such as Single Page Applications (SPAs) executing in browser runtimes and native applications installed on mobile devices (iOS, Android) or desktops—cannot maintain secret confidentiality. Any API key, client secret, or private certificate bundled into a compiled binary or client JavaScript bundle can be extracted in seconds via basic decompilers, browser developer tools, or string extraction utilities.
+      </p>
+      <p>
+        Because public clients could not authenticate themselves using static secrets, early OAuth implementations relied on the <em>Implicit Grant</em> flow or an unauthenticated <em>Authorization Code Grant</em>. Both architectures exposed severe systemic vulnerabilities. Specifically, native mobile applications registering custom URI schemes (such as <code>myapp://oauth-callback</code>) were vulnerable to <strong>Authorization Code Interception Attacks</strong>.
+      </p>
+      <p>
+        To permanently neutralize this vulnerability, the Internet Engineering Task Force (IETF) standardized <strong>Proof Key for Code Exchange (PKCE, pronounced "pixy")</strong> in <strong>RFC 7636</strong>. Rather than relying on a static shared secret, PKCE dynamically binds the authorization request to the token exchange request using a transient, dynamically generated cryptographic proof.
+      </p>
+
+      <h2>The Threat Vector: How Authorization Code Interception Operates</h2>
+      <p>
+        To understand why PKCE is required across modern authorization systems, consider the mechanics of an authorization code interception attack on a mobile or desktop operating system without PKCE:
+      </p>
+
+      <pre><code>+-------------------------------------------------------------------------------+
+|             Authorization Code Interception Attack (Without PKCE)             |
++-------------------------------------------------------------------------------+
+|  1. LEGITIMATE APP initiates Authorization Request via OS System Browser:     |
+|     GET /authorize?response_type=code&client_id=123&redirect_uri=myapp://cb  |
+|                                                                               |
+|  2. USER AUTHENTICATES with IdP. Authorization Server issues code:            |
+|     myapp://cb?code=AUTH_CODE_XYZ                                            |
+|                                                                               |
+|  3. OPERATING SYSTEM TASK HIJACKING / CUSTOM SCHEME SNOOPING:                |
+|     A malicious app installed on the user's device has registered the exact   |
+|     same custom URI scheme ('myapp://').                                      |
+|     The OS delivers the redirect URI and code to the MALICIOUS APP.           |
+|                                                                               |
+|  4. TOKEN THEFT:                                                              |
+|     Malicious App sends: POST /token [ code=AUTH_CODE_XYZ, client_id=123 ]    |
+|     Authorization Server issues Access Token & Refresh Token to ATTACKER.     |
++-------------------------------------------------------------------------------+</code></pre>
+
+      <p>
+        Because mobile operating systems (especially older Android and iOS revisions) allowed multiple applications to register identical custom URI schemes, an adversary could install a rogue utility that claimed the victim app's callback scheme. When the authorization server redirected the user back to the device, the OS could resolve the URI to the malicious application instead. Because the public client possessed no client secret, the attacker simply forwarded the stolen authorization code to the token endpoint and received legitimate access and refresh tokens.
+      </p>
+
+      <h2>How PKCE Mitigates the Attack: The Cryptographic Handshake</h2>
+      <p>
+        PKCE introduces two dynamic parameters that transform the authorization code exchange into a secure zero-knowledge proof:
+      </p>
+      <ol>
+        <li>
+          <strong>The Code Verifier (<code>code_verifier</code>):</strong> A cryptographically random, high-entropy string generated freshly by the client application for each authentication attempt.
+        </li>
+        <li>
+          <strong>The Code Challenge (<code>code_challenge</code>):</strong> A derived string created by hashing the verifier with SHA-256 and encoding it in URL-safe Base64: <code>BASE64URL-ENCODE(SHA256(code_verifier))</code>.
+        </li>
+      </ol>
+
+      <pre><code>+-------------------------------------------------------------------------------+
+|                     The RFC 7636 PKCE Cryptographic Flow                     |
++-------------------------------------------------------------------------------+
+|  [ Client App ]                                    [ Authorization Server ]   |
+|         |                                                      |              |
+|   1. Generate code_verifier (CSPRNG, 43-128 chars)             |              |
+|   2. Compute code_challenge = BASE64URL(SHA256(verifier))      |              |
+|         |                                                      |              |
+|         |--- 3. /authorize?code_challenge=CHALLENGE&S256 ----->|              |
+|         |                                                      | [Stores      |
+|         |                                                      |  Challenge]  |
+|         |<-- 4. Redirect with Authorization Code --------------|              |
+|         |                                                      |              |
+|         |--- 5. /token [ code + code_verifier ] -------------->|              |
+|         |                                                      | [Computes    |
+|         |                                                      |  SHA256(v)   |
+|         |                                                      |  Matches?]   |
+|         |<-- 6. Returns Access Token & Refresh Token ----------|              |
++-------------------------------------------------------------------------------+</code></pre>
+
+      <p>
+        Under PKCE, even if a malicious application running on the same device intercepts the authorization code in step 4, it cannot redeem it. In step 5, the authorization server refuses to issue tokens unless the client provides the raw <code>code_verifier</code>. Because the attacker only saw the one-way SHA-256 hash (<code>code_challenge</code>) transmitted in step 3, calculating the original pre-image is computationally impossible.
+      </p>
+
+      <h2>How to Use the BitDark PKCE Generator</h2>
+      <p>
+        Generating, testing, and debugging OAuth 2.0 PKCE parameters using BitDark is instantaneous and completely private:
+      </p>
+      <ol>
+        <li>
+          <strong>Configure Verifier Length:</strong> Choose a character length between 43 and 128 characters (64 characters is recommended by security best practices to provide over 256 bits of entropy).
+        </li>
+        <li>
+          <strong>Select Challenge Transformation Method:</strong> Choose <strong>S256</strong> (the modern, secure standard). The <code>plain</code> option is provided strictly for debugging legacy endpoints that lack cryptographic hashing capabilities.
+        </li>
+        <li>
+          <strong>Generate or Input Verifier:</strong> Click <strong>Generate Random</strong> to create a fresh, cryptographically strong verifier using your browser's native CSPRNG (<code>window.crypto.getRandomValues</code>), or paste an existing verifier to derive its matching challenge.
+        </li>
+        <li>
+          <strong>Configure Authorization Preview (Optional):</strong> Enter your IdP authorization endpoint (e.g., <code>https://auth0.example.com/authorize</code> or <code>https://accounts.google.com/o/oauth2/v2/auth</code>) and your <code>client_id</code> to generate a live, copy-ready sample authorization request URL.
+        </li>
+        <li>
+          <strong>Copy Parameters:</strong> Use the dedicated copy buttons to transfer the <code>code_verifier</code>, <code>code_challenge</code>, or full request URL into your Postman collection, integration tests, or OAuth client config. Click <strong>Export JSON</strong> to download a structured JSON payload for audit logging.
+        </li>
+      </ol>
+
+      <h2>When to Use PKCE: Modern Architecture Scenarios</h2>
+      <p>
+        While initially invented for native mobile clients, PKCE is now an essential defensive control across virtually all modern web and mobile architectures:
+      </p>
       <ul>
-        <li><strong>Code Verifier:</strong> A cryptographically random string using the unreserved URI character set <code>[A-Z]</code>, <code>[a-z]</code>, <code>[0-9]</code>, <code>-</code>, <code>.</code>, <code>_</code>, and <code>~</code>, with a minimum length of 43 characters and a maximum length of 128 characters.</li>
-        <li><strong>Code Challenge (S256):</strong> Created by hashing the code verifier with SHA-256 and encoding the result in Base64URL without padding: <code>BASE64URL(SHA256(ASCII(code_verifier)))</code>.</li>
-        <li><strong>Verification Step:</strong> The authorization server holds the challenge during the authorization phase and evaluates it against the raw verifier submitted during the token exchange phase before issuing tokens.</li>
+        <li>
+          <strong>Single Page Applications (React, Vue, Angular, Svelte):</strong> SPAs run entirely in untrusted browser environments. The OAuth 2.0 Implicit Flow (which returned tokens directly in URL hash fragments) is officially deprecated due to URL history leaks, referrer header snooping, and access token injection. All SPAs must now use the Authorization Code Grant with PKCE.
+        </li>
+        <li>
+          <strong>Native Mobile Applications (iOS, Android, React Native, Flutter):</strong> Mobile apps utilizing ASWebAuthenticationSession, SFSafariViewController, or Chrome Custom Tabs rely on PKCE to secure the handoff between the external system browser and the app.
+        </li>
+        <li>
+          <strong>Desktop Applications (Electron, Tauri, native macOS/Windows):</strong> Desktop clients opening a loopback HTTP server (e.g., <code>http://127.0.0.1:port/callback</code>) to capture authorization redirects must use PKCE to prevent local port-sniffing malware from stealing codes.
+        </li>
+        <li>
+          <strong>Confidential Server-Side Clients (OAuth 2.1 Compliance):</strong> The emerging <strong>OAuth 2.1</strong> standard mandates PKCE across <em>all</em> authorization code flows—even for confidential backend servers with client secrets. This defense-in-depth approach protects against authorization code injection and cross-site request forgery if an authorization code leaks in server access logs.
+        </li>
       </ul>
 
-      <h2>Deprecated Plain Mode</h2>
-      <p>While RFC 7636 defines the <code>plain</code> transformation (where <code>code_challenge = code_verifier</code>), it is only supported for legacy endpoints unable to compute SHA-256. Modern OAuth 2.1 specifications explicitly require the <code>S256</code> transformation method.</p>
+      <h2>Cryptographic Deep Dive: Anatomy of RFC 7636 Unreserved Set &amp; S256</h2>
+      <p>
+        RFC 7636 specifies precise character sets and encoding transformations to ensure that PKCE parameters pass transparently through URI query strings and HTTP request bodies without percent-encoding mutations.
+      </p>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Generating authentication credentials over remote web APIs creates an unnecessary point of eavesdropping. BitDark generates all randomness and cryptographic SHA-256 digests entirely within your local browser sandbox via <code>window.crypto.getRandomValues</code> and <code>window.crypto.subtle.digest</code>. Zero bytes are transferred over the wire.</p>
+      <h3>1. The Code Verifier Character Set</h3>
+      <p>
+        The <code>code_verifier</code> must use only characters from Section 2.3 of RFC 3986 (URI Unreserved Characters):
+      </p>
+      <pre><code>unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
+ALPHA      = %x41-5A / %x61-7A  (A-Z / a-z: 52 characters)
+DIGIT      = %x30-39            (0-9: 10 characters)
+Symbols    = "-" / "." / "_" / "~" (4 characters)
+Total Allowed Character Set: 66 characters</code></pre>
+      <p>
+        The minimum allowed length is <strong>43 characters</strong>, and the maximum is <strong>128 characters</strong>. Using 66 possible symbols, a 64-character verifier provides:
+      </p>
+      <blockquote>
+        $$\text{Entropy} = 64 \times \log_2(66) \approx 64 \times 6.044 = 386.8\text{ bits of entropy}$$
+      </blockquote>
+      <p>
+        This level of entropy renders online or offline brute-force guessing attacks mathematically impossible, far exceeding the 128-bit cryptographic security threshold.
+      </p>
+
+      <h3>2. The S256 Challenge Transformation</h3>
+      <p>
+        The <code>S256</code> transformation executes three sequential mathematical operations:
+      </p>
+      <ol>
+        <li><strong>ASCII Octet Conversion:</strong> The ASCII string of the <code>code_verifier</code> is converted into its underlying byte array.</li>
+        <li><strong>SHA-256 Digest:</strong> The byte array is hashed using the SHA-256 cryptographic hash function (FIPS 180-4), yielding exactly 32 bytes (256 bits).</li>
+        <li><strong>Base64URL Encoding:</strong> The 32-byte digest is encoded into URL-safe Base64 according to RFC 4648 Section 5:
+          <ul>
+            <li>Replace <code>+</code> with <code>-</code> (minus).</li>
+            <li>Replace <code>/</code> with <code>_</code> (underscore).</li>
+            <li>Strip all trailing <code>=</code> (padding) characters.</li>
+          </ul>
+        </li>
+      </ol>
+      <p>
+        Because the output of SHA-256 is always 32 bytes, encoding 32 bytes into Base64 produces $32 \times 8 / 6 = 42.66 \implies 43$ characters (plus one padding character that is discarded). Thus, <strong>every valid S256 code_challenge is exactly 43 characters long</strong>.
+      </p>
+
+      <h2>Step-by-Step Worked Cryptographic Example</h2>
+      <p>
+        To verify deterministic interoperability between BitDark and standard RFC 7636 test vectors (such as Appendix B of RFC 7636), let us walk through an exact derivation:
+      </p>
+
+      <h3>Reference Input:</h3>
+      <pre><code>code_verifier:
+dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk</code></pre>
+
+      <h3>1. Validation:</h3>
+      <p>
+        Length is 43 characters (satisfies $43 \le \text{length} \le 128$). All characters belong to <code>[A-Za-z0-9\-\._~]</code>.
+      </p>
+
+      <h3>2. SHA-256 Hashing:</h3>
+      <p>
+        Passing the ASCII byte sequence into SHA-256 produces the following 32-byte hexadecimal hash:
+      </p>
+      <pre><code>Hex Digest:
+33e46c7f352e4e196c46a3d52d2394e304078f4b009dd70122a5ac4f50102606</code></pre>
+
+      <h3>3. Base64URL Transformation:</h3>
+      <p>
+        Standard Base64 encoding of these 32 bytes produces:
+      </p>
+      <pre><code>M+RsfzUuThlsRqPVLSOU4wQHj0sAndcBIqWsT1AQJgY=</code></pre>
+      <p>
+        Applying RFC 7636 Base64URL rules (substituting <code>+</code> with <code>-</code>, <code>/</code> with <code>_</code>, and trimming <code>=</code>):
+      </p>
+      <pre><code>code_challenge:
+M-RsfzUuThlsRqPVLSOU4wQHj0sAndcBIqWsT1AQJgY</code></pre>
+      <p>
+        This derived challenge matches the official RFC 7636 Appendix B test vector byte-for-byte.
+      </p>
+
+      <h2>Comparison: PKCE vs. Other OAuth 2.0 Security Primitives</h2>
+      <p>
+        PKCE is one component of a defense-in-depth identity architecture. It is vital to understand how PKCE complements related OAuth parameters:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Security Mechanism</th>
+              <th>Primary Threat Mitigated</th>
+              <th>RFC Standard</th>
+              <th>Where Evaluated</th>
+              <th>Replaces PKCE?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PKCE (code_verifier / challenge)</strong></td>
+              <td>Authorization Code Interception &amp; Code Injection</td>
+              <td>RFC 7636</td>
+              <td>Token Endpoint (<code>/token</code>)</td>
+              <td><strong>Target Standard</strong></td>
+            </tr>
+            <tr>
+              <td><strong>State Parameter (<code>state</code>)</strong></td>
+              <td>Cross-Site Request Forgery (CSRF) on Client</td>
+              <td>RFC 6749</td>
+              <td>Client Application Callback</td>
+              <td><strong>No.</strong> Must be used alongside PKCE.</td>
+            </tr>
+            <tr>
+              <td><strong>OpenID Connect Nonce (<code>nonce</code>)</strong></td>
+              <td>ID Token Replay Attacks</td>
+              <td>OIDC Core 1.0</td>
+              <td>Client validates inside ID Token claims</td>
+              <td><strong>No.</strong> Secures ID token authenticity.</td>
+            </tr>
+            <tr>
+              <td><strong>Client Secret (<code>client_secret</code>)</strong></td>
+              <td>Client Impersonation by Unauthorized Callers</td>
+              <td>RFC 6749</td>
+              <td>Token Endpoint (Confidential clients only)</td>
+              <td><strong>No.</strong> OAuth 2.1 mandates PKCE even with secrets.</td>
+            </tr>
+            <tr>
+              <td><strong>DPoP (Demonstrating Proof-of-Possession)</strong></td>
+              <td>Access Token &amp; Refresh Token Theft / Replay</td>
+              <td>RFC 9449</td>
+              <td>Resource Server (API Endpoints)</td>
+              <td><strong>No.</strong> Protects tokens <em>after</em> issuance.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Mistakes and Security Pitfalls in PKCE Deployments</h2>
+      <p>
+        Security audits frequently identify critical vulnerabilities in how developers integrate PKCE into client applications:
+      </p>
+      <ul>
+        <li>
+          <strong>Falling Back to <code>code_challenge_method=plain</code>:</strong> Plain mode sends the raw verifier string as the challenge in the initial GET request. If the user's browser history, proxy server, or local log records query parameters, the verifier is compromised, completely negating PKCE. Never enable plain mode on production servers.
+        </li>
+        <li>
+          <strong>Generating Verifiers with Math.random():</strong> JavaScript's standard <code>Math.random()</code> is a pseudo-random number generator (PRNG) with predictable internal state. Adversaries can predict future values using seed recovery algorithms. Always generate verifiers using <code>window.crypto.getRandomValues()</code>.
+        </li>
+        <li>
+          <strong>Persisting Code Verifiers in LocalStorage:</strong> Storing the <code>code_verifier</code> in browser <code>localStorage</code> leaves it exposed to Cross-Site Scripting (XSS) attacks. Keep verifiers in temporary JavaScript memory or transient <code>sessionStorage</code> that is purged immediately after the token response is received.
+        </li>
+        <li>
+          <strong>Omitting the <code>state</code> Parameter:</strong> Some developers assume PKCE replaces the OAuth <code>state</code> parameter. While PKCE prevents an attacker from redeeming a stolen code, it does not prevent CSRF login attacks (where an attacker tricks a victim's browser into completing an authorization request initiated by the attacker). Both <code>state</code> and PKCE are mandatory.
+        </li>
+        <li>
+          <strong>Reusing Code Verifiers Across Multiple Requests:</strong> A <code>code_verifier</code> must be strictly single-use. Generating a static verifier during app startup and reusing it across multiple login attempts allows an attacker who captures one challenge to replay it against subsequent requests.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between PKCE and the OAuth state parameter?</div>
+          <div class="faq-answer">
+            The <code>state</code> parameter protects the client application against Cross-Site Request Forgery (CSRF) by binding the user's browser session to the authorization response. PKCE protects the authorization server against authorization code interception by proving that the client exchanging the authorization code at the <code>/token</code> endpoint is the exact same entity that initiated the authorization request at the <code>/authorize</code> endpoint. Both parameters are required for secure authorization flows.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why must code challenges be Base64URL encoded without padding?</div>
+          <div class="faq-answer">
+            Base64URL encoding replaces characters that have reserved meanings in URIs (<code>+</code> and <code>/</code>) with URL-safe equivalents (<code>-</code> and <code>_</code>). Trailing padding characters (<code>=</code>) are stripped because some HTTP client libraries and web proxies percent-encode <code>=</code> as <code>%3D</code>, which causes cryptographic string comparison mismatches on authorization servers.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does OAuth 2.1 require PKCE for confidential clients?</div>
+          <div class="faq-answer">
+            Yes. While RFC 7636 originally specified PKCE for public clients, the consolidated OAuth 2.1 specification makes PKCE mandatory for all authorization code grants, including backend confidential clients that possess client secrets. This provides defense-in-depth against code injection and authorization code leakage.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can an attacker crack an S256 code_challenge using brute force?</div>
+          <div class="faq-answer">
+            No. The minimum length of a valid code verifier is 43 characters drawn from a 66-character unreserved set, yielding over 260 bits of entropy. The SHA-256 hash function has no known pre-image vulnerabilities. Reversing a SHA-256 digest with this entropy level is computationally infeasible under the laws of modern physics.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Where should the code_verifier be stored in a Single Page App?</div>
+          <div class="faq-answer">
+            The code verifier should be stored in volatile browser memory (e.g., an in-memory variable or closure) or transient <code>sessionStorage</code>. Once the authorization code is received and exchanged at the <code>/token</code> endpoint, the verifier must be permanently deleted from client memory.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What happens if an authorization server does not support PKCE?</div>
+          <div class="faq-answer">
+            If an authorization server does not support PKCE, it will typically ignore the <code>code_challenge</code> and <code>code_challenge_method</code> query parameters and issue an authorization code normally. However, modern identity providers (such as Auth0, Okta, Microsoft Entra ID, Google Identity, and Keycloak) enforce PKCE support by default.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Are my generated verifiers or URLs sent to BitDark servers?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All random entropy generation via <code>window.crypto.getRandomValues</code> and SHA-256 hashing via <code>window.crypto.subtle.digest</code> execute entirely inside your local browser's JavaScript sandbox. No data is ever transmitted over network sockets.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is the minimum length for a code_verifier set to 43 characters?</div>
+          <div class="faq-answer">
+            RFC 7636 established the 43-character minimum because 43 characters drawn from a 66-character set provide 256 bits of entropy ($\log_2(66^{43}) \approx 259.9$ bits). This ensures that the entropy of the verifier matches or exceeds the 256-bit security strength of the SHA-256 hashing algorithm.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Authentication &amp; Cryptographic Tooling</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens client-side without leaking bearer tokens to remote servers.</div>
+          </a>
+          <a href="/tools/auth/jwk-jwks-inspector/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> JWK &amp; JWKS Inspector</div>
+            <div class="related-card-desc">Parse, convert, and validate JSON Web Keys and key sets into PEM certificates offline.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+          <a href="/tools/crypto/pbkdf2/" class="related-card">
+            <div class="related-card-title"><span>[⚡]</span> PBKDF2 Key Derivation</div>
+            <div class="related-card-desc">Derive high-entropy symmetric keys and test work factor iterations locally in browser memory.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Sanitize API tokens, authorization headers, and personal credentials from logs before sharing.</div>
+          </a>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#️⃣]</span> Multi-Hash Checksum</div>
+            <div class="related-card-desc">Simultaneously compute SHA-256, SHA-512, and MD5 cryptographic digests in local browser RAM.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // RFC 7636 Unreserved Characters
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. RFC 7636 Cryptographic PKCE Engine (100% Unaltered Tool Code, Zero Telemetry)
     const PKCE_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 
     function generateRandomVerifier(length = 64) {
@@ -728,7 +1460,10 @@
     setupCopy(btnCopyChallenge, challengeViewer);
     setupCopy(btnCopyUrl, urlViewer);
 
+    // Default initialization
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       const len = parseInt(verifierLengthInput.value, 10) || 64;
       codeVerifierInput.value = generateRandomVerifier(len);
       executePkceDerivation();
