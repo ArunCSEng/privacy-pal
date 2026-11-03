@@ -7,9 +7,107 @@
   <title>Local Secret Scanner &amp; Credential Leak Detector — Free Offline Security Tool | BitDark</title>
   <meta name="title" content="Local Secret Scanner &amp; Credential Leak Detector — Free Offline Security Tool | BitDark" />
   <meta name="description" content="Audit, scan, and detect hardcoded API keys, private keys, cloud tokens, database URIs, and entropy anomalies locally in browser memory. Zero network egress." />
-  <meta name="keywords" content="secret scanner, credential leak detector, api key detector, find private keys in code, shannon entropy scanner, local security scanner, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/secret-scanner" />
+  <meta name="keywords" content="secret scanner, credential leak detector, api key detector, find private keys in code, shannon entropy scanner, local security scanner, gitleaks alternative, trufflehog web, detect exposed secrets, client side security scanner, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/secret-scanner/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/secret-scanner/" />
+  <meta property="og:title" content="Local Secret Scanner &amp; Credential Leak Detector | BitDark" />
+  <meta property="og:description" content="Audit source code, environment dumps, and config files for leaked API keys, tokens, and high-entropy secrets locally in memory. Zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/secret-scanner/" />
+  <meta name="twitter:title" content="Local Secret Scanner &amp; Credential Leak Detector | BitDark" />
+  <meta name="twitter:description" content="Detect exposed API keys, private keys, database strings, and Shannon entropy anomalies locally in memory with 0 network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Local Secret Scanner & Credential Leak Detector",
+        "url": "https://bitdark.net/tools/auth/secret-scanner/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side secret scanner that identifies exposed API tokens, cloud keys, database connection strings, and Shannon entropy anomalies directly in browser RAM with zero network egress."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Static Secret Detection Architecture: Deterministic Signatures, Shannon Entropy Analysis, and Credential Sprawl Remediation",
+        "url": "https://bitdark.net/tools/auth/secret-scanner/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-18",
+        "dateModified": "2026-11-03",
+        "description": "An exhaustive technical and forensic guide on hardcoded secrets, deterministic regular expression matching, Shannon entropy algorithms, sliding-window heuristics, and client-side remediation strategies."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is client-side secret scanning and how does it prevent data breaches?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Client-side secret scanning inspects code, environment configurations, and configuration files for sensitive credentials (such as AWS keys, Stripe secrets, private keys, and database URIs) directly within local browser memory. By auditing payloads before committing or deploying, developers prevent accidental credential exposure without transmitting sensitive intellectual property to remote cloud scanners."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does Shannon Entropy help detect unknown or custom API keys?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Shannon Entropy measures the statistical uncertainty or randomness of characters within a string. Natural language and common variable names exhibit low entropy (typically below 3.0 bits/char), whereas cryptographically generated secrets, symmetric keys, and random hashes exhibit high entropy (typically above 4.45 bits/char for alphanumeric strings or 3.4 bits/char for hex). This allows the engine to flag randomized secrets that lack known regex prefixes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my code snippets or scanned credentials sent to external servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The BitDark Secret Scanner operates on an absolute zero-network-egress model. All regular expression parsing, entropy scoring, and token masking execute entirely in your local browser sandbox. No bytes are transmitted over the network."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between deterministic signature matching and entropy analysis?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Deterministic signature matching uses exact regular expressions to detect vendor-specific token structures that possess known prefixes or fixed formats (e.g., AKIA for AWS access keys, ghp_ for GitHub personal access tokens, or sk_live_ for Stripe keys). Entropy analysis is a statistical heuristic that detects arbitrary randomized strings without requiring a vendor-specific signature."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "If I accidentally commit a secret to GitHub, is deleting the commit sufficient?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Git retains full history in its tree object database. Even if you push a subsequent commit removing the key, the secret remains visible in previous commits, dangling reflogs, and commit snapshots. Furthermore, automated bots scrape public commits in sub-second intervals. The credential must be immediately revoked and rotated at the provider level."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,152 +123,202 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 18px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
       font-family: var(--font-code);
-      color: var(--atom-muted);
+      color: var(--atom-heading);
+      letter-spacing: 0.05em;
     }
     .form-group textarea {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       height: 220px;
       outline: none;
       resize: vertical;
-      line-height: 1.5;
+      line-height: 1.55;
+      transition: border-color 0.2s;
     }
     .form-group textarea:focus { border-color: var(--atom-border-focus); }
 
     .scanner-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 20px;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.86rem;
       color: var(--atom-heading);
     }
     .checkbox-item {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       cursor: pointer;
+      user-select: none;
+      min-height: 44px; /* Mobile accessibility touch guideline */
     }
-    .checkbox-item input { accent-color: var(--atom-amber); cursor: pointer; }
+    .checkbox-item input { 
+      accent-color: var(--atom-amber); 
+      cursor: pointer; 
+      width: 18px; 
+      height: 18px; 
+    }
 
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -178,16 +326,24 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Results Workspace */
@@ -197,11 +353,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -216,25 +375,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -244,27 +404,28 @@
     .findings-container {
       overflow-x: auto;
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       background-color: var(--atom-gutter);
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     table.findings-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       text-align: left;
     }
     table.findings-table th {
       background-color: var(--atom-bg);
       color: var(--atom-muted);
       text-transform: uppercase;
-      font-size: 0.72rem;
-      padding: 10px 12px;
+      font-size: 0.74rem;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--atom-border);
+      letter-spacing: 0.05em;
     }
     table.findings-table td {
-      padding: 10px 12px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--atom-border);
       color: var(--atom-heading);
       vertical-align: middle;
@@ -272,8 +433,8 @@
     table.findings-table tr:last-child td { border-bottom: none; }
     
     .badge-severity {
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -287,99 +448,313 @@
       word-break: break-all;
     }
 
-    /* Operational Disclaimer */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">Authentication &amp; Access</a> / secret-scanner
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">Authentication &amp; Access</a>
+      <span class="sep">/</span>
+      <span class="current">Secret Scanner</span>
     </nav>
 
     <div class="tool-header">
       <h1>Local Secret Scanner &amp; Leak Detector</h1>
-      <p>Scan configuration files, source code snippets, and environment dumps for exposed API keys, private keys, database connection strings, and high-entropy cryptographic artifacts.</p>
+      <p>Audit configuration files, source code snippets, and environment dumps for exposed API keys, private keys, database connection strings, and high-entropy cryptographic artifacts. Fast, in-memory heuristic analysis with zero telemetry.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Secret Scanner Terminal">
       <div class="form-group">
         <label for="codePayload">Payload Input (Source Code, Env Files, JSON, or Raw Text)</label>
         <textarea id="codePayload" placeholder="Paste source code, .env variables, application manifests, or configuration blobs here to scan for exposed secrets..." spellcheck="false"></textarea>
@@ -425,7 +800,7 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 8px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Discovered Secret Vectors:</div>
+        <div class="meta-label" style="margin-bottom: 8px;">Discovered Secret Vectors:</div>
         <div class="findings-container">
           <table class="findings-table">
             <thead>
@@ -444,98 +819,500 @@
           </table>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, undetected secret keys, false positives, leaked credentials, or security incidents. Regular expressions and entropy heuristics provide client-side static indicators and cannot replace enterprise-grade dynamic AST analysis or runtime secret management. All pattern matching and entropy evaluations execute locally in browser memory without server-side telemetry.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Regular expressions and entropy heuristics provide client-side static indicators and cannot replace enterprise-grade dynamic AST analysis, comprehensive git commit history traversal, or automated runtime secret management.</strong> The absence of findings in this scanner does not guarantee that a snippet is completely devoid of sensitive credentials, proprietary keys, or obfuscated tokens. All pattern matching, Shannon entropy evaluations, and token masking execute exclusively in local browser RAM without server-side telemetry or external data logging.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How Client-Side Secret Detection Works</h2>
-      <p>Hardcoded secrets represent a primary initial access vector in cloud and infrastructure security breaches. This utility identifies credential exposures through dual-vector static analysis:</p>
+    <!-- Comprehensive Technical Authority Article (2,500+ Words) -->
+    <article class="article-container">
+      <h2>The Anatomy of Credential Leaks in Modern Application Architectures</h2>
+      <p>
+        In contemporary software engineering and cloud-native infrastructure, credentials are the sovereign keys to the kingdom. Modern distributed architectures—relying on microservices, serverless compute functions, infrastructure-as-code (IaC), third-party payment gateways, and container orchestration—have fractured the traditional monolithic network perimeter. Identity and access management (IAM) tokens, cryptographic private keys, OAuth bearer tokens, and relational database URIs now constitute the de facto security boundary of enterprise systems.
+      </p>
+      <p>
+        However, the very convenience that empowers engineering velocity has catalyzed an epidemic of <strong>credential sprawl</strong>. Development teams frequently embed hardcoded API keys into local configuration files, test suites, Docker build manifests, and deployment scripts for rapid prototyping. A momentary lapse in operational discipline—such as committing an unstaged <code>.env</code> file, pushing an internal git repository to a public organization, or pasting a configuration dump into an untrusted web utility—can expose crown-jewel infrastructure to immediate, automated exploitation.
+      </p>
+      <p>
+        Adversaries and cybercriminal syndicates operate high-frequency automated scraping bots that monitor the public GitHub event firehose, Pastebin dumps, and decentralized package registries (npm, PyPI, Crates.io) in near real-time. Industry telemetry reveals that newly leaked AWS access keys or OpenAI organization tokens are indexed, evaluated, and weaponized by malicious actors in fewer than <strong>90 seconds</strong> after entering the public domain. Once compromised, these credentials facilitate catastrophic data exfiltration, cryptojacking resource exhaustion, ransomware deployment, and lateral network traversal.
+      </p>
+
+      <h2>How to Use the BitDark Local Secret Scanner</h2>
+      <p>
+        Auditing source code and configuration files for exposed secrets with the BitDark Local Secret Scanner is instantaneous, precise, and completely private. Follow these operational steps:
+      </p>
+      <ol>
+        <li>
+          <strong>Paste Target Payload:</strong> Insert your raw source code, <code>.env</code> configuration lines, JSON application manifests, YAML orchestration templates, or shell terminal logs into the input textarea.
+        </li>
+        <li>
+          <strong>Configure Diagnostic Heuristics:</strong> 
+          <ul>
+            <li><strong>Enable Shannon Entropy Analysis:</strong> Keep this active to detect non-standard, custom, or randomized high-entropy strings that lack known vendor prefixes (such as custom signing salts or raw AES keys).</li>
+            <li><strong>Mask Detected Secrets:</strong> Ensures that when sensitive tokens are flagged in the findings workspace, they are visually obscured (e.g., displaying only the first and last four characters) to prevent "shoulder surfing" or accidental screen capture exposure.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Execute In-Memory Scan:</strong> Click <strong>"Scan for Secrets"</strong> (or simply begin typing, as the engine features live reactive input parsing). You can also click <strong>"Load Sample Code"</strong> to observe how multi-vendor credentials are categorized across severity tiers.
+        </li>
+        <li>
+          <strong>Review Classified Findings:</strong> Evaluate the resulting findings table. Findings are sorted chronologically by line number and color-coded by threat level (Critical, High, Medium).
+        </li>
+        <li>
+          <strong>Remediate and Clear:</strong> Once identified, replace the hardcoded tokens in your local code with environmental variables or vault references, then click <strong>"Clear"</strong> to flush the browser's working memory buffer.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Scenarios</h2>
+      <p>
+        Static secret detection is an essential capability across multiple security, development, and operational workflows:
+      </p>
       <ul>
-        <li><strong>Deterministic Signatures:</strong> Regex rules identify structured formats with specific prefixes, including AWS Access Keys (<code>AKIA...</code>), GitHub Personal Access Tokens (<code>ghp_...</code>, <code>github_pat_...</code>), Slack Tokens (<code>xox[baprs]-...</code>), Google API Keys (<code>AIza...</code>), Private Keys (<code>-----BEGIN...PRIVATE KEY-----</code>), Stripe Keys, and Database Connection Strings (<code>postgres://...</code>, <code>mongodb://...</code>).</li>
-        <li><strong>Shannon Entropy Evaluation:</strong> The scanner extracts isolated token assignments and computes statistical Shannon entropy:
-          <br />
-          $$H(X) = -\sum_{i=1}^n P(x_i) \log_2 P(x_i)$$
-          Strings with high entropy ($H \ge 4.45$ bits/char for alphanumeric, or $H \ge 3.4$ bits/char for hexadecimal) indicate randomized API secrets, symmetric encryption keys, or HMAC salts.
+        <li>
+          <strong>Pre-Commit Sanity Checking:</strong> Before staging modified configuration files, database seeds, or test fixtures to version control, engineers can quickly paste code into the scanner to ensure no live production credentials were left unmasked.
+        </li>
+        <li>
+          <strong>Third-Party Bug Bounty & Penetration Testing:</strong> Security researchers auditing public JavaScript web client bundles or API manifests can identify embedded tokens, unauthenticated backend endpoints, and legacy developer keys without uploading sensitive client code to cloud servers.
+        </li>
+        <li>
+          <strong>Code Review & Pull Request Verification:</strong> Peer reviewers auditing pull requests can verify that newly introduced configuration parameters or third-party integrations utilize proper secret management patterns rather than static string literals.
+        </li>
+        <li>
+          <strong>Cloud Migration & Environment Dumps:</strong> Sysadmins extracting environment configurations from legacy servers or Docker containers can audit dumps for hardcoded passwords and database credentials prior to archiving.
+        </li>
+        <li>
+          <strong>Incident Response & Threat Forensics:</strong> When analyzing obfuscated malware payloads, phishing drop files, or decompiled binaries, incident responders can identify hardcoded C2 authentication tokens or exfiltration endpoints in seconds.
         </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Never paste production keys or sensitive code into third-party cloud tools. BitDark runs all matching, masking, and entropy calculations within your browser sandbox. Zero bytes leave your workstation.</p>
+      <h2>Dual-Vector Detection Architecture: Signatures vs Shannon Entropy</h2>
+      <p>
+        Effective secret detection requires solving two opposing challenges: false negatives (missing an actual secret) and false positives (flagging harmless random strings, such as image hashes or CSS class names). The BitDark Secret Scanner addresses this through a synchronized <strong>dual-vector static analysis pipeline</strong>.
+      </p>
+
+      <h3>1. Deterministic Signature Matching</h3>
+      <p>
+        Modern cloud and API providers design their credentials with structured prefixes and specific character lengths. These prefixes serve as deterministic fingerprints that eliminate ambiguity. The BitDark scanner implements optimized regular expressions targeting the most critical enterprise credential formats:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Credential Type</th>
+              <th>Deterministic Pattern / Prefix</th>
+              <th>Severity</th>
+              <th>Exploitation Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AWS Access Key ID</strong></td>
+              <td><code>\b(AKIA[0-9A-Z]{16})\b</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Direct programmatic access to AWS cloud infrastructure, EC2 instances, S3 buckets, and IAM roles.</td>
+            </tr>
+            <tr>
+              <td><strong>AWS Secret Access Key</strong></td>
+              <td><code>(?:aws_secret_access_key)\s*[:=]\s*["']?([A-Za-z0-9/+=]{40})["']?</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Paired with an Access Key ID to sign AWS SigV4 cryptographic requests with root or administrative privileges.</td>
+            </tr>
+            <tr>
+              <td><strong>GitHub Personal / App Token</strong></td>
+              <td><code>\b(ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9_]{82})\b</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Allows cloning private enterprise repositories, modifying workflows, and poisoning CI/CD software pipelines.</td>
+            </tr>
+            <tr>
+              <td><strong>Stripe API Secret Key</strong></td>
+              <td><code>\b(sk_live_[0-9a-zA-Z]{24,99}|rk_live_[0-9a-zA-Z]{24,99})\b</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Full administrative control over customer billing, chargebacks, stored payment methods, and bank payouts.</td>
+            </tr>
+            <tr>
+              <td><strong>Database Connection URIs</strong></td>
+              <td><code>postgres://...:password@host/db</code>, <code>mongodb+srv://...</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Direct database port access enabling unauthenticated table dumping, data tampering, or drop-table destruction.</td>
+            </tr>
+            <tr>
+              <td><strong>Private Key PEM Headers</strong></td>
+              <td><code>-----BEGIN (?:RSA|EC|OPENSSH)? PRIVATE KEY-----</code></td>
+              <td><span class="badge-severity sev-critical">Critical</span></td>
+              <td>Compromises TLS server identity, SSH server access, or code-signing authorization chains.</td>
+            </tr>
+            <tr>
+              <td><strong>Google API Key</strong></td>
+              <td><code>AIza[0-9A-Za-z_-]{35}</code></td>
+              <td><span class="badge-severity sev-high">High</span></td>
+              <td>Allows unauthorized consumption of Google Cloud APIs (Maps, Vision, Translation, Firebase databases).</td>
+            </tr>
+            <tr>
+              <td><strong>Slack API / Bot Token</strong></td>
+              <td><code>xox[baprs]-[0-9a-zA-Z]{10,48}-[0-9a-zA-Z]{10,48}</code></td>
+              <td><span class="badge-severity sev-high">High</span></td>
+              <td>Enables silent eavesdropping on internal workplace communication channels and exfiltrating shared files.</td>
+            </tr>
+            <tr>
+              <td><strong>JSON Web Token (JWT)</strong></td>
+              <td><code>\b(ey[A-Za-z0-9-_=]{15,}\.[A-Za-z0-9-_=]{15,}\.[A-Za-z0-9-_.+/=]{10,})\b</code></td>
+              <td><span class="badge-severity sev-medium">Medium</span></td>
+              <td>May expose active user sessions, privileged role claims, or vulnerable HMAC-SHA256 signatures.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2. Statistical Shannon Entropy Evaluation</h3>
+      <p>
+        While signature matching is exact, proprietary applications, internal microservices, and legacy platforms often generate raw, un-prefixed secrets—such as random 32-character hexadecimal strings, Base64 HMAC salts, or alphanumeric database passwords. To identify these unformatted secrets, the scanner evaluates mathematical <strong>Shannon Entropy</strong>.
+      </p>
+      <p>
+        Formulated by Claude Shannon in his 1948 landmark paper <em>A Mathematical Theory of Communication</em>, Shannon entropy quantifies the amount of "information" or "uncertainty" contained within a sequence of symbols:
+      </p>
+      <blockquote>
+        $$H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$$
+      </blockquote>
+      <p>
+        Where:
+      </p>
+      <ul>
+        <li>$n$ represents the number of unique characters appearing in the candidate string.</li>
+        <li>$P(x_i)$ denotes the empirical probability (frequency of occurrence) of character $x_i$ within the string length $L$.</li>
+        <li>$\log_2$ calculates the entropy score in fundamental units of <strong>bits per character</strong>.</li>
+      </ul>
+
+      <p>
+        Natural English text, programming keywords (e.g., <code>function</code>, <code>controller</code>), and predictable variable names possess low entropy because certain characters (such as vowels and common consonants) occur with high predictability ($H \le 2.8\text{ bits/char}$). Conversely, cryptographically generated secrets drawn from uniform random distributions exhibit near-maximal entropy:
+      </p>
+
+      <pre><code>Entropy Threshold Spectrum:
+0.0 bits/char  ------------------------------------------------------------- 8.0 bits/char
+[aaaaaaa...]     [English Prose]    [Code Identifiers]     [Hex Secret]     [Base64 Secret]
+   0.00               2.50                 3.20               3.85              4.92
+                                                        ^                 ^
+                                                 Hex Threshold     Alphanumeric Threshold
+                                                  (H >= 3.40)           (H >= 4.45)</code></pre>
+
+      <p>
+        The BitDark engine evaluates isolated token assignments across lines without known signature hits. It applies dynamic thresholding based on the symbol alphabet:
+      </p>
+      <ul>
+        <li><strong>Hexadecimal Alphabet (<code>[0-9a-fA-F]</code>):</strong> A pure hex string has a theoretical maximum entropy of $\log_2(16) = 4.0\text{ bits/char}$. The scanner flags hex strings of length $\ge 20$ with $H \ge 3.40\text{ bits/char}$.</li>
+        <li><strong>Base64 / Alphanumeric Alphabet (<code>[0-9a-zA-Z+/=]</code>):</strong> An alphanumeric string has a theoretical maximum entropy of $\log_2(64) = 6.0\text{ bits/char}$. The scanner flags candidate tokens of length $\ge 20$ with $H \ge 4.45\text{ bits/char}$.</li>
+      </ul>
+
+      <h2>Worked Example: Real-World Configuration Dissection</h2>
+      <p>
+        To understand the dual-vector engine in practice, let us examine an insecure microservice deployment file containing multiple vulnerability classes:
+      </p>
+
+      <pre><code># Microservice Deployment Configuration
+NODE_ENV=production
+DATABASE_URL=postgres://app_user:Sup3rS3cur3P@ssw0rd!@db-prod.internal.net:5432/core_db
+
+# AWS Cloud Infrastructure Credentials
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+# Third Party Integrations
+GITHUB_TOKEN=ghp_000000000000000000000000000000000000
+STRIPE_KEY=sk_test_51Oz938472910394857201928374
+GOOGLE_MAPS_KEY=AIzaSyA8943729103948572019283749102938
+
+# Internal HMAC Signer
+SIGNING_SECRET=4f8a92bc0019d7a28e9384729103948572019283748291039485720192837402</code></pre>
+
+      <h3>Step-by-Step Diagnostic Trace</h3>
+      <ol>
+        <li>
+          <strong>Line 3 (<code>DATABASE_URL</code>):</strong> The deterministic database URI regex matches <code>postgres://app_user:Sup3rS3cur3...</code>. The scanner extracts the credentials, classifies the threat as <span class="badge-severity sev-critical">Critical</span>, and masks the sensitive password string while preserving the host context.
+        </li>
+        <li>
+          <strong>Line 6 (<code>AWS_ACCESS_KEY_ID</code>):</strong> The token starts with the standard <code>AKIA</code> prefix followed by 16 uppercase alphanumeric characters. Classified as <span class="badge-severity sev-critical">Critical</span>.
+        </li>
+        <li>
+          <strong>Line 7 (<code>AWS_SECRET_ACCESS_KEY</code>):</strong> The variable key <code>aws_secret_access_key</code> is recognized, and the paired 40-character Base64 payload is captured and classified as <span class="badge-severity sev-critical">Critical</span>.
+        </li>
+        <li>
+          <strong>Line 10 (<code>GITHUB_TOKEN</code>):</strong> The deterministic prefix <code>ghp_</code> indicates a GitHub personal access token. Classified as <span class="badge-severity sev-critical">Critical</span>.
+        </li>
+        <li>
+          <strong>Line 11 (<code>STRIPE_KEY</code>):</strong> The token begins with <code>sk_test_</code>. Even though it is a test key, modern security governance treats live and test payment keys identically to avoid lateral sandbox poisoning. Classified as <span class="badge-severity sev-critical">Critical</span>.
+        </li>
+        <li>
+          <strong>Line 12 (<code>GOOGLE_MAPS_KEY</code>):</strong> Matches the 39-character <code>AIza...</code> signature. Classified as <span class="badge-severity sev-high">High</span>.
+        </li>
+        <li>
+          <strong>Line 15 (<code>SIGNING_SECRET</code>):</strong> The string <code>4f8a92bc0019d7a2...</code> contains no vendor prefix. However, because it contains 64 hexadecimal characters, the Shannon entropy evaluator computes an entropy score of $H = 3.82\text{ bits/char}$, easily surpassing the $3.40$ hex threshold. It is immediately flagged as a <span class="badge-severity sev-medium">Medium</span> high-entropy artifact.
+        </li>
+      </ol>
+
+      <h2>Comparison: Secret Scanner vs Gitleaks vs TruffleHog vs GitGuardian</h2>
+      <p>
+        Selecting the appropriate secret scanning tool depends on deployment topology, CI/CD infrastructure, and privacy requirements:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Feature / Capability</th>
+              <th>BitDark Local Scanner</th>
+              <th>Gitleaks (CLI)</th>
+              <th>TruffleHog (CLI/Enterprise)</th>
+              <th>GitGuardian (SaaS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Execution Environment</strong></td>
+              <td>100% In-Browser Memory</td>
+              <td>Local Developer Terminal</td>
+              <td>Terminal / CI/CD Runner</td>
+              <td>Multi-Tenant Cloud Server</td>
+            </tr>
+            <tr>
+              <td><strong>Network Egress / Data Telemetry</strong></td>
+              <td><strong>Zero Bytes</strong> (Air-gapped)</td>
+              <td>Zero (Local execution)</td>
+              <td>Active (Validates keys over web)</td>
+              <td>Full Repository Transferred</td>
+            </tr>
+            <tr>
+              <td><strong>Installation Requirements</strong></td>
+              <td>None (Zero install, browser ready)</td>
+              <td>Go binary / Homebrew / Docker</td>
+              <td>Go / Docker binary</td>
+              <td>GitHub App / Webhook integration</td>
+            </tr>
+            <tr>
+              <td><strong>Shannon Entropy Analysis</strong></td>
+              <td>Yes (Integrated)</td>
+              <td>Yes (Configurable threshold)</td>
+              <td>Yes (High/Low detectors)</td>
+              <td>Proprietary ML Models</td>
+            </tr>
+            <tr>
+              <td><strong>Live API Key Verification</strong></td>
+              <td>No (Offline defensive isolation)</td>
+              <td>No</td>
+              <td>Yes (Hits live vendor endpoints)</td>
+              <td>Yes (Automated cloud probing)</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Operational Niche</strong></td>
+              <td>Immediate snippet & PR review</td>
+              <td>Git pre-commit hooks</td>
+              <td>Deep git history & S3 audits</td>
+              <td>Enterprise-wide code monitoring</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Developer Mistakes and Credential Remediation</h2>
+      <p>
+        Discovering an exposed credential requires disciplined, structured incident response. Unfortunately, developers frequently compound the breach through common operational blunders:
+      </p>
+
+      <h3>1. The "Git Commit Reversal" Fallacy</h3>
+      <p>
+        The most common rookie mistake is committing an API key, realizing the error, deleting the key from the file, and committing again with a message like <em>"remove secret"</em>.
+      </p>
+      <blockquote>
+        <strong>Forensic Fact:</strong> Git is a content-addressable version control system that records the full historical state of every tracked file. Anyone who clones the repository can execute <code>git log -p</code> or inspect previous commit tree objects to view the secret in plain text.
+      </blockquote>
+      <p>
+        Even if you use tools like <code>git-filter-repo</code> or BFG Repo-Cleaner to rewrite git history, forks, cached pull requests, and automated bot caches will retain the exposed key. <strong>The golden rule of credential security: once a secret touches a public or semi-public system, it is permanently compromised. It must be immediately revoked and rotated at the provider level.</strong>
+      </p>
+
+      <h3>2. Storing Secrets in Docker Image Layers</h3>
+      <p>
+        Another pervasive flaw is injecting secrets into Docker build instructions:
+      </p>
+      <pre><code># INSECURE DOCKERFILE EXAMPLE
+FROM node:20-alpine
+WORKDIR /app
+COPY . .
+ENV DATABASE_PASSWORD="SuperSecretPassword123"
+RUN npm run build</code></pre>
+      <p>
+        Even if a subsequent <code>RUN unset DATABASE_PASSWORD</code> instruction is executed, Docker preserves the environment variable within the intermediate image layer metadata. Anyone with access to the container image can run <code>docker history --no-trunc</code> or inspect the layer manifest to extract the plain-text password. Always use Docker BuildKit secret mounts (<code>--mount=type=secret</code>) or external orchestrator secret providers (Kubernetes Secrets, AWS Secrets Manager).
+      </p>
+
+      <h3>3. Leaking Backend Secrets into Client-Side JavaScript</h3>
+      <p>
+        Modern frontend frameworks (Next.js, Vite, Nuxt) provide environment variable prefix conventions (e.g., <code>NEXT_PUBLIC_</code>, <code>VITE_</code>). A frequent vulnerability occurs when a developer inadvertently prefixes an administrative or backend secret with these flags. The build compiler packages the secret directly into the minified public JavaScript bundle, where it is easily discovered by web crawlers using browser developer tools.
+      </p>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the BitDark Secret Scanner run in-browser instead of on a server?</div>
+          <div class="faq-answer">
+            Enterprise source code, environment dumps, and credentials represent ultra-sensitive intellectual property. Transmitting them across the internet to a cloud-based server introduces severe third-party risk, compliance violations (SOC2, ISO 27001), and potential data interception. By executing 100% in local browser memory via JavaScript, BitDark guarantees that zero bytes leave your workstation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What causes false positives in Shannon Entropy scanning?</div>
+          <div class="faq-answer">
+            False positives typically occur on strings that naturally exhibit high statistical randomness without being credentials. Common examples include cryptographic hashes (MD5, SHA-256), UUIDv4 identifiers, base64-encoded SVG images, and automated CSS class names generated by CSS-in-JS bundlers. The BitDark scanner mitigates this by analyzing contextual variable assignment patterns (such as <code>key=</code>, <code>secret:</code>, <code>token=</code>).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the exact remediation protocol if a live AWS or GitHub key is leaked?</div>
+          <div class="faq-answer">
+            Execute these four steps immediately: (1) <strong>Revoke:</strong> Log into the provider dashboard (e.g., AWS IAM or GitHub Developer Settings) and deactivate or delete the specific key. (2) <strong>Rotate:</strong> Generate a fresh key and store it in an encrypted vault or secret manager. (3) <strong>Audit:</strong> Inspect provider access logs (such as AWS CloudTrail) for the window between exposure and revocation to determine if unauthorized API calls, instance launches, or data exfiltrations occurred. (4) <strong>Purge:</strong> Clean the repository history using git-filter-repo.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this scanner detect custom internal tokens that don't match known regex rules?</div>
+          <div class="faq-answer">
+            Yes. By keeping Shannon Entropy Analysis enabled, the engine evaluates strings that lack known vendor prefixes. If a custom internal token exhibits high character diversity and length (exceeding 3.4 bits/char for hex or 4.45 bits/char for alphanumeric), it will be flagged as a High Entropy Token finding.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark save or log the code snippets I paste?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on a strict, verifiable zero-telemetry architecture. The code payload is processed in volatile browser RAM and is completely erased the moment you click "Clear", refresh the page, or close the browser tab.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the scanner flag test API keys (e.g., Stripe test keys)?</div>
+          <div class="faq-answer">
+            While test keys cannot move real currency, they can often be used to read mock customer PII, corrupt sandbox databases, or stage staging-environment lateral attacks. Furthermore, leaving test keys in production manifests often indicates broken environment segregation pipelines.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does token masking work?</div>
+          <div class="faq-answer">
+            When token masking is toggled on, the engine replaces the sensitive middle characters of detected strings with bullet characters (••••••••), displaying only the first and last four characters. This allows engineers to identify which key was flagged while protecting the secret from shoulder-surfing or recording software.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Authentication, Cryptography &amp; Forensics Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens client-side without leaking bearer tokens to remote cloud servers.</div>
+          </a>
+          <a href="/tools/auth/jwt-cracker/" class="related-card">
+            <div class="related-card-title"><span>[⚡]</span> Weak JWT Secret Auditor</div>
+            <div class="related-card-desc">Audit HMAC-SHA256 tokens against weak dictionaries using multi-threaded browser Web Workers.</div>
+          </a>
+          <a href="/tools/auth/csp-evaluator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> CSP Rule Evaluator</div>
+            <div class="related-card-desc">Build and evaluate Content-Security-Policy headers to eliminate XSS gaps and insecure script execution.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[✂️]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, IPv4 addresses, emails, and credentials from log files and application error traces.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Encryptor</div>
+            <div class="related-card-desc">Encrypt sensitive configuration files and backups locally using authenticated 256-bit Web Crypto.</div>
+          </a>
+          <a href="/tools/auth/security-headers/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> HTTP Security Header Advisor</div>
+            <div class="related-card-desc">Generate hardened HSTS, X-Frame-Options, and Permissions-Policy directives for web servers.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Secret Detection Rules
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Secret Scanner Core Engine (Unaltered Rules & Logic, Zero Network Telemetry)
     const RULES = [
       {
         name: "Private Key Header",
@@ -630,11 +1407,11 @@
       const text = codePayload.value;
       if (!text.trim()) {
         statusBanner.className = "status-banner status-safe";
-        statusBanner.innerHTML = "<span>Payload empty. Please paste code or configurations.</span> <span>Idle</span>";
+        statusBanner.innerHTML = "<span>Scanner idle. Awaiting code or configuration payload.</span> <span>Ready</span>";
         metaCount.textContent = "0 Issues";
         metaCritical.textContent = "0 Findings";
         metaHigh.textContent = "0 Findings";
-        findingsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 18px;">No secrets identified yet.</td></tr>`;
+        findingsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 18px;">No secrets identified yet. Click "Scan for Secrets" or "Load Sample Code".</td></tr>`;
         return;
       }
 
@@ -763,8 +1540,10 @@ SIGNING_SECRET=4f8a92bc0019d7a28e9384729103948572019283748291039485720192837402`
       runScan();
     });
 
-    // Run sample on initialization
+    // Run sample on initialization and set up UI observers
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       btnSample.click();
     });
   </script>
