@@ -4,12 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Offline JWT Secret Key Cracker — Free Browser Security Tool | BitDark</title>
-  <meta name="title" content="Offline JWT Secret Key Cracker — Free Browser Security Tool | BitDark" />
-  <meta name="description" content="Audit, evaluate, and dictionary crack weak HMAC-SHA256 (HS256) JWT secret signing keys entirely offline in your browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="jwt cracker, crack jwt secret offline, hs256 brute force, jwt dictionary attack, test weak jwt secret, client-side jwt cracker, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/jwt-cracker" />
+  <title>Offline JWT Secret Key Cracker — Free In-Browser HS256 Auditor | BitDark</title>
+  <meta name="title" content="Offline JWT Secret Key Cracker — Free In-Browser HS256 Auditor | BitDark" />
+  <meta name="description" content="Audit, evaluate, and dictionary-test weak HMAC-SHA256 (HS256) JWT secret signing keys entirely offline in your browser memory. Zero tracking, zero telemetry, zero network egress." />
+  <meta name="keywords" content="jwt cracker, crack jwt secret offline, hs256 brute force, jwt dictionary attack, test weak jwt secret, client-side jwt cracker, recover jwt secret, json web token security audit, hmac sha256 key recovery, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/jwt-cracker/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/jwt-cracker/" />
+  <meta property="og:title" content="Offline JWT Secret Key Cracker — In-Memory HS256 Security Tool | BitDark" />
+  <meta property="og:description" content="Audit weak HMAC-SHA256 JWT signing keys via client-side dictionary attacks using native WebCrypto in browser memory. Air-gapped execution with zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/jwt-cracker/" />
+  <meta name="twitter:title" content="Offline JWT Secret Key Cracker | BitDark" />
+  <meta name="twitter:description" content="Audit and dictionary-test weak HMAC-SHA256 JWT secrets locally in browser RAM with zero server communication." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Offline JWT Secret Key Cracker",
+        "url": "https://bitdark.net/tools/auth/jwt-cracker/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side security utility to audit and dictionary-test weak HMAC-SHA256 (HS256) JSON Web Token signing secrets locally in browser memory via native W3C WebCrypto APIs."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Cryptographic Cryptanalysis of Symmetric JWTs: HMAC-SHA256 Entropy Requirements, Dictionary Vulnerabilities, and Defensive Mitigation",
+        "url": "https://bitdark.net/tools/auth/jwt-cracker/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-18",
+        "dateModified": "2026-10-31",
+        "description": "Exhaustive technical treatise on symmetric JWT signing flaws, HMAC-SHA256 key entropy requirements, offline dictionary cryptanalysis, algorithm confusion vectors, and Zero Trust authentication architecture."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does an offline dictionary attack against a JWT work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Because a JSON Web Token encapsulates its header, payload, and signature entirely within the token string, an attacker does not need network access to the issuing authentication server. By taking the exact header and payload strings and repeatedly computing HMAC-SHA256 hashes against a list of candidate secret keys, the attacker compares each computed signature against the token's existing signature. A match reveals the secret signing key."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why are HMAC-SHA256 (HS256) tokens uniquely vulnerable to offline secret cracking?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "HS256 relies on a symmetric shared secret known to both token issuer and verifier. Unlike asymmetric algorithms (RS256, ES256) that use mathematically complex public-private key pairs, symmetric HMAC verification can be computed millions of times per second using consumer hardware or client-side WebCrypto. If developers configure short, predictable, or dictionary-based strings as secrets, they can be cracked within seconds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the minimum recommended secret length for HS256 according to RFC 7518?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "RFC 7518 Section 3.2 explicitly dictates that a key of the same size as the hash output or larger MUST be used with HMAC-SHA256. Because SHA-256 outputs a 256-bit digest, the signing secret MUST contain at least 256 bits (32 bytes) of cryptographically secure pseudorandom entropy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What can an attacker do if they recover my JWT secret signing key?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Recovering the secret key grants complete administrative compromise over token verification. The adversary can forge arbitrary claims, arbitrary user IDs, elevate their privileges to system administrator, modify expiration timestamps, and sign the forged token. Any backend microservice trusting that secret key will validate the forged token as authentic."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my tokens or candidate wordlists transmitted over the internet?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. All cryptographic operations execute 100% locally in browser memory via native crypto.subtle Web Cryptography APIs. Zero network requests, analytics, or background telemetry are ever transmitted."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,111 +123,153 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --atom-magenta: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Split Workspaces */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 650px;
     }
 
     .status-banner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 6px;
       margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -147,43 +287,18 @@
       color: var(--atom-coral);
     }
 
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .meta-item {
-      background-color: var(--atom-bg);
-      border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
-    }
-    .meta-label {
-      font-size: 0.72rem;
-      color: var(--atom-muted);
-      text-transform: uppercase;
-      font-family: var(--font-code);
-      margin-bottom: 4px;
-    }
-    .meta-val {
-      font-size: 0.85rem;
-      color: var(--atom-heading);
-      font-family: var(--font-code);
-      word-break: break-all;
-    }
-
     .preset-selector-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      padding: 10px 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
     }
     .preset-selector-row label {
       color: var(--atom-amber);
@@ -193,15 +308,43 @@
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 4px 10px;
+      padding: 8px 12px;
       border-radius: 4px;
       outline: none;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
+      min-height: 44px;
       cursor: pointer;
     }
     .preset-selector-row select:focus {
       border-color: var(--atom-border-focus);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .meta-item {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      padding: 12px 16px;
+      border-radius: 6px;
+    }
+    .meta-label {
+      font-size: 0.74rem;
+      color: var(--atom-muted);
+      text-transform: uppercase;
+      font-family: var(--font-code);
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+    .meta-val {
+      font-size: 0.92rem;
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      word-break: break-all;
     }
 
     .editor-split {
@@ -217,63 +360,48 @@
     .pane-col {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
     .form-group label {
-      font-size: 0.76rem;
-      text-transform: uppercase;
+      font-size: 0.82rem;
       font-family: var(--font-code);
-      color: var(--atom-muted);
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
-    .jwt-textarea {
+    .jwt-textarea, .wordlist-textarea {
       width: 100%;
       height: 180px;
-      background-color: var(--atom-bg);
+      background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       resize: vertical;
       outline: none;
-      line-height: 1.5;
-      word-break: break-all;
+      line-height: 1.55;
     }
-    .jwt-textarea:focus { border-color: var(--atom-border-focus); }
-
-    .wordlist-textarea {
-      width: 100%;
-      height: 180px;
-      background-color: var(--atom-bg);
-      border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
-      color: var(--atom-heading);
-      font-family: var(--font-code);
-      font-size: 0.82rem;
-      resize: vertical;
-      outline: none;
-      line-height: 1.5;
-      white-space: pre;
-    }
-    .wordlist-textarea:focus { border-color: var(--atom-border-focus); }
+    .jwt-textarea { word-break: break-all; }
+    .wordlist-textarea { white-space: pre; }
+    .jwt-textarea:focus, .wordlist-textarea:focus { border-color: var(--atom-border-focus); }
 
     .load-wordlist-btn {
       color: var(--atom-cyan);
       cursor: pointer;
       text-decoration: underline;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
     }
     .load-wordlist-btn:hover {
       color: var(--atom-amber);
@@ -281,12 +409,12 @@
 
     .progress-track {
       width: 100%;
-      height: 8px;
+      height: 10px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 5px;
       overflow: hidden;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .progress-fill {
       height: 100%;
@@ -298,12 +426,12 @@
     .output-console {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 16px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      min-height: 110px;
-      max-height: 220px;
+      font-size: 0.84rem;
+      min-height: 130px;
+      max-height: 240px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
@@ -313,9 +441,9 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: flex-end;
-      margin-top: 14px;
+      margin-top: 18px;
     }
 
     .btn-atom {
@@ -324,108 +452,330 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-atom:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
-    /* Operational Disclaimer */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3000px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">Authentication &amp; Identity</a> / jwt-cracker
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">AppSec &amp; Tokens</a>
+      <span class="sep">/</span>
+      <span class="current">JWT Secret Cracker</span>
     </nav>
 
     <div class="tool-header">
       <h1>Offline JWT Secret Key Cracker</h1>
       <p>Audit weak HMAC-SHA256 (HS256) signing keys through local in-browser dictionary attacks. Test token resilience against common password lists entirely in browser memory with zero network egress.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
@@ -472,7 +822,7 @@
           <div class="form-group">
             <label for="jwtInput">
               Target Encoded Token (HS256)
-              <span>Format: <span style="color:var(--atom-coral)">Header</span>.<span style="color:var(--atom-magenta)">Payload</span>.<span style="color:var(--atom-cyan)">Signature</span></span>
+              <span>Format: <span style="color:var(--atom-coral)">Header</span>.<span style="color:var(--atom-purple)">Payload</span>.<span style="color:var(--atom-cyan)">Signature</span></span>
             </label>
             <textarea id="jwtInput" class="jwt-textarea" spellcheck="false" placeholder="Paste HS256 JWT here..."></textarea>
           </div>
@@ -490,7 +840,7 @@
           <div class="form-group">
             <label for="wordlistInput">
               Dictionary Wordlist (One Candidate per Line)
-              <span id="loadWordlistAction" class="load-wordlist-btn">Load Wordlist</span>
+              <span id="loadWordlistAction" class="load-wordlist-btn">Load Wordlist File</span>
             </label>
             <input type="file" id="wordlistFileInput" style="display: none;" accept=".txt,.lst,.dict" />
             <textarea id="wordlistInput" class="wordlist-textarea" spellcheck="false" placeholder="Enter secrets or passwords to test against signature..."></textarea>
@@ -511,94 +861,483 @@
       </div>
     </div>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer:</strong> bitdark.net is not responsible for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this auditing tool, unauthorized penetration testing, credential cracking, or policy violations against third-party systems. This utility is intended strictly for authorized vulnerability evaluation, defensive configuration audits, and local application security verification. All cryptographic signing operations and HMAC-SHA256 computations execute 100% client-side inside your browser sandbox via WebCrypto APIs; no tokens or wordlists are ever transmitted over the network.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Ethical &amp; Defensive Usage Mandate:</strong> This utility is engineered exclusively for authorized security verification, penetration testing with written consent, defensive credential auditing, and local software development hygiene. Unauthorized access, credential cracking, or token forgery against external computer networks and authentication services violates federal and international cyber laws. All cryptographic operations execute 100% locally inside your client browser RAM via standard WebCrypto APIs; neither the token string nor candidate passwords ever leave your machine.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>Vulnerability Profile: Weak HMAC-SHA256 (HS256) Secrets</h2>
-      <p>HMAC-SHA256 is a symmetric signing algorithm where both the token issuer and consumer verify authenticity using the same shared secret key. Because the signature is calculated deterministically as <code>HMAC-SHA256(header + "." + payload, secret)</code>, an attacker who intercepts a valid JWT can attempt an offline dictionary or brute-force attack entirely without interacting with the authentication server.</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Cryptographic Anatomy of JSON Web Tokens (JWT)</h2>
+      <p>
+        In contemporary cloud computing, microservice meshes, and modern single-page applications, <strong>JSON Web Tokens (JWT, RFC 7519)</strong> serve as the ubiquitous standard for stateless authentication and authorization. Rather than querying centralized session databases on every HTTP request, web architectures rely on digitally signed JSON assertions passed via the <code>Authorization: Bearer</code> header.
+      </p>
+      <p>
+        A standard compact serialization JWT comprises three URL-safe Base64-encoded segments concatenated with periods (<code>.</code>):
+      </p>
+      <pre><code>[Base64URL-Header] . [Base64URL-Payload] . [Base64URL-Signature]</code></pre>
       <ul>
-        <li><strong>Entropy Requirements:</strong> RFC 7518 specifies that HS256 keys must be at least 256 bits (32 bytes) of cryptographically random entropy.</li>
-        <li><strong>Common Weaknesses:</strong> Developers often sign staging or production tokens with simple dictionary words (e.g., <code>secret</code>, <code>password</code>, <code>jwt-secret</code>, or company domain names), which can be recovered in seconds.</li>
-        <li><strong>Blast Radius:</strong> Once an attacker cracks the secret key, they can forge arbitrary tokens with altered claims (such as elevating privileges to <code>admin: true</code>) that the backend will trust as authentic.</li>
+        <li>
+          <strong>The Header (JOSE):</strong> Specifies the container type (typically <code>JWT</code>) and the cryptographic signing algorithm (such as <code>HS256</code>, <code>RS256</code>, or <code>ES256</code>).
+        </li>
+        <li>
+          <strong>The Payload (Claims):</strong> Contains identity assertions, user identifiers (<code>sub</code>), operational roles, issuance timestamps (<code>iat</code>), and expiration thresholds (<code>exp</code>).
+        </li>
+        <li>
+          <strong>The Signature:</strong> The cryptographic checksum calculated over the concatenated header and payload strings using a secret or private key.
+        </li>
+      </ul>
+      <p>
+        When an authentication service relies on the symmetric <strong>HMAC-SHA256 (HS256)</strong> algorithm, both token generation and token verification depend on a single shared secret string. Because the complete header and payload are visible in plaintext to any client handling the bearer token, an attacker possessing an intercepted token can attempt to reverse-engineer the secret key through an <strong>offline cryptanalytic dictionary attack</strong>.
+      </p>
+
+      <h2>The Mechanics of Offline HMAC-SHA256 Dictionary Attacks</h2>
+      <p>
+        Traditional credential cracking against web login forms is bottlenecked by network round-trip latency, intrusion prevention systems (IPS), web application firewalls (WAF), and automated account lockout policies. If an adversary attempts to brute-force a login endpoint, submitting 100 incorrect passwords triggers rate-limiting or IP bans.
+      </p>
+      <p>
+        <strong>Offline JWT cracking completely bypasses these network-layer defenses.</strong>
+      </p>
+      <p>
+        Because the signature is calculated deterministically as:
+      </p>
+      <blockquote>
+        $$\text{Signature} = \text{Base64URL}\Big(\text{HMAC-SHA256}\big(\text{Header}_{\text{b64}} \,\|\, \text{"."} \,\|\, \text{Payload}_{\text{b64}}, \;\; \text{Key}\big)\Big)$$
+      </blockquote>
+      <p>
+        The adversary does not need to send a single packet to the authentication server. They can load the intercepted token into memory and test candidate keys from password lists (such as <em>rockyou.txt</em>, common dictionary lists, or default framework credentials) at the maximum execution throughput of their local hardware.
+      </p>
+      <p>
+        Once a candidate key produces a Base64URL-encoded HMAC digest identical to the third segment of the targeted token, the secret signing key is definitively recovered.
+      </p>
+
+      <h2>How to Use the BitDark Offline JWT Secret Cracker</h2>
+      <p>
+        Auditing token resilience using the BitDark engine is instantaneous, forensically non-destructive, and strictly confined to your browser's private WebCrypto memory:
+      </p>
+      <ol>
+        <li>
+          <strong>Input the Target Bearer Token:</strong> Paste your compact 3-part HS256 JWT into the left-hand text area. The parser will immediately dissect the JOSE header and verify the signing algorithm.
+        </li>
+        <li>
+          <strong>Configure Candidate Wordlist:</strong> Paste candidate secrets into the right-hand dictionary box (one candidate per line), or click <strong>Load Wordlist File</strong> to ingest large <code>.txt</code> or <code>.dict</code> wordlists directly from disk.
+        </li>
+        <li>
+          <strong>Test with Built-In Presets:</strong> If evaluating the cracker's functionality, choose a preset from the dropdown (e.g., <em>Preset 1: secret-test-key</em>) and click <strong>Load Sample Target</strong> to generate a mathematically valid, in-memory signed JWT.
+        </li>
+        <li>
+          <strong>Initiate In-Memory Audit:</strong> Click <strong>Start Audit</strong>. The engine initializes native WebCrypto workers, hashing candidates in micro-batches to keep the browser responsive while displaying real-time hash velocity and recovery status.
+        </li>
+        <li>
+          <strong>Analyze Results &amp; Remediation:</strong> If a candidate matches, the recovery log flags the token as compromised and reveals the exact key. If the dictionary finishes without a match, the token is deemed resilient against that wordlist.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Threat Modeling</h2>
+      <p>
+        Auditing JWT secret strength is a foundational procedure across multiple defensive security practices:
+      </p>
+      <ul>
+        <li>
+          <strong>CI/CD Pipeline Security Audits:</strong> Scan staging and pre-production environment configurations to verify that junior developers did not commit placeholder secrets (such as <code>secret</code>, <code>jwt-secret</code>, or company names) into deployment manifests.
+        </li>
+        <li>
+          <strong>Authorized Penetration Testing:</strong> Verify whether tokens issued by legacy microservices or single-sign-on (SSO) gateways can be cracked offline before adversaries exploit them.
+        </li>
+        <li>
+          <strong>Zero-Egress Security Triage:</strong> Incident response teams analyzing leaked bearer tokens often cannot paste tokens into public web debuggers without violating internal data loss prevention (DLP) mandates. BitDark's air-gapped architecture ensures tokens never leak.
+        </li>
+        <li>
+          <strong>Defensive Credential Hardening:</strong> System architects evaluating migration paths from symmetric HMAC to asymmetric public-key cryptography (RS256 or ES256) can demonstrate the risk of symmetric secrets to engineering stakeholders.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Verification</h2>
-      <p>BitDark's JWT Cracker executes dictionary verification locally within your browser using standard JavaScript and native Web Cryptography (<code>crypto.subtle</code>). Neither the candidate password wordlist nor the targeted token ever leave your workstation.</p>
+      <h2>The Devastating Blast Radius of a Compromised JWT Secret</h2>
+      <p>
+        In asymmetric encryption architectures (such as public-key infrastructure), possessing a public verification key does not permit an attacker to forge tokens. However, in <strong>symmetric HS256</strong> implementations, the key used to verify a token is identical to the key used to forge it.
+      </p>
+      <p>
+        If an attacker cracks the symmetric signing secret, the security boundaries of the application collapse entirely:
+      </p>
+      <ul>
+        <li>
+          <strong>Arbitrary Privilege Escalation:</strong> The attacker can decode the payload JSON, change <code>"role": "guest"</code> to <code>"role": "admin"</code> or <code>"role": "super-user"</code>, re-compute the HMAC-SHA256 signature using the cracked secret, and present the forged token. The backend will validate it as legitimate.
+        </li>
+        <li>
+          <strong>Authentication Bypass &amp; Impersonation:</strong> The attacker can change the subject claim (<code>sub</code>) to any target user ID, impersonating corporate executives, database administrators, or financial controllers.
+        </li>
+        <li>
+          <strong>Expiration Tampering:</strong> Short-lived tokens designed to expire in 15 minutes can have their <code>exp</code> claim pushed decades into the future, creating immortal backdoor tokens.
+        </li>
+      </ul>
+
+      <h2>Step-by-Step Mathematical Walkthrough of HMAC-SHA256</h2>
+      <p>
+        To understand why HMAC-SHA256 is computationally fast—and why high entropy is mandatory—consider the formal byte-level pipeline defined by <strong>RFC 2104</strong>:
+      </p>
+      <blockquote>
+        $$\text{HMAC}(K, m) = H\Big((K' \oplus opad) \;\|\; H\big((K' \oplus ipad) \;\|\; m\big)\Big)$$
+      </blockquote>
+      <p>
+        Where:
+      </p>
+      <ul>
+        <li>$H$ is the cryptographic hash function (SHA-256).</li>
+        <li>$B$ is the block size of the hash function (64 bytes for SHA-256).</li>
+        <li>$L$ is the output size of the hash function (32 bytes).</li>
+        <li>$K$ is the secret signing key. If $K$ is longer than $B$, it is hashed: $K' = H(K)$. If shorter, it is padded with zero-bytes to length $B$.</li>
+        <li>$ipad$ is the inner padding constant: the byte <code>0x36</code> repeated 64 times.</li>
+        <li>$opad$ is the outer padding constant: the byte <code>0x5C</code> repeated 64 times.</li>
+        <li>$m$ is the message: <code>Base64URL(Header) + "." + Base64URL(Payload)</code>.</li>
+      </ul>
+
+      <h3>Byte-Level Walkthrough with Candidate Key "password"</h3>
+      <p>
+        Suppose an application issues a token with header <code>{"alg":"HS256","typ":"JWT"}</code> and payload <code>{"sub":"1234","admin":false}</code>, signed with the weak secret <code>"password"</code>:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Pipeline Stage</th>
+              <th>Mathematical Operation</th>
+              <th>Internal Value / Representation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Message Assembly</strong></td>
+              <td>Base64URL String Concatenation</td>
+              <td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0IiwiYWRtaW4iOmZhbHNlfQ</code></td>
+            </tr>
+            <tr>
+              <td><strong>2. Key Normalization ($K'$)</strong></td>
+              <td>Zero-pad <code>"password"</code> to 64 bytes</td>
+              <td><code>70 61 73 73 77 6f 72 64 00 00 00 ... [56 zero bytes]</code></td>
+            </tr>
+            <tr>
+              <td><strong>3. Inner Pad ($K' \oplus ipad$)</strong></td>
+              <td>XOR key bytes with <code>0x36</code></td>
+              <td><code>(0x70 ^ 0x36) (0x61 ^ 0x36) ... = 46 57 45 45 41 59 44 52 36 36 ...</code></td>
+            </tr>
+            <tr>
+              <td><strong>4. Inner Hash Pass</strong></td>
+              <td>$H_1 = \text{SHA256}((K' \oplus ipad) \,\|\, m)$</td>
+              <td>32-byte intermediate hash digest buffer</td>
+            </tr>
+            <tr>
+              <td><strong>5. Outer Pad ($K' \oplus opad$)</strong></td>
+              <td>XOR key bytes with <code>0x5C</code></td>
+              <td><code>(0x70 ^ 0x5C) (0x61 ^ 0x5C) ... = 2C 3D 2F 2F 2B 33 2E 38 5C 5C ...</code></td>
+            </tr>
+            <tr>
+              <td><strong>6. Final Digest</strong></td>
+              <td>$H_2 = \text{SHA256}((K' \oplus opad) \,\|\, H_1)$</td>
+              <td>32-byte binary HMAC digest</td>
+            </tr>
+            <tr>
+              <td><strong>7. URL-Safe Base64</strong></td>
+              <td>Replace <code>+</code> with <code>-</code>, <code>/</code> with <code>_</code>, strip <code>=</code></td>
+              <td>Matches the 3rd segment of the target token</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Because standard modern microprocessors can execute millions of SHA-256 cycles per second, dictionary words and short alphanumeric strings offer zero meaningful protection against offline recovery.
+      </p>
+
+      <h2>Cryptographic Algorithm Comparison: HS256 vs RS256 vs ES256 vs Ed25519</h2>
+      <p>
+        Choosing the appropriate signing algorithm requires balancing architectural complexity against cryptographic attack surface:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Cryptographic Primitive</th>
+              <th>Key Type</th>
+              <th>Offline Dictionary Threat</th>
+              <th>Recommended Key Size</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>HS256 (HMAC-SHA256)</strong></td>
+              <td>Symmetric Secret Hashing</td>
+              <td>Shared Secret</td>
+              <td><strong>High</strong> (If key entropy &lt; 128 bits)</td>
+              <td>At least 256 bits (32 random bytes)</td>
+              <td>Internal, trusted, single-service APIs</td>
+            </tr>
+            <tr>
+              <td><strong>RS256 (RSA PKCS#1 v1.5)</strong></td>
+              <td>Asymmetric Public Key</td>
+              <td>RSA Private/Public Pair</td>
+              <td><strong>Zero</strong> (Public key cannot sign tokens)</td>
+              <td>2048 to 4096 bits</td>
+              <td>Public federated identity (OAuth2 / OIDC)</td>
+            </tr>
+            <tr>
+              <td><strong>ES256 (ECDSA P-256)</strong></td>
+              <td>Elliptic Curve Digital Signature</td>
+              <td>EC Private/Public Pair</td>
+              <td><strong>Zero</strong> (Resistant to dictionary attacks)</td>
+              <td>256-bit curve (NIST P-256)</td>
+              <td>High-throughput mobile &amp; cloud microservices</td>
+            </tr>
+            <tr>
+              <td><strong>EdDSA (Ed25519)</strong></td>
+              <td>Edwards-Curve Digital Signature</td>
+              <td>Curve25519 Pair</td>
+              <td><strong>Zero</strong> (State-of-the-art resilience)</td>
+              <td>256-bit Curve25519</td>
+              <td>Modern zero-trust architectures &amp; Web3</td>
+            </tr>
+            <tr>
+              <td><strong>PS256 (RSA-PSS)</strong></td>
+              <td>Probabilistic Signature Scheme</td>
+              <td>RSA Private/Public Pair</td>
+              <td><strong>Zero</strong> (Mathematically hardened RSA)</td>
+              <td>2048 to 4096 bits</td>
+              <td>High-compliance banking and open banking APIs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common JWT Architectural Vulnerabilities &amp; Implementation Blunders</h2>
+      <p>
+        In real-world security assessments, authentication vulnerabilities rarely stem from flaws in the underlying math of SHA-256. Instead, they arise from severe configuration mistakes in token handling libraries:
+      </p>
+
+      <h3>1. The "Algorithm Confusion" Attack (HMAC vs RSA)</h3>
+      <p>
+        One of the most famous JWT vulnerabilities occurs when a backend verification library accepts both symmetric (HS256) and asymmetric (RS256) algorithms without strict whitelisting. If an application is designed to sign tokens using an RSA private key and verify them using the RSA public key:
+      </p>
+      <ul>
+        <li>An attacker captures the application's public verification key (which is publicly accessible via <code>/.well-known/jwks.json</code>).</li>
+        <li>The attacker crafts a malicious token, changes the JOSE header from <code>"alg": "RS256"</code> to <code>"alg": "HS256"</code>, and signs the forged payload using the <em>public RSA key as the symmetric HMAC secret</em>.</li>
+        <li>If the server's verification logic naively passes the public key into the verifier without enforcing algorithm constraints, the library verifies the signature using HMAC-SHA256, treating the public key text as the secret. The forged token is accepted.</li>
+      </ul>
+
+      <h3>2. The Insecure "alg: none" Vulnerability</h3>
+      <p>
+        The JWT specification includes an algorithm identifier named <code>none</code> for unsigned tokens (used in debugging or secure channels like mutual TLS). Flawed verification libraries historically accepted tokens where <code>"alg": "none"</code> without verifying any signature at all, allowing an attacker to simply strip the third segment and elevate privileges.
+      </p>
+
+      <h3>3. Hardcoding Secrets from Tutorials into Production</h3>
+      <p>
+        Framework quick-starts (such as Node.js Express, Python Flask, or Spring Boot tutorials) frequently use placeholder secrets like <code>"secret"</code>, <code>"your-256-bit-secret"</code>, or <code>"keyboard-cat"</code>. Hundreds of production systems inadvertently ship to cloud environments with these exact strings embedded in configuration files.
+      </p>
+
+      <h3>4. Exposing Secrets in Client-Side JavaScript Bundles</h3>
+      <p>
+        In single-page applications (React, Vue, Next.js), developers sometimes bundle token verification logic into client-side code, accidentally exposing the symmetric HMAC secret in compiled frontend <code>main.js</code> chunks. Anyone opening browser Developer Tools can recover the secret in seconds.
+      </p>
+
+      <h2>Defensive Hardening: How to Secure Your JWT Infrastructure</h2>
+      <p>
+        Securing JWT-based authentication against offline dictionary recovery and signature tampering requires implementing defense-in-depth:
+      </p>
+      <ol>
+        <li>
+          <strong>Enforce High Entropy for Symmetric Keys:</strong> If using HS256, generate keys using cryptographically secure pseudorandom number generators (CSPRNG). On Unix systems, run:
+          <pre><code>openssl rand -hex 32</code></pre>
+          This generates 256 bits of pure cryptographic entropy, rendering offline dictionary and brute-force attacks mathematically impossible.
+        </li>
+        <li>
+          <strong>Migrate to Asymmetric Algorithms (RS256 / ES256):</strong> In multi-service architectures, decouple signing from verification. Only the central identity provider (IdP) holds the private key required to issue tokens; downstream services hold only the public key. Even if an attacker compromises a downstream microservice, they cannot forge tokens.
+        </li>
+        <li>
+          <strong>Strictly Whitelist Algorithms:</strong> Never allow incoming tokens to dictate the verification algorithm. Hardcode the expected algorithm in backend verification middleware:
+          <pre><code>// Hardened verification configuration example
+jwt.verify(token, publicKey, { algorithms: ['RS256'] });</code></pre>
+        </li>
+        <li>
+          <strong>Maintain Short Expiration Windows:</strong> Access tokens should have lifespans limited to 5 to 15 minutes. Pair short-lived access tokens with revocable refresh tokens stored securely in <code>HttpOnly</code>, <code>Secure</code>, <code>SameSite=Strict</code> cookies.
+        </li>
+        <li>
+          <strong>Inject Key Rotation Identifiers (kid):</strong> Include a Key ID (<code>kid</code>) in the JOSE header to allow seamless zero-downtime rotation of signing keys whenever a potential leak is suspected.
+        </li>
+      </ol>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this tool crack tokens signed with RS256, ES256, or EdDSA?</div>
+          <div class="faq-answer">
+            No. Asymmetric algorithms (RS256, ES256, EdDSA) do not use shared secrets; they use mathematically paired private and public cryptographic keys based on integer factorization, elliptic curve discrete logarithms, or Edwards curves. Public keys cannot be dictionary-cracked because the private signing key never appears in the token and cannot be derived from brute-forcing simple strings.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the cracker run entirely inside my web browser?</div>
+          <div class="faq-answer">
+            BitDark operates on an air-gapped, zero-network-egress security model. Pasting sensitive authentication tokens into cloud-based web tools risks leaking active bearer credentials, admin sessions, and confidential claims to third-party servers. By executing all HMAC-SHA256 computations inside local browser memory via W3C WebCrypto, your tokens never touch a network wire.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How fast can this client-side JavaScript engine test candidate keys?</div>
+          <div class="faq-answer">
+            In modern browsers, native WebCrypto (<code>crypto.subtle</code>) executes between 1,000 and 15,000 key evaluations per second on a single CPU thread, depending on your device processor. While dedicated offline GPU tools (like Hashcat) can reach millions of hashes per second, BitDark is designed for immediate, zero-install defensive auditing of common password lists and configuration blunders.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What should I do immediately if my production JWT secret is cracked?</div>
+          <div class="faq-answer">
+            Immediately invalidate the compromised secret key on your authentication server. Generate a new 256-bit secret using a CSPRNG (e.g., <code>openssl rand -hex 32</code>), update your environment variables or key vault, invalidate all existing active refresh tokens, and audit authentication logs for any unauthorized administrative actions taken with forged tokens.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I upload my own custom wordlist file to test?</div>
+          <div class="faq-answer">
+            Yes. Click the "Load Wordlist File" button above the dictionary area to select any plain text wordlist (<code>.txt</code>, <code>.lst</code>, <code>.dict</code>) from your computer. The file is read directly into browser memory via the HTML5 FileReader API without being uploaded to any server.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does changing the token payload invalidate the signature?</div>
+          <div class="faq-answer">
+            Yes. The signature is calculated directly over the Base64URL-encoded header and payload. Changing even a single character in the payload produces a completely different cryptographic digest. Without knowing the secret key, an attacker cannot generate a valid signature for the modified payload.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between a JWT debugger and a JWT cracker?</div>
+          <div class="faq-answer">
+            A JWT debugger (like BitDark's Offline JWT Debugger) decodes the Base64URL header and payload into readable JSON and verifies signatures if you already provide the correct secret key. A JWT cracker actively attempts to discover an unknown secret key by testing candidate passwords against the existing signature.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Is it safe to store sensitive user data inside a JWT payload?</div>
+          <div class="faq-answer">
+            No. Standard JWTs are digitally signed, but they are not encrypted. The header and payload are merely Base64URL-encoded strings that anyone possessing the token can decode in milliseconds. Never store passwords, Social Security numbers, unencrypted credit cards, or internal network topology inside standard JWT claims.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related AppSec, Authentication &amp; Cryptography Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+          <a href="/tools/auth/jwk-jwks-inspector/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> JWK &amp; JWKS Inspector</div>
+            <div class="related-card-desc">Inspect, validate, and convert JSON Web Keys to and from PEM public keys (RSA/EC) in memory.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM Encryptor</div>
+            <div class="related-card-desc">Encrypt confidential text and payload files with military-grade 256-bit authenticated encryption.</div>
+          </a>
+          <a href="/tools/auth/pkce-generator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> OAuth2 PKCE Generator</div>
+            <div class="related-card-desc">Generate RFC 7636 code_verifier and code_challenge strings locally for secure authorization flows.</div>
+          </a>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#]</span> Multi-Hash Checksum Lab</div>
+            <div class="related-card-desc">Compute MD5, SHA-1, SHA-256, SHA-384, and SHA-512 hashes simultaneously in browser memory.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🧹]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, JWT tokens, IP addresses, and personal credentials from logs before sharing.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-stack IPv4 & IPv6 Detection Routine
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Default Weak Dictionary Wordlist
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. JWT Cracker Core Engine (100% Unaltered Tool Logic, Zero Network Egress)
     const DEFAULT_WORDLIST = [
       "secret",
       "password",
@@ -922,6 +1661,8 @@
 
     // Populate initial sample token and wordlist on startup
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       loadSampleTarget();
     });
   </script>
