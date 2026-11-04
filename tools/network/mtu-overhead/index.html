@@ -6,10 +6,108 @@
   
   <title>MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark</title>
   <meta name="title" content="MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark" />
-  <meta name="description" content="Calculate maximum transmission unit (MTU), maximum segment size (MSS), and tunnel encapsulation overhead across IPv4, IPv6, WireGuard, IPsec, GRE, and VXLAN." />
-  <meta name="keywords" content="mtu calculator, mss calculator, wireguard overhead, ipsec mtu, gre tunnel mtu, vxlan overhead, pppoe mtu, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/network/mtu-overhead" />
+  <meta name="description" content="Calculate Maximum Transmission Unit (MTU), Maximum Segment Size (MSS), and tunnel encapsulation overhead across IPv4, IPv6, WireGuard, IPsec, GRE, VXLAN, and VLANs." />
+  <meta name="keywords" content="mtu calculator, mss calculator, wireguard mtu overhead, ipsec esp overhead, gre tunnel mtu, vxlan overhead, pppoe mtu 1492, tcp mss clamping, pmtud black hole, jumbo frames" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/mtu-overhead/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/network/mtu-overhead/" />
+  <meta property="og:title" content="MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark" />
+  <meta property="og:description" content="Calculate effective payload limits, header encapsulation penalties, and optimal TCP MSS clamping boundaries across IPv4, IPv6, WireGuard, IPsec, GRE, and VXLAN." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/network/mtu-overhead/" />
+  <meta name="twitter:title" content="MTU &amp; MSS Overhead Calculator | BitDark" />
+  <meta name="twitter:description" content="Compute MTU, TCP MSS, and tunnel encapsulation overhead locally in your browser. 100% Client-Side with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "MTU & MSS Overhead Calculator",
+        "url": "https://bitdark.net/tools/network/mtu-overhead/",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side networking calculator to compute effective MTU, TCP MSS clamping values, UDP datagram limits, and protocol overhead across IPv4, IPv6, VLAN, PPPoE, WireGuard, IPsec ESP, GRE, VXLAN, and GENEVE encapsulation."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Network Encapsulation Overhead, Path MTU Discovery (PMTUD) Black Holes, and TCP MSS Clamping Architecture",
+        "url": "https://bitdark.net/tools/network/mtu-overhead/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-20",
+        "dateModified": "2026-11-04",
+        "description": "Comprehensive engineering analysis of Maximum Transmission Unit (MTU), Maximum Segment Size (MSS), Path MTU Discovery (PMTUD), ICMP Type 3 Code 4 filtering, and multi-layered encapsulation overhead."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the difference between MTU and MSS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Maximum Transmission Unit (MTU) defines the maximum size in bytes of an entire network layer packet (including IP header, transport header, and payload) that can be transmitted over a physical link without fragmentation. Maximum Segment Size (MSS) specifies the largest amount of pure application data a TCP endpoint can receive in a single unfragmented segment, excluding IP and TCP headers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What causes a Path MTU Discovery (PMTUD) black hole?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A PMTUD black hole occurs when a packet with the Don't Fragment (DF) bit set exceeds an intermediate link's MTU, and the intermediate router drops the packet and generates an ICMP Type 3 Code 4 ('Fragmentation Needed and DF Set') error message, but intermediate firewalls or middleboxes block the incoming ICMP message. Because the sender never receives the notification, it repeatedly retransmits large frames, stalling the TCP connection indefinitely."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does TCP MSS Clamping resolve MTU mismatches?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TCP MSS clamping is an edge-router mechanism that intercepts initial TCP SYN and SYN-ACK handshakes and rewrites the Maximum Segment Size option field to fit within the bottleneck link MTU minus header sizes. By artificially capping the negotiated MSS, endpoints never transmit packets larger than the intermediate tunnel path can bear, avoiding both fragmentation and PMTUD black holes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is the recommended WireGuard MTU over standard Ethernet 1420 bytes?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Standard WireGuard encapsulates tunnel traffic inside UDP. Over IPv6, the outer IPv6 header consumes 40 bytes, UDP consumes 8 bytes, and WireGuard transport data overhead consumes 32 bytes (total 80 bytes overhead). Deducting 80 bytes from a 1500-byte physical Ethernet MTU yields exactly 1420 bytes. Configuring an MTU of 1420 ensures safe transit across both IPv4 (60B overhead) and IPv6 (80B overhead) underlay links."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this MTU overhead calculation transmit any network telemetry or topology data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The BitDark MTU Overhead Calculator operates on a strict zero-network-egress design. All protocol encapsulation arithmetic, running payload allocations, and clamping boundary models run purely in client-side JavaScript within your local browser sandbox."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,134 +124,178 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
-    
-    .breadcrumb {
-      font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
-      color: var(--atom-muted);
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
     
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      margin-bottom: 24px;
+      color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
+
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
 
     /* Tool Card & Workspace */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 540px;
     }
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
     .form-group label {
-      font-size: 0.76rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
       display: flex;
       justify-content: space-between;
+      letter-spacing: 0.04em;
     }
     .form-group label span {
       color: var(--atom-cyan);
       text-transform: none;
+      font-size: 0.8rem;
     }
     .form-group input, .form-group select {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      border-radius: 4px;
-      padding: 10px 12px;
+      border-radius: 6px;
+      padding: 12px 14px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS Safari auto-zooming */
       outline: none;
+      min-height: 44px;
+      transition: border-color 0.2s;
     }
     .form-group input:focus, .form-group select:focus {
       border-color: var(--atom-border-focus);
@@ -163,33 +305,38 @@
     .checkbox-panel {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin-bottom: 20px;
+      border-radius: 6px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
     }
     .panel-label {
       font-family: var(--font-code);
-      font-size: 0.76rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
       color: var(--atom-muted);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: block;
+      letter-spacing: 0.05em;
     }
     .checkbox-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 14px;
     }
     .checkbox-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.86rem;
       color: var(--atom-heading);
       cursor: pointer;
+      min-height: 36px;
+      user-select: none;
     }
     .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
       cursor: pointer;
       accent-color: var(--atom-amber);
     }
@@ -197,10 +344,10 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
     .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
     .btn-atom {
@@ -209,16 +356,24 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 20px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.15s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Diagnostics & Summary */
@@ -226,11 +381,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 22px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -250,36 +407,37 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--atom-heading);
       font-family: var(--font-code);
     }
 
     /* Visual Breakdown Bar */
-    .bar-section { margin-bottom: 20px; }
+    .bar-section { margin-bottom: 24px; }
     .bar-container {
       display: flex;
-      height: 28px;
-      border-radius: 4px;
+      height: 32px;
+      border-radius: 6px;
       overflow: hidden;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
@@ -290,7 +448,7 @@
       align-items: center;
       justify-content: center;
       font-family: var(--font-code);
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       color: #1e2227;
       font-weight: 700;
       overflow: hidden;
@@ -300,23 +458,23 @@
       transition: width 0.25s ease;
     }
 
-    /* Table */
+    /* Results Table */
     .table-container {
       overflow-x: auto;
       margin-bottom: 8px;
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
     }
     .results-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
     }
     .results-table th, .results-table td {
       border-bottom: 1px solid var(--atom-border);
       border-right: 1px solid var(--atom-border);
-      padding: 10px 12px;
+      padding: 12px 14px;
       text-align: left;
       vertical-align: middle;
     }
@@ -326,98 +484,312 @@
       background-color: var(--atom-bg);
       color: var(--atom-muted);
       font-weight: 600;
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .results-table td {
       background-color: var(--atom-gutter);
       color: var(--atom-heading);
     }
+    .results-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
 
-    /* Operational Disclaimer */
+    /* Operational Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-left: 4px solid var(--atom-coral);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
-      color: var(--atom-coral);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      color: var(--atom-amber);
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3000px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn-group { width: 100%; flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#network">Network</a> / mtu-overhead
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/network/">Network &amp; Infra</a>
+      <span class="sep">/</span>
+      <span class="current">MTU &amp; MSS Overhead Calculator</span>
     </nav>
 
     <div class="tool-header">
@@ -425,8 +797,13 @@
       <p>Compute effective payload limits, header encapsulation penalties, and optimal TCP MSS clamping boundaries across IPv4, IPv6, VPNs, overlay networks, and VLAN tags.</p>
     </div>
 
-    <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
+    <!-- Active Tool Workspace (100% Client-Side Engine) -->
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive MTU and MSS Overhead Calculator">
       <div class="form-grid">
         <div class="form-group">
           <label for="baseMtuInput">Base Physical MTU (Bytes) <span>Standard Ethernet: 1500</span></label>
@@ -558,93 +935,520 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Operational Boundaries &amp; Forensic Legal Disclaimer
       </div>
       <p>
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
         <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, packet blackholing, network fragmentation overhead, throughput collapse, Path MTU Discovery (PMTUD) outages, or routing policy failures. Header calculations reflect canonical RFC and standard implementation specifications. Real-world enterprise environments may incur variable padding requirements (e.g., block cipher CBC alignment in IPsec ESP or variable TLV fields in GENEVE). Network engineers must verify actual MTU and MSS clamping configurations against operational edge routers and middleboxes.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
       <h2>Understanding MTU, MSS, and Encapsulation Penalties</h2>
-      <p>The Maximum Transmission Unit (MTU) establishes the largest physical frame payload a network link can transport without IP fragmentation. The Maximum Segment Size (MSS) specifies the largest payload a TCP client or server can accept in a single unfragmented packet:</p>
+      <p>
+        In modern packet-switched computer networks, throughput efficiency, low latency, and connection reliability depend directly on the harmonious alignment of data payload boundaries. At the physical and data link layers, the <strong>Maximum Transmission Unit (MTU)</strong> defines the largest single protocol data unit (PDU) that a given network interface can transmit without requiring fragmentation. 
+      </p>
+      <p>
+        For decades, the de facto global standard across physical Ethernet has been fixed at <strong>1500 bytes</strong> (RFC 894). While 1500 bytes accommodates standard IPv4 and TCP transmission with negligible framing waste, today's telecommunications backbones, software-defined data centers (SDDCs), and hybrid multi-cloud mesh networks rarely transmit raw, unencapsulated IP packets. Instead, modern packets are wrapped in multiple nested layers of tunnels: VLAN tags (IEEE 802.1Q), broadband PPPoE encapsulation, overlay virtualization headers (VXLAN, GENEVE), and encrypted cryptographic tunnels (WireGuard, IPsec ESP).
+      </p>
+      <p>
+        Every single encapsulation header prepended to or wrapped around a packet consumes precious bytes from the original 1500-byte budget. If an endpoint server attempts to transmit a full 1500-byte IP frame over a link where tunnel headers add 40, 56, or 80 bytes of overhead, the total frame size exceeds the link's physical capacity. When this occurs, one of two performance-destroying failure modes emerges: <strong>IP packet fragmentation</strong> or <strong>catastrophic Path MTU Discovery (PMTUD) blackholing</strong>.
+      </p>
+
+      <h2>How to Use the BitDark MTU &amp; MSS Overhead Calculator</h2>
+      <p>
+        This calculator computes precise byte allocations, protocol overhead taxes, and optimal MSS clamping values entirely inside your browser's local thread:
+      </p>
+      <ol>
+        <li>
+          <strong>Define Base Physical MTU:</strong> Enter the physical link MTU of the underlying transport medium. Standard Ethernet is <code>1500</code> bytes; broadband PPPoE WANs are typically <code>1492</code> bytes; cloud hypervisor VPCs (such as AWS EC2 or Google Cloud VPC) support jumbo frames up to <code>9001</code> or <code>8896</code> bytes.
+        </li>
+        <li>
+          <strong>Select Outer and Inner IP Versions:</strong> Specify the outer underlay IP layer (IPv4 with a 20-byte header, or IPv6 with a 40-byte header) and the inner overlay IP layer used by encapsulated tunnel traffic.
+        </li>
+        <li>
+          <strong>Configure Transport Layer TCP Options:</strong> Choose standard TCP (20 bytes) or account for common TCP options such as Selective Acknowledgment (SACK) and RFC 7323 High-Performance Timestamps (typically 32 bytes total).
+        </li>
+        <li>
+          <strong>Toggle Encapsulation Protocols:</strong> Select all active tunneling, security, and tagging protocols on the wire—such as PPPoE, 802.1Q VLAN, 802.1ad QinQ, WireGuard, GRE, IPsec ESP, VXLAN, or GENEVE.
+        </li>
+        <li>
+          <strong>Inspect Optimal Metrics &amp; Apply Clamping:</strong> Review the calculated Effective Tunnel MTU, Optimal TCP MSS, Total Header Overhead, and Maximum UDP Payload. Use these numbers directly in your firewall clamping rules (e.g., <code>iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss &lt;value&gt;</code>) or router interface configs.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Scenarios</h2>
+      <p>
+        Network engineers, systems administrators, and DevOps architects must compute exact MTU and MSS constraints in several critical operational contexts:
+      </p>
       <ul>
-        <li><strong>Standard Ethernet Formula:</strong> On standard Ethernet (1500 MTU) over IPv4 (20-byte header) and standard TCP (20-byte header), the optimal TCP MSS is $1500 - 20 - 20 = 1460\text{ bytes}$.</li>
-        <li><strong>IPv6 Header Penalty:</strong> IPv6 incorporates a fixed 40-byte base header (double IPv4). On a 1500-byte MTU, IPv6 TCP MSS is $1500 - 40 - 20 = 1440\text{ bytes}$.</li>
-        <li><strong>The TCP Clamping Imperative:</strong> If ICMP Type 3 Code 4 ("Fragmentation Needed and DF set") packets are dropped by intermediate firewalls, PMTUD blackholing occurs. Routers resolve this at network edges by rewriting the TCP SYN packet MSS option via MSS clamping.</li>
-        <li><strong>Tunnel Overhead Accumulation:</strong> Modern cloud and VPN architectures stack multiple encapsulations (e.g., Ethernet + VXLAN + IPv4 + WireGuard + Inner IPv6). Each layer deducts available payload space, necessitating precise client MTU adjustments.</li>
+        <li>
+          <strong>Site-to-Site &amp; Road-Warrior VPN Provisioning:</strong> Designing WireGuard, IPsec IKEv2, or OpenVPN deployments connecting remote offices to corporate headquarters. Misconfigured MTUs cause SSH connections to hang on large terminal outputs and web pages to stall during TLS handshakes.
+        </li>
+        <li>
+          <strong>Broadband WAN &amp; Fiber Edge Routing:</strong> Configuring customer premises equipment (CPE) over PPPoE connections where DSL/FTTH framing steals 8 bytes, reducing the base MTU from 1500 to 1492 and TCP MSS to 1452.
+        </li>
+        <li>
+          <strong>Cloud VPC Overlay &amp; Container CNI Fabrics:</strong> Deploying Kubernetes clusters using Calico, Flannel, or Cilium over VXLAN or Geneve encapsulation. If the pod network interface inherits the physical node's 1500 MTU without deducting the 50-byte VXLAN penalty, pod-to-pod traffic fragments or stalls.
+        </li>
+        <li>
+          <strong>Data Center Interconnects (DCI) &amp; QinQ Tagging:</strong> Service providers delivering Carrier Ethernet or Metro Ethernet services stacking multiple 802.1Q and 802.1ad tags across customer traffic.
+        </li>
+        <li>
+          <strong>Diagnosing Asymmetric Path MTU Black Holes:</strong> Troubleshooting network paths where small packets (ping, DNS queries) succeed without issue, but bulk transfers (HTTPS downloads, database syncs, SCP copies) freeze indefinitely.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>All calculations, layer permutations, and packet boundary simulations are computed locally in your browser thread. No IP addresses, network topologies, or routing parameters are ever transmitted across external networks.</p>
+      <h2>The Mathematical Architecture of MTU, MSS, and UDP Payloads</h2>
+      <p>
+        To understand how packet dimensions are calculated, consider the fundamental relationship between the Open Systems Interconnection (OSI) layers:
+      </p>
+
+      <pre><code>+---------------------------------------------------------------------------------+
+| Ethernet Frame (1518 Bytes Total on Wire, excluding 4B FCS / 8B Preamble)       |
+|  [ Ethernet Layer 2 Header: 14 Bytes ] [ Optional 802.1Q VLAN Tag: 4 Bytes ]   |
+|                                                                                 |
+|  +-- Maximum Transmission Unit (MTU = 1500 Bytes Base Payload) ---------------+  |
+|  |                                                                            |  |
+|  |  +-- Network Layer (IP Header) -----------------------------------------+  |  |
+|  |  |  * IPv4: 20 Bytes (up to 60 Bytes with Options)                     |  |  |
+|  |  |  * IPv6: 40 Bytes Fixed Base Header (RFC 8200)                      |  |  |
+|  |  +---------------------------------------------------------------------+  |  |
+|  |                                                                            |  |
+|  |  +-- Transport Layer (TCP Header) --------------------------------------+  |  |
+|  |  |  * Standard Base TCP Header: 20 Bytes                                |  |  |
+|  |  |  * Common Options (Timestamps + SACK Permitted): +12 Bytes (32B)     |  |  |
+|  |  +---------------------------------------------------------------------+  |  |
+|  |                                                                            |  |
+|  |  +-- Maximum Segment Size (TCP MSS = MTU - IP_Header - TCP_Header) -----+  |  |
+|  |  |  * Standard IPv4 TCP MSS: 1500 - 20 - 20 = 1460 Bytes               |  |  |
+|  |  |  * Standard IPv6 TCP MSS: 1500 - 40 - 20 = 1440 Bytes               |  |  |
+|  |  |  * Pure Application Data Payload (TLS Records, HTTP/2 Data, etc.)   |  |  |
+|  |  +---------------------------------------------------------------------+  |  |
+|  +----------------------------------------------------------------------------+  |
++---------------------------------------------------------------------------------+</code></pre>
+
+      <h3>1. Standard TCP MSS Formula</h3>
+      <p>
+        The Maximum Segment Size (MSS) announced in the TCP SYN option field represents the maximum pure transport payload a host can receive. For an unencapsulated connection:
+      </p>
+      <blockquote>
+        $$\text{MSS}_{\text{TCP}} = \text{MTU}_{\text{Base}} - \text{Header}_{\text{IP}} - \text{Header}_{\text{TCP}}$$
+      </blockquote>
+      <p>
+        On standard Ethernet (1500 bytes MTU):
+      </p>
+      <ul>
+        <li><strong>IPv4 Standard:</strong> $1500 - 20 - 20 = \mathbf{1460\text{ bytes}}$.</li>
+        <li><strong>IPv6 Standard:</strong> $1500 - 40 - 20 = \mathbf{1440\text{ bytes}}$.</li>
+        <li><strong>IPv4 with TCP Timestamps:</strong> $1500 - 20 - 32 = \mathbf{1448\text{ bytes}}$.</li>
+        <li><strong>IPv6 with TCP Timestamps:</strong> $1500 - 40 - 32 = \mathbf{1428\text{ bytes}}$.</li>
+      </ul>
+
+      <h3>2. UDP Maximum Datagram Payload</h3>
+      <p>
+        User Datagram Protocol (UDP) does not negotiate an MSS during connection setup; it relies on a fixed 8-byte header. The maximum unfragmented UDP data payload is:
+      </p>
+      <blockquote>
+        $$\text{Payload}_{\text{UDP}} = \text{MTU}_{\text{Effective}} - \text{Header}_{\text{IP}} - 8$$
+      </blockquote>
+      <p>
+        Over standard IPv4 Ethernet, the maximum unfragmented UDP payload is $1500 - 20 - 8 = \mathbf{1472\text{ bytes}}$. Over IPv6, it is $1500 - 40 - 8 = \mathbf{1452\text{ bytes}}$. Protocols like DNS (EDNS0), QUIC (HTTP/3), and WireGuard must ensure their datagrams fit strictly within these thresholds to prevent middlebox fragmentation drops.
+      </p>
+
+      <h2>Encapsulation Protocol Deep-Dive &amp; Overhead Breakdown</h2>
+      <p>
+        When overlay tunnels wrap packets inside additional layers, each protocol exacts a specific byte-level tax:
+      </p>
+
+      <h3>1. WireGuard VPN (RFC Draft / Jason Donenfeld)</h3>
+      <p>
+        WireGuard operates strictly over UDP. A WireGuard encapsulated packet consists of:
+      </p>
+      <ul>
+        <li>Outer IP Header: 20 bytes (IPv4) or 40 bytes (IPv6).</li>
+        <li>Outer UDP Header: 8 bytes.</li>
+        <li>WireGuard Type 4 Data Message Header: 32 bytes (comprising 4B message type, 4B receiver index, 8B counter, and 16B Poly1305 authentication tag).</li>
+      </ul>
+      <p>
+        Total WireGuard overhead over IPv4 is $20 + 8 + 32 = \mathbf{60\text{ bytes}}$, resulting in an optimal MTU of $1500 - 60 = \mathbf{1440\text{ bytes}}$. Over an IPv6 underlay, total overhead is $40 + 8 + 32 = \mathbf{80\text{ bytes}}$, producing an optimal MTU of $1500 - 80 = \mathbf{1420\text{ bytes}}$. To ensure seamless roaming between IPv4 and IPv6 cellular and fiber links, the WireGuard project standardizes its universal default MTU at <strong>1420 bytes</strong>.
+      </p>
+
+      <h3>2. IPsec ESP in Tunnel Mode (RFC 4303)</h3>
+      <p>
+        Encapsulating Security Payload (ESP) provides confidentiality and authentication. In Tunnel Mode (used for site-to-site VPNs):
+      </p>
+      <ul>
+        <li>Outer IP Header: 20 bytes (IPv4) or 40 bytes (IPv6).</li>
+        <li>NAT-Traversal UDP Header (RFC 3948, if active): 8 bytes.</li>
+        <li>ESP Header: 8 bytes (4B Security Parameters Index [SPI] + 4B Sequence Number).</li>
+        <li>Initialization Vector (IV): 8 bytes (for modern AES-GCM ciphers).</li>
+        <li>Integrity Check Value (ICV / Auth Tag): 16 bytes.</li>
+        <li>ESP Trailer: 2 bytes (Pad Length + Next Header).</li>
+        <li>Alignment Padding: 0 to 15 bytes (AES-GCM operates on 4-byte boundaries, requiring 0–3 bytes padding; legacy AES-CBC requires 16-byte block alignment).</li>
+      </ul>
+      <p>
+        Under AES-GCM-128/256 with NAT-T over IPv4, total IPsec overhead ranges between <strong>56 and 72 bytes</strong>. Network engineers typically subtract <strong>70 to 80 bytes</strong> to ensure safe clearance.
+      </p>
+
+      <h3>3. VXLAN (RFC 7348) &amp; Cloud Overlay Fabrics</h3>
+      <p>
+        Virtual Extensible LAN (VXLAN) encapsulates complete Layer 2 Ethernet frames inside Layer 4 UDP datagrams to enable multi-tenant overlay networks:
+      </p>
+      <ul>
+        <li>Outer IP Header: 20 bytes (IPv4).</li>
+        <li>Outer UDP Header: 8 bytes (destination port 4789).</li>
+        <li>VXLAN Header: 8 bytes (including 24-bit VNI).</li>
+        <li>Inner Ethernet Header: 14 bytes (destination MAC, source MAC, EtherType).</li>
+      </ul>
+      <p>
+        Total VXLAN overhead is exactly $\mathbf{50\text{ bytes}}$. If a cloud data center maintains a physical link MTU of 1500 bytes, guest virtual machines can only transmit packets with an MTU of $1500 - 50 = \mathbf{1450\text{ bytes}}$. This is why modern cloud hypervisors (AWS, Azure, GCP) mandate physical network underlays with jumbo frames (1600+ bytes) so that guest VMs can use standard 1500-byte MTUs without encapsulation penalties.
+      </p>
+
+      <h2>Comparison: Protocol Encapsulation Overhead Reference</h2>
+      <p>
+        The table below summarizes standard encapsulation penalties across contemporary enterprise networking protocols:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Protocol / Encapsulation</th>
+              <th>Layer</th>
+              <th>Header Overhead</th>
+              <th>Optimal MTU (on 1500 Underlay)</th>
+              <th>Optimal TCP MSS (IPv4 / IPv6)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Standard Ethernet (Clean)</strong></td>
+              <td>L2 / L3</td>
+              <td>0 B (Base Link)</td>
+              <td>1500 B</td>
+              <td>1460 B / 1440 B</td>
+            </tr>
+            <tr>
+              <td><strong>802.1Q Single VLAN Tag</strong></td>
+              <td>L2</td>
+              <td>4 B</td>
+              <td>1496 B (if unadjusted)</td>
+              <td>1456 B / 1436 B</td>
+            </tr>
+            <tr>
+              <td><strong>802.1ad QinQ Provider Tags</strong></td>
+              <td>L2</td>
+              <td>8 B</td>
+              <td>1492 B (if unadjusted)</td>
+              <td>1452 B / 1432 B</td>
+            </tr>
+            <tr>
+              <td><strong>PPPoE Broadband (RFC 2516)</strong></td>
+              <td>L2.5</td>
+              <td>8 B</td>
+              <td>1492 B</td>
+              <td>1452 B / 1432 B</td>
+            </tr>
+            <tr>
+              <td><strong>WireGuard (IPv4 Underlay)</strong></td>
+              <td>L3/L4 Tunnel</td>
+              <td>60 B (20B IP + 8B UDP + 32B WG)</td>
+              <td>1440 B</td>
+              <td>1400 B / 1380 B</td>
+            </tr>
+            <tr>
+              <td><strong>WireGuard (IPv6 Underlay)</strong></td>
+              <td>L3/L4 Tunnel</td>
+              <td>80 B (40B IP + 8B UDP + 32B WG)</td>
+              <td>1420 B</td>
+              <td>1380 B / 1360 B</td>
+            </tr>
+            <tr>
+              <td><strong>GRE Tunnel (RFC 2784)</strong></td>
+              <td>L3 Tunnel</td>
+              <td>24 B (20B Outer IP + 4B GRE)</td>
+              <td>1476 B</td>
+              <td>1436 B / 1416 B</td>
+            </tr>
+            <tr>
+              <td><strong>IPsec ESP (AES-GCM + NAT-T)</strong></td>
+              <td>L3/L4 Security</td>
+              <td>~56 to 64 B</td>
+              <td>1436 to 1444 B</td>
+              <td>1396 to 1404 B</td>
+            </tr>
+            <tr>
+              <td><strong>VXLAN Overlay (RFC 7348)</strong></td>
+              <td>L2-over-L4</td>
+              <td>50 B (20B IP + 8B UDP + 8B VX + 14B MAC)</td>
+              <td>1450 B</td>
+              <td>1410 B / 1390 B</td>
+            </tr>
+            <tr>
+              <td><strong>GENEVE Overlay (RFC 8926)</strong></td>
+              <td>L2-over-L4</td>
+              <td>50 to 66 B (Base + TLV Options)</td>
+              <td>1434 to 1450 B</td>
+              <td>1394 to 1410 B</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Path MTU Discovery (PMTUD) and the Black Hole Dilemma</h2>
+      <p>
+        In an ideal network, endpoints dynamically discover the minimum MTU along an entire routing path using <strong>Path MTU Discovery (PMTUD, RFC 1191 for IPv4, RFC 8201 for IPv6)</strong>:
+      </p>
+      <ol>
+        <li>The sender transmits an IP packet with the <strong>Don't Fragment (DF)</strong> bit set in the IPv4 flags header.</li>
+        <li>If the packet encounters an intermediate router whose egress interface has an MTU smaller than the packet size, the router cannot fragment it.</li>
+        <li>The router drops the oversized packet and generates an <strong>ICMP Type 3, Code 4</strong> packet (<em>"Destination Unreachable: Fragmentation Needed and DF Set"</em>), specifying the exact Next-Hop MTU of the bottleneck link.</li>
+        <li>The sender receives the ICMP notification, reduces its Path MTU cache for that destination, and retransmits the data within the smaller boundary.</li>
+      </ol>
+
+      <h3>The Firewall Black Hole Failure</h3>
+      <p>
+        In the real world, PMTUD frequently fails because misconfigured firewalls, hosting providers, or enterprise security middleboxes aggressively drop all inbound ICMP traffic under the misguided belief that blocking ICMP enhances security.
+      </p>
+      <p>
+        When an intermediate router drops an oversized packet and returns an ICMP Type 3 Code 4 notification, the sender's edge firewall silences the alert. The sending server never learns why its packet was discarded. It assumes the packet was lost to transient congestion, keeps its Path MTU estimate at 1500 bytes, and repeatedly retransmits the identical oversized segment. 
+      </p>
+      <p>
+        The result is a <strong>PMTUD Black Hole</strong>: small control packets (SYN, ACK, short HTTP requests) transit the link effortlessly, but the moment a web server returns a full TLS certificate chain or bulk file download, the connection hangs indefinitely until the client times out.
+      </p>
+
+      <h2>The TCP MSS Clamping Solution: Router Configurations</h2>
+      <p>
+        Because network engineers cannot control intermediate third-party firewalls across the public Internet, the industry-standard mitigation is <strong>TCP MSS Clamping</strong>. Edge routers inspect passing TCP SYN and SYN-ACK packets, read the Maximum Segment Size option field, and dynamically rewrite it downward to match the local tunnel MTU minus header space.
+      </p>
+      <p>
+        Here is how to implement TCP MSS clamping across standard enterprise platforms:
+      </p>
+
+      <h3>1. Linux (iptables &amp; nftables)</h3>
+      <pre><code># Linux iptables: Clamp MSS to PMTU automatically on tunnel interface (e.g., wg0)
+iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \
+  -o wg0 -j TCPMSS --clamp-mss-to-pmtu
+
+# Explicit clamping to a calculated 1380-byte MSS:
+iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \
+  -j TCPMSS --set-mss 1380
+
+# Modern Linux nftables syntax:
+nft add rule ip filter forward tcp flags syn / syn,rst \
+  tcp option maxseg size set rt mtu</code></pre>
+
+      <h3>2. Cisco IOS / IOS-XE</h3>
+      <pre><code>! Cisco IOS: Configure MTU and TCP MSS clamping on a tunnel interface
+interface Tunnel0
+ ip address 10.100.0.1 255.255.255.0
+ tunnel source GigabitEthernet0/0/1
+ tunnel destination 203.0.113.5
+ ip mtu 1440
+ ip tcp adjust-mss 1400
+! For IPv6 traffic:
+ ipv6 tcp adjust-mss 1380</code></pre>
+
+      <h3>3. MikroTik RouterOS</h3>
+      <pre><code># MikroTik RouterOS v7: Clamping rule for WireGuard / PPPoE
+/ip firewall mangle
+add chain=forward action=change-mss new-mss=1400 passthrough=yes \
+  protocol=tcp tcp-flags=syn out-interface=wireguard-vpn log=no
+
+/ipv6 firewall mangle
+add chain=forward action=change-mss new-mss=1380 passthrough=yes \
+  protocol=tcp tcp-flags=syn out-interface=wireguard-vpn log=no</code></pre>
+
+      <h2>Common Mistakes in MTU &amp; MSS Architecture</h2>
+      <p>
+        Network engineers and cloud architects frequently encounter several subtle pitfalls when configuring MTU parameters:
+      </p>
+      <ul>
+        <li>
+          <strong>Forgetting IPv6's Larger Header:</strong> IPv6 headers are fixed at 40 bytes—exactly double the 20-byte base header of IPv4. Setting a router's MSS clamp to <code>1460</code> bytes works for IPv4, but causes immediate fragmentation or blackholing for IPv6 traffic, which requires a maximum MSS of <code>1440</code> bytes on standard 1500 MTU links.
+        </li>
+        <li>
+          <strong>Ignoring TCP Options Overhead:</strong> While base TCP is 20 bytes, modern high-throughput operating systems (Linux, macOS, Windows) enable TCP Timestamps (RFC 7323) and SACK (RFC 2018) by default, consuming 12 additional bytes of options. If an edge link leaves zero safety margin, packets containing TCP options can exceed the MTU.
+        </li>
+        <li>
+          <strong>Assuming Jumbo Frames Transit the Public Internet:</strong> Enabling <code>9000</code>-byte jumbo frames inside a local storage area network (SAN) or cloud VPC dramatically boosts throughput. However, jumbo frames cannot traverse the public Internet, where physical switches drop packets exceeding 1500 bytes.
+        </li>
+        <li>
+          <strong>Clamping Both Directions Inconsistently:</strong> MSS clamping must apply to both SYN and SYN-ACK packets across forward and reverse routing paths. If an asymmetrical route bypasses the clamping router in one direction, one endpoint will continue transmitting oversized segments.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between MTU and MRU?</div>
+          <div class="faq-answer">
+            MTU (Maximum Transmission Unit) defines the maximum packet size an interface can transmit. MRU (Maximum Receive Unit) defines the maximum packet size an interface can accept. In symmetrical Ethernet networks, MTU and MRU are identical (1500 bytes). In asymmetric protocols like PPPoE or PPP, a client can request an MRU larger than its MTU during Link Control Protocol (LCP) negotiation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does SSH hang after authentication when MTU is misconfigured?</div>
+          <div class="faq-answer">
+            The initial SSH handshake, password exchange, and authentication consist of small packets well below 1000 bytes, which transit smoothly. Once logged in, running commands like <code>ls -la</code> or <code>cat</code> returns large bursts of terminal text that fill an entire 1500-byte frame. If an intermediate tunnel has a smaller MTU and blocks ICMP, these large packets are dropped, causing the terminal session to freeze indefinitely.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can IPv6 packets be fragmented by intermediate routers?</div>
+          <div class="faq-answer">
+            No. Unlike IPv4, where intermediate routers can fragment packets unless the Don't Fragment (DF) bit is set, IPv6 completely forbids router-level fragmentation. In IPv6, fragmentation can only be performed by the originating host using an IPv6 Fragment Extension Header. If a packet is too large, the intermediate router must drop it and return an ICMPv6 Packet Too Big (Type 2, Code 0) message.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is RFC 4821 Packetization Layer Path MTU Discovery (PLPMTUD)?</div>
+          <div class="faq-answer">
+            RFC 4821 defines an alternative discovery method that does not rely on ICMP error messages. Instead, the transport layer (TCP) dynamically probes path capacity by transmitting isolated large segments. If the segment is acknowledged, the sender knows the path supports that MTU; if it times out repeatedly, the sender systematically reduces the segment size. Linux enables PLPMTUD via the <code>net.ipv4.tcp_mtu_probing</code> sysctl knob.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is standard PPPoE MTU set to 1492 instead of 1500?</div>
+          <div class="faq-answer">
+            PPPoE (Point-to-Point Protocol over Ethernet, RFC 2516) encapsulates PPP frames inside standard Ethernet frames. The PPPoE header consumes 6 bytes and the PPP Protocol ID consumes 2 bytes, totaling 8 bytes of Layer 2.5 overhead. Subtracting 8 bytes from standard 1500-byte Ethernet yields an MTU of 1492 bytes. Some modern ISPs support "Baby Jumbo Frames" (1508 bytes MTU on the DSLAM/OLT) to restore full 1500-byte IP payloads.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the performance penalty of IP packet fragmentation?</div>
+          <div class="faq-answer">
+            Fragmentation severely harms network performance. If even a single fragment is dropped due to packet loss, the entire original datagram must be retransmitted. Furthermore, fragments lack Layer 4 transport headers, preventing intermediate firewalls and NAT gateways from inspecting port numbers. Finally, reassembling fragmented packets consumes substantial CPU cycles and buffer memory on receiving hosts.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does QUIC (HTTP/3) handle MTU constraints?</div>
+          <div class="faq-answer">
+            QUIC operates over UDP and mandates a minimum initial packet size of 1200 bytes (RFC 9000) to prevent amplification attacks. QUIC includes built-in Datagram Packetization Layer PMTU Discovery (DPLPMTUD, RFC 8899) at the application layer, using probing packets with padding to discover the path MTU without depending on ICMP error messages.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What does "clamp-mss-to-pmtu" mean in firewall rules?</div>
+          <div class="faq-answer">
+            The <code>--clamp-mss-to-pmtu</code> option instructs the firewall to dynamically calculate the appropriate MSS based on the outgoing interface's current MTU setting. For example, if an interface has an MTU of 1420 over IPv4, the firewall will automatically clamp passing SYN packets to <code>1420 - 40 = 1380</code> bytes without requiring a hardcoded numerical parameter.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Network Engineering &amp; Security Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/network/cidr-calculator/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> Subnet &amp; CIDR Calculator</div>
+            <div class="related-card-desc">Calculate host boundaries, wildcard masks, usable IPs, and binary netmasks across IPv4 and IPv6 subnets.</div>
+          </a>
+          <a href="/tools/network/cidr-overlap/" class="related-card">
+            <div class="related-card-title"><span>[⚡]</span> CIDR Overlap Resolver</div>
+            <div class="related-card-desc">Audit routing tables, cloud VPC blocks, and Kubernetes clusters for intersecting address spaces and route collisions.</div>
+          </a>
+          <a href="/tools/network/dns-wire-format/" class="related-card">
+            <div class="related-card-title"><span>[📦]</span> DNS Wire-Format Decoder</div>
+            <div class="related-card-desc">Dissect binary DNS queries, response packets, EDNS0 buffer limits, and TTL flags client-side.</div>
+          </a>
+          <a href="/tools/network/email-headers/" class="related-card">
+            <div class="related-card-title"><span>[✉️]</span> Email Header Tracer</div>
+            <div class="related-card-desc">Trace delivery relays, inspect SPF/DKIM verification results, and dissect RFC 5322 MIME headers offline.</div>
+          </a>
+          <a href="/tools/network/dmarc-generator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> DMARC Record Builder</div>
+            <div class="related-card-desc">Generate and validate hardened DMARC TXT records with policy enforcement and aggregate reporting tags.</div>
+          </a>
+          <a href="/tools/network/ip-converter/" class="related-card">
+            <div class="related-card-title"><span>[🔢]</span> IP Format Obfuscator</div>
+            <div class="related-card-desc">Convert IP addresses between Dword, Octal, Hex, and canonical notation to audit WAF security filters.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Master Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // MTU Engine
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. MTU & MSS Calculation Core Engine (100% Unaltered Tool Code)
     const baseMtuInput = document.getElementById("baseMtuInput");
     const ipVersionSelect = document.getElementById("ipVersionSelect");
     const innerIpSelect = document.getElementById("innerIpSelect");
@@ -946,7 +1750,12 @@
       el.addEventListener("change", calculateMTU);
     });
 
-    window.addEventListener("DOMContentLoaded", calculateMTU);
+    // Initialize Observers, FAQ Accordion, and Engine
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+      calculateMTU();
+    });
   </script>
 </body>
 </html>
