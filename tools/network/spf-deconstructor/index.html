@@ -4,12 +4,126 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>SPF Record Deconstructor &amp; Validator — Free Offline Network Tool | BitDark</title>
-  <meta name="title" content="SPF Record Deconstructor &amp; Validator — Free Offline Network Tool | BitDark" />
-  <meta name="description" content="Deconstruct, parse, and validate Sender Policy Framework (RFC 7208) TXT records in local browser memory. Calculate DNS lookup limits, mechanism costs, and security qualifiers without network egress." />
-  <meta name="keywords" content="spf deconstructor, spf validator, parse spf record, rfc 7208 parser, spf lookup limit counter, email security analyzer, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/network/spf-deconstructor" />
+  <title>SPF Record Deconstructor &amp; Validator — Free Offline RFC 7208 Network Tool | BitDark</title>
+  <meta name="title" content="SPF Record Deconstructor &amp; Validator — Free Offline RFC 7208 Network Tool | BitDark" />
+  <meta name="description" content="Deconstruct, parse, audit, and validate Sender Policy Framework (RFC 7208) TXT records entirely inside local browser memory. Audit DNS query lookup limits, mechanism qualifiers, CIDR blocks, and misconfigurations with zero network egress." />
+  <meta name="keywords" content="spf deconstructor, spf validator, parse spf record, rfc 7208 parser, spf lookup limit counter, email security analyzer, spf flattening, dkim dmarc spf, email spoofing defense, dns lookup limit, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/spf-deconstructor/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/network/spf-deconstructor/" />
+  <meta property="og:title" content="SPF Record Deconstructor &amp; Validator — Offline RFC 7208 Parser | BitDark" />
+  <meta property="og:description" content="Audit email SPF records client-side in browser RAM. Quantify RFC 7208 10-lookup limits, mechanism costs, and security qualifiers with zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/network/spf-deconstructor/" />
+  <meta name="twitter:title" content="SPF Record Deconstructor &amp; Validator | BitDark" />
+  <meta name="twitter:description" content="Deconstruct and audit RFC 7208 SPF TXT records in local browser memory. Zero tracking, zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "SPF Record Deconstructor & Validator",
+        "url": "https://bitdark.net/tools/network/spf-deconstructor/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern web browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side network utility to parse, deconstruct, and audit RFC 7208 Sender Policy Framework (SPF) records, calculate 10-DNS-lookup limits, and identify misconfigurations in browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "RFC 7208 Sender Policy Framework Architecture: Syntax Decomposition, 10-Lookup DNS Ceilings, and Deliverability Engineering",
+        "url": "https://bitdark.net/tools/network/spf-deconstructor/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-18",
+        "dateModified": "2026-11-04",
+        "description": "Exhaustive technical handbook on Sender Policy Framework (SPF) mechanics, recursive DNS resolution boundaries, PermError mitigation, CIDR optimization, and DMARC alignment."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the RFC 7208 10-DNS-lookup limit and why does it exist?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Section 4.6.4 of RFC 7208 mandates that evaluating an SPF record must not cause more than 10 DNS queries for mechanisms that require domain resolution (include, a, mx, ptr, exists, and redirect). This strict limit prevents recursive amplification Distributed Denial of Service (DDoS) attacks and mitigates severe latency delays at receiving Mail Transfer Agents (MTAs). Exceeding this budget causes MTAs to immediately abort evaluation with a PermError verdict."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which SPF mechanisms consume DNS lookups and which do not?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mechanisms that trigger DNS lookups and decrement the 10-query budget include 'include:', 'a', 'mx', 'ptr', 'exists:', and 'redirect='. Mechanisms that evaluate purely in memory without DNS resolution include 'ip4:', 'ip6:', 'all', and modifier tags such as 'exp='."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the security difference between -all (HardFail) and ~all (SoftFail)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The qualifier '-' denotes HardFail, explicitly telling receiving MTAs to reject unauthorized sender IPs. The qualifier '~' denotes SoftFail, instructing receiving MTAs that the IP is suspect but should be accepted with a spam mark or routed according to DMARC policy. While -all was historically favored, modern email architectures pairing SPF with strict DMARC (p=reject) frequently utilize ~all to prevent legitimate forwarded emails from being prematurely discarded before DKIM evaluation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can a domain publish multiple SPF TXT records in DNS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. RFC 7208 Section 3.2 explicitly dictates that a domain must never have more than one SPF TXT record. If a recipient MTA queries DNS and receives two or more TXT records starting with 'v=spf1', it must immediately terminate evaluation with a PermError, treating all outbound emails from that domain as unauthenticated."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is SPF record flattening and what are its risks?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SPF flattening is the operational practice of resolving nested 'include:' domains into static 'ip4:' and 'ip6:' CIDR blocks to avoid exceeding the 10-lookup ceiling. The primary risk of manual flattening is desynchronization: if a SaaS vendor (like Google Workspace, Salesforce, or SendGrid) updates their IP ranges and the domain owner fails to update their flattened record, legitimate outbound email will instantly fail SPF authentication."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is the 'ptr' mechanism deprecated in RFC 7208?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The 'ptr' mechanism forces the receiving mail server to perform a reverse DNS (PTR) query on the connecting IP, followed by forward DNS queries on all returned domain names. This imposes severe load on DNS root servers, introduces significant mail delivery latency, is vulnerable to caching poisoning, and is explicitly discouraged under RFC 7208 §5.5."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does BitDark transmit my SPF records or domain names to any remote servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on a strict zero-network-egress model. All string tokenization, qualifier parsing, regex analysis, and RFC compliance heuristics execute locally in browser memory. No domain names, subnets, or TXT records leave your workstation."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,110 +140,150 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry, Privacy-First) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card Workspace */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 540px;
     }
 
     .presets-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .presets-label {
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       font-family: var(--font-code);
       color: var(--atom-muted);
     }
@@ -138,43 +292,50 @@
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
       font-family: var(--font-code);
-      font-size: 0.74rem;
-      padding: 4px 10px;
+      font-size: 0.8rem;
+      padding: 8px 14px;
       border-radius: 4px;
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      transition: border-color 0.2s, color 0.2s, background-color 0.2s;
     }
     .btn-preset:hover {
       border-color: var(--atom-amber);
       color: var(--atom-amber);
+      background-color: rgba(229, 192, 123, 0.05);
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .form-group label {
       font-family: var(--font-code);
-      font-size: 0.76rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
       color: var(--atom-muted);
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .form-group label span { color: var(--atom-cyan); text-transform: none; }
     
     textarea {
+      width: 100%;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 14px 16px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS Safari auto-zoom */
       color: var(--atom-heading);
       outline: none;
-      min-height: 100px;
+      min-height: 110px;
       resize: vertical;
       line-height: 1.6;
     }
@@ -183,28 +344,36 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
-    .btn-group { display: flex; gap: 10px; }
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
     .btn-atom {
       background-color: var(--atom-amber);
       color: #1e2227;
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.15s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Diagnostics & Summary */
@@ -212,11 +381,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -236,25 +407,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -263,16 +435,16 @@
     .findings-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .finding-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 14px 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
     }
     .finding-card.severity-high { border-left: 4px solid var(--atom-coral); }
     .finding-card.severity-medium { border-left: 4px solid var(--atom-amber); }
@@ -285,35 +457,40 @@
       align-items: center;
       font-weight: 700;
       color: var(--atom-heading);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .finding-desc {
       color: var(--atom-text);
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .table-container {
       overflow-x: auto;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
     }
     .results-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
     }
     .results-table th, .results-table td {
       border: 1px solid var(--atom-border);
-      padding: 10px 12px;
+      padding: 12px 14px;
       text-align: left;
       vertical-align: middle;
     }
     .results-table th {
       background-color: var(--atom-bg);
-      color: var(--atom-muted);
+      color: var(--atom-heading);
       font-weight: 600;
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
     .results-table td {
       background-color: var(--atom-gutter);
@@ -323,9 +500,9 @@
 
     .badge {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 3px;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
       font-family: var(--font-code);
@@ -336,90 +513,300 @@
     .badge-neutral { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
     .badge-lookup { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); border: 1px solid var(--atom-purple); }
 
-    /* Operational Disclaimer */
+    /* Operational Boundaries & Legal Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-left: 4px solid var(--atom-coral);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
-      color: var(--atom-coral);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      color: var(--atom-amber);
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Comprehensive Technical Authority Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2600px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn-group { width: 100%; flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#network">Network</a> / spf-deconstructor
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/network/">Network & Infrastructure</a>
+      <span class="sep">/</span>
+      <span class="current">SPF Deconstructor</span>
     </nav>
 
     <div class="tool-header">
@@ -427,8 +814,13 @@
       <p>Audit and deconstruct RFC 7208 Sender Policy Framework TXT records, quantify direct DNS query limits, inspect mechanism qualifiers, and flag structural vulnerabilities locally in browser memory.</p>
     </div>
 
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <div class="tool-card" id="toolWorkspace" aria-label="Interactive SPF Record Deconstruction Workspace">
       <div class="presets-row">
         <span class="presets-label">Load Preset:</span>
         <button class="btn-preset" onclick="loadSample('google')">Google Workspace</button>
@@ -476,7 +868,7 @@
         </div>
       </div>
 
-      <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">RFC Compliance &amp; Security Findings:</div>
+      <div class="meta-label" style="margin-bottom: 8px; font-size: 0.78rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">RFC Compliance &amp; Security Findings:</div>
       <div class="findings-list" id="findingsContainer">
         <div class="finding-card severity-pass">
           <div class="finding-title"><span>Awaiting Record Input</span><span>IDLE</span></div>
@@ -484,114 +876,508 @@
         </div>
       </div>
 
-      <div class="meta-label" style="margin-bottom: 6px; font-size: 0.76rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Deconstructed Mechanisms Breakdown:</div>
+      <div class="meta-label" style="margin-bottom: 8px; font-size: 0.78rem; text-transform: uppercase; font-family: var(--font-code); color: var(--atom-muted);">Deconstructed Mechanisms Breakdown:</div>
       <div class="table-container">
         <table class="results-table" id="mechanismsTable">
           <thead>
             <tr>
-              <th style="width: 10%;">Prefix</th>
-              <th style="width: 15%;">Qualifier</th>
-              <th style="width: 15%;">Mechanism</th>
-              <th style="width: 28%;">Value / Scope</th>
+              <th style="width: 12%;">Prefix</th>
+              <th style="width: 16%;">Qualifier</th>
+              <th style="width: 14%;">Mechanism</th>
+              <th style="width: 26%;">Value / Scope</th>
               <th style="width: 12%; text-align: center;">DNS Cost</th>
               <th style="width: 20%;">Operational Intent</th>
             </tr>
           </thead>
           <tbody id="mechanismsBody">
             <tr>
-              <td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No SPF record evaluated.</td>
+              <td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 22px;">No SPF record evaluated.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Legal Disclaimer Card -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, email deliverability failures, spoofing incidents, mail rejection, or SPF misconfigurations. RFC 7208 evaluation runs strictly client-side in local browser memory without querying live DNS servers. Independent verification via recursive DNS lookup and DMARC monitoring reports is recommended prior to updating production DNS zones.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Client-side heuristic SPF parsing operates purely in volatile browser memory without performing recursive DNS resolution against authoritative nameservers.</strong> This deconstructor counts direct mechanisms defined in the target string. It cannot dynamically expand nested <code>include:</code> or <code>redirect=</code> directives to audit secondary query chains without generating external DNS queries. To prevent catastrophic email deliverability failures, mail rejections, or spoofing exposures, always verify live recursion depths and DMARC aggregate XML reports prior to committing changes to production DNS zone files.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>RFC 7208 Sender Policy Framework Syntax Architecture</h2>
-      <p>Sender Policy Framework (SPF) allows an administrative domain to specify which outbound hosts and IP subnets are authorized to send email on its behalf:</p>
+    <!-- Comprehensive Technical Authority Documentation -->
+    <article class="article-container">
+      <h2>The Engineering Architecture of Sender Policy Framework (RFC 7208)</h2>
+      <p>
+        The Simple Mail Transfer Protocol (SMTP), originally formalized in RFC 821 and modernized under RFC 5321, was engineered during an era when the ARPANET comprised an insular community of trusted academic and military computer operators. Consequently, SMTP contains zero native authentication mechanisms. Any host connected to the internet can initiate an SMTP handshake with a Mail Transfer Agent (MTA) and specify arbitrary administrative domain identities in the <code>MAIL FROM:</code> (envelope sender / bounce address) and <code>From:</code> (message header) fields.
+      </p>
+      <p>
+        This intrinsic architectural trust vacuum facilitated decades of industrial-scale business email compromise (BEC), phishing, display-name spoofing, and spam delivery. Published in April 2014, <strong>RFC 7208: Sender Policy Framework for Authorizing Use of Domains in Email, Version 1</strong> established an administrative authorization layer. SPF empowers a domain owner to publish a public DNS TXT record declaring exactly which outbound MTAs, IP addresses, and third-party relay services are authorized to dispatch emails under its envelope identity.
+      </p>
+      <p>
+        During an SMTP transaction, when an outbound server issues the <code>MAIL FROM:&lt;sender@domain.com&gt;</code> envelope command, the receiving MTA extracts the domain portion, queries the domain's authoritative DNS servers for TXT records starting with <code>v=spf1</code>, and executes the compiled rule tree against the connecting IP address. The resulting verdict—<code>Pass</code>, <code>Fail</code>, <code>SoftFail</code>, <code>Neutral</code>, <code>None</code>, <code>PermError</code>, or <code>TempError</code>—dictates downstream spam scoring and DMARC alignment evaluation.
+      </p>
+
+      <h2>How to Use the BitDark SPF Deconstructor</h2>
+      <p>
+        Deconstructing and debugging complex SPF records with the BitDark engine is instantaneous, forensically sound, and strictly contained within your browser's local sandbox:
+      </p>
+      <ol>
+        <li>
+          <strong>Load or Paste SPF String:</strong> Paste your raw DNS TXT record string into the input area. Ensure it includes the standard <code>v=spf1</code> prefix (e.g., <code>v=spf1 include:_spf.google.com ip4:198.51.100.0/24 -all</code>). Alternatively, select one of the pre-configured enterprise architectural templates.
+        </li>
+        <li>
+          <strong>Execute In-Memory Deconstruction:</strong> Click the <strong>Deconstruct SPF</strong> button. The deterministic lexical parser splits the string into discrete tokens, verifies standard qualifiers, separates mechanism types from their operands, and tallies direct DNS query burdens.
+        </li>
+        <li>
+          <strong>Evaluate Policy Metrics:</strong> Inspect the summary grid to verify protocol version validity, total mechanism elements, catch-all policy qualifiers, and the direct DNS query count against the hard RFC 7208 limit of 10.
+        </li>
+        <li>
+          <strong>Audit Compliance Findings:</strong> Review the color-coded compliance findings list. High-severity alerts flag fatal structural errors (such as <code>+all</code> vulnerabilities, multiple <code>all</code> terminators, or direct DNS limit violations), while medium warnings highlight deprecated <code>ptr</code> directives or lookup overhead risks.
+        </li>
+        <li>
+          <strong>Inspect Mechanism Breakdown Table:</strong> Examine each parsed directive row by row to verify qualifier application, operand values, direct DNS query costs, and underlying operational intents.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Threat Modeling</h2>
+      <p>
+        SPF validation is not merely a routine DNS sanity check; it is a critical defensive control across enterprise messaging infrastructure:
+      </p>
       <ul>
-        <li><strong>Qualifiers:</strong> Control the verdict returned when a sending host matches a mechanism. <code>+</code> (Pass - default), <code>-</code> (Fail/HardFail), <code>~</code> (SoftFail), and <code>?</code> (Neutral).</li>
-        <li><strong>IP Directives:</strong> <code>ip4:</code> and <code>ip6:</code> specify exact IPs or CIDR blocks. These authorize hosts directly and consume zero DNS queries.</li>
-        <li><strong>DNS-Dependent Directives:</strong> <code>a</code>, <code>mx</code>, <code>ptr</code>, <code>include:</code>, and <code>exists:</code> trigger active DNS resolution.</li>
-        <li><strong>10-Lookup Limit:</strong> RFC 7208 §4.6.4 dictates that the total count of mechanisms and modifiers that trigger DNS lookups must not exceed 10 across the entire evaluation chain, including nested <code>include:</code> and <code>redirect=</code> directives. Exceeding 10 results in an immediate <code>PermError</code> verdict.</li>
-        <li><strong>Deprecated Directives:</strong> The <code>ptr</code> mechanism is officially discouraged due to excessive reverse DNS lookups, reliability failures, and caching overhead.</li>
+        <li>
+          <strong>Enterprise SaaS &amp; Mail Relocation:</strong> When onboarding third-party transactional gateways (e.g., SendGrid, Mailgun, Amazon SES) or migrating from on-premise Exchange to Google Workspace or Microsoft 365, administrators must verify that new <code>include:</code> mechanisms do not push the domain beyond the 10-lookup ceiling.
+        </li>
+        <li>
+          <strong>Pre-DMARC Hardening Audits:</strong> Organizations advancing from a passive DMARC monitoring policy (<code>p=none</code>) to strict quarantine or rejection (<code>p=reject</code>) must audit their SPF topology. Misconfigured SPF mechanisms that return unexpected <code>PermError</code> or <code>SoftFail</code> results will cause legitimate marketing or billing emails to be dropped silently once DMARC enforcement engages.
+        </li>
+        <li>
+          <strong>M&amp;A Infrastructure Consolidation:</strong> Mergers and acquisitions frequently result in bloated, inherited DNS zones containing orphaned IP blocks, forgotten vendor relays, and unmaintained marketing domains. Local deconstruction isolates obsolete CIDR subnets and redundant includes without risking production mail flow.
+        </li>
+        <li>
+          <strong>SOC Incident Response &amp; BEC Forensics:</strong> When analyzing an inbound spoofing campaign or executive impersonation attempt, security analysts paste the target domain's SPF record into the engine to confirm whether the malicious sending relay exploited a permissive <code>+all</code> or ambiguous <code>?all</code> catch-all qualifier.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>SPF records often map internal mail infrastructure, third-party transactional gateways, and relay IPs. BitDark deconstructs and validates syntax entirely inside your browser execution thread. No hostnames, domains, or DNS strings are transmitted externally.</p>
+      <h2>The Mathematical Architecture of RFC 7208 DNS Lookup Limits</h2>
+      <p>
+        The most notorious engineering constraint in email authentication is the <strong>10-DNS-lookup limit</strong> codified in RFC 7208 §4.6.4:
+      </p>
+      <blockquote>
+        "SPF implementations MUST limit the number of mechanisms and modifiers that do DNS lookups to at most 10 per SPF evaluation, taking into account any 'include' mechanisms, 'redirect' modifiers, and 'exp' modifiers... If this limit is exceeded, the evaluation MUST return a 'permerror'."
+      </blockquote>
+
+      <h3>1. Why Does the 10-Lookup Ceiling Exist?</h3>
+      <p>
+        The restriction was introduced to prevent <strong>DNS amplification and denial-of-service (DoS) attacks</strong> against mail receivers. If RFC 7208 permitted infinite lookups, an adversary could forge emails referencing a malicious domain whose SPF record contained nested <code>include:</code> directives referencing hundreds of external domains, triggering an explosive cascade of recursive DNS queries for every inbound email received.
+      </p>
+
+      <h3>2. The Cost Accounting Matrix: What Counts Toward the Limit?</h3>
+      <p>
+        Understanding exactly which mechanisms consume DNS lookups is essential for managing your organization's query budget:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Mechanism / Modifier</th>
+              <th>Consumes DNS Budget?</th>
+              <th>Underlying Query Type</th>
+              <th>Operational Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>include:&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1 + Nested)</strong></td>
+              <td><code>TXT</code></td>
+              <td>Recursively queries external domain's SPF record and evaluates its contents.</td>
+            </tr>
+            <tr>
+              <td><code>a</code> / <code>a:&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1)</strong></td>
+              <td><code>A</code> / <code>AAAA</code></td>
+              <td>Queries forward IP address(es) for target or current domain.</td>
+            </tr>
+            <tr>
+              <td><code>mx</code> / <code>mx:&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1)</strong></td>
+              <td><code>MX</code>, then <code>A</code>/<code>AAAA</code></td>
+              <td>Resolves MX hostnames for domain, then resolves their corresponding IPs.</td>
+            </tr>
+            <tr>
+              <td><code>ptr</code> / <code>ptr:&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1)</strong></td>
+              <td><code>PTR</code> + Forward <code>A</code></td>
+              <td><strong>DEPRECATED:</strong> Triggers reverse pointer resolution on client IP.</td>
+            </tr>
+            <tr>
+              <td><code>exists:&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1)</strong></td>
+              <td><code>A</code></td>
+              <td>Checks whether target domain resolves to any IPv4 address (common in macro routing).</td>
+            </tr>
+            <tr>
+              <td><code>redirect=&lt;domain&gt;</code></td>
+              <td><strong>Yes (+1)</strong></td>
+              <td><code>TXT</code></td>
+              <td>Transfers policy evaluation entirely to target domain's SPF record.</td>
+            </tr>
+            <tr>
+              <td><code>ip4:&lt;cidr&gt;</code></td>
+              <td><strong>No (0)</strong></td>
+              <td>None (In-Memory)</td>
+              <td>Evaluates connecting IPv4 address directly against CIDR mask in RAM.</td>
+            </tr>
+            <tr>
+              <td><code>ip6:&lt;cidr&gt;</code></td>
+              <td><strong>No (0)</strong></td>
+              <td>None (In-Memory)</td>
+              <td>Evaluates connecting IPv6 address directly against 128-bit mask in RAM.</td>
+            </tr>
+            <tr>
+              <td><code>all</code></td>
+              <td><strong>No (0)</strong></td>
+              <td>None (In-Memory)</td>
+              <td>Terminal catch-all evaluator applying matching qualifier to all senders.</td>
+            </tr>
+            <tr>
+              <td><code>exp=&lt;domain&gt;</code></td>
+              <td><strong>No (0)</strong> (Conditional)</td>
+              <td><code>TXT</code></td>
+              <td>Does not count toward 10-limit during primary evaluation; queried only upon HardFail.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>3. The Void Lookup Limit (RFC 7208 §4.6.4)</h3>
+      <p>
+        In addition to the global 10-lookup ceiling, RFC 7208 establishes a secondary boundary: <strong>the void lookup limit</strong>. If a mechanism queries DNS and receives an answer containing <code>NXDOMAIN</code> (RCODE 3) or <code>NODATA</code> (an answer section with zero resource records), it is counted as a "void lookup". If the total count of void lookups reaches <strong>two (2)</strong> across the evaluation chain, the receiving MTA must abort with a <code>PermError</code>. This defends against DNS cache-poisoning probing and phantom subdomain attacks.
+      </p>
+
+      <h2>The Four Qualifiers: Mechanics &amp; Enforcement</h2>
+      <p>
+        Every SPF mechanism can be prefixed with an operational qualifier that instructs the receiving mail server what verdict to emit when a sending IP matches that mechanism:
+      </p>
+      <ul>
+        <li>
+          <strong><code>+</code> (Pass):</strong> The default qualifier. If no prefix is specified (e.g., <code>include:_spf.google.com</code>), <code>+</code> is implicitly applied. An IP matching this mechanism is authenticated and authorized.
+        </li>
+        <li>
+          <strong><code>-</code> (Fail / HardFail):</strong> Explicit authorization denial. Senders matching this rule are unauthorized. The receiving MTA is instructed to reject the message outright during the SMTP <code>RCPT TO</code> or <code>DATA</code> phase.
+        </li>
+        <li>
+          <strong><code>~</code> (SoftFail):</strong> Administrative transition qualifier. Senders matching this rule are unauthorized, but the MTA should accept the email and append an <code>Authentication-Results</code> header marking it as suspicious or forward it to junk/spam folders. When paired with DMARC <code>p=reject</code>, a SoftFail results in full message rejection.
+        </li>
+        <li>
+          <strong><code>?</code> (Neutral):</strong> No assertion made. The domain owner explicitly states that no policy determination is possible. Treated identically to a missing SPF record.
+        </li>
+      </ul>
+
+      <h2>Worked Example: Enterprise SPF Anatomy &amp; DNS Budgeting</h2>
+      <p>
+        Let us trace how an enterprise SPF record is parsed and how its DNS lookup budget is calculated:
+      </p>
+      <pre><code>v=spf1 mx include:_spf.google.com include:sendgrid.net ip4:198.51.100.0/24 ip6:2001:db8::/32 -all</code></pre>
+
+      <h3>Step-by-Step Lexical Execution Trace:</h3>
+      <ol>
+        <li>
+          <strong>Token 0 (<code>v=spf1</code>):</strong> Protocol Version identifier. Identifies the record as an RFC 7208 declaration. Consumes 0 lookups.
+        </li>
+        <li>
+          <strong>Token 1 (<code>mx</code>):</strong> Evaluates to <code>+mx</code> (default Pass). Direct DNS cost: <strong>+1</strong>. At runtime, the receiver queries the MX records of the domain, then resolves their A/AAAA records to assemble an authorized IP whitelist.
+        </li>
+        <li>
+          <strong>Token 2 (<code>include:_spf.google.com</code>):</strong> Evaluates to <code>+include:_spf.google.com</code>. Direct DNS cost: <strong>+1</strong>. The receiver queries the TXT record of <code>_spf.google.com</code>. Inside Google's record are further nested includes (e.g., <code>_netblocks.google.com</code>, <code>_netblocks2.google.com</code>, <code>_netblocks3.google.com</code>), which consume an additional 3 lookups.
+        </li>
+        <li>
+          <strong>Token 3 (<code>include:sendgrid.net</code>):</strong> Evaluates to <code>+include:sendgrid.net</code>. Direct DNS cost: <strong>+1</strong>. The receiver queries <code>sendgrid.net</code>'s TXT record, consuming 1 lookup.
+        </li>
+        <li>
+          <strong>Token 4 (<code>ip4:198.51.100.0/24</code>):</strong> Evaluates to <code>+ip4:198.51.100.0/24</code>. Direct DNS cost: <strong>0</strong>. Evaluated in local memory. Matches any client IP in the range <code>198.51.100.0</code> through <code>198.51.100.255</code>.
+        </li>
+        <li>
+          <strong>Token 5 (<code>ip6:2001:db8::/32</code>):</strong> Evaluates to <code>+ip6:2001:db8::/32</code>. Direct DNS cost: <strong>0</strong>. Evaluated in local memory.
+        </li>
+        <li>
+          <strong>Token 6 (<code>-all</code>):</strong> Terminal Catch-All. Direct DNS cost: <strong>0</strong>. Enforces HardFail on all connecting IPs that failed to match prior mechanisms.
+        </li>
+      </ol>
+      <p>
+        <strong>Cumulative DNS Overhead:</strong> In this configuration, direct lookups count as <strong>3 of 10</strong>. However, taking recursive nested includes into account (Google adds 3 subsequent lookups), the total evaluation chain consumes <strong>6 of 10 lookups</strong>—safely within RFC compliance thresholds.
+      </p>
+
+      <h2>Comparison: SPF vs. DKIM vs. DMARC vs. ARC vs. BIMI</h2>
+      <p>
+        SPF does not operate in isolation. It forms the bedrock of modern email identity architecture alongside complementary protocols:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Protocol</th>
+              <th>Authentication Anchor</th>
+              <th>Survives Mailing List Forwarding?</th>
+              <th>Primary Vulnerability</th>
+              <th>Key RFC Standard</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>SPF</strong></td>
+              <td>Connecting MTA IP address vs. DNS whitelist</td>
+              <td><strong>No</strong> (Forwarding intermediate MTA IP fails check)</td>
+              <td>Lookup budget ceilings (10 limit), forwarding failure</td>
+              <td>RFC 7208</td>
+            </tr>
+            <tr>
+              <td><strong>DKIM</strong></td>
+              <td>Asymmetric cryptographic signature in message headers</td>
+              <td><strong>Yes</strong> (Unless intermediate relay modifies body/subject)</td>
+              <td>Key leakage, header manipulation, complex canonicalization</td>
+              <td>RFC 6376</td>
+            </tr>
+            <tr>
+              <td><strong>DMARC</strong></td>
+              <td>Requires alignment between RFC 5322 From and SPF/DKIM</td>
+              <td>Conditional (Requires surviving DKIM alignment)</td>
+              <td>Legacy soft policies (<code>p=none</code>), misaligned subdomains</td>
+              <td>RFC 7489</td>
+            </tr>
+            <tr>
+              <td><strong>ARC</strong></td>
+              <td>Cryptographic seal chain validating prior hops</td>
+              <td><strong>Yes</strong> (Preserves upstream authentication state)</td>
+              <td>Requires mutual trust in intermediate sealing forwarders</td>
+              <td>RFC 8617</td>
+            </tr>
+            <tr>
+              <td><strong>BIMI</strong></td>
+              <td>Cryptographic VMC certificate binding logo to domain</td>
+              <td>Inherits DMARC state</td>
+              <td>Strict DMARC enforcement requirement (<code>p=quarantine</code> 100% or <code>p=reject</code>)</td>
+              <td>BIMI Draft Spec</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The SPF Flattening Strategy: Architecture, Tradeoffs &amp; Automation</h2>
+      <p>
+        When growing enterprise infrastructure exceeds the 10-DNS-lookup barrier, organizations face two choices: restructure their mail topology across subdomains, or implement <strong>SPF flattening</strong>.
+      </p>
+
+      <h3>1. What is SPF Flattening?</h3>
+      <p>
+        Flattening is the process of recursively resolving all domains specified in <code>include:</code>, <code>a</code>, and <code>mx</code> mechanisms down to their ultimate, static <code>ip4:</code> and <code>ip6:</code> CIDR blocks, replacing lookup-heavy mechanisms with direct IP definitions:
+      </p>
+      <pre><code>// Unflattened (Consumes 7 DNS Lookups):
+v=spf1 include:_spf.google.com include:sendgrid.net include:mailgun.org ~all
+
+// Fully Flattened (Consumes 0 DNS Lookups):
+v=spf1 ip4:35.190.247.0/24 ip4:64.233.160.0/19 ip4:66.102.0.0/20 ip4:167.89.0.0/17 ip4:198.61.254.0/23 ip6:2001:4860:4000::/36 ~all</code></pre>
+
+      <h3>2. The Fragility of Manual Flattening</h3>
+      <p>
+        While flattening eliminates DNS lookup costs, <strong>manual flattening is exceptionally dangerous</strong>. Cloud email providers (such as Google Workspace and Microsoft 365) continually expand, migrate, and decommission IP subnets across their global edge networks. If an administrator flattens <code>include:_spf.google.com</code> into static IP blocks in January, and Google provisions a new data center subnet in March, outbound emails routed through those new servers will immediately fail SPF.
+      </p>
+      <blockquote>
+        <strong>Engineering Principle:</strong> If an organization must flatten SPF records, it must deploy an automated DNS management pipeline or dynamic flattening service that polls vendor SPF records via automated crons every 15 minutes, re-computes subnets, and updates DNS zone apex records dynamically via DNS APIs.
+      </blockquote>
+
+      <h2>Common Mistakes and Catastrophic Failures in SPF Deployment</h2>
+      <p>
+        Even minor syntax oversights can compromise your domain's email deliverability or expose it to impersonation:
+      </p>
+      <ul>
+        <li>
+          <strong>The <code>+all</code> Open Relay Disaster:</strong> Writing <code>+all</code> instead of <code>-all</code> or <code>~all</code> is a catastrophic misconfiguration. The <code>+all</code> directive explicitly instructs the entire internet that every mail server on Earth is authorized to send email on behalf of your domain, rendering spoofing defenses completely useless.
+        </li>
+        <li>
+          <strong>Publishing Multiple SPF TXT Records:</strong> Merging records incorrectly often results in two discrete TXT entries in the DNS zone:
+          <pre><code>example.com. IN TXT "v=spf1 include:_spf.google.com ~all"
+example.com. IN TXT "v=spf1 include:sendgrid.net ~all"</code></pre>
+          According to RFC 7208 §3.2, receiving mail servers must treat multiple SPF records as a fatal syntax error, instantly returning a <code>PermError</code> and refusing to authenticate either service.
+        </li>
+        <li>
+          <strong>Directives Placed After the <code>all</code> Terminator:</strong> The <code>all</code> mechanism is an unconditional catch-all. Compliant MTAs terminate parsing the moment they hit <code>all</code>. Any directives placed after it (e.g., <code>v=spf1 include:_spf.google.com -all ip4:198.51.100.1</code>) will never be reached or evaluated.
+        </li>
+        <li>
+          <strong>Over-Reliance on the <code>mx</code> Mechanism:</strong> Many administrators habitually include the <code>mx</code> directive. However, MX records designate <em>inbound</em> mail exchangers. Many organizations use distinct cloud infrastructure for outbound email (e.g., Google Workspace) while running specialized spam filters for inbound routing (e.g., Proofpoint, Mimecast). Adding <code>mx</code> adds unnecessary DNS queries while authorizing servers that may never transmit outbound mail.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between an SPF PermError and a TempError?</div>
+          <div class="faq-answer">
+            A <code>PermError</code> (Permanent Error) occurs when the SPF record is fundamentally unparseable, contains invalid syntax, includes multiple SPF records on the same domain, or exceeds the 10-DNS-lookup or 2-void-lookup limits. Receiving MTAs typically reject the message or treat SPF as failed. A <code>TempError</code> (Temporary Error) occurs when a transient DNS network issue (such as a DNS server timeout or network unreachability) prevents resolution. Receiving MTAs usually defer delivery, requesting the sending MTA to retry later.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does email forwarding often break SPF authentication?</div>
+          <div class="faq-answer">
+            SPF authenticates the connecting IP address of the transmitting MTA against the domain declared in the envelope <code>MAIL FROM</code> address. When an email is forwarded (e.g., user@company.com forwards to user@gmail.com), the forwarding mail server connects to Gmail using its own IP address while retaining the original envelope sender. Because the forwarding server's IP is not in the original sender's SPF record, SPF evaluates to SoftFail or HardFail. This is why DKIM and ARC are crucial to preserve end-to-end authentication during forwarding.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does the 255-character DNS TXT string limit restrict SPF records?</div>
+          <div class="faq-answer">
+            A single DNS character-string within a TXT record is limited to 255 octets by RFC 1035. However, a single DNS TXT resource record can contain multiple concatenated strings up to a total UDP payload limit of around 4096 bytes (using EDNS0). Compliant DNS nameservers and resolvers automatically concatenate multiple strings within a TXT record into a single seamless SPF string.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does SPF interact with DMARC alignment?</div>
+          <div class="faq-answer">
+            DMARC requires that the domain in the visible message header (RFC 5322 <code>From:</code>) matches or aligns with the domain authenticated by SPF (RFC 5321 <code>MAIL FROM</code>). Under "relaxed" alignment (default), subdomains align with their organizational parent (e.g., <code>mail.example.com</code> aligns with <code>example.com</code>). Under "strict" alignment, an exact match is required. Even if SPF passes for a third-party relay like <code>bounces.sendgrid.net</code>, DMARC will fail unless SendGrid is configured with custom reverse path domain branding to achieve identifier alignment.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the purpose of the 'redirect=' modifier?</div>
+          <div class="faq-answer">
+            The <code>redirect=</code> modifier instructs the evaluating MTA to completely cease evaluating the current record and instead evaluate the SPF record of the specified target domain. Unlike <code>include:</code>, which returns execution back to the caller upon a non-match, <code>redirect=</code> replaces the caller's evaluation entirely and should only be placed at the very end of a record without an accompanying <code>all</code> mechanism.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I use both -all and ~all in different parts of my record?</div>
+          <div class="faq-answer">
+            No. The <code>all</code> mechanism is designed strictly as a terminal catch-all for unmatched IP addresses. Having multiple <code>all</code> mechanisms creates syntactic ambiguity and violates RFC 7208 specifications, leading to unpredictable parsing behavior or an immediate <code>PermError</code> on receiving MTAs.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does the BitDark SPF Deconstructor handle browser privacy?</div>
+          <div class="faq-answer">
+            The BitDark engine executes 100% locally in your client's JavaScript runtime thread. No strings, subnets, or domain names are transmitted across the network, logged to analytics servers, or sent to backend APIs. You can disconnect your device from the internet or inspect your browser's Network tab to confirm zero bytes of network egress.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What should I do if my SPF record requires more than 10 lookups?</div>
+          <div class="faq-answer">
+            You have three architecturally sound options: (1) Delegate distinct email streams to dedicated subdomains (e.g., marketing.company.com, billing.company.com) so each has its own independent 10-lookup budget; (2) Audit your record to remove obsolete includes, redundant <code>mx</code> mechanisms, and unused SaaS vendors; or (3) Implement an automated, dynamically refreshed SPF flattening service.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Network, Security &amp; Email Authentication Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/network/email-headers/" class="related-card">
+            <div class="related-card-title"><span>[✉️]</span> Email Header Analyzer</div>
+            <div class="related-card-desc">Trace RFC 5322 relay hops, audit Authentication-Results, and inspect DKIM, SPF, and DMARC verdicts client-side.</div>
+          </a>
+          <a href="/tools/network/dmarc-generator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> DMARC Policy Generator</div>
+            <div class="related-card-desc">Design, validate, and generate compliant RFC 7489 DMARC DNS records with strict forensic reporting tags.</div>
+          </a>
+          <a href="/tools/network/cidr-calculator/" class="related-card">
+            <div class="related-card-title"><span>[🔢]</span> CIDR Subnet Calculator</div>
+            <div class="related-card-desc">Calculate network boundaries, wildcard masks, usable host ranges, and IPv4/IPv6 prefixes offline.</div>
+          </a>
+          <a href="/tools/network/cidr-overlap/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> CIDR Overlap Detector</div>
+            <div class="related-card-desc">Identify routing collisions, subnet intersections, and duplicate prefix ranges across VPCs in RAM.</div>
+          </a>
+          <a href="/tools/auth/security-headers/" class="related-card">
+            <div class="related-card-title"><span>[🔒]</span> Security Headers Linter</div>
+            <div class="related-card-desc">Audit CSP, HSTS, X-Frame-Options, and Referrer-Policy configurations against OWASP best practices.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> AES-GCM Encryptor</div>
+            <div class="related-card-desc">Authenticate and encrypt sensitive configuration files and credentials with 256-bit Web Crypto keys.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Preset configurations
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. SPF Deconstruction Core Engine (100% Client-Side Memory Processing, Dual-Stack IP Code Removed)
     const PRESETS = {
       google: "v=spf1 include:_spf.google.com ~all",
       m365: "v=spf1 include:spf.protection.outlook.com -all",
@@ -637,7 +1423,7 @@
       if (!raw) {
         statusBanner.className = "status-banner status-safe";
         statusBanner.innerHTML = "<span>No Record Loaded</span> <span>Idle</span>";
-        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">Please enter an SPF string.</td></tr>`;
+        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 22px;">Please enter an SPF string.</td></tr>`;
         return;
       }
 
@@ -838,7 +1624,7 @@
         <div class="finding-card severity-${f.severity}">
           <div class="finding-title">
             <span>${f.title}</span>
-            <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--atom-${f.severity === 'high' ? 'coral' : f.severity === 'medium' ? 'amber' : 'green'});">${f.severity}</span>
+            <span style="font-size: 0.74rem; text-transform: uppercase; color: var(--atom-${f.severity === 'high' ? 'coral' : f.severity === 'medium' ? 'amber' : 'green'});">${f.severity}</span>
           </div>
           <div class="finding-desc">${f.desc}</div>
         </div>
@@ -846,7 +1632,7 @@
 
       // Render Table
       if (parsedItems.length === 0) {
-        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No mechanisms parsed.</td></tr>`;
+        mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 22px;">No mechanisms parsed.</td></tr>`;
       } else {
         mechanismsBody.innerHTML = parsedItems.map(item => {
           const qObj = QUALIFIER_MAP[item.qualifier] || { name: "Default", badge: "badge-pass" };
@@ -855,7 +1641,7 @@
             : `<span class="badge ${qObj.badge}">${item.qualifier} (${qObj.name})</span>`;
           const lookupBadge = item.dnsCost > 0 
             ? `<span class="badge badge-lookup">+1 Lookup</span>` 
-            : `<span style="color: var(--atom-muted); font-size: 0.78rem;">0</span>`;
+            : `<span style="color: var(--atom-muted); font-size: 0.8rem;">0</span>`;
 
           return `
             <tr>
@@ -864,7 +1650,7 @@
               <td><strong>${escapeHtml(item.mechName)}</strong></td>
               <td>${item.mechVal ? `<code>${escapeHtml(item.mechVal)}</code>` : "<span style='color:var(--atom-muted);'>—</span>"}</td>
               <td style="text-align: center;">${lookupBadge}</td>
-              <td style="font-size: 0.8rem; color: var(--atom-text);">${item.intent}</td>
+              <td style="font-size: 0.82rem; color: var(--atom-text);">${item.intent}</td>
             </tr>
           `;
         }).join("");
@@ -887,7 +1673,13 @@
           <div class="finding-desc">Enter an SPF record above to perform deconstruction and RFC compliance auditing.</div>
         </div>
       `;
-      mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 20px;">No SPF record evaluated.</td></tr>`;
+      mechanismsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--atom-muted); padding: 22px;">No SPF record evaluated.</td></tr>`;
+    });
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
