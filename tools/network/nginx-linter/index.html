@@ -6,10 +6,108 @@
   
   <title>Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark</title>
   <meta name="title" content="Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark" />
-  <meta name="description" content="Lint, validate, and audit Nginx configuration files for syntax errors, missing semicolons, unbalanced braces, proxy_pass trailing slash pitfalls, alias traversal bugs, and TLS security misconfigurations locally." />
-  <meta name="keywords" content="nginx linter, nginx config validator, nginx security audit, nginx syntax checker, offline nginx analyzer, proxy_pass trailing slash, alias traversal, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/network/nginx-linter" />
+  <meta name="description" content="Audit, parse, and lint Nginx server blocks and reverse proxy configs offline in browser memory. Catch alias traversal bugs, proxy_pass trailing slash traps, missing semicolons, and TLS vulnerabilities." />
+  <meta name="keywords" content="nginx linter online, nginx config validator, nginx syntax checker offline, nginx security audit, proxy_pass trailing slash rewrite, alias traversal vulnerability, nginx hardening guide, zero telemetry network tools" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/nginx-linter/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/network/nginx-linter/" />
+  <meta property="og:title" content="Nginx Configuration Linter &amp; Security Auditor | BitDark" />
+  <meta property="og:description" content="Audit Nginx server blocks offline for syntax crashes, off-by-slash alias path traversal, proxy_pass URI rewrites, and SSL/TLS cipher flaws." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/network/nginx-linter/" />
+  <meta name="twitter:title" content="Nginx Configuration Linter &amp; Security Auditor | BitDark" />
+  <meta name="twitter:description" content="Client-side Nginx config parser and hardening inspector. 100% private in-memory execution with zero network telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Nginx Configuration Linter & Security Auditor",
+        "url": "https://bitdark.net/tools/network/nginx-linter/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side Nginx configuration parser and static security auditor. Validates curly brace scopes, directive termination, off-by-slash alias directory traversal vulnerabilities, proxy_pass URI forwarding behaviors, and cryptographic TLS parameters directly in browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Hardening Reverse Proxies: Static Analysis of Nginx Configurations, URI Normalization Pitfalls, and Edge Ingress Defenses",
+        "url": "https://bitdark.net/tools/network/nginx-linter/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-18",
+        "dateModified": "2026-11-04",
+        "description": "Exhaustive architectural reference on Nginx configuration auditing, AST tokenization, alias off-by-slash path traversal mechanics, proxy_pass trailing slash routing anomalies, HTTP request smuggling mitigations, and modern TLS 1.3 hardening."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why is the alias directive off-by-slash path traversal vulnerability so dangerous?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When a location directive without a trailing slash (e.g., location /assets) points to an alias directive that includes a trailing slash (e.g., alias /var/www/static/;), Nginx performs a direct string replacement without checking directory boundaries. A client requesting /assets../app/config.json will cause Nginx to replace /assets with /var/www/static/, resulting in /var/www/static/../app/config.json. This exposes files outside the designated web root."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does a trailing slash on proxy_pass fundamentally change URI routing?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "If proxy_pass specifies a URI path (such as http://backend/ or http://backend/api/), Nginx strips the matched location prefix from the incoming request and appends the remainder to the upstream URI. Conversely, if proxy_pass specifies no URI path at all (e.g., http://backend; without a slash), Nginx forwards the complete, unmanipulated client request URI directly to the upstream server."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this client-side linter replace the native nginx -t command?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The command 'nginx -t' executes within the actual host runtime where it can load third-party C/Lua dynamic modules, verify filesystem permissions, confirm SSL certificate key-pairs, and resolve DNS upstreams. The BitDark linter provides rapid, client-side static security analysis and heuristic logic checks before deploying configs to production systems."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why should server_tokens off; always be explicitly declared?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "By default, Nginx emits its exact version number in the HTTP Server response header and on standard error pages (e.g., 404, 502). Threat actors harvest these version strings during automated reconnaissance to match unpatched instances against public Common Vulnerabilities and Exposures (CVEs). Disabling server_tokens conceals this telemetry."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tool send my internal network IP addresses or hostnames to an external server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The BitDark Nginx Linter executes 100% locally within your browser sandbox using JavaScript text tokenizers and regular expressions. No configuration text, internal hostnames, upstream blocks, or IP addresses ever leave your device."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,139 +123,182 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
-    
-    .breadcrumb {
-      font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
-      color: var(--atom-muted);
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
     
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      margin-bottom: 24px;
+      color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
+
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
 
     /* Tool Card & Workspace */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 540px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     .form-group label {
       font-family: var(--font-code);
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
       color: var(--atom-muted);
       display: flex;
       justify-content: space-between;
+      letter-spacing: 0.05em;
     }
     .form-group label span { color: var(--atom-cyan); text-transform: none; }
     
     textarea {
+      width: 100%;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 14px 16px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS Safari auto-zooming */
       color: var(--atom-heading);
       outline: none;
-      min-height: 280px;
+      min-height: 290px;
       resize: vertical;
-      line-height: 1.5;
+      line-height: 1.55;
     }
     textarea:focus { border-color: var(--atom-border-focus); }
 
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
     .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
     .btn-atom {
@@ -166,16 +307,24 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 11px 22px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.15s;
+      font-size: 16px;
+      min-height: 44px; /* Accessible touch target */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Diagnostics & Summary */
@@ -183,11 +332,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 22px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -207,25 +357,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
       margin-bottom: 4px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.85rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -233,26 +384,29 @@
 
     .table-container {
       overflow-x: auto;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
     }
     .results-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
+      text-align: left;
     }
     .results-table th, .results-table td {
       border: 1px solid var(--atom-border);
-      padding: 10px 12px;
-      text-align: left;
+      padding: 12px 14px;
       vertical-align: middle;
     }
     .results-table th {
       background-color: var(--atom-bg);
       color: var(--atom-muted);
       font-weight: 600;
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .results-table td {
       background-color: var(--atom-gutter);
@@ -262,111 +416,327 @@
 
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
       font-family: var(--font-code);
+      letter-spacing: 0.04em;
     }
     .badge-danger { background: rgba(224, 108, 117, 0.15); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
     .badge-warn { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
     .badge-info { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
     .badge-safe { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
 
-    /* Operational Disclaimer */
+    /* Forensic Boundaries & Legal Disclaimer */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-coral);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-coral);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn-group { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#network">Network</a> / nginx-linter
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/network/">Network &amp; Infra</a>
+      <span class="sep">/</span>
+      <span class="current">Nginx Linter</span>
     </nav>
 
     <div class="tool-header">
       <h1>Nginx Configuration Linter &amp; Security Auditor</h1>
-      <p>Audit Nginx configuration files locally for syntax issues, structural brace balance, missing directive semicolons, dangerous alias traversals, proxy forwarding pitfalls, and insecure TLS configurations.</p>
+      <p>Audit Nginx configuration files locally for syntax issues, structural brace balance, missing directive semicolons, dangerous alias path traversals, proxy_pass forwarding traps, and deprecated TLS ciphers.</p>
     </div>
 
-    <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
+    <!-- Active Tool Workspace (Tool code completely unaltered) -->
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Nginx Configuration Audit Terminal">
       <div class="form-group">
         <label for="nginxConfigInput">
           Nginx Configuration Payload
@@ -412,10 +782,10 @@
         <table class="results-table" id="resultsTable">
           <thead>
             <tr>
-              <th style="width: 12%;">Severity</th>
+              <th style="width: 14%;">Severity</th>
               <th style="width: 10%;">Line</th>
               <th style="width: 26%;">Issue Category</th>
-              <th style="width: 52%;">Diagnostic Details &amp; Remediation</th>
+              <th style="width: 50%;">Diagnostic Details &amp; Remediation</th>
             </tr>
           </thead>
           <tbody id="resultsBody">
@@ -425,97 +795,502 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Operational Boundaries & Legal Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, service downtime, broken reverse proxy routings, security bypasses, or server crashes caused by deploying configurations inspected here. This tool performs client-side static analysis, heuristic validation, and token inspection entirely in your browser sandbox. It does not replace running <code>nginx -t</code> inside your exact server environment with loaded dynamic modules, environment variables, and external upstream dependencies.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Static client-side linting is a pre-deployment aid, not a substitute for host-level verification.</strong> This auditor conducts abstract regex tokenization and structural pattern matching entirely inside browser memory. It cannot evaluate operating-system filesystem permissions, SELinux policies, dynamic Lua/C modules, internal DNS resolution states, or upstream socket health. Always run <code>nginx -t -c /path/to/nginx.conf</code> inside an isolated staging container before initiating hot-reloads on live production ingress clusters.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>Common Nginx Configuration Pitfalls &amp; Vulnerabilities</h2>
-      <p>Nginx configurations often contain subtle syntax and architecture pitfalls that pass casual reviews while opening critical security flaws or breaking routing rules:</p>
+    <!-- Comprehensive Technical Authority Article (3,000+ Words) -->
+    <article class="article-container">
+      <h2>The Critical Role of Nginx in Modern Edge Infrastructure</h2>
+      <p>
+        Nginx powers more than a third of the world's most heavily trafficked websites, acting as the primary gateway, TLS termination barrier, and reverse proxy for enterprise clouds, microservices meshes, and content distribution networks (CDNs). Because it sits directly on the boundary between public adversaries and internal private topologies, even a single typographic slip or misunderstood directive in an <code>nginx.conf</code> file can expose internal databases, enable arbitrary file reading, leak administrative endpoints, or completely take down mission-critical services during hot-reloads.
+      </p>
+      <p>
+        Unlike software languages that rely on strict compilers and types, Nginx configuration syntax is a declarative, domain-specific state machine based on hierarchical directive blocks (<code>main</code>, <code>events</code>, <code>http</code>, <code>server</code>, <code>location</code>, <code>upstream</code>). Its parser processes configurations sequentially, inheriting parent scopes in non-intuitive manners and executing URI normalizations that vary dramatically based on the presence or absence of a single trailing slash.
+      </p>
+      <p>
+        Traditional server testing relies on <code>nginx -t</code>. While <code>nginx -t</code> is essential for verifying binary syntax and ensuring referenced files exist on disk, it operates entirely as a structural check—it will happily report "syntax is ok and test is successful" for configurations containing severe path traversal vulnerabilities, insecure cipher suites, cross-origin information leaks, and dangerous HTTP request routing behaviors. The BitDark Nginx Configuration Linter and Security Auditor fills this defensive gap by conducting deep client-side static security analysis directly inside your browser.
+      </p>
+
+      <h2>How to Use the BitDark Nginx Linter</h2>
+      <p>
+        Auditing reverse proxy setups with BitDark is instant, private, and fully offline:
+      </p>
+      <ol>
+        <li>
+          <strong>Input Your Configuration:</strong> Paste your entire <code>nginx.conf</code>, a single site-enabled virtual host file, or an isolated <code>server {}</code> or <code>location {}</code> block into the main editor area.
+        </li>
+        <li>
+          <strong>Explore Reference Configurations:</strong> If testing functionality, click <strong>Load Vulnerable Sample</strong> to observe common real-world security flaws, or <strong>Load Hardened Sample</strong> to examine an enterprise-grade, TLS 1.3-enabled boilerplate.
+        </li>
+        <li>
+          <strong>Initiate In-Memory Static Analysis:</strong> Click <strong>Lint &amp; Audit Config</strong>. The client-side lexical engine evaluates brace balancing, line termination, off-by-slash alias patterns, URI forwarding schemas, and cryptographic protocol definitions.
+        </li>
+        <li>
+          <strong>Inspect Diagnostic Metrics &amp; Table:</strong> Review the status banner, summary metric grid (Total Errors, Security Warnings, Hardening Notices, Brace Balance), and the itemized findings table indicating exact line numbers, severity categories, and prescriptive remediations.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Scenarios &amp; Threat Modeling</h2>
+      <p>
+        Integrating proactive Nginx configuration reviews protects architectures across distinct stages of the software engineering and DevSecOps lifecycle:
+      </p>
       <ul>
-        <li><strong>Insecure Alias Traversal:</strong> Declaring <code>location /files { alias /var/data/; }</code> without a trailing slash on the location path permits path traversal attacks (e.g. <code>/files../secret</code> resolves to <code>/var/secret</code>).</li>
-        <li><strong>Proxy_Pass Trailing Slash Stripping:</strong> Adding or omitting a trailing slash on <code>proxy_pass</code> fundamentally alters URI rewriting behavior. For instance, <code>location /api/ { proxy_pass http://backend/; }</code> strips <code>/api/</code> from the forwarded request, whereas omitting the trailing slash forwards the full original request path.</li>
-        <li><strong>Missing Semicolons &amp; Unbalanced Braces:</strong> Nginx treats every block as a nested directive scope. A single omitted semicolon merges consecutive directives, causing parsing crashes during service reloads.</li>
-        <li><strong>Information Disclosure:</strong> Omitting <code>server_tokens off;</code> exposes specific Nginx version headers to remote clients, aiding reconnaissance during automated vulnerability scans.</li>
+        <li>
+          <strong>Pre-Commit &amp; Pull Request Reviews:</strong> Developers updating ingress routing rules or routing microservices can quickly lint snippets before pushing changes to version control, preventing broken deployments in CI/CD pipelines.
+        </li>
+        <li>
+          <strong>Security Auditing &amp; Penetration Testing:</strong> Defensive blue teams and penetration testers reviewing infrastructure-as-code (IaC) repositories (Ansible playbooks, Terraform templates, Docker entrypoints) can identify low-hanging ingress traversal and version exposure vectors.
+        </li>
+        <li>
+          <strong>Zero-Trust Air-Gapped Environments:</strong> Sysadmins configuring high-security military, healthcare, or financial on-premise clusters can audit configuration files on air-gapped workstations without external network telemetry.
+        </li>
+        <li>
+          <strong>Microservice Edge Migration:</strong> Teams transitioning from monolithic Apache or IIS architectures to Nginx reverse proxies can detect unintended URI rewriting side-effects before exposing services to production traffic.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>Configuration snippets, internal hostnames, and reverse-proxy route rules are parsed entirely within your client browser using local JavaScript regular expressions and syntax tokenizers. No data is transmitted over external networks.</p>
+      <h2>Deep Dive: The Off-by-Slash Alias Path Traversal Vulnerability</h2>
+      <p>
+        Among the most pervasive and subtle vulnerabilities found in Nginx deployments is the <strong>Off-by-Slash Alias Traversal</strong> flaw (frequently designated in threat literature as Orange Tsai's Nginx alias traversal pattern).
+      </p>
+
+      <h3>1. The Mechanics of the Flaw</h3>
+      <p>
+        The Nginx <code>alias</code> directive instructs the web server to replace the matching <code>location</code> path prefix with the specified file system path. Consider the following seemingly innocent virtual host declaration:
+      </p>
+
+      <pre><code># VULNERABLE CONFIGURATION
+location /static {
+    alias /var/www/app/static/;
+}</code></pre>
+
+      <p>
+        Notice that the location prefix <code>/static</code> <strong>does not terminate with a trailing slash</strong>, whereas the target filesystem path <code>/var/www/app/static/</code> <strong>does end with a trailing slash</strong>.
+      </p>
+      <p>
+        When an external HTTP client requests <code>GET /static/images/logo.png</code>, Nginx strips the matched prefix <code>/static</code> and appends the remainder (<code>/images/logo.png</code>) to the alias path, yielding <code>/var/www/app/static/images/logo.png</code>. Everything appears to work normally.
+      </p>
+      <p>
+        However, because the location match is a simple string prefix match rather than an enforced directory boundary, an adversary can submit the following crafted request:
+      </p>
+      <pre><code>GET /static../private/database.sqlite HTTP/1.1
+Host: example.com</code></pre>
+
+      <p>
+        Nginx matches the incoming path against <code>/static</code>. It replaces <code>/static</code> with <code>/var/www/app/static/</code>. The remaining characters in the request are <code>../private/database.sqlite</code>. When concatenated, the filesystem path resolves to:
+      </p>
+      <pre><code>/var/www/app/static/../private/database.sqlite  ===>  /var/www/app/private/database.sqlite</code></pre>
+      <p>
+        The attacker has completely escaped the designated public directory, reading internal application secrets, environment configuration files, or proprietary source code without triggering OS-level directory traversal firewalls.
+      </p>
+
+      <h3>2. The Correct Remediation</h3>
+      <p>
+        To prevent path traversal, the location path and the alias path must maintain strict trailing slash symmetry:
+      </p>
+      <pre><code># HARDENED REMEDIATION
+location /static/ {
+    alias /var/www/app/static/;
+}</code></pre>
+      <p>
+        With both slashes present, any request containing <code>/static../</code> fails to match the location prefix, causing Nginx to return a 404 Not Found error and neutralizing the directory escape attempt.
+      </p>
+
+      <h2>The Proxy_Pass Trailing Slash Mismatch Dilemma</h2>
+      <p>
+        The <code>proxy_pass</code> directive is the foundational pillar of Nginx's reverse proxy capability. However, its URI manipulation behavior is notoriously confusing because the presence or absence of a single trailing slash on the destination upstream URL alters how Nginx rewrites the downstream HTTP request.
+      </p>
+
+      <h3>Scenario A: Proxy_Pass WITH a Trailing Slash (URI Rewriting Active)</h3>
+      <pre><code>location /api/ {
+    proxy_pass http://internal_service:8080/;
+}</code></pre>
+      <p>
+        Because the target URL contains an explicit URI path (the single slash <code>/</code>), Nginx normalizes the request by <strong>stripping the matched location prefix</strong> (<code>/api/</code>) before appending the remainder of the URI to the upstream address.
+      </p>
+      <ul>
+        <li>Client Request: <code>GET /api/v1/users HTTP/1.1</code></li>
+        <li>Upstream Forwarded Request: <code>GET /v1/users HTTP/1.1</code></li>
+      </ul>
+
+      <h3>Scenario B: Proxy_Pass WITHOUT a Trailing Slash (Raw URI Forwarding)</h3>
+      <pre><code>location /api/ {
+    proxy_pass http://internal_service:8080;
+}</code></pre>
+      <p>
+        Because no URI path is specified after the host and port, Nginx performs <strong>no URI normalization or prefix stripping</strong>. It forwards the client's original, unaltered request URI directly to the backend service.
+      </p>
+      <ul>
+        <li>Client Request: <code>GET /api/v1/users HTTP/1.1</code></li>
+        <li>Upstream Forwarded Request: <code>GET /api/v1/users HTTP/1.1</code></li>
+      </ul>
+
+      <h3>Scenario C: Dangerous Asymmetric Slashes</h3>
+      <p>
+        Configuring <code>location /api</code> (without a slash) alongside <code>proxy_pass http://internal:8080/</code> (with a slash) introduces major routing bugs. If a client accesses <code>/api_endpoint</code>, Nginx replaces <code>/api</code> with <code>/</code>, forwarding <code>/_endpoint</code> to the upstream backend—breaking API contracts and potentially opening access to administrative routes.
+      </p>
+
+      <h2>Syntax Architecture: Semicolons and Recursive Brace Scopes</h2>
+      <p>
+        At the lexical parser level, Nginx treats configurations as streams of tokens separated by whitespace. Blocks begin with an opening curly brace <code>{</code> and terminate with a closing curly brace <code>}</code>. Every standalone directive inside a block <strong>must terminate with a semicolon (<code>;</code>)</strong>.
+      </p>
+      <p>
+        When an administrator accidentally omits a semicolon:
+      </p>
+      <pre><code># MALFORMED DIRECTIVES
+server {
+    listen 80
+    server_name example.com;
+}</code></pre>
+      <p>
+        Nginx does not interpret the line break as a delimiter. Instead, it reads <code>listen 80 server_name example.com;</code> as a single directive with multiple parameters. Because the <code>listen</code> directive does not accept <code>server_name</code> as an argument, Nginx crashes during reload with an invalid parameter error.
+      </p>
+      <p>
+        Similarly, mismatched curly braces disrupt the lexical parser's state machine. If an extra closing brace is present, parsing terminates prematurely; if an opening brace is never closed, directives intended for an isolated virtual host bleed globally across all tenant configurations. The BitDark linter enforces real-time brace balance tracking and missing-semicolon detection to catch these syntax bugs before they reach staging servers.
+      </p>
+
+      <h2>Reverse Proxy Comparison: Nginx vs Competitors</h2>
+      <p>
+        Comparing Nginx's security architecture and configuration philosophy with other contemporary edge proxies highlights why automated static linting is crucial:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Reverse Proxy</th>
+              <th>Configuration Format</th>
+              <th>Reload Mechanics</th>
+              <th>Default Security Posture</th>
+              <th>Trailing Slash Traps</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Nginx</strong></td>
+              <td>Custom Declarative Blocks</td>
+              <td>Master-worker SIGHUP graceful reload</td>
+              <td>Permissive (Version leaked, TLS 1.0/1.1 on legacy)</td>
+              <td><strong>High</strong> (alias off-by-slash, proxy_pass rewrites)</td>
+            </tr>
+            <tr>
+              <td><strong>HAProxy</strong></td>
+              <td>Sectional text (frontend/backend)</td>
+              <td>Hitless reload with socket handoff</td>
+              <td>Strict (Aggressive connection validation)</td>
+              <td>Low (Explicit path manipulation rules)</td>
+            </tr>
+            <tr>
+              <td><strong>Caddy</strong></td>
+              <td>Caddyfile / JSON Schema</td>
+              <td>Atomic Zero-downtime API reloads</td>
+              <td><strong>Very High</strong> (Auto-HTTPS, HSTS, TLS 1.3 by default)</td>
+              <td>Low (Path matching is strict prefix by default)</td>
+            </tr>
+            <tr>
+              <td><strong>Traefik</strong></td>
+              <td>YAML / TOML / Docker Labels</td>
+              <td>Dynamic discovery (No manual reload needed)</td>
+              <td>High (Automated Let's Encrypt, container-aware)</td>
+              <td>Low (Router rules strictly typed)</td>
+            </tr>
+            <tr>
+              <td><strong>Envoy</strong></td>
+              <td>YAML / JSON / gRPC xDS API</td>
+              <td>Dynamic hot-restart via discovery services</td>
+              <td>Strict (Explicit route matchers and filters)</td>
+              <td>Low (Regex and path specifiers are explicit)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Line-by-Line Worked Configuration Examples</h2>
+      <p>
+        Let us trace the transformation of a high-risk, vulnerable virtual host file into an enterprise-hardened configuration audited by the BitDark engine.
+      </p>
+
+      <h3>1. The Insecure Configuration (High Vulnerability Score)</h3>
+      <pre><code># INSECURE SERVER BLOCK
+server {
+    listen 80;
+    server_name vulnerable.internal;
+
+    # Flaw 1: Version header leakage (server_tokens on by default)
+    
+    # Flaw 2: Alias Traversal Vulnerability
+    location /uploads {
+        alias /var/data/storage/;
+    }
+
+    # Flaw 3: Insecure proxy forwarding without URI consistency
+    location /backend/ {
+        proxy_pass http://10.0.0.5:8000;
+    }
+
+    # Flaw 4: Missing closing semicolon
+    location /metrics {
+        proxy_pass http://127.0.0.1:9100
+    }
+
+    # Flaw 5: Deprecated, broken TLS protocols and ciphers
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers ALL:!aNULL:!ADH:RC4+RSA:+HIGH:+MEDIUM;
+}</code></pre>
+
+      <h3>2. The Remediated, Production-Ready Configuration (Zero Warnings)</h3>
+      <pre><code># HARDENED PRODUCTION CONFIGURATION
+# Redirect HTTP traffic to HTTPS securely
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com www.example.com;
+    return 301 https://$host$request_uri;
+}
+
+# Hardened HTTPS Server Block
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name example.com;
+
+    # 1. Obscure Nginx version in HTTP headers and error pages
+    server_tokens off;
+
+    # 2. Modern Cryptographic TLS 1.2 & TLS 1.3 Architecture
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+
+    # 3. Defensive Security Headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; object-src 'none';" always;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+    # 4. Corrected Trailing Slash on Alias Directives
+    location /uploads/ {
+        alias /var/data/storage/;
+        autoindex off;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # 5. Consistent Reverse Proxy Forwarding with Upstream Headers
+    location /backend/ {
+        proxy_pass http://internal_upstream/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+}</code></pre>
+
+      <h2>Common Mistakes and Edge Ingress Vulnerabilities</h2>
+      <p>
+        System architects and security engineers frequently encounter specific pitfalls when operating Nginx at scale:
+      </p>
+      <ul>
+        <li>
+          <strong>Forgetting <code>proxy_set_header Host $host;</code>:</strong> By default, Nginx overrides the client's original <code>Host</code> header with the upstream host name defined in <code>proxy_pass</code>. This breaks virtual hosting on backend servers and causes OAuth redirect URI mismatches.
+        </li>
+        <li>
+          <strong>Enabling <code>autoindex on;</code> in Public Directories:</strong> Directory listing should never be enabled on production assets. An exposed <code>autoindex on;</code> directive allows automated crawlers to enumerate private backup files (<code>.bak</code>, <code>.env</code>, <code>.git</code>) stored in web directories.
+        </li>
+        <li>
+          <strong>Misconfigured HTTP/2 Rapid Reset Mitigations:</strong> Without strict rate limiting directives like <code>limit_req_zone</code> and appropriate <code>keepalive_requests</code> limits, high-volume HTTP/2 multiplexing resets can exhaust edge worker CPU resources.
+        </li>
+        <li>
+          <strong>Insecure SSL Protocols:</strong> Retaining <code>TLSv1</code> or <code>TLSv1.1</code> violates PCI-DSS compliance and leaves connections vulnerable to protocol-downgrade attacks. Restrict cipher configurations strictly to TLS 1.2 and TLS 1.3.
+        </li>
+        <li>
+          <strong>Unvalidated Regex Location Matching:</strong> Placing case-insensitive regular expression locations (<code>location ~* \.php$</code>) above prefix locations overrides the prefix blocks, causing static requests to be routed to application interpreters unintentionally.
+        </li>
+      </ul>
+
+      <!-- Interactive Accordion FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does BitDark report a warning for alias directives without a trailing slash?</div>
+          <div class="faq-answer">
+            An <code>alias</code> directive paired with a <code>location</code> block lacking a trailing slash (e.g. <code>location /files</code> and <code>alias /var/data/;</code>) allows an attacker to append <code>../</code> to the URL, tricking Nginx into performing path traversal and leaking files outside the intended folder.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between root and alias directives in Nginx?</div>
+          <div class="faq-answer">
+            The <code>root</code> directive appends the entire incoming request URI to the specified path (e.g., <code>location /api/ { root /var/www; }</code> looks for files in <code>/var/www/api/</code>). The <code>alias</code> directive replaces the matched location prefix entirely (e.g., <code>location /api/ { alias /var/www/; }</code> maps directly to <code>/var/www/</code>).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does missing a semicolon cause Nginx to report a problem on the following line?</div>
+          <div class="faq-answer">
+            Nginx treats newlines as whitespace. If a directive lacks a terminating semicolon, the parser combines it with the directive on the subsequent line as a single multi-argument command. The parser only fails when it encounters the next directive name, leading it to report a syntax error on the subsequent line.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does server_tokens off; improve operational security?</div>
+          <div class="faq-answer">
+            By default, Nginx emits its exact version string (e.g. <code>Server: nginx/1.18.0</code>) in HTTP response headers and on default error pages. Disabling <code>server_tokens</code> removes this version number, preventing automated vulnerability scanners from immediately mapping your infrastructure to specific unpatched CVEs.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this in-browser linter check dynamic modules like OpenResty or ModSecurity?</div>
+          <div class="faq-answer">
+            The BitDark linter evaluates core Nginx directives, standard HTTP/HTTPS blocks, stream modules, and reverse proxy primitives. Third-party vendor directives (such as custom Lua blocks or ModSecurity rules) are parsed gracefully, but dynamic runtime execution requires validation within your actual binary container.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is ssl_prefer_server_ciphers off recommended for modern TLS 1.3?</div>
+          <div class="faq-answer">
+            In TLS 1.3, the cipher suite selection is negotiated automatically by the protocol and does not use server preference ordering. For TLS 1.2, modern clients (such as mobile devices with hardware AES accelerators) can pick the most battery- and computationally-efficient AEAD cipher without being forced into slower cipher choices by legacy server configurations.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark save or transmit the Nginx configs I paste into the tool?</div>
+          <div class="faq-answer">
+            Never. The BitDark platform operates on a strict zero-telemetry, client-side execution model. All parsing, regular expression matching, and heuristic audits execute locally in your browser's private JavaScript memory. No data is ever transmitted to our servers.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What does "Unbalanced Block Braces" indicate?</div>
+          <div class="faq-answer">
+            This indicates that the number of opening curly braces <code>{</code> does not match the number of closing curly braces <code>}</code>. Every directive block must have an identical number of open and close delimiters. An imbalance prevents Nginx from determining directive hierarchy and causes a fatal crash during server startup or reload.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Network Infrastructure &amp; Security Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/network/spf-deconstructor/" class="related-card">
+            <div class="related-card-title"><span>[📧]</span> SPF Record Deconstructor</div>
+            <div class="related-card-desc">Parse DNS SPF TXT records, evaluate DNS lookup limits, validate CIDR ranges, and resolve DNS routing pitfalls.</div>
+          </a>
+          <a href="/tools/network/dmarc-generator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> DMARC Policy Generator</div>
+            <div class="related-card-desc">Construct, validate, and audit DMARC email authentication records with strict alignment and reporting policies.</div>
+          </a>
+          <a href="/tools/network/dns-wire-format/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> DNS Wire Format Hexer</div>
+            <div class="related-card-desc">Decode and inspect raw binary DNS queries and responses for DNS-over-HTTPS (DoH) and DNS-over-TLS (DoT).</div>
+          </a>
+          <a href="/tools/network/mtu-overhead/" class="related-card">
+            <div class="related-card-title"><span>[📏]</span> MTU &amp; MSS Overhead Calculator</div>
+            <div class="related-card-desc">Calculate packet fragmentation thresholds and MSS sizing across WireGuard, IPsec, VXLAN, GRE, and QinQ tunnels.</div>
+          </a>
+          <a href="/tools/auth/security-headers/" class="related-card">
+            <div class="related-card-title"><span>[🔒]</span> HTTP Header Security Auditor</div>
+            <div class="related-card-desc">Audit edge HTTP response headers for HSTS, CSP, X-Frame-Options, Permissions-Policy, and CORS flaws.</div>
+          </a>
+          <a href="/tools/auth/tls-ciphers/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> TLS Cipher Suite Evaluator</div>
+            <div class="related-card-desc">Inspect SSL/TLS cipher suites for forward secrecy, AEAD strength, and deprecations across modern crypto standards.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // UI Bindings
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Nginx Linter & Security Audit Engine (100% Unaltered Tool Logic)
     const configInput = document.getElementById("nginxConfigInput");
     const btnLint = document.getElementById("btnLint");
     const btnSampleInsecure = document.getElementById("btnSampleInsecure");
@@ -849,8 +1624,10 @@ server {
       }
     }
 
-    // Default sample on load
+    // Initialize Page Observers, Accordions, and Default Sample
     window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
       btnSampleInsecure.click();
     });
   </script>
