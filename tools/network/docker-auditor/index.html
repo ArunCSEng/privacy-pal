@@ -4,12 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Docker Compose &amp; Container Security Auditor — Free Offline Tool | BitDark</title>
-  <meta name="title" content="Docker Compose &amp; Container Security Auditor — Free Offline Tool | BitDark" />
-  <meta name="description" content="Audit Docker Compose files, Dockerfiles, and container run manifests for privileged mode, root execution, unconfined capabilities, host socket mounts, and misconfigurations entirely client-side." />
-  <meta name="keywords" content="docker security auditor, docker compose audit, container misconfigurations, dockerfile scanner, root execution, docker socket mount, offline container auditor, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/network/docker-auditor" />
+  <title>Docker Compose &amp; Container Security Auditor — Free Offline Static Linter | BitDark</title>
+  <meta name="title" content="Docker Compose &amp; Container Security Auditor — Free Offline Static Linter | BitDark" />
+  <meta name="description" content="Audit Docker Compose YAML manifests and container execution flags client-side. Detect privileged mode, host Docker socket mounts, unconfined Linux capabilities, root execution, and host namespace leaks without network egress." />
+  <meta name="keywords" content="docker compose security auditor, docker security scanner, container breakout audit, docker socket escape, privileged container linter, cap_sys_admin, docker compose hardening, container security best practices, client-side docker linter, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/network/docker-auditor/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/network/docker-auditor/" />
+  <meta property="og:title" content="Docker Compose &amp; Container Security Auditor — Client-Side Static Linter | BitDark" />
+  <meta property="og:description" content="Analyze Docker Compose declarations offline in browser RAM. Identify root execution, socket mounts, host namespaces, and capability escalations." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/network/docker-auditor/" />
+  <meta name="twitter:title" content="Docker Compose &amp; Container Security Auditor | BitDark" />
+  <meta name="twitter:description" content="Static heuristic security scanner for Docker Compose files and container run manifests. 100% Client-Side with zero network telemetry." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Docker Compose & Container Security Auditor",
+        "url": "https://bitdark.net/tools/network/docker-auditor/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side container auditing utility to inspect Docker Compose configurations for host namespace escapes, privileged flags, dangerous capabilities, and credential leakage entirely inside local browser RAM."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Container Security Engineering: Hardening Docker Compose Manifests Against Kernel Breakouts and Namespace Traversal",
+        "url": "https://bitdark.net/tools/network/docker-auditor/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-18",
+        "dateModified": "2026-11-04",
+        "description": "Exhaustive technical treatise on container isolation mechanics, Linux kernel namespaces, cgroups, capability management, seccomp filtering, and Docker Compose misconfiguration vectors."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why is mounting /var/run/docker.sock into a container considered critical risk?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mounting the host's UNIX socket (/var/run/docker.sock) grants processes inside the container unauthenticated, root-equivalent control over the host Docker daemon API. An attacker or malicious dependency inside the container can send API commands to spawn a sibling container with full privileged access, mount the host's root filesystem (/), and gain total administrative takeover of the host operating system."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What does 'privileged: true' actually do at the Linux kernel level?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The 'privileged: true' directive disables virtually all container isolation controls. The Docker daemon grants the container full Linux capabilities, removes seccomp system call filtering, disables AppArmor or SELinux confinement profiles, and configures the host kernel cgroups to permit the container to access and create raw device nodes across the entire /dev filesystem."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does dropping capabilities (cap_drop: - ALL) prevent privilege escalation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "By default, Docker assigns containers a subset of approximately 14 Linux capabilities (such as CAP_CHOWN, CAP_NET_RAW, and CAP_SETUID). If a containerized application is compromised via remote code execution, retaining these capabilities allows attackers to modify file ownership, forge raw network packets, or change process UIDs. Explicitly dropping ALL capabilities forces the container to run with the bare minimum privileges required, neutralizing common exploit chains."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is running a container as root (UID 0) dangerous even without privileged mode?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Containers share the host operating system kernel. By default, UID 0 inside a container maps directly to UID 0 (root) on the host system unless Docker user namespace remapping (userns-remap) is explicitly activated. If a container shares any writable host volumes or encounters an unpatched kernel vulnerability (such as a dirty COW or pipe escape), the root process can write directly to host files or overwrite host binaries."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the BitDark Docker Auditor send my manifests or compose files to external servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The auditor evaluates all YAML syntax, service definitions, environment keys, and volume bindings 100% client-side inside your browser's private JavaScript memory. Zero network packets or telemetry tokens leave your machine."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,157 +124,212 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 24px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 20px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.8rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     .form-group label {
       font-family: var(--font-code);
-      font-size: 0.76rem;
+      font-size: 0.82rem;
       text-transform: uppercase;
-      color: var(--atom-muted);
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
+      letter-spacing: 0.05em;
     }
-    .form-group label span { color: var(--atom-cyan); text-transform: none; }
+    .form-group label span { 
+      color: var(--atom-cyan); 
+      text-transform: none; 
+      font-size: 0.78rem;
+    }
     
     textarea {
-      background-color: var(--atom-bg);
+      background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px 14px;
+      border-radius: 6px;
+      padding: 16px;
       font-family: var(--font-code);
-      font-size: 0.85rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       color: var(--atom-heading);
       outline: none;
-      min-height: 220px;
+      min-height: 250px;
       resize: vertical;
       line-height: 1.6;
+      width: 100%;
     }
     textarea:focus { border-color: var(--atom-border-focus); }
 
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
-    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
+    
     .btn-atom {
       background-color: var(--atom-amber);
       color: #1e2227;
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 11px 22px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.15s;
+      font-size: 16px; /* Mobile touch accessibility */
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
+    }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
     }
 
     /* Diagnostics & Summary */
@@ -184,11 +337,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-safe {
       background-color: rgba(152, 195, 121, 0.12);
@@ -209,36 +365,42 @@
     .table-container {
       overflow-x: auto;
       margin-bottom: 8px;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
     }
     .results-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
+      text-align: left;
     }
     .results-table th, .results-table td {
-      border: 1px solid var(--atom-border);
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: middle;
+      border-bottom: 1px solid var(--atom-border);
+      padding: 14px 16px;
+      vertical-align: top;
+      line-height: 1.6;
     }
+    .results-table tr:last-child td { border-bottom: none; }
     .results-table th {
       background-color: var(--atom-bg);
-      color: var(--atom-muted);
+      color: var(--atom-heading);
       font-weight: 600;
       font-size: 0.76rem;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .results-table td {
-      background-color: var(--atom-gutter);
+      background-color: var(--atom-surface);
       color: var(--atom-heading);
       word-break: break-word;
     }
+    .results-table tr:hover td { background-color: rgba(255,255,255,0.02); }
 
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -251,99 +413,314 @@
     .badge-low { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
     .badge-pass { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
 
-    /* Operational Disclaimer */
+    /* Operational Boundaries & Legal Disclaimer */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 36px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3200px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; align-items: stretch; }
+      .btn-group { flex-direction: column; width: 100%; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+    }
   </style>
-
-  
-  
-
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#network">Network</a> / docker-auditor
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/network/">Network & Infra</a>
+      <span class="sep">/</span>
+      <span class="current">Docker Compose Security Auditor</span>
     </nav>
 
     <div class="tool-header">
       <h1>Docker Compose &amp; Container Security Auditor</h1>
-      <p>Audit Docker Compose YAML manifests and container execution declarations for dangerous privileges, host namespace exposures, Docker socket escapes, and insecure runtime defaults.</p>
+      <p>Audit Docker Compose YAML manifests and container execution declarations for dangerous privileges, host namespace exposures, Docker socket escapes, and insecure runtime defaults directly in local browser RAM.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Docker Security Inspection Console">
       <div class="form-group">
         <label for="composeInput">
           Docker Compose Configuration
@@ -370,111 +747,524 @@
         <table class="results-table" id="resultsTable">
           <thead>
             <tr>
-              <th style="width: 12%;">Severity</th>
-              <th style="width: 25%;">Security Vector</th>
-              <th style="width: 35%;">Detected Finding &amp; Impact</th>
+              <th style="width: 14%;">Severity</th>
+              <th style="width: 24%;">Security Vector</th>
+              <th style="width: 34%;">Detected Finding &amp; Impact</th>
               <th style="width: 28%;">Remediation Guidance</th>
             </tr>
           </thead>
           <tbody id="resultsBody">
             <tr>
-              <td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration analyzed yet.</td>
+              <td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration analyzed yet. Paste a manifest above or load a sample.</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Disclaimer
+        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, container compromise, host breakout, infrastructure vulnerabilities, or missed misconfigurations. Static rule-based configuration parsing evaluates declarations strictly client-side in local browser memory. Container security teams and DevOps engineers must perform comprehensive runtime audits, automated image vulnerability scans, and kernel-level capability inspections prior to deploying containers into production environments.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        Static rule-based configuration parsing evaluates declarations strictly client-side in local browser memory. Container security teams, Site Reliability Engineers (SREs), and DevOps architects must perform comprehensive runtime audits, automated image vulnerability scans (CVE databases), kernel-level capability inspections, and host policy evaluations (eBPF, seccomp, AppArmor) prior to deploying containers into production clusters.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>Common Container Security Anti-Patterns</h2>
-      <p>Containers provide application isolation using Linux kernel namespaces, cgroups, and seccomp filters. Overriding these controls exposes the underlying host kernel to total takeover:</p>
+    <!-- Comprehensive Technical Authority Article (2,500+ Words for AdSense & Top Search Authority) -->
+    <article class="article-container">
+      <h2>The Illusion of Container Isolation: Linux Kernel Mechanics</h2>
+      <p>
+        In modern cloud-native architectures, containerization has largely supplanted traditional hardware-level virtualization for application packaging and microservice deployment. However, a dangerous misconception persists across DevOps and engineering teams: <em>containers are treated as lightweight virtual machines</em>. They are not.
+      </p>
+      <p>
+        A virtual machine operates on top of a hypervisor (Type-1 bare-metal like ESXi/KVM, or Type-2 like VirtualBox), providing a dedicated virtual CPU, independent virtual memory space, and an entirely separate guest operating system kernel. If a process inside a virtual machine crashes or triggers a kernel panic, the host hypervisor and neighboring VMs remain isolated behind hardware-enforced MMU and VT-x/AMD-V isolation boundaries.
+      </p>
+      <p>
+        In stark contrast, a Linux container is simply a standard host process constrained by kernel-level isolation features:
+      </p>
       <ul>
-        <li><strong>Privileged Mode (<code>privileged: true</code>):</strong> Disables almost all container security controls, passes all host devices to the container, and allows trivial breakout to root host control.</li>
-        <li><strong>Docker Socket Mount (<code>/var/run/docker.sock</code>):</strong> Mounting the host Docker daemon socket into a container grants root-equivalent privileges on the host system via the Docker API.</li>
-        <li><strong>Host Namespaces (<code>network_mode: host</code>, <code>pid: host</code>, <code>ipc: host</code>):</strong> Bypasses network isolation, permits packet interception, and allows inspection or signaling of host processes.</li>
-        <li><strong>Missing Capabilities Dropping (<code>cap_drop: - ALL</code>):</strong> Containers inherit unnecessary Linux capabilities (such as <code>CAP_NET_RAW</code> or <code>CAP_CHOWN</code>) by default unless explicitly dropped.</li>
-        <li><strong>Mutable Root Filesystem:</strong> Lacking <code>read_only: true</code> permits attackers or compromised processes to persist binaries, alter configuration, and unpack malicious payloads.</li>
+        <li><strong>Linux Namespaces:</strong> Carve up global system resources so that a group of processes observes a discrete partition. These encompass <code>pid</code> (process trees), <code>net</code> (network interfaces and routing tables), <code>mnt</code> (filesystem mount points), <code>ipc</code> (System V IPC and POSIX message queues), <code>uts</code> (hostnames and NIS domain names), and <code>user</code> (UID and GID mappings).</li>
+        <li><strong>Control Groups (cgroups v1/v2):</strong> Enforce resource metering and boundaries on CPU quotas, system memory allocations, block I/O throughput, network traffic, and maximum process counts (pids limit).</li>
+        <li><strong>Linux Capabilities:</strong> Partition the traditional all-or-nothing root privilege (UID 0) into distinct, granular units of permission (e.g., <code>CAP_NET_BIND_SERVICE</code>, <code>CAP_SYS_ADMIN</code>).</li>
+        <li><strong>Seccomp-BPF Filters:</strong> Berkeley Packet Filter programs that intercept and restrict the specific system calls (syscalls) a containerized process can issue to the host Linux kernel.</li>
+        <li><strong>LSM Confinement Profiles (AppArmor / SELinux):</strong> Mandatory Access Control (MAC) systems that enforce granular read, write, and execute policies over files and network endpoints.</li>
+      </ul>
+      <p>
+        Because the host and every container run on the <strong>exact same Linux kernel</strong>, any configuration error in your Docker Compose manifest that compromises these isolation wrappers dissolves the boundary between container and host. A single misconfigured parameter transforms a sandboxed container into an open doorway for total host compromise.
+      </p>
+
+      <h2>How to Use the BitDark Docker Security Auditor</h2>
+      <p>
+        Auditing Docker Compose manifests or raw <code>docker run</code> commands with BitDark is instantaneous, forensically sound, and strictly private. The auditor runs entirely in volatile browser memory with zero network egress:
+      </p>
+      <ol>
+        <li>
+          <strong>Supply Manifest Input:</strong> Paste the text of your <code>docker-compose.yml</code> file, Docker Stack specification, or <code>docker run</code> command into the primary workspace textarea.
+        </li>
+        <li>
+          <strong>Explore Baseline Samples:</strong> If you are evaluating security policies or training team members, click <strong>Load Vulnerable Sample</strong> to review common high-risk anti-patterns, or <strong>Load Hardened Sample</strong> to examine an enterprise-grade defense-in-depth configuration.
+        </li>
+        <li>
+          <strong>Execute Heuristic Audit:</strong> Click <strong>Audit Security Configuration</strong>. The engine executes a multi-pass regex and syntactic rule scanner against every defined service block, inspecting volumes, capabilities, user mappings, network modes, and privilege flags.
+        </li>
+        <li>
+          <strong>Review Severity Triage:</strong> Findings are displayed in a structured matrix ranked across four standardized severity tiers: <code>CRITICAL</code>, <code>HIGH</code>, <code>MEDIUM</code>, and <code>LOW</code>.
+        </li>
+        <li>
+          <strong>Implement Remediation Guidance:</strong> For every detected violation, the auditor outputs the specific attack impact and the exact YAML syntax required to eliminate the vulnerability.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Operational Threat Modeling</h2>
+      <p>
+        Static container manifest auditing serves distinct defensive requirements across the software development lifecycle (SDLC) and security operations:
+      </p>
+      <ul>
+        <li>
+          <strong>Pre-Commit Developer Hygiene:</strong> Software engineers and DevOps engineers can validate new Docker Compose services before committing them to source control, preventing insecure defaults from entering git history.
+        </li>
+        <li>
+          <strong>CI/CD Gatekeeping & Pull Request Review:</strong> Integrating manifest auditing prevents automated deployments of third-party open-source components that request unnecessary privileges, such as administrative CI/CD runners or monitoring agents.
+        </li>
+        <li>
+          <strong>DevSecOps Infrastructure Audits:</strong> Security architects reviewing legacy dockerized services can systematically identify containers that expose host Docker sockets, run as root, or lack resource boundaries.
+        </li>
+        <li>
+          <strong>Third-Party Helm & Stack Vetting:</strong> Vetting commercial off-the-shelf (COTS) software packages, dockerized databases, and vendor manifests prior to deployment into internal enterprise infrastructure.
+        </li>
+        <li>
+          <strong>Incident Response Post-Mortems:</strong> Following a suspected container escape or server compromise, incident responders can audit historical compose files to determine whether host namespaces or raw device mounts facilitated the lateral movement.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Guarantee</h2>
-      <p>All compose manifests, image names, environment definitions, and volume mounts are parsed and audited entirely inside local browser memory. No manifests or configuration tokens are ever sent over external networks.</p>
+      <h2>Deep Dive: High-Risk Container Anti-Patterns & Breakout Mechanics</h2>
+
+      <h3>1. The Privileged Mode Trap (`privileged: true`)</h3>
+      <p>
+        The <code>privileged: true</code> directive is the single most catastrophic configuration error in container management. Originally designed for niche edge cases—such as running Docker inside Docker (DinD) for CI systems—it completely strips all container isolation:
+      </p>
+      <ul>
+        <li>Grants the container all 40+ Linux kernel capabilities, including <code>CAP_SYS_ADMIN</code>, <code>CAP_SYS_MODULE</code>, and <code>CAP_SYS_RAWIO</code>.</li>
+        <li>Disables Docker's default seccomp profile, allowing the container to issue any arbitrary system call supported by the host kernel.</li>
+        <li>Disables AppArmor and SELinux mandatory access controls.</li>
+        <li>Instructs the Docker daemon to pass all host devices located in <code>/dev/</code> into the container's <code>/dev/</code> directory with read and write permissions.</li>
+      </ul>
+      <p>
+        With access to raw disk devices, an attacker inside a privileged container can mount the underlying host hard drive directly:
+      </p>
+      <pre><code># Executing breakout from inside a privileged container:
+fdisk -l
+mkdir /mnt/host_root
+mount /dev/sda1 /mnt/host_root
+chroot /mnt/host_root
+# The attacker now operates as root on the physical host operating system.</code></pre>
+
+      <h3>2. The Docker Socket Mount (`/var/run/docker.sock`)</h3>
+      <p>
+        Mounting <code>/var/run/docker.sock</code> is frequently utilized by CI/CD containers, monitoring tools (such as Portainer or Watchtower), and build agents. However, mounting this UNIX socket inside a container is functionally identical to granting passwordless <code>sudo</code> access across the entire host.
+      </p>
+      <p>
+        The Docker daemon runs with root privileges. Any process capable of writing to <code>/var/run/docker.sock</code> can communicate directly with the Docker Engine REST API. An attacker inside the container does not need to exploit a kernel vulnerability—they simply ask the Docker daemon to spawn a sibling container that mounts the host root:
+      </p>
+      <pre><code># Spawning a root shell on the host via the Docker API:
+docker run -it --rm -v /:/host -u 0 alpine chroot /host sh</code></pre>
+      <blockquote>
+        <strong>Architectural Rule:</strong> Never expose the Docker daemon socket to workloads. If an application requires container orchestration, deploy an isolated remote API proxy with strict role-based access control (RBAC), or adopt rootless container engines like Podman.
+      </blockquote>
+
+      <h3>3. Host Namespace Exposures (`network_mode: host`, `pid: host`, `ipc: host`)</h3>
+      <p>
+        Docker Compose allows containers to bypass specific namespace boundaries to achieve performance parity with bare-metal processes:
+      </p>
+      <ul>
+        <li><strong>Host Network (<code>network_mode: host</code>):</strong> Eliminates the Docker bridge network. The container binds directly to host network interfaces. An attacker can bind to privileged ports below 1024, sniff all localhost traffic exchanged between local host daemons (such as unencrypted Redis or local database sockets), and bypass perimeter firewall rules.</li>
+        <li><strong>Host PID (<code>pid: host</code>):</strong> Bypasses the PID namespace. The container can see every process running on the host, inspect memory layouts, trace host processes via <code>ptrace</code>, and terminate host daemons.</li>
+        <li><strong>Host IPC (<code>ipc: host</code>):</strong> Allows the container to access host inter-process communication mechanisms, enabling inspection or manipulation of shared memory segments (POSIX shm) utilized by host applications.</li>
+      </ul>
+
+      <h3>4. Dangerous Linux Capabilities (`CAP_SYS_ADMIN` &amp; `CAP_NET_ADMIN`)</h3>
+      <p>
+        Linux capabilities divide root permissions into granular privileges. Even without setting <code>privileged: true</code>, explicitly granting administrative capabilities introduces fatal breakout vectors:
+      </p>
+      <ul>
+        <li><strong><code>CAP_SYS_ADMIN</code>:</strong> Often dubbed "the new root." Allows mounting filesystems, reconfiguring cgroups, managing kernel modules, accessing perf events, and invoking <code>bpf()</code>. A process with <code>CAP_SYS_ADMIN</code> can easily compromise the host kernel.</li>
+        <li><strong><code>CAP_NET_ADMIN</code>:</strong> Allows reconfiguring network routing tables, modifying iptables firewall rules, spoofing interfaces, and configuring promiscuous packet sniffing.</li>
+      </ul>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Capability Name</th>
+              <th>Default Docker State</th>
+              <th>Attack Vector if Granted</th>
+              <th>Defensive Recommendation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>CAP_SYS_ADMIN</code></td>
+              <td>Dropped</td>
+              <td>Filesystem mounting, cgroup manipulation, kernel device interaction</td>
+              <td>Never grant to workloads. Restructure to avoid kernel calls.</td>
+            </tr>
+            <tr>
+              <td><code>CAP_NET_ADMIN</code></td>
+              <td>Dropped</td>
+              <td>Firewall modification, routing table hijacking, interface spoofing</td>
+              <td>Restrict strictly to dedicated VPN/mesh routing gateways.</td>
+            </tr>
+            <tr>
+              <td><code>CAP_NET_RAW</code></td>
+              <td><strong>Retained</strong></td>
+              <td>Raw socket generation, ARP poisoning, and internal network sniffing</td>
+              <td>Drop via <code>cap_drop: [ ALL ]</code> unless ICMP ping is required.</td>
+            </tr>
+            <tr>
+              <td><code>CAP_SYS_PTRACE</code></td>
+              <td>Dropped</td>
+              <td>Memory inspection and debugging of processes via ptrace()</td>
+              <td>Block unconditionally in production; restrict to local staging debug.</td>
+            </tr>
+            <tr>
+              <td><code>CAP_DAC_OVERRIDE</code></td>
+              <td><strong>Retained</strong></td>
+              <td>Bypasses file read, write, and execute permission checks</td>
+              <td>Drop via <code>cap_drop: [ ALL ]</code>; rely on correct POSIX file modes.</td>
+            </tr>
+            <tr>
+              <td><code>CAP_SYS_MODULE</code></td>
+              <td>Dropped</td>
+              <td>Loading and unloading arbitrary kernel modules into the host</td>
+              <td>Never grant. Host kernel module management must remain host-only.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Worked Example: Insecure Manifest vs. Production-Hardened Manifest</h2>
+      <p>
+        To illustrate how the BitDark Auditor identifies and guides remediation, consider a realistic microservice stack.
+      </p>
+
+      <h3>1. The Insecure Manifest (Vulnerable Baseline)</h3>
+      <pre><code>version: '3.8'
+services:
+  web:
+    image: nginx:latest
+    privileged: true
+    network_mode: host
+    environment:
+      DB_PASSWORD: "SuperSecretProductionDatabasePassword123!"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc:/host_etc
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    user: "0:0"</code></pre>
+      <p>
+        When parsed by the BitDark engine, this manifest triggers seven distinct critical and high-severity alarms:
+      </p>
+      <ul>
+        <li><code>[CRITICAL]</code> <strong>Privileged Execution:</strong> Complete container breakout is trivial; device nodes and raw disk access are passed into the container.</li>
+        <li><code>[CRITICAL]</code> <strong>Host Docker Socket Mount:</strong> The container can communicate with the host Docker API to spawn root sibling containers.</li>
+        <li><code>[CRITICAL]</code> <strong>CAP_SYS_ADMIN Capability:</strong> Administrative kernel calls and filesystem mount operations are permitted.</li>
+        <li><code>[HIGH]</code> <strong>Host Network Namespace:</strong> Container eliminates port isolation and can sniff host loopback traffic.</li>
+        <li><code>[HIGH]</code> <strong>CAP_NET_ADMIN Capability:</strong> Container can rewrite host routing and firewall configurations.</li>
+        <li><code>[HIGH]</code> <strong>Hardcoded Secrets in Environment:</strong> Plaintext credentials are baked into the manifest, exposed to version control and <code>docker inspect</code>.</li>
+        <li><code>[MEDIUM]</code> <strong>Explicit Root Execution:</strong> Container explicitly executes as UID 0 instead of a low-privilege service account.</li>
+      </ul>
+
+      <h3>2. The Hardened Production Manifest (Secure Baseline)</h3>
+      <p>
+        Applying defense-in-depth principles remediates every finding while maintaining identical operational functionality:
+      </p>
+      <pre><code>version: '3.8'
+services:
+  web:
+    image: nginx:1.25.4-alpine@sha256:72c9183dc98845e236316279930f30507a214d02b54bc9f1d07e60b1e4fa8e9c
+    read_only: true
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp:rw,noexec,nosuid
+      - /var/cache/nginx:rw,noexec,nosuid
+      - /var/run:rw,noexec,nosuid
+    networks:
+      - app_isolated
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+
+networks:
+  app_isolated:
+    driver: bridge</code></pre>
+
+      <p>
+        Notice the key architectural hardening controls implemented:
+      </p>
+      <ul>
+        <li><strong>Immutable Root Filesystem (<code>read_only: true</code>):</strong> Any exploit payload that attempts to download a rootkit, backdoor binary, or crypto-miner into <code>/bin</code> or <code>/usr</code> immediately fails with an I/O error.</li>
+        <li><strong>Ephemeral Tmpfs Mounts:</strong> Essential temporary write locations (such as Nginx cache or PID tracking) are backed by memory with <code>noexec</code> (preventing script execution) and <code>nosuid</code> flags.</li>
+        <li><strong>Unprivileged User (<code>user: "10001:10001"</code>):</strong> The container process runs under a non-root UID, eliminating host root equivalence even without user namespaces.</li>
+        <li><strong>No-New-Privileges:</strong> Blocks setuid binaries (such as <code>sudo</code> or <code>pkexec</code>) from escalating process capabilities.</li>
+        <li><strong>Capability Drop All (<code>cap_drop: [ ALL ]</code>):</strong> Strips all default Linux capabilities, explicitly adding back only <code>CAP_NET_BIND_SERVICE</code> so Nginx can bind to standard low-numbered ports.</li>
+        <li><strong>Immutable Image Digest:</strong> Pins the container image to an immutable SHA-256 cryptographic digest, preventing silent supply chain tampering or non-deterministic deployments.</li>
+      </ul>
+
+      <h2>Tool Comparison: Static Linters vs. Dynamic Runtime Scanners</h2>
+      <p>
+        Understanding where static configuration auditing fits within the broader container security landscape is essential for developing a comprehensive defense posture:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Tool / Approach</th>
+              <th>Inspection Layer</th>
+              <th>Network Egress Required?</th>
+              <th>Primary Strengths</th>
+              <th>Operational Limitations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>BitDark Docker Auditor</strong></td>
+              <td>Compose Manifest &amp; Run Flags</td>
+              <td><strong>Zero (100% In-Browser RAM)</strong></td>
+              <td>Instant triage, zero installation, no server logging, strict privacy</td>
+              <td>Static heuristic parsing; does not analyze internal image layers</td>
+            </tr>
+            <tr>
+              <td><strong>Hadolint / Dockle</strong></td>
+              <td>Dockerfile AST &amp; Linting</td>
+              <td>None (CLI tool)</td>
+              <td>Enforces Dockerfile best practices and shell-script hygiene</td>
+              <td>Evaluates build declarations only, not multi-container runtime topologies</td>
+            </tr>
+            <tr>
+              <td><strong>Trivy / Grype / Clair</strong></td>
+              <td>Image OS &amp; Language Dependencies</td>
+              <td>High (Queries remote CVE vulnerability databases)</td>
+              <td>Detects known Common Vulnerabilities and Exposures (CVEs) in packages</td>
+              <td>Does not catch runtime misconfigurations (privileged flags, socket mounts)</td>
+            </tr>
+            <tr>
+              <td><strong>Falco / Tetragon (eBPF)</strong></td>
+              <td>Host Linux Kernel Syscalls</td>
+              <td>Medium (Exports alerts to SIEM/SOC)</td>
+              <td>Real-time runtime detection of anomalous syscalls, execs, and escapes</td>
+              <td>High infrastructure complexity; requires host kernel eBPF instrumentation</td>
+            </tr>
+            <tr>
+              <td><strong>CIS Docker Benchmark</strong></td>
+              <td>Host Daemon &amp; Engine Config</td>
+              <td>None (Audit script)</td>
+              <td>Comprehensive audit of daemon settings, TLS auth, and log drivers</td>
+              <td>Requires administrative root access on the physical host operating system</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Mistakes in Container Hardening</h2>
+      <p>
+        Security teams frequently encounter subtle pitfalls when attempting to secure container environments:
+      </p>
+      <ul>
+        <li>
+          <strong>Relying Solely on CVE Image Scanners:</strong> An image with zero known CVEs is completely vulnerable if deployed with <code>privileged: true</code> and a mounted Docker daemon socket. Vulnerability scanning and configuration hardening must be executed in tandem.
+        </li>
+        <li>
+          <strong>Using Floating Tags (e.g., <code>node:latest</code>):</strong> Container tags are mutable pointers. Upstream maintainers can push breaking changes, deprecated dependencies, or compromised binaries at any moment. Always pin to semantic versions with SHA-256 content-addressable digests.
+        </li>
+        <li>
+          <strong>Forgetting Resource Limits:</strong> Omitting CPU and memory constraints (<code>limits.cpus</code>, <code>limits.memory</code>) leaves your infrastructure open to Denial of Service (DoS) attacks. A memory leak or recursive fork bomb inside an unconstrained container can trigger the Linux kernel Out-Of-Memory (OOM) killer to terminate critical host services.
+        </li>
+        <li>
+          <strong>Overlooking Tmpfs Permissions:</strong> Mounting a mutable <code>tmpfs</code> filesystem at <code>/tmp</code> without <code>noexec,nosuid</code> allows attackers to write and execute malicious binaries despite a read-only root filesystem.
+        </li>
+        <li>
+          <strong>Committing Environment Files (.env) to Git:</strong> Storing production secrets in unencrypted <code>.env</code> files tracked in source code repositories is one of the most common vectors for cloud account compromise. Utilize Docker Secrets or external secret managers (e.g., HashiCorp Vault, AWS Secrets Manager).
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between a Dockerfile auditor and a Docker Compose auditor?</div>
+          <div class="faq-answer">
+            A Dockerfile auditor (such as Hadolint) analyzes the build-time instructions used to package an image (e.g., RUN commands, base images, cache layers). A Docker Compose auditor inspects the runtime deployment topology—how that image is executed on the host, including volume mounts, kernel capabilities, network namespaces, device access, and privilege escalation flags.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can an attacker break out of a container if it runs as root without privileged mode?</div>
+          <div class="faq-answer">
+            Yes, if an unpatched Linux kernel vulnerability exists (such as Dirty COW, Dirty Pipe, or cgroup v1 release_agent exploits) or if sensitive host directories (like /etc, /proc, or /sys) are mounted into the container. Because UID 0 inside the container matches UID 0 on the host, any write to the host filesystem has root authority.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does BitDark flag the ':latest' image tag as a security risk?</div>
+          <div class="faq-answer">
+            The ':latest' tag is mutable and non-deterministic. Every time the manifest is deployed, Docker may pull a different image version containing untested changes, deprecated libraries, or compromised code. Pinning images to immutable SHA-256 digests guarantees repeatable, auditable deployments and protects against supply chain poisoning.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What does 'security_opt: - no-new-privileges:true' do?</div>
+          <div class="faq-answer">
+            The 'no-new-privileges' option prevents processes inside the container from gaining additional privileges through setuid or setgid binaries (such as sudo or su). Even if an attacker discovers a setuid binary inside the container filesystem, the kernel refuses to elevate their capabilities.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does 'read_only: true' improve container defense?</div>
+          <div class="faq-answer">
+            Enforcing a read-only root filesystem prevents an attacker from writing new executable files, modifying application source code, altering system configuration files, or installing persistent backdoors. Any necessary write paths must be explicitly mounted via ephemeral, in-memory tmpfs mounts.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Is it safe to run Docker daemon sockets if I restrict permissions with chmod?</div>
+          <div class="faq-answer">
+            No. The Docker daemon socket API does not distinguish between different client commands. If an application process has permission to send HTTP requests over that socket, it has root control over the host engine. Restricting file permissions does not provide granular API-level authorization.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark log or store my Docker Compose files?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All configuration parsing, regex evaluation, and diagnostic scoring execute entirely within your browser's private JavaScript memory. You can disconnect your network connection entirely and the tool will continue functioning with 100% fidelity.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does user namespace remapping (userns-remap) prevent container escapes?</div>
+          <div class="faq-answer">
+            User namespace remapping maps UID 0 (root) inside the container to an unprivileged, high-numbered UID on the host system (e.g., UID 100000). Even if a process inside the container escapes to the host filesystem, it possesses only unprivileged user rights on the host, mitigating the majority of container breakout attacks.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Network, Security &amp; Infrastructure Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/network/nginx-linter/" class="related-card">
+            <div class="related-card-title"><span>[🌐]</span> Nginx Hardening Linter</div>
+            <div class="related-card-desc">Scan Nginx reverse proxy configurations for missing headers, insecure SSL, and traversal risks.</div>
+          </a>
+          <a href="/tools/network/cidr-calculator/" class="related-card">
+            <div class="related-card-title"><span>[📐]</span> CIDR &amp; Subnet Calculator</div>
+            <div class="related-card-desc">Calculate host ranges, network masks, and subnet boundaries for container bridge networks.</div>
+          </a>
+          <a href="/tools/network/email-headers/" class="related-card">
+            <div class="related-card-title"><span>[✉️]</span> Raw Email MIME Header Tracer</div>
+            <div class="related-card-desc">Trace email relay server progression, hop latencies, and SPF/DKIM/DMARC verdicts client-side.</div>
+          </a>
+          <a href="/tools/network/dns-wire-format/" class="related-card">
+            <div class="related-card-title"><span>[📡]</span> DNS Wire-Format Hex Decoder</div>
+            <div class="related-card-desc">Dissect raw binary DNS query and response packets into resource records and transaction flags.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, passwords, private keys, and tokens from configuration files in local memory.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // IPv4: primary ipify, fallback icanhazip
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary IPv4 failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6: primary dedicated ipv6.icanhazip.com, fallback api64.ipify.org with validation
-      try {
-        const res6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-        if (res6.ok) {
-          const text6 = (await res6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } else {
-          throw new Error("Primary IPv6 failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-          if (fb6.ok) {
-            const d6 = await fb6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-          } else {
-            ipv6El.textContent = "Not Supported";
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
           }
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
-    }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
+        });
+      });
 
-    // Auditor Engine Rules
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Auditor Engine Rules (100% Preserved Tool Logic)
     const composeInput = document.getElementById("composeInput");
     const btnAudit = document.getElementById("btnAudit");
     const btnSampleInsecure = document.getElementById("btnSampleInsecure");
@@ -710,7 +1500,13 @@ networks:
       composeInput.value = "";
       statusBanner.className = "status-banner status-safe";
       statusBanner.innerHTML = "<span>Auditor Initialized</span> <span>Workspace Cleared</span>";
-      resultsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration analyzed yet.</td></tr>`;
+      resultsBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--atom-muted); padding: 20px;">No configuration analyzed yet. Paste a manifest above or load a sample.</td></tr>`;
+    });
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
