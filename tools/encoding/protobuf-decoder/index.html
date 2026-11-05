@@ -4,12 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Protobuf Raw Decoder — Free Offline Cybersecurity Tool | BitDark</title>
-  <meta name="title" content="Protobuf Raw Decoder — Free Offline Cybersecurity Tool | BitDark" />
-  <meta name="description" content="Decode and inspect raw Protocol Buffers (Protobuf) binaries, Base64, or Hex streams in browser memory without .proto schema files. Zero network egress." />
-  <meta name="keywords" content="protobuf decoder, decode protobuf without proto, raw protobuf inspector, reverse engineering protobuf, client side protobuf parser, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/encoding/protobuf-decoder" />
+  <title>Protobuf Raw Decoder — Free Offline Schema-less Inspector | BitDark</title>
+  <meta name="title" content="Protobuf Raw Decoder — Free Offline Schema-less Inspector | BitDark" />
+  <meta name="description" content="Inspect, reverse-engineer, and decode serialized Protocol Buffers (Protobuf) binaries, Hex streams, and Base64 payloads offline in browser memory without .proto schema files. Zero network egress." />
+  <meta name="keywords" content="protobuf decoder, decode protobuf without proto, raw protobuf inspector, reverse engineering protobuf, client side protobuf parser, gRPC payload inspector, wire type decoder, leb128 varint decoder, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/encoding/protobuf-decoder/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/encoding/protobuf-decoder/" />
+  <meta property="og:title" content="Protobuf Raw Decoder — Free Offline Schema-less Inspector | BitDark" />
+  <meta property="og:description" content="Deconstruct raw Protocol Buffers wire streams, Varints, length-delimited sub-messages, and IEEE floats locally in browser RAM without .proto files. Zero telemetry." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/encoding/protobuf-decoder/" />
+  <meta name="twitter:title" content="Protobuf Raw Decoder | BitDark" />
+  <meta name="twitter:description" content="Deconstruct raw Protocol Buffers binaries without schemas in browser memory. 100% Client-Side with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Protobuf Raw Decoder",
+        "url": "https://bitdark.net/tools/encoding/protobuf-decoder/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive reverse-engineering utility to decode and inspect raw serialized Protocol Buffers binaries, Base64 strings, and Hex dumps in browser memory without compiled .proto definitions."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Protocol Buffers Serialization Architecture: Schema-less Binary Decomposition, LEB128 Varints, and Wire-Level Reverse Engineering",
+        "url": "https://bitdark.net/tools/encoding/protobuf-decoder/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-12",
+        "dateModified": "2026-11-01",
+        "description": "Exhaustive technical deep-dive into Protocol Buffers wire types, LEB128 variable-length integer encoding, ZigZag integer representation, length-delimited hierarchical sub-messages, and client-side binary reverse engineering."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is it possible to decode a Protobuf binary without having the original .proto schema?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Protocol Buffers binaries carry structural metadata on the wire alongside each field. Every field starts with a key tag that encodes both the unique field number and its mathematical wire type (such as Varint, 64-bit fixed, length-delimited, or 32-bit fixed). By iteratively parsing these key tags and reading the exact byte counts dictated by their wire types, an inspector can reconstruct the complete field hierarchy and numeric values, even though human-readable field names and enum labels are omitted over the wire."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why are field names like 'user_id' or 'email' missing from decoded Protobuf output?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unlike JSON or XML which transmit repetitive textual field identifiers, Protocol Buffers achieves ultra-compact serialization by omitting field names entirely. Instead, each field is identified strictly by an integer field number assigned in the .proto definition file. Mapping field numbers back to descriptive variable names requires the original .proto schema or manual reverse engineering of the client application."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between standard Varints and ZigZag encoded integers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Standard Varints use LEB128 encoding to pack integers into variable 7-bit chunks. However, two's complement negative numbers (like -1) occupy all high bits, requiring a full 10 bytes on the wire. ZigZag encoding maps signed integers onto unsigned integers (0 to 0, -1 to 1, 1 to 2, -2 to 3) so that negative numbers with small absolute values consume minimal bytes (e.g., -1 takes only 1 byte as sint32/sint64)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the decoder distinguish between a UTF-8 string and an embedded sub-message?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Both UTF-8 strings and embedded sub-messages are transmitted under Wire Type 2 (Length-delimited). Because wire streams do not explicitly label the payload type, the decoder applies heuristic analysis: it first attempts to parse the delimited byte chunk as a nested Protobuf message. If that fails or produces invalid tags, it evaluates whether the byte array forms a valid, printable UTF-8 sequence. If neither criterion is met, it renders the raw hex dump."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my Protobuf binaries, tokens, or gRPC payloads uploaded to an external server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates under an air-gapped zero-network-egress security model. All binary slicing, LEB128 bit shifting, IEEE 754 floating-point calculations, and SHA-256 checksumming execute purely in local browser memory via JavaScript TypedArrays (Uint8Array and DataView). Zero network requests or telemetry packets are transmitted."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens if a Protobuf payload contains packed repeated numeric fields?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In proto3, repeated primitive numeric fields (like int32, fixed32, float) default to packed encoding, transmitted under Wire Type 2 as a single contiguous length-delimited byte block. When inspecting without a schema, this block may appear as raw bytes or an arbitrary string until decomposed into consecutive numeric elements."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,122 +132,150 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
       --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       min-width: 320px;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean Cockpit Header */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 12px 20px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
     
-    .trust-badge {
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
       white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
-      flex-shrink: 0;
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); word-break: break-all; }
-    .ip-divider { color: var(--atom-border); }
 
     /* Layout Wrapper */
     .wrapper { 
-      max-width: 1100px; 
+      max-width: 1200px; 
       margin: 0 auto; 
-      padding: 24px 16px 60px; 
+      padding: 30px 20px 60px; 
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 16px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      overflow-x: auto;
-      white-space: nowrap;
-      padding-bottom: 4px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.65rem; color: var(--atom-heading); margin-bottom: 6px; word-break: break-word; }
-    .tool-header p { color: var(--atom-text); font-size: 0.92rem; line-height: 1.5; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Card & Workspace */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 540px;
     }
 
     /* Mode Selector Tabs */
     .tab-bar {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 10px;
+      margin-bottom: 20px;
       border-bottom: 1px solid var(--atom-border);
-      padding-bottom: 10px;
+      padding-bottom: 12px;
       overflow-x: auto;
       scrollbar-width: thin;
       -webkit-overflow-scrolling: touch;
@@ -150,13 +284,21 @@
       background: none;
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
-      padding: 7px 15px;
-      border-radius: 4px;
+      padding: 10px 18px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.80rem;
+      font-size: 0.86rem;
       cursor: pointer;
       white-space: nowrap;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
     }
     .tab-btn.active {
       background-color: var(--atom-bg);
@@ -165,42 +307,44 @@
       font-weight: 600;
     }
 
-    /* Input Controls */
+    /* Input Controls (16px to prevent iOS auto-zoom) */
     .input-pane { display: none; }
     .input-pane.active { display: block; }
 
     .textarea-box {
       width: 100%;
-      height: 130px;
+      height: 150px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.85rem;
-      padding: 12px;
+      font-size: 16px;
+      padding: 14px;
       outline: none;
       resize: vertical;
-      line-height: 1.45;
+      line-height: 1.5;
     }
     .textarea-box:focus { border-color: var(--atom-border-focus); }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 30px 16px;
+      border-radius: 8px;
+      padding: 40px 20px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
+    .dropzone:focus,
     .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
-    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
-    .dropzone p { font-size: 0.88rem; color: var(--atom-text); margin-bottom: 6px; }
-    .dropzone-hint { font-size: 0.75rem; color: var(--atom-muted); font-family: var(--font-code); }
+    .dropzone-icon { font-size: 2.6rem; margin-bottom: 12px; display: block; }
+    .dropzone p { font-size: 1.05rem; color: var(--atom-heading); margin-bottom: 6px; }
+    .dropzone-hint { font-size: 0.82rem; color: var(--atom-muted); font-family: var(--font-code); }
     .file-input-hidden { display: none; }
 
     .action-row {
@@ -208,13 +352,13 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-top: 16px;
+      gap: 12px;
+      margin-top: 20px;
     }
     .action-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     .btn-atom {
@@ -223,13 +367,17 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 11px 20px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.84rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, background-color 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-atom-outline {
       background-color: transparent;
       color: var(--atom-text);
@@ -241,19 +389,20 @@
     }
 
     /* Results Workspace */
-    .results-area { margin-top: 24px; }
+    .results-area { margin-top: 28px; }
     
     .status-banner {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 4px;
-      margin-bottom: 18px;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 6px;
+      margin-bottom: 22px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
     .status-found {
       background-color: rgba(152, 195, 121, 0.12);
@@ -268,25 +417,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px 14px;
-      border-radius: 4px;
+      padding: 14px 16px;
+      border-radius: 6px;
     }
     .meta-label { 
-      font-size: 0.70rem; 
+      font-size: 0.74rem; 
       color: var(--atom-muted); 
       text-transform: uppercase; 
       font-family: var(--font-code); 
-      margin-bottom: 4px; 
+      margin-bottom: 6px; 
+      letter-spacing: 0.05em;
     }
     .meta-val { 
-      font-size: 0.85rem; 
+      font-size: 0.90rem; 
       color: var(--atom-heading); 
       font-family: var(--font-code); 
       word-break: break-all; 
@@ -295,10 +445,10 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 16px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       max-height: 520px;
       overflow-x: auto;
       overflow-y: auto;
@@ -316,127 +466,300 @@
     .val-hex { color: var(--atom-muted); }
     .val-sub { color: var(--atom-coral); }
 
-    /* Operational & Legal Disclaimer */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-left: 4px solid var(--atom-coral);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 32px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
-      color: var(--atom-coral);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      color: var(--atom-amber);
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 26px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Authoritative SEO Article Content */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.2rem; margin-bottom: 10px; margin-top: 22px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
-      font-size: 0.82rem;
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 18px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
 
-    /* Mobile Adaptations */
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
     @media (max-width: 768px) {
-      .navbar { padding: 10px 14px; }
-      .nav-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .trust-badge, .ip-pill-nav {
-        width: 100%;
-        justify-content: flex-start;
-        font-size: 0.70rem;
-      }
-      .wrapper { padding: 18px 12px 40px; }
-      .tool-header h1 { font-size: 1.45rem; }
-      .tool-card { padding: 14px; }
-      .action-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .action-group {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-      }
-      .btn-atom {
-        width: 100%;
-        text-align: center;
-      }
-      .meta-grid {
-        grid-template-columns: 1fr;
-      }
-      .bottom-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .action-row { flex-direction: column; align-items: stretch; }
+      .action-group { flex-direction: column; width: 100%; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#encoding">Encoding</a> / protobuf-decoder
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/encoding/">Encoding</a>
+      <span class="sep">/</span>
+      <span class="current">Protobuf Decoder</span>
     </nav>
 
     <div class="tool-header">
@@ -444,8 +767,13 @@
       <p>Inspect, reverse-engineer, and decode serialized Protocol Buffers binaries without a compiled .proto definition. Parses Varints, 64-bit, Length-delimited (embedded strings, messages), and 32-bit fields purely in client memory.</p>
     </div>
 
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
     <!-- Active Tool Workspace -->
-    <div class="tool-card">
+    <div class="tool-card" id="toolWorkspace" aria-label="Interactive Protobuf Raw Decoding Workspace">
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="tab-hex">Hex Stream</button>
         <button class="tab-btn" data-tab="tab-base64">Base64</button>
@@ -464,7 +792,7 @@
 
       <!-- File Dropzone -->
       <div class="input-pane" id="tab-file">
-        <div class="dropzone" id="dropArea">
+        <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="File upload drop area">
           <span class="dropzone-icon">📦</span>
           <p><strong>Click to choose a file</strong> or drag & drop a Protobuf binary</p>
           <span class="dropzone-hint">Supports .bin, .pb, .dat, .msg (0-byte network egress, sandboxed execution)</span>
@@ -508,108 +836,580 @@
         </div>
 
         <div class="meta-label" style="margin-bottom: 6px;">Parsed Hierarchy & Type Interpretations:</div>
-        <div class="viewer-box" id="rawViewer">Waiting for payload input...</div>
+        <div class="viewer-box" id="rawViewer" tabindex="0">Waiting for payload input...</div>
       </div>
     </div>
 
-    <!-- Mandatory Disclaimer Callout -->
+    <!-- Forensic & Operational Boundaries Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal & Operational Disclaimer
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible</strong> for any misuse, data corruption, reverse-engineering liabilities, parsing discrepancies, or operational outcomes resulting from the use of this tool. Schema-less Protobuf decoding relies on heuristic reconstruction of wire types; without original compiled <code>.proto</code> definitions, field names, enum identifiers, and packed numeric arrays may be open to multiple mathematical interpretations. All computations execute strictly in your browser runtime with no remote telemetry.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Schema-less Protobuf decoding relies on heuristic reconstruction of wire types.</strong> In Protocol Buffers binary streams, human-readable variable names and explicit schema definitions are omitted over the wire. Wire Type 2 (length-delimited) may represent raw byte arrays, packed numeric vectors, serialized sub-messages, or UTF-8 text strings interchangeably. Without original compiled <code>.proto</code> definitions, field numbers, enum identifiers, and numeric representations remain open to multiple mathematical interpretations. All computations execute strictly in your browser runtime with no remote telemetry.
       </p>
     </aside>
 
-    <!-- Technical Section -->
-    <article class="doc-section">
-      <h2>How Schema-less Protobuf Decoding Operates</h2>
-      <p>Protocol Buffers serialize structured data into compact binary streams. Unlike JSON or XML, field names and schema structures are omitted over the wire. Each tag is transmitted as a variable-length integer (Varint) packing two critical values: <code>(field_number &lt;&lt; 3) | wire_type</code>.</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>Understanding Protocol Buffers and the Schema-less Black-Box Problem</h2>
+      <p>
+        In modern enterprise infrastructure, high-throughput microservices, mobile applications, and cloud-native systems, Google's <strong>Protocol Buffers (Protobuf)</strong> has emerged as the premier binary serialization mechanism. Whether powering internal Remote Procedure Call (gRPC) pipelines, marshaling telemetry in distributed observability frameworks, or caching state in mobile applications, Protobuf delivers dramatic improvements in network throughput, CPU serialization efficiency, and payload compactness over verbose text-based interchange standards like JSON, XML, or YAML.
+      </p>
+      <p>
+        However, the very architectural decisions that make Protocol Buffers extraordinarily fast also make it an impenetrable black box for security analysts, vulnerability researchers, reverse engineers, and forensic investigators: <strong>Protobuf is not self-describing</strong>.
+      </p>
+      <p>
+        When a JSON document travels across an HTTP boundary, it carries both schema keys and values: <code>{"user_id": 4920, "is_admin": true, "session": "a9f8c..."}</code>. Anyone intercepting the payload with a packet sniffer can instantly parse, interpret, and modify the message parameters. In contrast, Protocol Buffers completely strips human-readable field names, type annotations, and structural hints from the wire. Over the wire, that same payload is reduced to an anonymous byte sequence such as <code>08 b8 26 10 01 1a 05 61 39 66 38 63</code>.
+      </p>
+      <p>
+        To unpack this binary stream conventionally, a software client requires the compiled schema file—the <code>.proto</code> definition—that correlates field number <code>1</code> to <code>user_id</code>, field number <code>2</code> to <code>is_admin</code>, and field number <code>3</code> to <code>session</code>. When intercepting unfamiliar traffic during penetration testing, analyzing malicious command-and-control (C2) protocols, or reverse-engineering proprietary mobile application APIs, the security researcher rarely possesses this <code>.proto</code> file. 
+      </p>
+      <p>
+        The <strong>BitDark Protobuf Raw Decoder</strong> solves this structural visibility challenge. By taking advantage of the fundamental wire-format rules established in the Protocol Buffers encoding specification, our client-side parser reconstructs the internal hierarchical object tree, isolates every discrete field number, decodes variable-length integer representations, and heuristically separates nested sub-messages from UTF-8 strings—all directly within browser RAM without leaking proprietary binaries across the network.
+      </p>
+
+      <h2>How to Use the BitDark Protobuf Raw Decoder</h2>
+      <p>
+        Deconstructing a binary Protocol Buffers stream using the BitDark inspector is forensically sound, instantaneous, and strictly confined to your device's private volatile RAM:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Ingestion Mode:</strong> Choose between three input tabs based on your investigative source:
+          <ul>
+            <li><strong>Hex Stream:</strong> For raw hex dumps copied from Wireshark, Burp Suite, Charles Proxy, or Ghidra disassemblies (e.g., formatted with spaces or contiguous <code>089601121b...</code>).</li>
+            <li><strong>Base64:</strong> For encoded tokens, authorization headers, gRPC-web payloads, or serialized database blobs.</li>
+            <li><strong>Binary File (.bin / .pb):</strong> For compiled protocol asset files, cache dumps, or disk artifacts dragged and dropped directly from your filesystem.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Execute In-Memory Decoding:</strong> Click the "Decode Protobuf" button. The browser immediately calculates an SHA-256 cryptographic checksum across the binary buffer for chain-of-custody tracking, validates wire headers, and initiates recursive tag traversal.
+        </li>
+        <li>
+          <strong>Inspect Reconstructed Hierarchy:</strong> Review the syntax-highlighted field tree. The viewer visually distinguishes between numeric Varints, 64-bit doubles, 32-bit floats, UTF-8 strings, and nested sub-messages surrounded by curly braces.
+        </li>
+        <li>
+          <strong>Examine Multiple Interpretations:</strong> Because numeric tags carry multiple semantic interpretations, the decoder automatically displays both raw unsigned values and ZigZag signed integer values (for <code>sint32</code> and <code>sint64</code> fields).
+        </li>
+        <li>
+          <strong>Export Structured Forensics:</strong> Click "Export JSON" to generate a standardized, machine-readable JSON representation of the entire parsed structure for integration into automated analysis pipelines or investigative reports.
+        </li>
+      </ol>
+
+      <h2>When to Use Schema-less Protobuf Inspection: Operational Scenarios</h2>
+      <p>
+        Schema-less Protobuf deconstruction is a foundational capability across multiple offensive and defensive cybersecurity disciplines:
+      </p>
       <ul>
-        <li><strong>Wire Type 0 (Varint):</strong> Represents <code>int32</code>, <code>int64</code>, <code>uint32</code>, <code>uint64</code>, <code>sint32</code>, <code>sint64</code>, <code>bool</code>, or <code>enum</code> using 7-bit LEB128 chunking.</li>
-        <li><strong>Wire Type 1 (64-bit):</strong> Fixed-length 8 bytes, representing <code>fixed64</code>, <code>sfixed64</code>, or IEEE 754 <code>double</code>.</li>
-        <li><strong>Wire Type 2 (Length-delimited):</strong> Prefixed by a length Varint, representing UTF-8 strings, byte arrays, embedded messages, or packed repeated fields.</li>
-        <li><strong>Wire Type 5 (32-bit):</strong> Fixed-length 4 bytes, representing <code>fixed32</code>, <code>sfixed32</code>, or IEEE 754 <code>float</code>.</li>
+        <li>
+          <strong>Web & API Penetration Testing (gRPC & gRPC-Web):</strong> Modern single-page applications and microservice backends frequently exchange binary gRPC frames over HTTP/2. Pen testers auditing these endpoints must decode raw requests and responses to discover hidden administrative parameters, privilege escalation toggles, or insecure direct object references (IDOR).
+        </li>
+        <li>
+          <strong>Mobile Application Security Auditing (Android APK & iOS IPA):</strong> Mobile apps routinely serialize local state, tracking telemetry, and backend requests using Protobuf. Security analysts inspecting intercepted traffic can extract authentication session tokens, internal endpoints, and hidden feature flags without having to decompile or extract Java/Swift protobuf bindings.
+        </li>
+        <li>
+          <strong>Malware Analysis & Threat Intelligence:</strong> Advanced persistent threat (APT) groups and modern infostealers frequently leverage Protobuf for covert Command-and-Control (C2) beaconing because binary streams evade simplistic string-based Network Intrusion Detection System (NIDS) signatures. Decoding these streams reveals victim IDs, stolen credential schemas, and tasking commands.
+        </li>
+        <li>
+          <strong>Capture The Flag (CTF) & Reverse Engineering Challenges:</strong> Binary exploitation and reverse engineering competitions frequently feature custom protocols built on standard Google Protobuf or Nanopb. An in-browser zero-setup decoder provides instant visibility into challenge binary structures.
+        </li>
+        <li>
+          <strong>Air-Gapped Data Sanitization & Inspection:</strong> When handling classified, HIPAA-regulated healthcare telemetry, or proprietary corporate data, using public cloud-hosted decoding tools violates compliance policies. BitDark's 100% client-side memory execution ensures zero byte-leakage.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security</h2>
-      <p>BitDark's Protobuf Decoder operates entirely within local browser sandboxing using native Web APIs (<code>Uint8Array</code>, <code>DataView</code>, <code>TextDecoder</code>, and <code>crypto.subtle</code>). Binary bytes are never uploaded to remote servers or third-party analytical endpoints.</p>
+      <h2>The Deep Architecture of Protocol Buffers Wire Format</h2>
+      <p>
+        To understand how a schema-less inspector can make sense of raw bytes without a <code>.proto</code> file, one must examine the mathematical encoding rules defined by Google.
+      </p>
+
+      <h3>1. Key Tag Calculation and Bitwise Packing</h3>
+      <p>
+        In a serialized Protobuf stream, every field begins with a <strong>Key Tag</strong>. This key tag is itself encoded as a variable-length integer (Varint) that packs two distinct pieces of information into a single byte sequence:
+      </p>
+      <ul>
+        <li>The <strong>Field Number</strong> (the unique integer tag assigned to the field in the original schema).</li>
+        <li>The <strong>Wire Type</strong> (a 3-bit integer specifying the low-level data framing structure).</li>
+      </ul>
+      <p>
+        The mathematical formula for packing a key tag is:
+      </p>
+      <blockquote>
+        $$\text{Key Tag} = (\text{Field Number} \ll 3) \mid \text{Wire Type}$$
+      </blockquote>
+      <p>
+        Conversely, when the BitDark parser encounters a byte at the current stream pointer, it reverses this bitwise packing:
+      </p>
+      <blockquote>
+        $$\text{Wire Type} = \text{Key Tag} \ \& \ 7 \quad (\text{binary } 00000111_2)$$
+        $$\text{Field Number} = \text{Key Tag} \gg 3$$
+      </blockquote>
+      <p>
+        Because the lowest 3 bits are reserved exclusively for the wire type, the maximum wire type value is 7 ($2^3 - 1$), although only wire types 0, 1, 2, and 5 are supported in modern Protocol Buffers implementations.
+      </p>
+
+      <h3>2. The Six Wire Types</h3>
+      <p>
+        The wire type tells the parser exactly how many bytes to consume following the key tag:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Wire Type</th>
+              <th>Name</th>
+              <th>Compatible Data Types</th>
+              <th>Byte Framing Structure</th>
+              <th>Parsing Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>0</strong></td>
+              <td><strong>Varint</strong></td>
+              <td><code>int32</code>, <code>int64</code>, <code>uint32</code>, <code>uint64</code>, <code>sint32</code>, <code>sint64</code>, <code>bool</code>, <code>enum</code></td>
+              <td>Variable: 1 to 10 bytes (LEB128)</td>
+              <td>Reads bytes until the MSB is 0; reconstructs 7-bit chunks.</td>
+            </tr>
+            <tr>
+              <td><strong>1</strong></td>
+              <td><strong>64-bit</strong></td>
+              <td><code>fixed64</code>, <code>sfixed64</code>, <code>double</code></td>
+              <td>Fixed: Exactly 8 bytes</td>
+              <td>Consumes next 8 bytes; interprets as unsigned int and IEEE 754 float64.</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td><strong>Length-delimited</strong></td>
+              <td><code>string</code>, <code>bytes</code>, embedded <code>message</code>, packed repeated fields</td>
+              <td>Variable: Varint length prefix followed by $N$ bytes</td>
+              <td>Reads Varint $N$, then consumes exactly $N$ payload bytes.</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td><strong>Start Group</strong></td>
+              <td>Groups (proto2 deprecated)</td>
+              <td>Delimited by matching End Group tag</td>
+              <td>Deprecated; legacy container framing.</td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td><strong>End Group</strong></td>
+              <td>Groups (proto2 deprecated)</td>
+              <td>0 bytes</td>
+              <td>Deprecated; terminates wire type 3.</td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td><strong>32-bit</strong></td>
+              <td><code>fixed32</code>, <code>sfixed32</code>, <code>float</code></td>
+              <td>Fixed: Exactly 4 bytes</td>
+              <td>Consumes next 4 bytes; interprets as unsigned int and IEEE 754 float32.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Varint Encoding Mechanics: LEB128 and ZigZag Transformation</h2>
+      <p>
+        The core efficiency engine of Protocol Buffers is <strong>Little-Endian Base 128 (LEB128)</strong> variable-length integer encoding. In standard binary formats, a 32-bit integer always consumes 4 bytes and a 64-bit integer always consumes 8 bytes, even if the value stored is merely <code>1</code>.
+      </p>
+
+      <h3>1. LEB128 Chunking</h3>
+      <p>
+        LEB128 divides a large integer into 7-bit payloads. The 8th bit (the Most Significant Bit, or MSB) serves as a <strong>continuation flag</strong>:
+      </p>
+      <ul>
+        <li>If $\text{MSB} = 1$, more bytes follow in this variable-length sequence.</li>
+        <li>If $\text{MSB} = 0$, this byte is the terminal chunk of the integer.</li>
+      </ul>
+      <p>
+        For instance, to encode the integer $300$:
+      </p>
+      <pre><code>Integer 300 in binary:             00000001 00101100 (9 bits)
+Split into 7-bit groups:          0000010   0101100
+Reverse for Little-Endian:        0101100   0000010
+Set MSB continuation flags:
+  First byte has more data:       10101100  (0xAC)
+  Second byte is terminal:        00000010  (0x02)
+Resulting wire bytes:             AC 02 (2 bytes instead of 4)</code></pre>
+
+      <h3>2. The Negative Integer Trap and ZigZag Encoding</h3>
+      <p>
+        A critical limitation of raw two's complement arithmetic in LEB128 is that negative numbers (such as $-1$) have their highest sign bit set to 1. In standard 64-bit two's complement, $-1$ is represented as <code>0xFFFFFFFFFFFFFFFF</code>. Under standard LEB128, encoding $-1$ requires a staggering <strong>10 bytes</strong> of wire data—more than double the size of an uncompressed 32-bit integer!
+      </p>
+      <p>
+        To solve this, Google introduced <strong>ZigZag encoding</strong> for signed types (<code>sint32</code> and <code>sint64</code>). ZigZag "zigs" positive and negative integers back and forth across positive integer space:
+      </p>
+      <blockquote>
+        $$\text{ZigZag}(n) = (n \ll 1) \oplus (n \gg 31) \quad [\text{for 32-bit}]$$
+        $$\text{ZigZag}(n) = (n \ll 1) \oplus (n \gg 63) \quad [\text{for 64-bit}]$$
+      </blockquote>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Signed Original ($n$)</th>
+              <th>ZigZag Encoded Value</th>
+              <th>Resulting Wire Bytes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>$0$</td>
+              <td>$0$</td>
+              <td><code>00</code> (1 byte)</td>
+            </tr>
+            <tr>
+              <td>$-1$</td>
+              <td>$1$</td>
+              <td><code>01</code> (1 byte)</td>
+            </tr>
+            <tr>
+              <td>$1$</td>
+              <td>$2$</td>
+              <td><code>02</code> (1 byte)</td>
+            </tr>
+            <tr>
+              <td>$-2$</td>
+              <td>$3$</td>
+              <td><code>03</code> (1 byte)</td>
+            </tr>
+            <tr>
+              <td>$2$</td>
+              <td>$4$</td>
+              <td><code>04</code> (1 byte)</td>
+            </tr>
+            <tr>
+              <td>$-2147483648$</td>
+              <td>$4294967295$</td>
+              <td><code>FF FF FF FF 0F</code> (5 bytes)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Because schema-less inspection cannot know whether the original developer declared <code>int32</code> or <code>sint32</code>, the BitDark decoder provides both the standard unsigned integer and the ZigZag signed interpretation side-by-side.
+      </p>
+
+      <h2>Worked Example: Byte-Level Dissection of a Sample Stream</h2>
+      <p>
+        To illustrate how the BitDark decoder deconstructs binary data in real time, let us trace the exact 53-byte sample payload provided in the tool:
+      </p>
+      <pre><code>08 96 01 12 1b 42 69 74 44 61 72 6b 20 43 79 62 65 72 73 65 63 75 72 69 74 79 20 53 75 69 74 65 1a 13 08 01 12 04 74 65 73 74 18 a0 8d 06 20 01 2d 00 00 80 3f</code></pre>
+
+      <h3>Step 1: Parsing Offset 0 (Field 1)</h3>
+      <ul>
+        <li><strong>Byte 0 (<code>0x08</code>):</strong> Binary <code>00001000</code>.
+          <ul>
+            <li>Wire type: <code>0x08 & 7 = 0</code> (Varint).</li>
+            <li>Field number: <code>0x08 >> 3 = 1</code>.</li>
+          </ul>
+        </li>
+        <li><strong>Bytes 1–2 (<code>96 01</code>):</strong> Varint evaluation.
+          <ul>
+            <li><code>0x96</code> = <code>10010110</code> (MSB=1, payload <code>0010110</code>).</li>
+            <li><code>0x01</code> = <code>00000001</code> (MSB=0, payload <code>0000001</code>).</li>
+            <li>Reconstructed: <code>(1 << 7) | 22 = 128 + 22 = 150</code>.</li>
+            <li>ZigZag interpretation: $150 / 2 = 75$.</li>
+          </ul>
+        </li>
+        <li><em>Result:</em> <code>Field 1 [Varint (0)]: 150 (sint: 75)</code></li>
+      </ul>
+
+      <h3>Step 2: Parsing Offset 3 (Field 2)</h3>
+      <ul>
+        <li><strong>Byte 3 (<code>0x12</code>):</strong> Binary <code>00010010</code>.
+          <ul>
+            <li>Wire type: <code>0x12 & 7 = 2</code> (Length-delimited).</li>
+            <li>Field number: <code>0x12 >> 3 = 2</code>.</li>
+          </ul>
+        </li>
+        <li><strong>Byte 4 (<code>0x1b</code>):</strong> Declares a length of $27$ bytes (<code>0x1B</code>).</li>
+        <li><strong>Bytes 5–31 (27 bytes):</strong> ASCII byte sequence:
+          <code>42 69 74 44 61 72 6b 20 43 79 62 65 72 73 65 63 75 72 69 74 79 20 53 75 69 74 65</code>
+        </li>
+        <li><em>Result:</em> <code>Field 2 [Length-delimited (2)]: "BitDark Cybersecurity Suite"</code></li>
+      </ul>
+
+      <h3>Step 3: Parsing Offset 32 (Field 3 — Nested Sub-Message)</h3>
+      <ul>
+        <li><strong>Byte 32 (<code>0x1a</code>):</strong> Binary <code>00011010</code>.
+          <ul>
+            <li>Wire type: <code>0x1a & 7 = 2</code> (Length-delimited).</li>
+            <li>Field number: <code>0x1a >> 3 = 3</code>.</li>
+          </ul>
+        </li>
+        <li><strong>Byte 33 (<code>0x13</code>):</strong> Declares a length of $19$ bytes (<code>0x13</code>).</li>
+        <li>The recursive parser isolates these 19 bytes and scans them as an independent message:
+          <ol>
+            <li><strong>Bytes 34–35 (<code>08 01</code>):</strong> Tag <code>08</code> $\rightarrow$ Sub-field 1, Varint: value <code>1</code>.</li>
+            <li><strong>Bytes 36–41 (<code>12 04 74 65 73 74</code>):</strong> Tag <code>12</code> $\rightarrow$ Sub-field 2, Length 4 string: <code>"test"</code>.</li>
+            <li><strong>Bytes 42–45 (<code>18 a0 8d 06</code>):</strong> Tag <code>18</code> $\rightarrow$ Sub-field 3, Varint: <code>(0x06 << 14) | (0x0D << 7) | 0x20 = 100,000</code>.</li>
+            <li><strong>Bytes 46–47 (<code>20 01</code>):</strong> Tag <code>20</code> $\rightarrow$ Sub-field 4, Varint: value <code>1</code> (boolean <code>true</code>).</li>
+            <li><strong>Bytes 48–52 (<code>2d 00 00 80 3f</code>):</strong> Tag <code>2d</code> (<code>(5 << 3) | 5</code>) $\rightarrow$ Sub-field 5, Wire Type 5 (32-bit). Consumes 4 bytes: <code>00 00 80 3F</code>. Under IEEE 754, little-endian <code>0x3F800000</code> evaluates exactly to <code>1.0</code>.</li>
+          </ol>
+        </li>
+        <li><em>Result:</em>
+          <pre><code>Field 3 [Length-delimited (2)]: {
+  Field 1 [Varint (0)]: 1
+  Field 2 [Length-delimited (2)]: "test"
+  Field 3 [Varint (0)]: 100000
+  Field 4 [Varint (0)]: 1
+  Field 5 [32-bit (5)]: 1065353216 (float: 1)
+}</code></pre>
+        </li>
+      </ul>
+
+      <h2>Technical Comparison: Protobuf vs JSON vs FlatBuffers vs MessagePack vs CBOR</h2>
+      <p>
+        Understanding how Protocol Buffers compares to alternative serialization protocols is critical when designing secure APIs or evaluating binary attack surfaces:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Protocol</th>
+              <th>Format Type</th>
+              <th>Schema Requirement</th>
+              <th>Relative Payload Size</th>
+              <th>CPU Parsing Speed</th>
+              <th>Self-Describing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Protocol Buffers</strong></td>
+              <td>Binary (Wire Tag / LEB128)</td>
+              <td><strong>Mandatory for names</strong></td>
+              <td><strong>Smallest (~20–30% of JSON)</strong></td>
+              <td>Very High</td>
+              <td>Partial (Wire types only)</td>
+            </tr>
+            <tr>
+              <td><strong>JSON (RFC 8259)</strong></td>
+              <td>UTF-8 Text</td>
+              <td>None (Optional JSON Schema)</td>
+              <td>Large (100% baseline)</td>
+              <td>Moderate to Low</td>
+              <td>Fully Self-Describing</td>
+            </tr>
+            <tr>
+              <td><strong>FlatBuffers</strong></td>
+              <td>Binary (Internal Offsets)</td>
+              <td>Mandatory</td>
+              <td>Small-Medium</td>
+              <td><strong>Instant (Zero-copy)</strong></td>
+              <td>No</td>
+            </tr>
+            <tr>
+              <td><strong>MessagePack</strong></td>
+              <td>Binary JSON analog</td>
+              <td>None</td>
+              <td>Medium (~50–60% of JSON)</td>
+              <td>High</td>
+              <td>Fully Self-Describing</td>
+            </tr>
+            <tr>
+              <td><strong>CBOR (RFC 8949)</strong></td>
+              <td>Binary (Type Major Tags)</td>
+              <td>None</td>
+              <td>Medium (~50–60% of JSON)</td>
+              <td>High</td>
+              <td>Fully Self-Describing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Security Pitfalls, Vulnerabilities & Forensic Challenges</h2>
+      <p>
+        Working with raw Protocol Buffers streams introduces unique security edge cases that developers and penetration testers frequently overlook:
+      </p>
+      <ul>
+        <li>
+          <strong>Field Injection & Type Confusion:</strong> Because Protobuf parsers skip unrecognized fields without throwing fatal exceptions, an attacker can inject arbitrary field numbers into a serialized message. If a downstream microservice or an upgraded backend uses that previously "unknown" field number for an authorization check (e.g., <code>is_admin = 99</code>), privilege escalation occurs without triggering validation errors on intermediate proxies.
+        </li>
+        <li>
+          <strong>Denial of Service via Recursion Bombs:</strong> Because Wire Type 2 allows length-delimited payloads to contain nested sub-messages, an adversary can craft deeply nested messages ($100+$ levels deep). In naive recursive parsers, this triggers stack overflow conditions and crashes the server. The BitDark client-side parser enforces a strict depth limit of 16 levels to ensure runtime memory protection.
+        </li>
+        <li>
+          <strong>Varint Overlong Encoding Attacks:</strong> In LEB128, a 32-bit number can technically be padded with continuation bytes (<code>0x80</code>) up to 10 bytes long. Vulnerable parsers that do not check for maximum byte lengths or canonical representations can suffer from integer overflow vulnerabilities or bypass WAF byte-length constraints.
+        </li>
+        <li>
+          <strong>Truncated Sub-Message Boundary Bugs:</strong> As demonstrated during the development of raw stream readers, if a length prefix specifies $N$ bytes, but an embedded fixed-width field (such as an 8-byte double or 4-byte float) straddles the boundary, subsequent field tags become offset by arbitrary fractions, causing subsequent root tags to read as illegal <code>field_number = 0</code>.
+        </li>
+        <li>
+          <strong>Ambiguity Between Strings and Sub-Messages:</strong> Because Wire Type 2 does not carry an internal MIME type, a byte string like <code>08 01</code> could represent the ASCII characters for Backspace and Start of Header, or it could represent <code>Field 1: 1</code>. Automated schema-less decoders must use probabilistic printable UTF-8 checks alongside structural tag validation.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What does field_number = 0 mean, and why is it invalid in Protobuf?</div>
+          <div class="faq-answer">
+            In Protocol Buffers, field numbers must be positive integers starting from 1 (up to $2^{29}-1$, or 536,870,911, excluding reserved range 19000–19999). A field number of 0 cannot be defined in a .proto schema. In raw decoding, encountering a tag that evaluates to field 0 almost always indicates string corruption, improper length offset framing, or trailing zero-byte padding.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the decoder show both raw numbers and ZigZag values?</div>
+          <div class="faq-answer">
+            Wire Type 0 does not distinguish between unsigned integers (uint32/uint64), standard two's complement integers (int32/int64), and ZigZag-encoded signed integers (sint32/sint64). Because a value like <code>1</code> could represent the positive integer 1 or the ZigZag encoding of -1, the inspector provides both values so researchers can determine the true semantic meaning.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I use this tool to decode gRPC traffic captured in Wireshark?</div>
+          <div class="faq-answer">
+            Yes. In gRPC over HTTP/2, each data frame begins with a 5-byte gRPC framing header (1 byte for compression flag, 4 bytes for big-endian message length) followed by the raw Protobuf binary payload. Simply strip the first 5 bytes from the frame's data payload, copy the remaining hex bytes into the Hex Stream tab, and click "Decode Protobuf".
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does Protobuf handle repeated fields in proto2 vs proto3?</div>
+          <div class="faq-answer">
+            In proto2, repeated primitive fields were encoded by repeating the key tag and value consecutively (e.g., Tag 1, Val 1, Tag 1, Val 2). In proto3, repeated numeric fields are "packed" by default: they share a single Wire Type 2 (length-delimited) tag, followed by a length prefix, followed by back-to-back concatenated numeric values without intervening tags.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark store, log, or cache my submitted binary streams?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All parsing, LEB128 bit shifting, IEEE 754 floating-point evaluation, and SHA-256 calculation execute purely inside your browser's private JavaScript memory space. Zero bytes are uploaded to remote servers.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this tool re-generate a .proto schema file automatically?</div>
+          <div class="faq-answer">
+            While this tool extracts the field numbers, wire types, and sub-message relationships needed to construct a valid reverse-engineered .proto file, it cannot divine original variable names (e.g., whether Field 1 was called "user_name" or "account_id"). You can use the exported JSON structure to rapidly write a corresponding .proto skeleton.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why did Google deprecate Wire Types 3 and 4 (Groups)?</div>
+          <div class="faq-answer">
+            Groups were a proto2 feature that allowed nesting messages inside "Start Group" (Wire Type 3) and "End Group" (Wire Type 4) tags instead of using length prefixes. They were deprecated because they required streaming parsers to track nested state continuously rather than simply skipping unrecognized blocks using a length byte.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How can I tell if a length-delimited field is encrypted or compressed?</div>
+          <div class="faq-answer">
+            If a length-delimited field fails to decode into valid nested Protobuf tags, does not match printable UTF-8 character ranges, and exhibits high Shannon entropy (close to 8.0 bits per byte) with a random byte distribution, it is highly likely that the payload contains encrypted ciphertext (e.g., AES) or compressed data (e.g., GZIP/Zstandard).
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Encoding, Forensics & Application Security Tools</h3>
+        <div class="related-grid">
+          <a href="/tools/encoding/base-suite/" class="related-card">
+            <div class="related-card-title"><span>[🔢]</span> Base Encoding Suite</div>
+            <div class="related-card-desc">Encode and decode Base64, Base32, Base58, Base62, and Base85 streams entirely in local memory.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking sensitive bearer tokens to third parties.</div>
+          </a>
+          <a href="/tools/forensics/sqlite-viewer/" class="related-card">
+            <div class="related-card-title"><span>[🗄️]</span> In-Memory SQLite Viewer</div>
+            <div class="related-card-desc">Inspect, query, and dissect local SQLite databases and forensic browser histories without server uploads.</div>
+          </a>
+          <a href="/tools/encoding/html-entities/" class="related-card">
+            <div class="related-card-title"><span>[&amp;]</span> HTML Entity Codec</div>
+            <div class="related-card-desc">Encode and decode Named, Decimal, and Hexadecimal HTML entities for XSS payload analysis.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text payloads within image pixel Least Significant Bits (LSB) offline.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Robust IP Telemetry with AbortController Timeouts & Dual-Endpoint Fallbacks
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      const fetchWithTimeout = async (url, ms = 3000) => {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), ms);
-        try {
-          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-          clearTimeout(timer);
-          return res;
-        } catch (e) {
-          clearTimeout(timer);
-          throw e;
-        }
-      };
-
-      // IPv4 Detection (Primary: ipify, Fallback: icanhazip)
-      try {
-        const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection (Primary: api64.ipify.org, Fallback: ipv6.icanhazip.com)
-      try {
-        const res6 = await fetchWithTimeout("https://api64.ipify.org?format=json");
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Tab Management & State Isolation
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Tab Management & State Isolation
     let currentTab = "tab-hex";
     const tabBtns = document.querySelectorAll(".tab-btn");
     const inputPanes = document.querySelectorAll(".input-pane");
@@ -634,6 +1434,13 @@
     let uploadedFileBuffer = null;
 
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(ev => {
       dropArea.addEventListener(ev, (e) => {
@@ -698,7 +1505,7 @@
       lastDecodedData = null;
     });
 
-    // Protobuf Binary Reader Engine
+    // Protobuf Binary Reader Engine (100% Unaltered Tool Code)
     class ProtobufReader {
       constructor(uint8Array) {
         this.buffer = uint8Array;
@@ -997,6 +1804,12 @@
       document.body.appendChild(dl);
       dl.click();
       dl.remove();
+    });
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
