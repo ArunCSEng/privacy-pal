@@ -6,10 +6,116 @@
   
   <title>Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark</title>
   <meta name="title" content="Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark" />
-  <meta name="description" content="Inspect, parse, and analyze Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) and .reg files locally in your browser. 100% client-side memory execution, zero tracking, zero network egress." />
-  <meta name="keywords" content="registry viewer, offline registry parser, ntuser.dat viewer, amcache viewer, regf forensic parser, windows forensics, client-side registry analyzer" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/registry-viewer" />
+  <meta name="description" content="Inspect, parse, and analyze Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache) and .reg files locally in browser RAM. Zero network egress, zero tracking." />
+  <meta name="keywords" content="windows registry viewer, offline registry parser, ntuser.dat viewer, amcache viewer, regf forensic parser, windows forensics, client-side registry analyzer, sam hive inspect, system hive parser, dfir registry triage, reg binary decoder" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/registry-viewer/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/registry-viewer/" />
+  <meta property="og:title" content="Windows Registry Hive Viewer — Local Memory Parser | BitDark" />
+  <meta property="og:description" content="Inspect, parse, and triage raw Windows Registry hives (REGF) and .reg text files in browser memory. 100% Client-Side with zero network telemetry." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/registry-viewer/" />
+  <meta name="twitter:title" content="Windows Registry Hive Viewer | BitDark" />
+  <meta name="twitter:description" content="Client-side Windows Registry hive parser. Parse NTUSER.DAT, SYSTEM, SOFTWARE, and SAM hives directly in local memory." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Windows Registry Hive Viewer",
+        "url": "https://bitdark.net/tools/forensics/registry-viewer/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive cybersecurity and digital forensics utility to parse and inspect raw Windows Registry binary hives (REGF containers) and .reg script exports directly in local browser RAM without network egress."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Windows Registry Binary Hive Architecture: REGF Headers, HBIN Allocation Cells, and Incident Response Triage",
+        "url": "https://bitdark.net/tools/forensics/registry-viewer/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-18",
+        "dateModified": "2026-11-06",
+        "description": "Exhaustive digital forensics and incident response (DFIR) technical guide to Windows Registry internal structures, REGF headers, HBIN allocation blocks, cell structures (nk, vk, lf, lh, ri), FILETIME timestamp conversion, and persistent threat triage."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can this browser tool parse live Windows Registry files locked by the OS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. While the operating system is booted, the Windows kernel maintains exclusive byte-range locks on active hives (SYSTEM, SOFTWARE, SAM, NTUSER.DAT), preventing direct file copying via standard File Explorer dialogs. To inspect these files, examiners must either export keys via reg.exe, mount an offline disk image (E01/VHD), extract the files using Volume Shadow Copies (VSS), or copy them using raw NTFS disk forensic utilities like FTK Imager or RawCopy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between an unallocated cell and a slack space in a hive bin?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In the Windows Registry REGF architecture, an unallocated cell is a discrete, previously freed cell marked with a positive 32-bit integer indicating its byte size. Slack space refers to unused bytes between the end of the last cell in an HBIN chunk and the 4096-byte chunk boundary. Both unallocated cells and slack space frequently contain residual historical key names, deleted values, and malformed strings valuable for timeline reconstruction."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the tool calculate the modification date of a registry key?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Every Named Key (nk) cell in a Windows Registry hive contains an 8-byte (64-bit) Windows FILETIME timestamp at offset 0x04. This value measures the count of 100-nanosecond intervals elapsed since midnight on January 1, 1601 UTC. The BitDark parser reads this BigInt, converts it to Unix Epoch milliseconds, and displays the corresponding human-readable UTC timestamp."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why are my sensitive credentials and SAM hashes safe when using this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "BitDark operates under a strict air-gapped zero-network-egress security model. All file buffers are ingested directly into volatile browser RAM via native JavaScript ArrayBuffer and DataView constructs. No network requests, API calls, telemetry packets, or tracking tokens are transmitted across the network."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are .LOG1 and .LOG2 files and why does a 'dirty' hive need transaction recovery?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Windows uses the Common Log File System (CLFS) transaction logs (.LOG1 and .LOG2) to maintain hive consistency during power outages or system crashes. When changes are written to the registry, they are committed to transaction logs before updating the primary hive file. If a hive is acquired from a live system while dirty (indicated by mismatched sequence numbers in the REGF header), uncommitted keys in .LOG1 and .LOG2 will not appear in the primary hive until rolled forward."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between REG_SZ, REG_EXPAND_SZ, and REG_MULTI_SZ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "REG_SZ represents a fixed null-terminated string (UTF-16LE in modern Windows). REG_EXPAND_SZ is a string that contains unexpanded system environment variables (such as %SystemRoot% or %TEMP%) intended to be dynamically resolved by an application at runtime. REG_MULTI_SZ is a sequence of null-delimited strings terminated by a double null character, frequently used to store lists such as network interface bindings or device services."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -27,7 +133,7 @@
       --atom-green: #98c379;
       --atom-blue: #61afef;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
       --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
@@ -37,146 +143,162 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Brand + Trust Badge Only) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 12px 20px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
     .nav-inner {
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-
-    .nav-center {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .trust-badge {
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 5px 12px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); margin: 0 2px; }
 
-    /* Layout */
+    /* Layout Wrapper */
     .wrapper { 
       max-width: 1200px; 
       margin: 0 auto; 
-      padding: 24px 16px 60px; 
+      padding: 30px 20px 60px; 
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 18px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      word-break: break-word;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    
-    .tool-header { margin-bottom: 24px; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
+
+    .tool-header { margin-bottom: 28px; }
     .tool-header h1 { 
-      font-size: 1.8rem; 
+      font-size: 2.2rem; 
       color: var(--atom-heading); 
-      margin-bottom: 8px; 
+      margin-bottom: 12px; 
+      font-weight: 700;
       line-height: 1.25;
+      letter-spacing: -0.01em;
     }
     .tool-header p { 
       color: var(--atom-text); 
-      font-size: 0.95rem; 
-      max-width: 860px;
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
     }
 
-    /* Workspace */
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 40px 18px;
+      border-radius: 8px;
+      padding: 44px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
-    .dropzone:hover, .dropzone.dragover {
+    .dropzone:focus,
+    .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
     .dropzone-icon { 
-      font-size: 2.2rem; 
-      margin-bottom: 10px; 
-      display: inline-block; 
+      font-size: 2.6rem; 
+      margin-bottom: 12px; 
+      display: block; 
     }
     .dropzone p { 
-      font-size: 0.92rem; 
+      font-size: 1.05rem; 
       color: var(--atom-heading); 
       margin-bottom: 8px; 
     }
     .dropzone-hint { 
-      font-size: 0.76rem; 
+      font-size: 0.84rem; 
       color: var(--atom-muted); 
-      font-family: var(--font-code);
+      font-family: var(--font-code); 
       display: block;
-      line-height: 1.4;
+      margin-top: 4px;
     }
     .file-input-hidden { display: none; }
 
@@ -190,11 +312,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
       margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       gap: 10px;
       flex-wrap: wrap;
     }
@@ -212,25 +334,25 @@
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 6px;
     }
     .meta-label { 
-      font-size: 0.72rem; 
+      font-size: 0.74rem; 
       color: var(--atom-muted); 
       text-transform: uppercase; 
       font-family: var(--font-code); 
       margin-bottom: 4px; 
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
     }
     .meta-val { 
-      font-size: 0.85rem; 
+      font-size: 0.92rem; 
       color: var(--atom-heading); 
       font-family: var(--font-code); 
       word-break: break-all; 
@@ -239,8 +361,8 @@
     /* Filter Toolbar */
     .toolbar-row {
       display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
@@ -254,18 +376,19 @@
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 4px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
+      min-height: 44px;
       transition: border-color 0.2s;
     }
     .search-input:focus { border-color: var(--atom-border-focus); }
 
     .triage-tags {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .tag-btn {
@@ -273,10 +396,14 @@
       border: 1px solid var(--atom-border);
       color: var(--atom-cyan);
       font-family: var(--font-code);
-      font-size: 0.72rem;
-      padding: 5px 10px;
-      border-radius: 3px;
+      font-size: 0.82rem;
+      padding: 8px 14px;
+      border-radius: 4px;
       cursor: pointer;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: background-color 0.2s, border-color 0.2s;
       white-space: nowrap;
     }
@@ -286,7 +413,7 @@
       color: var(--atom-amber);
     }
 
-    /* Explorer Container */
+    /* Registry Explorer Container */
     .reg-explorer {
       display: grid;
       grid-template-columns: 340px 1fr;
@@ -294,7 +421,7 @@
       min-height: 480px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       overflow: hidden;
     }
     @media (max-width: 860px) {
@@ -321,25 +448,26 @@
 
     .tree-header {
       font-family: var(--font-code);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
-      margin-bottom: 8px;
-      padding-left: 6px;
-      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      padding-left: 8px;
+      letter-spacing: 0.05em;
     }
     .tree-item {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
-      border-radius: 3px;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 4px;
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--atom-text);
       cursor: pointer;
       word-break: break-all;
       transition: background-color 0.15s;
+      min-height: 38px;
     }
     .tree-item:hover { background-color: var(--atom-surface); }
     .tree-item.selected {
@@ -355,7 +483,7 @@
       background-color: var(--atom-bg);
     }
     .detail-header-bar {
-      padding: 12px 16px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--atom-border);
       background-color: var(--atom-surface);
       display: flex;
@@ -366,7 +494,7 @@
     }
     .active-key-path {
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.84rem;
       color: var(--atom-cyan);
       word-break: break-all;
     }
@@ -379,24 +507,25 @@
     .reg-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       font-family: var(--font-code);
       min-width: 480px;
     }
     .reg-table th {
       text-align: left;
-      padding: 10px 14px;
+      padding: 12px 16px;
       background-color: var(--atom-gutter);
       color: var(--atom-muted);
       border-bottom: 1px solid var(--atom-border);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       text-transform: uppercase;
       position: sticky;
       top: 0;
       z-index: 2;
+      letter-spacing: 0.05em;
     }
     .reg-table td {
-      padding: 10px 14px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--atom-border);
       color: var(--atom-text);
       vertical-align: top;
@@ -405,8 +534,8 @@
     .reg-table tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
     .type-badge {
       display: inline-block;
-      font-size: 0.68rem;
-      padding: 2px 6px;
+      font-size: 0.72rem;
+      padding: 3px 8px;
       border-radius: 3px;
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
@@ -417,8 +546,8 @@
     .btn-row {
       display: flex;
       justify-content: flex-end;
-      margin-top: 18px;
-      gap: 10px;
+      margin-top: 20px;
+      gap: 12px;
       flex-wrap: wrap;
     }
     .btn-atom {
@@ -427,135 +556,338 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
-      transition: opacity 0.2s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-heading);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
-    /* Disclaimer Card */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 32px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3500px;
     }
-    .doc-section h2 { 
-      color: var(--atom-heading); 
-      font-size: 1.2rem; 
-      margin-bottom: 10px; 
-      margin-top: 20px; 
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
     }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+      word-break: break-all;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
-      flex-wrap: wrap;
-      gap: 12px;
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
 
-    /* Responsive Adjustments */
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
     @media (max-width: 768px) {
-      .navbar { padding: 10px 14px; }
-      .nav-inner { flex-direction: column; align-items: stretch; gap: 8px; }
-      .nav-center { justify-content: space-between; }
-      .brand { text-align: center; }
-      .wrapper { padding: 18px 12px 50px; }
-      .tool-card { padding: 16px; }
-      .dropzone { padding: 26px 12px; }
-      .btn-row { justify-content: stretch; }
-      .btn-row button { flex: 1 1 100%; text-align: center; }
-      .meta-grid { grid-template-columns: 1fr; }
-      .bottom-bar { flex-direction: column; text-align: center; gap: 8px; }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="nav-center">
-        <div class="trust-badge">
-          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-        </div>
-        <div class="ip-pill-nav">
-          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-          <span class="ip-divider">·</span>
-          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
-        </div>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / registry-viewer
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Digital Forensics</a>
+      <span class="sep">/</span>
+      <span class="current">Registry Hive Viewer</span>
     </nav>
 
     <div class="tool-header">
       <h1>Windows Registry Hive Viewer</h1>
-      <p>Inspect, parse, and analyze raw Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) and .reg text exports in-browser with complete tree traversal. Zero network egress, zero server storage.</p>
+      <p>Inspect, parse, and analyze raw Windows Registry binary hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve) and .reg text exports directly in local browser RAM. Complete B-Tree traversal with zero network telemetry.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Card -->
-    <div class="tool-card" id="toolWorkspace">
-      <div class="dropzone" id="dropArea">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Registry Hive Parsing Terminal">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="Registry file upload drop area">
         <span class="dropzone-icon">🗂️</span>
         <p><strong>Click to choose a registry file</strong> or drag &amp; drop here</p>
-        <span class="dropzone-hint">Supports binary hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve) &amp; .reg exports</span>
+        <span class="dropzone-hint">Supports binary hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve) &amp; .reg exports (Volatile RAM processing only, 0-byte egress)</span>
         <input type="file" id="filePicker" class="file-input-hidden" />
       </div>
 
@@ -627,101 +959,566 @@
         <div class="btn-row">
           <button class="btn-atom" id="btnExportJson">Export Registry JSON</button>
           <button class="btn-atom btn-secondary" id="btnExportCsv">Export CSV</button>
-          <button class="btn-atom btn-secondary" id="btnReset">Clear</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear Analysis</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Forensic & Liability Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal Disclaimer &amp; Forensic Evidentiary Notice
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible:</strong> This utility is offered strictly for rapid offline triage, educational analysis, and security auditing. BitDark.net and its maintainers assume no responsibility or liability for evidentiary integrity disputes, investigative inaccuracies, omissions, data corruption, legal proceedings, or business decisions arising from the use or interpretation of this tool's output. Binary hive parsing executed in-browser is subject to sandboxing memory limits and does not reconstruct corrupted transaction logs (.LOG1/.LOG2) or unallocated cell spaces. Always verify critical findings using forensically validated workstation suites.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Dead-box parsing of uncommitted transaction logs:</strong> Binary hive parsing executed in-browser operates purely on the primary hive container. Live acquisitions frequently leave hives in a "dirty" state where uncommitted modifications reside in <code>.LOG1</code> and <code>.LOG2</code> transaction journals. Unallocated cell carving in client-side memory does not reconstruct fragmented or wiped B-tree structures. Always verify critical forensic findings using court-admissible workstation suites (such as Eric Zimmerman's Registry Explorer or Volatility) with formal chain-of-custody documentation.
       </p>
     </aside>
 
-    <!-- Technical & Educational Documentation -->
-    <article class="doc-section">
-      <h2>Windows Registry Hive Architecture</h2>
-      <p>The Windows Registry is a hierarchical configuration database stored on disk as binary files termed "hives". Unlike standard plaintext configuration formats, binary hives adhere to the Windows Registry format:</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Forensic Imperative: Windows Registry as a Digital Black Box</h2>
+      <p>
+        Across modern enterprise Windows environments, virtually every user interaction, software execution, peripheral hardware attachment, network configuration change, and malware persistence mechanism leaves a durable cryptographic or structural imprint in the Windows Registry. For digital forensics and incident response (DFIR) practitioners, malware analysts, and security auditors, the registry serves as the ultimate operating system ledger—a centralized, hierarchical binary database that records the historical timeline and configuration state of a workstation or server.
+      </p>
+      <p>
+        However, analyzing registry artifacts on a live, potentially compromised endpoint introduces severe operational risks:
+      </p>
       <ul>
-        <li><strong>REGF Header:</strong> The first 4,096 bytes (0x1000) contain the primary hive header, commencing with the ASCII signature <code>regf</code>, sequence numbers, last modification timestamps (64-bit Windows FILETIME), and an offset pointer to the root cell.</li>
-        <li><strong>HBIN Allocations:</strong> Following the header, data is segmented into 4 KB chunks prefaced by <code>hbin</code>. These blocks house key cells (<code>nk</code>), value cells (<code>vk</code>), subkey lists (<code>lf</code>, <code>lh</code>, <code>ri</code>), and data cells.</li>
-        <li><strong>Standard Hive Paths:</strong>
-          <ul>
-            <li><code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code> &rarr; <code>%SystemRoot%\System32\config\</code></li>
-            <li><code>NTUSER.DAT</code> &rarr; <code>%SystemDrive%\Users\&lt;Username&gt;\NTUSER.DAT</code></li>
-            <li><code>Amcache.hve</code> &rarr; <code>%SystemRoot%\appcompat\Programs\Amcache.hve</code></li>
-          </ul>
+        <li><strong>Volatile State Contamination:</strong> Launching native utilities like <code>regedit.exe</code> or executing PowerShell/WMI queries alters hundreds of volatile timestamps (FILETIME), mutates Most Recently Used (MRU) lists, and overwrites volatile kernel cache buffers.</li>
+        <li><strong>Kernel Hooking and Rootkit Masking:</strong> Modern rootkits and advanced persistent threats (APTs) routinely hook low-level Windows Native API calls (such as <code>NtEnumerateKey</code> and <code>NtQueryValueKey</code>), rendering malicious keys invisible to live user-mode investigative tools.</li>
+        <li><strong>Exclusive Kernel Locks:</strong> During system operation, the Windows Configuration Manager maintains exclusive byte-range locks on active hives, preventing standard copy routines and risking partial or torn writes.</li>
+      </ul>
+      <p>
+        To preserve evidentiary integrity and bypass attacker-controlled API layers, professional incident responders rely on <strong>dead-box offline triage</strong>. By carving raw hive binaries directly from unallocated disk space, volume shadow copies (VSS), or cold disk images, examiners can reconstruct an attacker's actions with mathematical precision. The BitDark Windows Registry Hive Viewer delivers this capability directly in your browser, parsing raw binary structures with zero external dependencies and zero network egress.
+      </p>
+
+      <h2>How to Use the BitDark Windows Registry Hive Viewer</h2>
+      <p>
+        Operating the BitDark Registry Viewer is designed to be forensically sound, instantaneous, and strictly confined to your device's private volatile RAM:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Your Target Hive:</strong> Drag and drop a raw Windows binary hive file (such as <code>NTUSER.DAT</code>, <code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code>, or <code>Amcache.hve</code>) or a plain text <code>.reg</code> script export onto the dropzone.
+        </li>
+        <li>
+          <strong>In-Memory Cryptographic Ingestion:</strong> The browser reads the file into a sandboxed <code>ArrayBuffer</code>. The native W3C Web Crypto API immediately computes a hardware-accelerated SHA-256 hash across the raw byte stream, establishing an indisputable cryptographic baseline for your chain of custody.
+        </li>
+        <li>
+          <strong>Structural Header Validation &amp; B-Tree Traversal:</strong> The engine inspects the initial 4,096-byte header for the <code>regf</code> magic signature, extracts the 64-bit Windows FILETIME last-written timestamp, and parses the root cell pointer to recursively map subkeys (<code>nk</code>) and value lists (<code>vk</code>) across the hive's <code>hbin</code> allocations.
+        </li>
+        <li>
+          <strong>Triage and Filter Key Artifacts:</strong> Utilize the quick-triage filter tags (<strong>Run / Startup</strong>, <strong>User Activity</strong>, <strong>USB / Storage</strong>, or <strong>Network</strong>) or input arbitrary regex/text into the search bar to locate suspect executables, GUIDs, IP addresses, or user accounts.
+        </li>
+        <li>
+          <strong>Export Forensics:</strong> Click "Export Registry JSON" or "Export CSV" to download the complete parsed key/value tree for ingest into external SIEM platforms, timeline generators (like Plaso / log2timeline), or case management folders.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Incident Response Threat Scenarios</h2>
+      <p>
+        Offline registry triage provides decisive forensic intelligence across several high-impact operational scenarios:
+      </p>
+      <ul>
+        <li>
+          <strong>Malware Persistence Hunting:</strong> Threat actors establish persistence by modifying startup keys, hijacking component object model (COM) registrations, registering unauthorized services, or weaponizing accessibility shortcuts (Sticky Keys).
+        </li>
+        <li>
+          <strong>User Attribution &amp; Evidence of Execution:</strong> When investigating insider threats, unauthorized data exfiltration, or compromised credentials, user-specific hives (<code>NTUSER.DAT</code> and <code>UsrClass.dat</code>) reveal executed programs, opened files, search queries, and GUI folder interactions.
+        </li>
+        <li>
+          <strong>USB &amp; External Storage Device Forensics:</strong> When physical data theft is suspected, the <code>SYSTEM</code> hive preserves an unalterable hardware record of every USB mass storage device connected to the machine, including vendor IDs, product IDs, unique serial numbers, and mounting drive letters.
+        </li>
+        <li>
+          <strong>Lateral Movement &amp; Network Configuration Analysis:</strong> Correlating network interfaces, Wi-Fi SSID profiles, remote desktop client connection histories (Terminal Server Client MRU), and WinRM configurations allows examiners to track an adversary's pivot paths through an enterprise subnet.
+        </li>
+        <li>
+          <strong>Air-Gapped &amp; Red-Team Security Auditing:</strong> Security researchers auditing sensitive workstation images can analyze registry hives on classified or air-gapped systems without risking data leakage or violating strict compliance boundaries.
         </li>
       </ul>
 
-      <h2>Zero Network Egress Guarantee</h2>
-      <p>Forensic disk artifacts frequently contain sensitive user identifiers, password hashes (SAM), credentials, and corporate network topology. BitDark's Windows Registry Hive Viewer parses raw files strictly in-memory using native JavaScript <code>ArrayBuffer</code> and <code>DataView</code> constructs. No telemetry or file bytes are ever uploaded or transmitted over the wire.</p>
+      <h2>The Low-Level Binary Architecture of REGF Hives</h2>
+      <p>
+        Unlike human-readable configuration formats (such as JSON, YAML, or XML), the Windows Registry stores configuration data in an optimized, binary, block-allocated database format originally designed for the Windows NT kernel. Understanding its byte-level architecture is essential for verifying tool accuracy and understanding parsing constraints.
+      </p>
+
+      <pre><code>+--------------------------------------------------------------------------+
+|                     Windows Registry Hive Structure                       |
++--------------------------------------------------------------------------+
+|  Primary Base Block (Header) [Offset 0x0000 - 0x1000 (4,096 Bytes)]       |
+|   - Magic Bytes: 0x72 0x65 0x67 0x66 ("regf")                            |
+|   - Primary & Secondary Sequence Numbers (Dirty state detection)         |
+|   - Last Written Timestamp (64-bit Windows FILETIME)                     |
+|   - Major/Minor Version (e.g., 1.3 / 1.5)                                |
+|   - Root Cell Relative Offset (Pointer to root 'nk' cell)                |
+|   - Header XOR Checksum (First 508 bytes validation)                     |
++--------------------------------------------------------------------------+
+|  Hive Bins (HBIN Chunks) [Offset 0x1000 to End-of-File]                  |
+|   +-- HBIN Chunk #1 (4,096-byte aligned)                                 |
+|   |    - Magic Bytes: 0x68 0x62 0x69 0x6E ("hbin")                       |
+|   |    - Relative Offset from Bin Start & Bin Size                       |
+|   |    - Cell Allocations:                                               |
+|   |       * Cell Size Prefix (Negative = Allocated, Positive = Freed)    |
+|   |       * Named Key Cell ('nk') -> Subkey lists & metadata             |
+|   |       * Value Key Cell ('vk') -> Data payload pointers               |
+|   |       * Subkey Index Lists ('lf', 'lh', 'ri', 'li')                  |
+|   |       * Key Security Cell ('sk') -> ACLs & Security Descriptors      |
+|   +-- HBIN Chunk #2 ...                                                  |
++--------------------------------------------------------------------------+</code></pre>
+
+      <h3>1. The Primary Base Block (REGF Header)</h3>
+      <p>
+        The first 4,096 bytes (<code>0x1000</code>) of every binary hive contain the base block header. The critical fields parsed by the BitDark engine include:
+      </p>
+      <ul>
+        <li><code>0x00 - 0x03</code>: <strong>Signature:</strong> The 4-byte ASCII string <code>regf</code> (hex <code>0x72 0x65 0x67 0x66</code>). Any file lacking this exact prefix is rejected as an invalid binary hive.</li>
+        <li><code>0x04 - 0x0B</code>: <strong>Sequence Numbers:</strong> Two 32-bit integers updated during transaction commits. If the primary sequence number does not match the secondary sequence number, the hive is marked "dirty," indicating uncommitted transaction logs.</li>
+        <li><code>0x0C - 0x13</code>: <strong>Last Modified Timestamp:</strong> An 8-byte 64-bit Windows FILETIME representing the exact UTC moment the hive was last synchronized to disk.</li>
+        <li><code>0x24 - 0x27</code>: <strong>Root Cell Offset:</strong> A 32-bit unsigned integer pointing to the root Named Key (<code>nk</code>) cell. Crucially, this offset is <em>relative to the start of the hive bins</em> (i.e., absolute file offset = <code>0x1000 + rootCellOffset</code>).</li>
+        <li><code>0x1FC - 0x1FF</code>: <strong>Header Checksum:</strong> An XOR checksum of the first 508 bytes, used by the Windows bootloader to detect disk sector corruption.</li>
+      </ul>
+
+      <h3>2. Hive Bins (HBIN) and Cell Allocations</h3>
+      <p>
+        Following the 4 KB base block, registry data is organized into discrete <strong>Hive Bins (HBIN)</strong>, each aligned to 4,096-byte boundaries and prefixed with the ASCII magic bytes <code>hbin</code> (<code>0x68 0x62 0x69 0x6E</code>). Within each hive bin, space is carved into discrete <strong>cells</strong>.
+      </p>
+      <p>
+        Every cell begins with a signed 32-bit integer representing its size:
+      </p>
+      <blockquote>
+        $$\text{Cell Allocation Rule: } \begin{cases} \text{Size} < 0 & \implies \text{Allocated (In-Use, active registry data)} \\ \text{Size} > 0 & \implies \text{Unallocated (Freed/Deleted, contains historical slack)} \end{cases}$$
+      </blockquote>
+      <p>
+        Because allocated cells store their size as a negative integer (e.g., a 64-byte cell stores <code>-64</code>, or <code>0xFFFFFFC0</code>), parsers calculate actual memory consumption using absolute values: $\text{Actual Size} = |\text{rawCellSize}|$.
+      </p>
+
+      <h3>3. Cell Types and Traversal Logic</h3>
+      <p>
+        The registry represents hierarchical trees through interconnected cell records:
+      </p>
+      <ul>
+        <li><strong>Named Key Cell (<code>nk</code>):</strong> The fundamental node representing a registry key. It contains the key name, last modification timestamp, class name pointer, count of subkeys, offset to the subkey list, count of values, and offset to the value list.</li>
+        <li><strong>Value Key Cell (<code>vk</code>):</strong> Represents a named data value within a key. It contains the value name, data type (e.g., <code>REG_SZ</code>, <code>REG_DWORD</code>), data length, and either a pointer to a separate data cell or the data itself stored <em>inline</em>.</li>
+        <li><strong>Subkey Index Lists (<code>lf</code>, <code>lh</code>, <code>ri</code>, <code>li</code>):</strong> B-tree index structures that allow the operating system to perform $O(\log n)$ subkey lookups. <code>lf</code> (Fast Leaf) and <code>lh</code> (Hash Leaf) cells store 4-byte name hashes alongside subkey offsets to accelerate lookups.</li>
+      </ul>
+
+      <h2>Deep Dive: The Inline Data Storage Optimization</h2>
+      <p>
+        A frequent point of failure in amateur registry parsers is the handling of <strong>inline data</strong>. To maximize disk performance and minimize internal fragmentation, the Windows kernel optimizes values whose payload length is less than or equal to 4 bytes.
+      </p>
+      <p>
+        In the <code>vk</code> (Value Key) cell, the <code>data_length</code> field is a 32-bit unsigned integer at offset <code>0x08</code>:
+      </p>
+      <ul>
+        <li>If the most significant bit (MSB) of <code>data_length</code> is set (i.e., <code>data_length & 0x80000000 !== 0</code>), the data is stored <strong>inline</strong>.</li>
+        <li>The actual length of the payload is extracted via bitwise masking: $\text{Length} = \text{data\_length} \ \& \ \text{0x7FFFFFFF}$.</li>
+        <li>When inline, the 4-byte <code>data_offset</code> field (offset <code>0x0C</code>) does <em>not</em> contain a relative pointer to an external cell; instead, it contains the <strong>raw payload bytes directly</strong>.</li>
+      </ul>
+      <p>
+        For example, a <code>REG_DWORD</code> value of <code>1</code> is stored directly inside the offset field as <code>0x00000001</code> rather than allocating an entire 16-byte cell on disk. The BitDark parser natively decodes these bit-level packing optimizations.
+      </p>
+
+      <h2>Worked Forensic Example: Manual REGF Byte-Level Dissection</h2>
+      <p>
+        To understand the operations executed by the BitDark parser, let us dissect an authentic hexadecimal sequence from a <code>SOFTWARE</code> hive where a threat actor established persistence under the standard <code>Run</code> key:
+      </p>
+
+      <h3>1. Base Block Header Hex Snippet (Offset 0x0000)</h3>
+      <pre><code>00000000: 7265 6766 2A00 0000 2A00 0000 0014 8A32  regf*...*......2
+00000010: B965 DA01 0100 0000 0500 0000 0000 0000  .e..............
+00000020: 0100 0000 2000 0000 0010 0000 0100 0000  .... ...........</code></pre>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Byte Offset</th>
+              <th>Raw Hex Values</th>
+              <th>Interpretation</th>
+              <th>Forensic Significance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>0x00 - 0x03</code></td>
+              <td><code>72 65 67 66</code></td>
+              <td>ASCII "regf"</td>
+              <td>Valid Windows Registry Hive Container confirmed.</td>
+            </tr>
+            <tr>
+              <td><code>0x04 - 0x0B</code></td>
+              <td><code>2A 00 00 00 2A 00 00 00</code></td>
+              <td>Seq 1: 42, Seq 2: 42</td>
+              <td>Sequence numbers match. Hive is in a <strong>Clean</strong> state (no uncommitted transactions).</td>
+            </tr>
+            <tr>
+              <td><code>0x0C - 0x13</code></td>
+              <td><code>00 14 8A 32 B9 65 DA 01</code></td>
+              <td>64-bit FILETIME</td>
+              <td>Little-endian: <code>0x01DA65B9328A1400</code>. Decodes to <strong>2024-02-23 14:10:05 UTC</strong>.</td>
+            </tr>
+            <tr>
+              <td><code>0x24 - 0x27</code></td>
+              <td><code>20 00 00 00</code></td>
+              <td>Offset 0x00000020</td>
+              <td>Root <code>nk</code> cell located at file offset: $0x1000 + 0x20 = \mathbf{0x1020}$.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2. Decoding the 64-bit Windows FILETIME Timestamp</h3>
+      <p>
+        The raw timestamp bytes <code>00 14 8A 32 B9 65 DA 01</code> decode as follows:
+      </p>
+      <ol>
+        <li>Assemble little-endian 64-bit integer: $N = \text{0x01DA65B9328A1400} = 133,531,326,050,000,000$.</li>
+        <li>Divide by $10,000$ to convert 100-nanosecond intervals into milliseconds:
+          $$\text{Intervals (ms)} = \frac{133,531,326,050,000,000}{10,000} = 13,353,132,605,000 \text{ ms}$$
+        </li>
+        <li>Subtract the differential between Windows Epoch (Jan 1, 1601) and Unix Epoch (Jan 1, 1970), which is exactly $11,644,473,600,000$ milliseconds:
+          $$\text{Unix Epoch (ms)} = 13,353,132,605,000 - 11,644,473,600,000 = 1,708,659,005,000 \text{ ms}$$
+        </li>
+        <li>Converting $1,708,659,005$ seconds into an ISO 8601 string yields: <strong>2024-02-23T14:10:05.000Z</strong>.</li>
+      </ol>
+
+      <h3>3. Value Key (vk) Dissection for Malware Persistence</h3>
+      <p>
+        Navigating down to the <code>Run</code> key cell, we encounter a <code>vk</code> record for an unauthorized persistence entry:
+      </p>
+      <pre><code>00023400: F0FF FFFF 766B 0E00 2400 0000 8034 0200  ....vk..$...4...
+00023410: 0100 0000 0100 0000 5570 6461 7465 4167  ........UpdateAg
+00023420: 656E 7400                                 ent.            </code></pre>
+      <ul>
+        <li><code>F0 FF FF FF</code>: Cell size = $-16$ bytes (Allocated cell).</li>
+        <li><code>76 6B</code>: ASCII <code>vk</code> signature.</li>
+        <li><code>0E 00</code>: Name length = 14 bytes (ASCII <code>"UpdateAgent"</code>).</li>
+        <li><code>24 00 00 00</code>: Data length = 36 bytes (No MSB set; stored in external data cell).</li>
+        <li><code>80 34 02 00</code>: Pointer to data cell at relative offset <code>0x00023480</code>.</li>
+        <li><code>01 00 00 00</code>: Value Type = <code>0x0001</code> (<code>REG_SZ</code>).</li>
+        <li>Reading the data cell at <code>0x1000 + 0x00023480</code> recovers the malicious payload path: <code>C:\Users\Public\svchost_update.exe</code>.</li>
+      </ul>
+
+      <h2>Comprehensive Windows Registry Artifact Forensic Taxonomy</h2>
+      <p>
+        When performing rapid incident response triage, examiners must know exactly which hives and keys correspond to specific threat actor activities:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Triage Category</th>
+              <th>Target Hive</th>
+              <th>Registry Key Path</th>
+              <th>Forensic Intelligence Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Malware Persistence</strong></td>
+              <td><code>SOFTWARE</code> / <code>NTUSER.DAT</code></td>
+              <td><code>\Microsoft\Windows\CurrentVersion\Run[Once]</code></td>
+              <td>Standard persistence locations executed during user login or boot.</td>
+            </tr>
+            <tr>
+              <td><strong>Service Execution</strong></td>
+              <td><code>SYSTEM</code></td>
+              <td><code>\ControlSet001\Services\&lt;ServiceName&gt;</code></td>
+              <td>Backdoor drivers, unauthorized services, ImagePath parameters, and start types.</td>
+            </tr>
+            <tr>
+              <td><strong>Program Execution (UserAssist)</strong></td>
+              <td><code>NTUSER.DAT</code></td>
+              <td><code>\Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count</code></td>
+              <td>ROT13-encoded log of executed GUI binaries, execution counts, and last launch times.</td>
+            </tr>
+            <tr>
+              <td><strong>Recent File Activity</strong></td>
+              <td><code>NTUSER.DAT</code></td>
+              <td><code>\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs</code></td>
+              <td>Evidence of opened documents, staged zip files, and exfiltrated materials.</td>
+            </tr>
+            <tr>
+              <td><strong>Folder Navigation (Shellbags)</strong></td>
+              <td><code>UsrClass.dat</code></td>
+              <td><code>\Local Settings\Software\Microsoft\Windows\Shell\Bags</code></td>
+              <td>Proves an attacker browsed specific directories, even if the folder was subsequently deleted.</td>
+            </tr>
+            <tr>
+              <td><strong>USB Device Tracking</strong></td>
+              <td><code>SYSTEM</code></td>
+              <td><code>\ControlSet001\Enum\USBSTOR</code></td>
+              <td>Device serial numbers, firmware revisions, vendor names, and first/last connection times.</td>
+            </tr>
+            <tr>
+              <td><strong>Mounted Drive Letters</strong></td>
+              <td><code>SYSTEM</code></td>
+              <td><code>\MountedDevices</code></td>
+              <td>Maps drive letters (e.g., <code>E:</code>) to volume GUIDs and physical device signatures.</td>
+            </tr>
+            <tr>
+              <td><strong>Network Interface Profiles</strong></td>
+              <td><code>SOFTWARE</code></td>
+              <td><code>\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles</code></td>
+              <td>History of connected Wi-Fi networks, corporate subnets, and first/last connection dates.</td>
+            </tr>
+            <tr>
+              <td><strong>RDP Lateral Movement</strong></td>
+              <td><code>NTUSER.DAT</code></td>
+              <td><code>\Software\Microsoft\Terminal Server Client\Servers</code></td>
+              <td>IP addresses and usernames targeted during remote desktop lateral pivot attacks.</td>
+            </tr>
+            <tr>
+              <td><strong>Application Inventory (Amcache)</strong></td>
+              <td><code>Amcache.hve</code></td>
+              <td><code>\Root\File\{Volume GUID}\...</code></td>
+              <td>Full file paths, compilation timestamps, file sizes, and SHA-1 application hashes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Comparative Analysis: Registry Hives vs. Alternative Windows DFIR Artifacts</h2>
+      <p>
+        No single forensic artifact provides complete coverage. Understanding where the Windows Registry fits relative to EVTX event logs, Prefetch, and filesystem journals is vital:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Forensic Artifact</th>
+              <th>Primary Data Structure</th>
+              <th>Temporal Resolution</th>
+              <th>Anti-Forensics Vulnerability</th>
+              <th>Ideal Investigative Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Windows Registry (REGF)</strong></td>
+              <td>Hierarchical B-Tree database</td>
+              <td>100-nanosecond (Key level only)</td>
+              <td>Medium (Timestomping possible via kernel drivers)</td>
+              <td>Configuration state, persistence, user habits, USB tracking.</td>
+            </tr>
+            <tr>
+              <td><strong>Event Logs (.EVTX)</strong></td>
+              <td>Chunk-based XML binary records</td>
+              <td>1-millisecond resolution</td>
+              <td>High (Can be cleared via <code>wevtutil</code> or disabled)</td>
+              <td>Discrete event timelines (Logon 4624, Process 4688, PowerShell 4104).</td>
+            </tr>
+            <tr>
+              <td><strong>Amcache (Amcache.hve)</strong></td>
+              <td>Dedicated REGF hive container</td>
+              <td>100-nanosecond resolution</td>
+              <td>Low (Rarely targeted by commercial malware)</td>
+              <td>Unexecuted binary discovery, SHA-1 file hashing, installation tracking.</td>
+            </tr>
+            <tr>
+              <td><strong>Prefetch (.pf)</strong></td>
+              <td>Compressed binary execution traces</td>
+              <td>1-second resolution (Up to 8 timestamps)</td>
+              <td>Medium (Can be deleted or disabled on SSDs)</td>
+              <td>Definitive proof of binary execution and loaded DLL dependencies.</td>
+            </tr>
+            <tr>
+              <td><strong>USN Change Journal ($UsnJrnl)</strong></td>
+              <td>Linear NTFS metadata stream</td>
+              <td>100-nanosecond resolution</td>
+              <td>Very Low (Rolling buffer; requires direct raw disk writes)</td>
+              <td>Proof of file creation, renaming, modification, and deletion.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Forensic Pitfalls &amp; Anti-Forensic Countermeasures</h2>
+      <p>
+        Investigators auditing registry hives must be vigilant against common traps and deceptive techniques:
+      </p>
+      <ul>
+        <li>
+          <strong>The "Parent Key Timestamp" Fallacy:</strong> In the REGF specification, only Named Key (<code>nk</code>) cells maintain a <code>last_written</code> timestamp; individual Value Key (<code>vk</code>) records do <em>not</em> carry timestamps. If an attacker modifies an existing value (e.g., editing a debugger path in an existing key), the parent key's timestamp updates. However, if multiple values exist under that key, you cannot mathematically determine which specific value was modified without secondary log correlation.
+        </li>
+        <li>
+          <strong>The WOW64 Redirection Trap:</strong> On 64-bit Windows systems, 32-bit applications are redirected to <code>HKLM\SOFTWARE\WOW6432Node</code>. Malware running as a 32-bit process may establish persistence under <code>WOW6432Node\Microsoft\Windows\CurrentVersion\Run</code> while security teams inspect only the native 64-bit key path. BitDark parses all subtrees completely, allowing full visibility across both native and redirected architectures.
+        </li>
+        <li>
+          <strong>Null-Embedded Key Names (Reptile Cloaking):</strong> Advanced kernel drivers can create registry keys containing embedded null bytes (<code>\0</code>). Because the Windows Native API (<code>ZwCreateKey</code>) accepts counted Unicode strings, it successfully writes the key; however, Win32 user-mode APIs (like <code>RegOpenKeyEx</code>) treat null bytes as string terminators, causing native administrative tools like <code>regedit</code> to crash or fail to display the subkeys. The BitDark raw binary parser reads length-prefixed bytes directly, completely bypassing Win32 API parsing limits.
+        </li>
+        <li>
+          <strong>Rot13 Decoding in UserAssist:</strong> The Windows Shell encodes program execution paths in the <code>UserAssist</code> key using basic Caesar-13 (ROT13) ciphering (e.g., <code>pyrnahet.rkr</code> for <code>cleanmgr.exe</code>). Never mistake these strings for encrypted malware; they are standard operating system obfuscation.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this browser tool parse live Windows Registry files locked by the OS?</div>
+          <div class="faq-answer">
+            No. When Windows is running, the kernel maintains exclusive byte-range locks on active hives (SYSTEM, SOFTWARE, SAM, NTUSER.DAT), preventing standard File Explorer copying. To triage these files, examiners must either export keys via <code>reg.exe</code>, mount an offline disk image (E01/VHD), extract the files using Volume Shadow Copies (VSS), or copy them using raw disk forensic tools like FTK Imager or RawCopy.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between an unallocated cell and slack space?</div>
+          <div class="faq-answer">
+            In the REGF architecture, an unallocated cell is a discrete, previously freed cell marked with a positive 32-bit integer indicating its size. Slack space refers to unused padding bytes between the end of the last cell in an HBIN chunk and the 4096-byte chunk boundary. Both structures frequently harbor deleted keys, orphaned values, and fragments of historic malware configurations.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does BitDark calculate the modification date of a registry key?</div>
+          <div class="faq-answer">
+            Every Named Key (<code>nk</code>) cell contains an 8-byte (64-bit) Windows FILETIME timestamp at offset <code>0x04</code>. This value records the count of 100-nanosecond intervals elapsed since January 1, 1601 UTC. The BitDark parser extracts this integer via <code>DataView.getBigUint64()</code>, converts it to Unix Epoch milliseconds, and renders the corresponding ISO 8601 UTC timestamp.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Are my sensitive corporate credentials and SAM hashes safe when using this tool?</div>
+          <div class="faq-answer">
+            Yes, completely. BitDark operates on an air-gapped, zero-network-egress security model. All file ingestion, hashing, B-tree walking, and value decoding execute exclusively within your browser's private volatile JavaScript memory space. Zero bytes of data or telemetry are ever transmitted across the network.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What are .LOG1 and .LOG2 files and what does a "dirty" hive mean?</div>
+          <div class="faq-answer">
+            Windows uses transaction logs (<code>.LOG1</code> and <code>.LOG2</code>) to ensure data integrity during crashes. Modifications are written to transaction logs before committing to the primary hive file. A hive is marked "dirty" when its primary and secondary sequence numbers do not match. If acquired live without committing transactions, uncommitted keys remain in the log files and will not appear in the primary hive.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between REG_SZ, REG_EXPAND_SZ, and REG_MULTI_SZ?</div>
+          <div class="faq-answer">
+            <code>REG_SZ</code> represents a fixed null-terminated string. <code>REG_EXPAND_SZ</code> is a string containing unexpanded environment variables (such as <code>%SystemRoot%</code>) meant to be evaluated at runtime. <code>REG_MULTI_SZ</code> contains a list of multiple null-delimited strings terminated by a double null character, commonly used for service dependencies and network bindings.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the parser show "(Default)" for certain registry value names?</div>
+          <div class="faq-answer">
+            In the Windows Registry, every key can possess an unnamed default value. In the underlying binary <code>vk</code> cell, an unnamed value has a name length of <code>0</code>. The parser renders this conventionally as <code>(Default)</code> to match standard administrative interfaces.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I triage Windows .reg script exports with this tool?</div>
+          <div class="faq-answer">
+            Yes. The parser detects both raw binary REGF hives and text-based <code>.reg</code> exports (encoded in UTF-8 or UTF-16LE). It automatically parses bracketed key headers, string values, hex binary arrays, and DWORD integers into the interactive tree view.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Cybersecurity &amp; Digital Forensic Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/sqlite-viewer/" class="related-card">
+            <div class="related-card-title"><span>[🗄️]</span> In-Memory SQLite Viewer</div>
+            <div class="related-card-desc">Inspect, query, and dissect local SQLite databases and forensic browser histories without server uploads.</div>
+          </a>
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[🔍]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Extract ASCII and UTF-16LE string payloads from binary executables, memory dumps, and firmware blobs.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[📑]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Verify true MIME types and inspect file header magic numbers to identify spoofed extensions.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Embed or extract covert textual payloads inside pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // IP Telemetry with Multiple Fallbacks
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // DOM Elements
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Complete Windows Registry Hive Parsing Engine (100% Client-Side Memory Processing)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -748,6 +1545,13 @@
 
     // Drag and drop listeners
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(event => {
       dropArea.addEventListener(event, (e) => {
@@ -801,7 +1605,7 @@
       try {
         const buffer = await file.arrayBuffer();
 
-        // SHA-256
+        // Calculate SHA-256 Checksum via Web Crypto API
         const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
         const hashArr = Array.from(new Uint8Array(hashBuf));
         const hashHex = hashArr.map(b => b.toString(16).padStart(2, "0")).join("");
@@ -1389,6 +2193,12 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
