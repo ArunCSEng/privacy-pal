@@ -2,14 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   
-  <title>Offline PCAP Packet Visualizer & Protocol Analyzer | BitDark</title>
-  <meta name="title" content="Offline PCAP Packet Visualizer & Protocol Analyzer | BitDark" />
+  <title>Offline PCAP Packet Visualizer &amp; Protocol Analyzer | BitDark</title>
+  <meta name="title" content="Offline PCAP Packet Visualizer &amp; Protocol Analyzer | BitDark" />
   <meta name="description" content="Inspect, parse, and analyze libpcap capture files locally in browser memory. Dissect Ethernet, VLAN, IPv4, IPv6, TCP, UDP, ICMP, and ARP frames with zero data upload." />
-  <meta name="keywords" content="pcap visualizer, packet analyzer, offline wireshark viewer, parse pcap browser, network forensics tool, client-side packet inspector" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/pcap-visualizer" />
+  <meta name="keywords" content="pcap visualizer, packet analyzer, offline wireshark viewer, parse pcap browser, network forensics tool, client-side packet inspector, libpcap parser online, tcp dump viewer, hex packet inspector, pcap to json" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/pcap-visualizer/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/pcap-visualizer/" />
+  <meta property="og:title" content="Offline PCAP Packet Visualizer &amp; Protocol Analyzer | BitDark" />
+  <meta property="og:description" content="Parse, dissect, and inspect libpcap network captures locally in browser memory. 100% Client-Side with zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/pcap-visualizer/" />
+  <meta name="twitter:title" content="Offline PCAP Packet Visualizer | BitDark" />
+  <meta name="twitter:description" content="Client-side PCAP analyzer for Ethernet, IPv4, IPv6, TCP, UDP, ICMP, and ARP with interactive hex inspection." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Offline PCAP Packet Visualizer",
+        "url": "https://bitdark.net/tools/forensics/pcap-visualizer/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side network forensics utility to parse, dissect, and inspect libpcap capture files locally in browser RAM without network egress or external server processing."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Network Packet Forensics: Binary PCAP Structure, Transport Dissection, and Threat Triage",
+        "url": "https://bitdark.net/tools/forensics/pcap-visualizer/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-18",
+        "dateModified": "2026-11-06",
+        "description": "Comprehensive technical guide on libpcap global header framing, packet record offsets, Layer 2 through Layer 4 frame dissection, TCP state anomalies, and zero-egress network triage."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a PCAP file and how does the browser-native parser read it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A PCAP (Packet Capture) file is a standardized binary format produced by packet-sniffing libraries such as libpcap and WinPcap. The browser-native parser reads the raw binary byte stream directly into an ArrayBuffer via HTML5 FileReader APIs, evaluating the 24-byte global header for magic byte endianness and sequentially decoding 16-byte packet record headers and frame octets in local memory without uploading data."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is client-side PCAP analysis critical for cybersecurity investigations?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Network traffic captures frequently contain sensitive operational data, including internal RFC 1918 network topologies, cleartext credentials, Active Directory session tokens, DNS search histories, and proprietary payloads. Uploading capture files to third-party cloud services creates severe data leakage, compliance breaches, and chain-of-custody violations. In-browser local analysis ensures strict data isolation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between classic PCAP and PCAPNG formats?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Classic PCAP uses a fixed 24-byte global header followed by linear packet records with microsecond or nanosecond timestamps. PCAPNG (Next Generation) uses a flexible, block-based container architecture (Section Header Blocks, Interface Description Blocks, Enhanced Packet Blocks) that can store captures from multiple interfaces and capture comments. This visualizer parses standard libpcap (.pcap, .cap) captures."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can this tool handle 802.1Q VLAN tagged frames?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The parsing engine recognizes the 0x8100 EtherType identifier, extracts the 12-bit VLAN Identifier (VID) and Priority Code Point (PCP), and correctly advances the byte pointer to decode the encapsulated Layer 3 protocol header (such as IPv4 or IPv6)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my packet capture files uploaded to any external server or telemetry service?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress security architecture. All binary slicing, header decoding, hex dump formatting, and JSON exports execute exclusively inside your web browser's local sandbox memory space."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,8 +124,9 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, Menlo, Monaco, "Courier New", monospace;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +135,7 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       min-height: 100vh;
@@ -44,139 +143,157 @@
       flex-direction: column;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean, Zero Telemetry */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
     .nav-inner {
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
     
-    .nav-stats {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .trust-badge {
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
+      gap: 8px;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); font-weight: 600; }
-    .ip-divider { color: var(--atom-border); }
 
     /* Layout Wrapper */
     .wrapper {
       max-width: 1200px;
       width: 100%;
       margin: 0 auto;
-      padding: 20px 16px 40px;
+      padding: 30px 20px 60px;
       flex: 1;
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.76rem;
-      margin-bottom: 14px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
     
-    .tool-header { margin-bottom: 20px; }
+    .tool-header { margin-bottom: 28px; }
     .tool-header h1 {
-      font-size: 1.6rem;
+      font-size: 2.2rem;
       color: var(--atom-heading);
-      margin-bottom: 6px;
-      line-height: 1.3;
+      margin-bottom: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
     }
     .tool-header p {
       color: var(--atom-text);
-      font-size: 0.9rem;
-      max-width: 850px;
+      font-size: 1.05rem;
+      max-width: 950px;
+      line-height: 1.6;
     }
 
-    /* Main Card */
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Main Tool Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 650px;
     }
 
     /* Dropzone */
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 30px 14px;
+      border-radius: 8px;
+      padding: 40px 20px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
-    .dropzone:hover, .dropzone.dragover {
+    .dropzone:focus,
+    .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
-      background-color: rgba(229, 192, 123, 0.04);
+      background-color: rgba(229, 192, 123, 0.05);
     }
     .dropzone-icon {
-      font-size: 2.2rem;
-      margin-bottom: 8px;
-      display: inline-block;
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+      display: block;
     }
     .dropzone p {
-      font-size: 0.92rem;
+      font-size: 1.05rem;
       color: var(--atom-heading);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .dropzone-hint {
-      font-size: 0.75rem;
+      font-size: 0.82rem;
       color: var(--atom-muted);
       font-family: var(--font-code);
       display: block;
@@ -195,12 +312,12 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 4px;
-      margin-bottom: 16px;
+      gap: 12px;
+      padding: 12px 18px;
+      border-radius: 6px;
+      margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 0.86rem;
     }
     .status-ok {
       background-color: rgba(152, 195, 121, 0.12);
@@ -216,25 +333,26 @@
     /* Summary Metric Grid */
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }
     .stat-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 10px 12px;
+      border-radius: 6px;
+      padding: 14px 16px;
     }
     .stat-label {
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
     }
     .stat-value {
-      font-size: 1.1rem;
+      font-size: 1.25rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       font-weight: 700;
@@ -244,28 +362,29 @@
     .toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .filter-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      flex: 1 1 320px;
+      flex: 1 1 340px;
     }
     .input-filter {
-      flex: 1 1 180px;
+      flex: 1 1 200px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 10px;
-      border-radius: 4px;
+      padding: 10px 14px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
+      min-height: 44px;
     }
     .input-filter:focus {
       border-color: var(--atom-border-focus);
@@ -274,17 +393,18 @@
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 10px;
-      border-radius: 4px;
+      padding: 10px 14px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
       cursor: pointer;
+      min-height: 44px;
     }
 
     .btn-group {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .btn-atom {
@@ -293,13 +413,18 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 12px;
+      padding: 10px 20px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.8rem;
-      transition: opacity 0.15s;
+      font-size: 16px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.15s ease;
+      touch-action: manipulation;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-ghost {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
@@ -313,19 +438,19 @@
     /* Table Container with Native Mobile Scroll */
     .table-container {
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       background-color: var(--atom-bg);
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      max-height: 400px;
-      margin-bottom: 12px;
+      max-height: 420px;
+      margin-bottom: 16px;
     }
     table.packet-table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.76rem;
-      min-width: 680px;
+      font-size: 0.8rem;
+      min-width: 720px;
     }
     table.packet-table th {
       position: sticky;
@@ -333,14 +458,14 @@
       background-color: #1a1d22;
       color: var(--atom-muted);
       text-align: left;
-      padding: 8px 10px;
+      padding: 10px 12px;
       border-bottom: 1px solid var(--atom-border);
       font-weight: 600;
       white-space: nowrap;
       z-index: 10;
     }
     table.packet-table td {
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-bottom: 1px solid rgba(53, 59, 69, 0.45);
       color: var(--atom-text);
       white-space: nowrap;
@@ -360,9 +485,9 @@
     /* Protocol Badges */
     .proto-badge {
       display: inline-block;
-      padding: 2px 5px;
-      border-radius: 3px;
-      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
     }
@@ -372,34 +497,35 @@
     .proto-arp { background-color: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid rgba(152, 195, 121, 0.4); }
     .proto-other { background-color: rgba(171, 178, 191, 0.15); color: var(--atom-text); border: 1px solid rgba(171, 178, 191, 0.3); }
 
-    /* Pagination Bar for Large PCAPs */
+    /* Pagination Bar */
     .pagination-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-family: var(--font-code);
-      font-size: 0.74rem;
+      font-size: 0.8rem;
       color: var(--atom-muted);
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
     .pag-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .pag-btn {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
-      padding: 4px 8px;
-      border-radius: 3px;
+      padding: 6px 14px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 0.72rem;
+      font-size: 0.8rem;
+      min-height: 38px;
     }
     .pag-btn:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
@@ -407,46 +533,47 @@
     .inspector-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      gap: 16px;
       margin-top: 10px;
     }
-    @media (max-width: 880px) {
+    @media (max-width: 900px) {
       .inspector-layout { grid-template-columns: 1fr; }
     }
 
     .detail-panel {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
     }
     .panel-header {
       font-family: var(--font-code);
-      font-size: 0.74rem;
+      font-size: 0.8rem;
       color: var(--atom-amber);
       font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       border-bottom: 1px solid var(--atom-border);
-      padding-bottom: 6px;
+      padding-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      letter-spacing: 0.04em;
     }
 
     .layer-tree {
       font-family: var(--font-code);
-      font-size: 0.76rem;
-      max-height: 280px;
+      font-size: 0.8rem;
+      max-height: 320px;
       overflow-y: auto;
-      line-height: 1.6;
+      line-height: 1.7;
     }
     .layer-node {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       border-left: 2px solid var(--atom-border);
-      padding-left: 8px;
+      padding-left: 10px;
     }
     .layer-title {
       color: var(--atom-heading);
@@ -463,13 +590,13 @@
 
     .hex-viewer {
       font-family: var(--font-code);
-      font-size: 0.71rem;
-      line-height: 1.45;
+      font-size: 0.76rem;
+      line-height: 1.5;
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 8px;
-      max-height: 280px;
+      border-radius: 6px;
+      padding: 12px;
+      max-height: 320px;
       overflow-x: auto;
       overflow-y: auto;
       white-space: pre;
@@ -480,120 +607,317 @@
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-left: 4px solid var(--atom-coral);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin-bottom: 24px;
-      font-size: 0.82rem;
-      line-height: 1.6;
+      border-left: 4px solid var(--atom-amber);
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
-      color: var(--atom-coral);
-      margin-bottom: 6px;
-      font-size: 0.86rem;
+      color: var(--atom-amber);
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 22px;
-      font-size: 0.86rem;
-      line-height: 1.7;
-      color: var(--atom-text);
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3000px;
     }
-    .doc-section h2 {
+    .article-container h2 {
       color: var(--atom-heading);
-      font-size: 1.15rem;
-      margin-bottom: 8px;
-      margin-top: 18px;
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
     }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 10px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 12px; }
-    .doc-section li { margin-bottom: 5px; }
-    .doc-section code {
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 5px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
-      font-size: 0.8rem;
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 30px;
-      padding-top: 18px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      font-size: 0.76rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
 
-    /* Mobile Responsive Optimizations */
-    @media (max-width: 680px) {
-      .navbar { padding: 8px 12px; }
-      .nav-inner { flex-direction: column; align-items: flex-start; }
-      .nav-stats { width: 100%; justify-content: space-between; }
-      .ip-pill-nav { width: 100%; justify-content: space-between; font-size: 0.67rem; }
-      .tool-card { padding: 12px; }
-      .dropzone { padding: 20px 10px; }
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .tool-card { padding: 16px; }
+      .dropzone { padding: 24px 12px; }
       .toolbar { flex-direction: column; align-items: stretch; }
       .filter-group { flex: 1 1 100%; }
+      .input-filter, .select-protocol { width: 100%; }
       .btn-group { width: 100%; }
       .btn-atom { flex: 1 1 auto; text-align: center; }
       .pagination-bar { flex-direction: column; align-items: flex-start; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="nav-stats">
-        <div class="trust-badge">
-          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-        </div>
-        <div class="ip-pill-nav">
-          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-          <span class="ip-divider">·</span>
-          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
-        </div>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <!-- Workspace Container -->
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / pcap-visualizer
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Forensics</a>
+      <span class="sep">/</span>
+      <span class="current">PCAP Visualizer</span>
     </nav>
 
     <div class="tool-header">
       <h1>Offline PCAP Packet Visualizer</h1>
-      <p>Inspect, filter, and dissect captured network traffic files locally in memory. Parse Ethernet, 802.1Q VLANs, IPv4, IPv6, TCP, UDP, ICMP, and ARP frames without network egress.</p>
+      <p>Inspect, filter, and dissect captured network traffic files locally in browser memory. Parse Ethernet, 802.1Q VLANs, IPv4, IPv6, TCP, UDP, ICMP, and ARP frames without network egress or external server processing.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Card -->
-    <div class="tool-card">
-      <div class="dropzone" id="dropArea">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Packet Inspection Terminal">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="PCAP file upload drop area">
         <span class="dropzone-icon">📡</span>
         <p><strong>Click to choose a capture file</strong> or drag &amp; drop PCAP here</p>
         <span class="dropzone-hint">Supports libpcap format (.pcap, .cap) &bull; Native ArrayBuffer memory parsing (Zero cloud upload)</span>
@@ -657,12 +981,12 @@
           <table class="packet-table">
             <thead>
               <tr>
-                <th style="width: 50px;">No.</th>
-                <th style="width: 80px;">Time (s)</th>
+                <th style="width: 55px;">No.</th>
+                <th style="width: 90px;">Time (s)</th>
                 <th>Source</th>
                 <th>Destination</th>
-                <th style="width: 70px;">Protocol</th>
-                <th style="width: 65px;">Length</th>
+                <th style="width: 80px;">Protocol</th>
+                <th style="width: 75px;">Length</th>
                 <th>Summary Info</th>
               </tr>
             </thead>
@@ -691,107 +1015,508 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Legal & Operational Disclaimer -->
+    <!-- Operational & Forensic Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal Disclaimer &amp; Forensic Limitation of Liability
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible</strong> for any security audits, forensic conclusions, network diagnostic decisions, packet interception compliance, or legal liabilities arising from the use of this tool. This client-side utility performs lightweight header parsing directly inside your browser memory for rapid triage and education. It does not replace full cryptographic chain-of-custody verification or court-admissible PCAP extraction workflows provided by formal command-line toolchains such as Wireshark, TShark, or tcpdump. Ensure you hold explicit, authorized consent before capturing or inspecting traffic across any network infrastructure.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Packet inspection must always be conducted within authorized diagnostic scopes.</strong> This tool performs lightweight, client-side header parsing and byte dissection entirely inside your browser's private memory space. It is designed for rapid triage, educational analysis, and defensive incident response. It does not replace full cryptographic chain-of-custody verification, kernel-level packet filters, or deep protocol reassembly engines like Wireshark, Zeek, or Suricata. Ensure you maintain formal authorization and legal clearance prior to intercepting, capturing, or evaluating network traffic on any infrastructure.
       </p>
     </aside>
 
-    <!-- Technical Guide -->
-    <article class="doc-section">
-      <h2>How the Browser-Native PCAP Parser Operates</h2>
-      <p>Standard network traffic captures produced by tools like <code>tcpdump</code>, <code>dumpcap</code>, or Snort follow the classic libpcap file specification. BitDark reads the raw byte stream directly via the HTML5 <code>FileReader</code> and <code>ArrayBuffer</code> APIs, decoding structures without transmitting packets to remote servers:</p>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>Understanding Network Packet Forensics and PCAP Capture Architecture</h2>
+      <p>
+        In enterprise security operations, incident response (DFIR), and low-level protocol engineering, raw network packet captures represent the ground truth of digital communications. While endpoint detection logs, SIEM telemetry, and syslog streams record an operating system's <em>interpretation</em> of events, packet captures record the literal wire-level voltages and electromagnetic states translated into binary octets. When adversaries tamper with event logs, overwrite memory structures, or wipe bash histories, the packets transmitted across physical switch fabrics and virtual interfaces remain immutable witnesses to the breach.
+      </p>
+      <p>
+        The universal standard for storing these captured network interactions is the <strong>libpcap format</strong> (commonly known by its file extension, <code>.pcap</code>). Created in the late 1980s alongside Lawrence Berkeley National Laboratory's <code>tcpdump</code> utility, libpcap defines a deterministic, lightweight binary framing specification. Despite four decades of networking evolution—from 10BASE-T coaxial cables to 800-Gigabit fiber optics—the fundamental libpcap file structure remains the foundational benchmark for packet storage, forensic playback, and network intrusion detection systems (NIDS).
+      </p>
+      <p>
+        However, analyzing packet captures during emergency incidents presents severe security and operational challenges. Capture files routinely contain unencrypted session cookies, cleartext passwords, proprietary REST API tokens, database connection strings, and sensitive internal RFC 1918 addressing schemes. Uploading these captures to cloud-based "online packet decoders" creates massive security exposures, leaks intellectual property, and violates regulatory compliance frameworks like HIPAA, PCI-DSS, and GDPR. The BitDark Offline PCAP Visualizer solves this operational dilemma through an <strong>air-gapped, zero-network-egress execution model</strong>: your sensitive capture files are parsed directly inside your browser's isolated JavaScript virtual machine using native TypedArrays, guaranteeing absolute operational confidentiality.
+      </p>
+
+      <h2>How to Use the BitDark PCAP Packet Visualizer</h2>
+      <p>
+        The BitDark visualizer provides instant, byte-accurate frame dissection and interactive hex inspection through an intuitive, streamlined workflow:
+      </p>
+      <ol>
+        <li>
+          <strong>Select or Ingest Capture File:</strong> Drag and drop your target capture file (<code>.pcap</code>, <code>.cap</code>) onto the dropzone, or click the upload area to launch your system file picker.
+        </li>
+        <li>
+          <strong>Automatic Global Header Analysis:</strong> The engine immediately inspects the initial 24-byte libpcap global header, identifying the magic number, evaluating endianness (Little-Endian vs. Big-Endian), checking nanosecond/microsecond timestamp precision, and validating the Data Link Type (DLT).
+        </li>
+        <li>
+          <strong>Interactive Metric Dashboard:</strong> View high-level capture statistics in the top summary grid, including total parsed packet count, total capture duration in seconds, wire bytes processed, and the relative protocol distribution (TCP / UDP / Other).
+        </li>
+        <li>
+          <strong>Search &amp; Protocol Filtering:</strong> Filter thousands of packets in real-time by entering IP addresses (e.g., <code>192.168.1.100</code>), MAC addresses, TCP/UDP port numbers (e.g., <code>443</code> or <code>53</code>), or freeform text keywords matching the summary information. Use the protocol dropdown to isolate TCP, UDP, ICMP, or ARP streams instantly.
+        </li>
+        <li>
+          <strong>Layered Protocol Dissection:</strong> Click any row in the packet table to inspect its decoded protocol stack in the Frame Protocol Dissection tree. Expand the layers to review Layer 2 Ethernet MACs, 802.1Q VLAN identifiers, Layer 3 IP flags/TTL/addresses, and Layer 4 transport sequence numbers and control flags.
+        </li>
+        <li>
+          <strong>Synchronized Hex &amp; ASCII Inspection:</strong> The right-hand inspector panel renders the exact raw hexadecimal dump alongside printable ASCII characters, formatted into 16-byte aligned offset rows for rapid payload and shellcode identification.
+        </li>
+        <li>
+          <strong>Export Structured Forensics:</strong> Click "Export JSON" to export the entire parsed dataset—including relative timestamps, source/destination addresses, layer fields, and protocol summaries—as a clean, structured JSON file for downstream scripting or case reporting.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Incident Response, Threat Hunting &amp; Diagnostics</h2>
+      <p>
+        Client-side packet inspection is an indispensable capability across multiple offensive, defensive, and engineering disciplines:
+      </p>
       <ul>
-        <li><strong>Global Libpcap Header (24 Bytes):</strong> Evaluates the initial 32-bit magic number (<code>0xA1B2C3D4</code> for microsecond precision or <code>0xA1B23C4D</code> for nanosecond precision) to establish byte endianness, followed by snapshot length (<code>snaplen</code>) and data link type (Ethernet <code>DLT_EN10MB</code>).</li>
-        <li><strong>Packet Header (16 Bytes):</strong> Decodes UNIX epoch timestamp seconds, fractional microsecond offsets, included capture length (<code>incl_len</code>), and raw wire length (<code>orig_len</code>).</li>
-        <li><strong>Layer 2 / Ethernet II &amp; 802.1Q:</strong> Extracts MAC addresses, checks for VLAN tags (`0x8100`), and determines the inner Layer 3 EtherType discriminator (<code>0x0800</code> for IPv4, <code>0x86DD</code> for IPv6, <code>0x0806</code> for ARP).</li>
-        <li><strong>Layer 3 / Internet Protocol:</strong> Dynamically calculates IPv4 Internet Header Length (`IHL`), validates Total Length, extracts TTL, Protocol, and IP addresses. For IPv6, processes the 40-byte fixed header including Next Header and 128-bit addresses.</li>
-        <li><strong>Layer 4 / Transport:</strong> Decodes source and destination ports, sequence numbers, acknowledgement numbers, and TCP control flags (SYN, ACK, FIN, RST, PSH, URG), along with common UDP port heuristics.</li>
+        <li>
+          <strong>Malware Command-and-Control (C2) Triage:</strong> Rapidly inspect suspicious network captures generated by sandbox malware detonations to identify beaconing intervals, hardcoded domain queries, HTTP user agents, and unencrypted exfiltration payloads.
+        </li>
+        <li>
+          <strong>Lateral Movement &amp; ARP Spoofing Audits:</strong> Detect Address Resolution Protocol poisoning attacks where rogue MAC addresses map to default gateways, or audit internal reconnaissance sweeps (SYN scans, NULL scans, Xmas tree scans).
+        </li>
+        <li>
+          <strong>Network Infrastructure Troubleshooting:</strong> Diagnose transient TCP connection resets (RST flags), asymmetric routing anomalies, MTU black holes leading to ICMP Fragmentation Needed errors, and DHCP lease failures.
+        </li>
+        <li>
+          <strong>Educational &amp; Certification Labs:</strong> Master low-level bitwise networking concepts for certifications like Wireshark Certified Network Analyst (WCNA), CompTIA Security+, CEH, and GIAC GCIA without configuring heavy virtualization environments.
+        </li>
+        <li>
+          <strong>Auditing Air-Gapped Industrial Control Systems (ICS/SCADA):</strong> Triage captures from isolated operational technology (OT) networks on hardened field laptops where external Internet connectivity is physically prohibited.
+        </li>
       </ul>
 
-      <h2>Zero Egress Execution Model</h2>
-      <p>Network packet captures often contain sensitive organizational data, including cleartext session tokens, DNS search histories, internal RFC 1918 addressing topologies, and unencrypted credentials. BitDark operates under strict client-side isolation: no telemetry, no tracking analytics, and zero cloud uploads.</p>
+      <h2>The Binary Architecture of the Libpcap File Format</h2>
+      <p>
+        To understand how the BitDark parser operates at the binary level, one must examine the on-disk serialization structure defined by the libpcap specification. A standard capture file consists of a single <strong>Global Header</strong> followed by a continuous sequence of <strong>Packet Records</strong>:
+      </p>
+
+      <pre><code>+-------------------------------------------------------------------------+
+| Libpcap Global Header (Fixed 24 Bytes)                                  |
+|  * Magic Number (4B) | Version Major/Minor (4B) | Timezone Offset (4B)  |
+|  * Timestamp Accuracy (4B) | Snapshot Length (4B) | Link-Layer Type (4B)|
++-------------------------------------------------------------------------+
+| Packet Record 1: Header (16 Bytes) + Captured Frame Octets (N Bytes)   |
++-------------------------------------------------------------------------+
+| Packet Record 2: Header (16 Bytes) + Captured Frame Octets (M Bytes)   |
++-------------------------------------------------------------------------+
+| ... [Subsequent Packet Records until End of File]                       |
++-------------------------------------------------------------------------+</code></pre>
+
+      <h3>1. The 24-Byte Libpcap Global Header</h3>
+      <p>
+        The first 24 octets of any valid libpcap file establish the structural framing parameters for the entire file:
+      </p>
+      <ul>
+        <li>
+          <strong>Magic Number (32 bits / 4 Bytes):</strong> Identifies the file format, endianness, and timestamp resolution. If the byte sequence is <code>0xA1B2C3D4</code>, the file is Big-Endian with microsecond timestamps. If the bytes read <code>0xD4C3B2A1</code>, it is Little-Endian. The sequence <code>0xA1B23C4D</code> indicates nanosecond precision.
+        </li>
+        <li>
+          <strong>Version Major &amp; Minor (16 bits each / 4 Bytes):</strong> Specifies the libpcap file version (overwhelmingly version <code>2.4</code> in modern captures).
+        </li>
+        <li>
+          <strong>Thiszone (32 bits / 4 Bytes):</strong> GMT to local correction offset in seconds (almost universally set to 0).
+        </li>
+        <li>
+          <strong>Sigfigs (32 bits / 4 Bytes):</strong> Accuracy of timestamps in the capture (historically set to 0).
+        </li>
+        <li>
+          <strong>Snaplen (32 bits / 4 Bytes):</strong> The maximum number of bytes captured per packet. If a packet exceeded this length during capture, it was truncated. Standard modern captures use <code>262144</code> (256 KB) or <code>65535</code>.
+        </li>
+        <li>
+          <strong>Network / LinkType (32 bits / 4 Bytes):</strong> Defines the Layer 2 link-layer protocol encapsulation. Value <code>1</code> corresponds to standard Ethernet (<code>DLT_EN10MB</code>), <code>105</code> corresponds to IEEE 802.11 Wireless, and <code>113</code> represents Linux Cooked Capture (<code>SLL</code>).
+        </li>
+      </ul>
+
+      <h3>2. The 16-Byte Packet Record Header</h3>
+      <p>
+        Every captured packet on the wire is preceded by a standardized 16-byte metadata header:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>Offset / Size</th>
+              <th>Data Type</th>
+              <th>Technical Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Timestamp Seconds</strong></td>
+              <td>0 - 3 (4 Bytes)</td>
+              <td>32-bit Unsigned Int</td>
+              <td>UNIX Epoch timestamp seconds when the packet arrived at the NIC.</td>
+            </tr>
+            <tr>
+              <td><strong>Timestamp Subseconds</strong></td>
+              <td>4 - 7 (4 Bytes)</td>
+              <td>32-bit Unsigned Int</td>
+              <td>Microsecond or nanosecond fractional offset within the current second.</td>
+            </tr>
+            <tr>
+              <td><strong>Included Length (incl_len)</strong></td>
+              <td>8 - 11 (4 Bytes)</td>
+              <td>32-bit Unsigned Int</td>
+              <td>The actual number of bytes captured and stored in this file record.</td>
+            </tr>
+            <tr>
+              <td><strong>Original Length (orig_len)</strong></td>
+              <td>12 - 15 (4 Bytes)</td>
+              <td>32-bit Unsigned Int</td>
+              <td>The real length of the packet as it appeared on the physical wire.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Wire-Level Protocol Framing: Layer 2 to Layer 4 Dissection</h2>
+      <p>
+        Once the 16-byte packet header is processed, the parser receives an array of raw binary octets representing the network frame. The BitDark dissection engine peels back the protocol encapsulation layers sequentially:
+      </p>
+
+      <h3>Layer 2: Ethernet II &amp; 802.1Q Virtual LANs</h3>
+      <p>
+        The base Ethernet frame requires a 14-byte header: Destination MAC (6 bytes), Source MAC (6 bytes), and a 2-byte <strong>EtherType</strong> discriminator. 
+      </p>
+      <p>
+        If the EtherType reads <code>0x8100</code>, the frame incorporates an IEEE 802.1Q VLAN tag. The parser extracts the 3-bit Priority Code Point (PCP), the 1-bit Drop Eligible Indicator (DEI), and the 12-bit VLAN Identifier (VID), then advances the frame offset by 4 bytes to read the inner encapsulated EtherType:
+      </p>
+      <ul>
+        <li><code>0x0800</code>: Internet Protocol Version 4 (IPv4)</li>
+        <li><code>0x86DD</code>: Internet Protocol Version 6 (IPv6)</li>
+        <li><code>0x0806</code>: Address Resolution Protocol (ARP)</li>
+      </ul>
+
+      <h3>Layer 3: IPv4 and IPv6 Internals</h3>
+      <p>
+        For IPv4 datagrams, the parser evaluates the first byte to verify Version 4 and extract the <strong>Internet Header Length (IHL)</strong> from the lowest 4 bits. Because IHL specifies the header size in 32-bit words, multiplying this value by 4 yields the exact byte offset where the Layer 4 transport payload begins (minimum 20 bytes, expandable up to 60 bytes with IP Options). The engine parses Total Length, Time to Live (TTL), Source IP, Destination IP, and the protocol indicator:
+      </p>
+      <ul>
+        <li>Protocol <code>6</code>: Transmission Control Protocol (TCP)</li>
+        <li>Protocol <code>17</code>: User Datagram Protocol (UDP)</li>
+        <li>Protocol <code>1</code>: Internet Control Message Protocol (ICMP)</li>
+        <li>Protocol <code>58</code>: Internet Control Message Protocol Version 6 (ICMPv6)</li>
+      </ul>
+      <p>
+        For IPv6, the parser navigates the 40-byte fixed header, extracting the 20-bit Flow Label, 16-bit Payload Length, Next Header pointer, Hop Limit (TTL equivalent), and 128-bit source and destination addresses formatted as clean hexadecimal notation.
+      </p>
+
+      <h3>Layer 4: TCP State Flags and Sequence Tracking</h3>
+      <p>
+        Transmission Control Protocol headers provide rich forensic indicators through control flags located at byte offset 13 of the TCP header:
+      </p>
+      <pre><code>TCP Flag Register (Byte Offset 13):
+Bit Position:  [7]   [6]   [5]   [4]   [3]   [2]   [1]   [0]
+Flag Bit:      CWR   ECE   URG   ACK   PSH   RST   SYN   FIN
+Bit Mask:     0x80  0x40  0x20  0x10  0x08  0x04  0x02  0x01</code></pre>
+      <p>
+        By evaluating bitwise masks against this register, the parser decodes whether a packet represents an initial connection attempt (<code>[SYN]</code>), an acknowledgment (<code>[ACK]</code>), an immediate push of application data (<code>[PSH, ACK]</code>), an abrupt connection termination (<code>[RST]</code>), or a graceful teardown (<code>[FIN, ACK]</code>).
+      </p>
+
+      <h2>Worked Forensic Example: Dissecting an Attack Packet Sequence</h2>
+      <p>
+        To illustrate how packet forensics reveals adversarial activity, let us trace an actual attack sequence parsed by BitDark: an automated port scan transitioning into an unauthorized SSH brute-force attempt.
+      </p>
+
+      <h3>1. Packet #1 — Reconnaissance Probe (SYN Scan)</h3>
+      <p>
+        The threat actor at <code>198.51.100.42</code> probes internal host <code>192.168.1.50</code> to determine if port 22 is open:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Key Fields Extracted</th>
+              <th>Forensic Significance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ethernet II</strong></td>
+              <td>Src MAC: <code>00:0C:29:4F:8E:1A</code><br>Dst MAC: <code>00:50:56:E8:22:90</code></td>
+              <td>OUI indicates a VMware virtual machine communicating with an internal gateway.</td>
+            </tr>
+            <tr>
+              <td><strong>IPv4</strong></td>
+              <td>Src: <code>198.51.100.42</code><br>Dst: <code>192.168.1.50</code><br>TTL: <code>48</code></td>
+              <td>TTL value suggests an external packet transiting approximately 16 hops.</td>
+            </tr>
+            <tr>
+              <td><strong>TCP</strong></td>
+              <td>Src Port: <code>49821</code> &rarr; Dst Port: <code>22 (SSH)</code><br>Flags: <code>[SYN]</code><br>Seq: <code>184920194</code></td>
+              <td>Initial handshake initiation packet seeking an active listener on TCP/22.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2. Packet #2 — Target Host Response</h3>
+      <p>
+        The server acknowledges the connection request, confirming that the SSH daemon is listening and accessible:
+      </p>
+      <pre><code>Source: 192.168.1.50:22  --->  Destination: 198.51.100.42:49821
+Flags: [SYN, ACK]  Seq=391820491  Ack=184920195  Len=0
+Forensic Verdict: Port 22 is OPEN and responsive.</code></pre>
+
+      <h3>3. Packet #3 — Completing Handshake &amp; Banner Exfiltration</h3>
+      <p>
+        The client immediately completes the 3-way handshake with <code>[ACK]</code> and initiates SSH protocol negotiation. Inspecting the raw ASCII payload in the BitDark Hex Viewer reveals:
+      </p>
+      <pre><code>0000  53 53 48 2D 32 2E 30 2D  4F 70 65 6E 53 53 48 5F  |SSH-2.0-OpenSSH_|
+0010  38 2E 39 70 31 20 55 62  75 6E 74 75 2D 33 75 62  |8.9p1 Ubuntu-3ub|
+0020  75 6E 74 75 30 2E 31 0D  0A                       |untu0.1..      |</code></pre>
+      <p>
+        The server transmits its exact software banner: <code>OpenSSH 8.9p1 Ubuntu-3ubuntu0.1</code>. This reveals operating system specifics and package versions directly to the adversary without requiring authentication.
+      </p>
+
+      <h2>Comparison: In-Browser Visualizer vs Wireshark vs Zeek</h2>
+      <p>
+        Understanding where client-side in-browser inspection fits within the broader network analysis ecosystem ensures optimal tool selection:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Evaluation Parameter</th>
+              <th>BitDark Browser Parser</th>
+              <th>Wireshark (Desktop C++)</th>
+              <th>Zeek / Bro (CLI NIDS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Deployment Model</strong></td>
+              <td>Zero-install, instant web access</td>
+              <td>Native desktop application</td>
+              <td>Server/daemon CLI engine</td>
+            </tr>
+            <tr>
+              <td><strong>Operational Privacy</strong></td>
+              <td><strong>100% Client-Side RAM</strong> (Zero egress)</td>
+              <td>Local host native</td>
+              <td>Local host native</td>
+            </tr>
+            <tr>
+              <td><strong>Cloud Upload Risk</strong></td>
+              <td><strong>None</strong> (Air-gapped)</td>
+              <td>None</td>
+              <td>None</td>
+            </tr>
+            <tr>
+              <td><strong>File Size Ceiling</strong></td>
+              <td>Best for captures &lt; 100MB</td>
+              <td>Handles multi-GB captures</td>
+              <td>Handles enterprise TB streams</td>
+            </tr>
+            <tr>
+              <td><strong>Deep Protocol Trees</strong></td>
+              <td>L2–L4 core framing &amp; hex dump</td>
+              <td>Over 3,000 application dissectors</td>
+              <td>Protocol event script generation</td>
+            </tr>
+            <tr>
+              <td><strong>Export Options</strong></td>
+              <td>Standard JSON, raw copy</td>
+              <td>PCAP, CSV, XML, PDML</td>
+              <td>Structured TSV / JSON logs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Mistakes &amp; Forensic Pitfalls in Packet Analysis</h2>
+      <p>
+        Investigators evaluating network traffic captures must remain vigilant against classic cognitive and technical errors:
+      </p>
+      <ul>
+        <li>
+          <strong>Confusing Relative Time with Absolute Wall Time:</strong> The BitDark visualizer displays relative elapsed seconds (starting at <code>0.0000s</code> for Packet #1) to simplify delta calculations. If your investigation requires coordinating network events with syslog timestamps or firewall records, correlate the relative offset with the capture's base epoch timestamp.
+        </li>
+        <li>
+          <strong>Ignoring Capture Truncation (Snaplen Limits):</strong> If a capture was collected with a low snapshot length (e.g., <code>tcpdump -s 96</code>), only the first 96 bytes of each frame were stored. While Layer 2 through Layer 4 headers remain intact, application payloads will be missing. Compare <code>incl_len</code> against <code>orig_len</code> to identify truncated packets.
+        </li>
+        <li>
+          <strong>Assuming Missing Packets Imply Packet Loss:</strong> High-bandwidth captures taken on underpowered capture hardware or virtualized SPAN ports often suffer from buffer exhaustion, dropping frames before they reach the libpcap driver. Gaps in TCP sequence numbers may reflect capture drop rather than network packet loss.
+        </li>
+        <li>
+          <strong>Misinterpreting Localhost Loopback Traffic:</strong> Captures taken on the loopback interface (<code>lo0</code> or <code>127.0.0.1</code>) do not follow standard Ethernet framing. They often utilize Linux Cooked Capture (<code>SLL</code>) or BSD Loopback headers rather than <code>DLT_EN10MB</code>, which requires dedicated link-type translation.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between classic PCAP and PCAPNG files?</div>
+          <div class="faq-answer">
+            Classic libpcap (.pcap) uses a rigid 24-byte global header followed by sequential packet records. PCAPNG (.pcapng) is an extensible block-based format that supports multiple interfaces, interface name metadata, custom comments, and granular dropping statistics. If your capture is in PCAPNG format, you can easily save it as standard libpcap from Wireshark via File &rarr; Export Specified Packets &rarr; Save as Wireshark/tcpdump (*.pcap).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does BitDark ensure that sensitive network captures remain private?</div>
+          <div class="faq-answer">
+            The BitDark visualizer operates entirely inside your web browser's local sandbox memory space using the HTML5 FileReader API and TypedArrays. No packets, headers, IP addresses, or metadata strings are ever transmitted over the network or saved to cloud servers. You can disconnect your Internet connection after loading the page and the tool will continue functioning with 100% fidelity.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I inspect the full application layer payload of encrypted HTTPS traffic?</div>
+          <div class="faq-answer">
+            No packet analyzer can decrypt TLS/HTTPS traffic without the corresponding cryptographic session keys (Pre-Master Secret SSLKEYLOGFILE) or the server's private key. The visualizer will show the TCP handshake, TLS Client Hello/Server Hello handshakes, certificate exchanges, and encrypted TLS Application Data records.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the table show 100 packets per page?</div>
+          <div class="faq-answer">
+            Network capture files often contain tens of thousands of packets. Rendering thousands of complex DOM rows simultaneously causes severe browser reflow lag, high memory consumption, and freezes on mobile devices. The visualizer uses a fast pagination system (100 packets per page) while retaining all parsed packets in memory for filtering and JSON export.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What happens if a packet contains 802.1Q VLAN tagging?</div>
+          <div class="faq-answer">
+            The parser detects the 0x8100 EtherType discriminator, extracts the 12-bit VLAN ID and priority bits, and adjusts the Layer 3 header offset forward by 4 bytes. This guarantees that IP and transport headers are decoded accurately without offset misalignment.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I filter packets by both protocol and destination port?</div>
+          <div class="faq-answer">
+            Yes. You can select a protocol from the dropdown menu (e.g., TCP) and enter a port number, IP address, or MAC string into the search filter simultaneously. The table updates instantly to match both conditions.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does this tool support nanosecond timestamp resolution?</div>
+          <div class="faq-answer">
+            Yes. The engine inspects the magic number in the global header. If it detects 0xA1B23C4D or 0x4D3CB2A1, it automatically calculates timestamp offsets using nanosecond precision (1e9) rather than microsecond precision (1e6).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does JSON export help in forensic investigations?</div>
+          <div class="faq-answer">
+            Clicking "Export JSON" produces a clean, machine-readable array of all parsed packets, including packet numbers, relative arrival times, protocol names, source/destination addressing, and decoded layer fields. This structured format can be directly ingested into Python scripts, Pandas dataframes, or incident documentation without writing custom PCAP parsers.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Forensics, Cryptography &amp; Malware Analysis Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Scan and extract printable ASCII and wide UTF-16LE Unicode strings from raw binaries, firmware, and memory dumps.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Inspect binary file headers, hex magic bytes, and detect dangerous extension spoofing entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Authenticated client-side 256-bit encryption for securing confidential payloads with zero tracking.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark &bull; Zero telemetry, client-side cybersecurity suite</span>
-      <nav>
-        <a href="/">Directory</a> &bull; <a href="/blog">Blog</a> &bull; <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    /* 1. Bulletproof Dual-Stack IP Detection */
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        if (ipv4El) ipv4El.textContent = "127.0.0.1 (Local)";
-        if (ipv6El) ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      const fetchWithTimeout = async (url, timeoutMs = 3000) => {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          const res = await fetch(url, { cache: "no-store", signal: controller.signal });
-          clearTimeout(id);
-          return res;
-        } catch (e) {
-          clearTimeout(id);
-          throw e;
-        }
-      };
-
-      // Detect IPv4
-      try {
-        const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
-        if (res4.ok) {
-          const data4 = await res4.json();
-          if (ipv4El) ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
-          if (ipv4El) ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          if (ipv4El) ipv4El.textContent = "Offline";
-        }
-      }
-
-      // Detect IPv6 strictly via dedicated AAAA endpoint
-      try {
-        const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
-        if (res6.ok) {
-          const data6 = await res6.json();
-          if (ipv6El) ipv6El.textContent = data6.ip.includes(":") ? data6.ip : "Not Supported";
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
-          const text6 = (await fb6.text()).trim();
-          if (ipv6El) ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          if (ipv6El) ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    /* 2. PCAP Binary Dissection Engine */
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. PCAP Binary Dissection Engine (100% Unaltered Tool Logic, Zero Telemetry)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -825,6 +1550,13 @@
 
     // Drag-and-drop wiring
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(ev => {
       dropArea.addEventListener(ev, (e) => {
@@ -993,7 +1725,7 @@
       }
     }
 
-    /* 3. Dissect Packet Layers */
+    /* Dissect Packet Layers */
     function dissectFrame(bytes, linkType) {
       const len = bytes.length;
       let result = {
@@ -1239,7 +1971,7 @@
       }
     }
 
-    /* 4. Filter & Pagination Engine */
+    /* Filter & Pagination Engine */
     function applyFilter() {
       const term = filterInput.value.trim().toLowerCase();
       const proto = protocolFilter.value;
@@ -1336,7 +2068,7 @@
       }
     });
 
-    /* 5. Packet Inspection & Hex Dump */
+    /* Packet Inspection & Hex Dump */
     function selectPacket(index) {
       activeSelectedIndex = index;
       const rows = packetTableBody.querySelectorAll("tr");
@@ -1394,7 +2126,7 @@
       return output;
     }
 
-    /* 6. JSON Export */
+    /* JSON Export */
     btnExportJson.addEventListener("click", () => {
       if (parsedPackets.length === 0) return;
       const exportData = parsedPackets.map(p => ({
@@ -1417,7 +2149,7 @@
       dl.remove();
     });
 
-    /* 7. Binary String Formatting Utilities */
+    /* Binary String Formatting Utilities */
     function formatMac(bytes, start) {
       return Array.from(bytes.slice(start, start + 6))
         .map(b => b.toString(16).padStart(2, "0").toUpperCase())
@@ -1456,6 +2188,12 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
