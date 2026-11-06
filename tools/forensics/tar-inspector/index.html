@@ -4,12 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>TAR Archive Forensics & Header Inspector — Free Offline Tool | BitDark</title>
-  <meta name="title" content="TAR Archive Forensics & Header Inspector — Free Offline Tool | BitDark" />
-  <meta name="description" content="Inspect, verify, and forensically analyze TAR and TAR.GZ archive headers entirely in client-side browser memory. Zero tracking, zero uploads, zero network egress." />
-  <meta name="keywords" content="tar inspector, tar header parser, tar forensics, ustar parser, pax header viewer, offline tar extractor, archive security audit" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/tar-inspector" />
+  <title>TAR Archive Forensics &amp; Header Inspector — Free Offline Tool | BitDark</title>
+  <meta name="title" content="TAR Archive Forensics &amp; Header Inspector — Free Offline Tool | BitDark" />
+  <meta name="description" content="Inspect, verify, and forensically analyze POSIX USTAR, GNU, and PAX TAR archive headers entirely in client-side browser memory. Audit block checksums, detect path traversal exploits, analyze permission bitmasks, and extract file entries with zero server upload." />
+  <meta name="keywords" content="tar inspector, tar header parser, tar forensics, ustar parser, pax header viewer, offline tar extractor, archive security audit, tar slip detector, zip slip scanner, gnu tar header, tape archive forensics, ustar magic bytes" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/tar-inspector/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/tar-inspector/" />
+  <meta property="og:title" content="TAR Archive Forensics &amp; Header Inspector — Local Memory Parser | BitDark" />
+  <meta property="og:description" content="Inspect POSIX USTAR, GNU, and PAX TAR headers, audit checksums, and detect path traversal exploits locally in your browser. Zero bytes transferred over the network." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/tar-inspector/" />
+  <meta name="twitter:title" content="TAR Archive Forensics &amp; Header Inspector | BitDark" />
+  <meta name="twitter:description" content="Analyze POSIX USTAR, GNU, and PAX TAR archive headers inside browser memory. 100% Client-Side with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "TAR Archive Forensics & Header Inspector",
+        "url": "https://bitdark.net/tools/forensics/tar-inspector/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side forensic utility to inspect, parse, and verify POSIX USTAR, GNU, PAX, and V7 TAR archive headers, block checksums, permission masks, and directory traversal vectors in sandboxed browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Tape Archive (TAR) Binary Forensics: Anatomy of 512-Byte Header Blocks, Octal Serialization, and Tar Slip Exploitation",
+        "url": "https://bitdark.net/tools/forensics/tar-inspector/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-14",
+        "dateModified": "2026-11-06",
+        "description": "Exhaustive technical reference and forensic guide to TAR archive internal structure, 512-byte block alignment, POSIX USTAR vs GNU TAR vs PAX standards, header checksum calculation algorithms, path traversal detection, and trailer slack space forensic analysis."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does the TAR archive format structure data internally without a central directory?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unlike ZIP archives which maintain a centralized directory table at the end of the file, TAR (Tape Archive) is a sequential byte stream designed originally for linear magnetic tape storage. It organizes data into contiguous 512-byte blocks. Each entry consists of exactly one 512-byte header block describing the metadata, followed immediately by the payload data rounded up to the nearest 512-byte multiple using zero-padding, followed sequentially by subsequent file headers. The entire archive concludes with two consecutive 512-byte zero blocks (1024 bytes of nulls) serving as the End-of-Archive (EOA) marker."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the Tar Slip vulnerability and how can static header analysis detect it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tar Slip is an arbitrary file overwrite vulnerability that occurs when an archive contains path traversal characters (such as ../, ..\\, or leading root slashes like /etc/shadow) in its file name or link name header fields. If an extraction utility naively concatenates this path to a destination directory without canonicalizing and verifying that the target path remains inside the extraction folder boundary, an attacker can overwrite critical system files. Static header inspection flags these strings before any extraction takes place."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is the 8-byte TAR header checksum computed and verified?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The checksum field resides at byte offsets 148 to 155 within each 512-byte header block. During computation, all 8 bytes of the checksum field itself are temporarily treated as ASCII space characters (0x20). The evaluator then calculates the arithmetic sum of all 512 bytes in the block. Because historical Unix implementations varied, modern parsers verify both unsigned byte summation (standard) and signed byte summation (legacy systems where char was signed) against the declared 6-character octal value stored in the header."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between POSIX USTAR, GNU TAR, and PAX extended formats?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "POSIX USTAR (IEEE Std 1003.1) introduced the 'ustar\\0' magic identifier at offset 257 and added a 155-byte prefix field, expanding maximum path lengths from 100 to 256 bytes. GNU TAR modified this magic to 'ustar  \\0' and handles long filenames exceeding 256 bytes using special pseudo-entries (typeflags 'L' for long name and 'K' for long symlink). The PAX format (POSIX.1-2001) resolves naming and size limitations universally by inserting extended header blocks (typeflags 'x' and 'g') containing UTF-8 formatted key-value pairs capable of representing arbitrarily long paths, nanosecond timestamps, and files exceeding 8 gigabytes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my archive files uploaded to external servers or third-party cloud scanners?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All binary stream inspection, GZIP decompression, SHA-256 calculation, and header extraction execute purely inside your browser's private volatile RAM via JavaScript TypedArrays and the native Web Streams Decompression API. Zero bytes leave your workstation."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -26,8 +124,9 @@
       --atom-coral: #e06c75;
       --atom-green: #98c379;
       --atom-purple: #c678dd;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,171 +135,184 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 12px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
     .nav-inner {
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
     
-    .trust-badge {
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--atom-cyan);
-      box-shadow: 0 0 6px var(--atom-cyan);
-      flex-shrink: 0;
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 18px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      overflow-x: auto;
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 {
-      font-size: 1.75rem;
-      color: var(--atom-heading);
-      margin-bottom: 6px;
-      word-break: break-word;
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
     }
-    .tool-header p {
-      color: var(--atom-text);
-      font-size: 0.95rem;
-      max-width: 850px;
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
+
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
     }
 
-    /* Tool Card & Workspace */
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 36px 16px;
+      border-radius: 8px;
+      padding: 44px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
-    .dropzone:hover, .dropzone.dragover {
+    .dropzone:focus,
+    .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
-    .dropzone-icon {
-      font-size: 2.2rem;
-      margin-bottom: 8px;
+    .dropzone-icon { 
+      font-size: 2.6rem; 
+      margin-bottom: 12px; 
+      display: block; 
+    }
+    .dropzone p { 
+      font-size: 1.05rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
+    .dropzone-hint { 
+      font-size: 0.84rem; 
+      color: var(--atom-muted); 
+      font-family: var(--font-code); 
       display: block;
+      margin-top: 4px;
     }
-    .dropzone p {
-      font-size: 0.92rem;
-      color: var(--atom-text);
-      margin-bottom: 6px;
-    }
-    .dropzone p strong { color: var(--atom-heading); }
-    .dropzone-hint {
-      font-size: 0.76rem;
-      color: var(--atom-muted);
-      font-family: var(--font-code);
-      display: inline-block;
-      max-width: 90%;
-    }
-
     .file-input-hidden { display: none; }
 
     /* Results Workspace */
-    .results-area {
-      margin-top: 24px;
-      display: none;
+    .results-area { 
+      margin-top: 28px; 
+      display: none; 
     }
     
     .status-banner {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      word-break: break-word;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .status-valid {
       background-color: rgba(152, 195, 121, 0.12);
@@ -220,59 +332,59 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px 14px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
       min-width: 0;
     }
-    .meta-label {
-      font-size: 0.72rem;
-      color: var(--atom-muted);
-      text-transform: uppercase;
-      font-family: var(--font-code);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
+    .meta-label { 
+      font-size: 0.74rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 6px; 
+      letter-spacing: 0.05em;
     }
-    .meta-val {
-      font-size: 0.86rem;
-      color: var(--atom-heading);
-      font-family: var(--font-code);
-      word-break: break-all;
+    .meta-val { 
+      font-size: 0.92rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
     }
 
-    /* Filter & Controls */
+    /* Filter & Table Controls */
     .table-controls {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
+      gap: 14px;
+      margin-bottom: 16px;
     }
     .search-input {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 12px;
-      border-radius: 4px;
+      padding: 10px 14px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       flex: 1;
-      min-width: 220px;
-      max-width: 400px;
+      min-width: 240px;
+      max-width: 440px;
     }
     .search-input:focus {
       outline: none;
       border-color: var(--atom-border-focus);
     }
     .table-stats {
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-family: var(--font-code);
       color: var(--atom-muted);
     }
@@ -281,62 +393,71 @@
     .table-wrapper {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: 20px;
-      max-height: 480px;
+      margin-bottom: 22px;
+      max-height: 520px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       text-align: left;
-      min-width: 720px;
+      min-width: 780px;
     }
     th {
-      background-color: var(--atom-gutter);
-      color: var(--atom-muted);
-      padding: 10px 12px;
+      background-color: var(--atom-surface);
+      color: var(--atom-cyan);
+      padding: 12px 14px;
       font-weight: 600;
       border-bottom: 1px solid var(--atom-border);
       position: sticky;
       top: 0;
       z-index: 5;
+      text-transform: uppercase;
+      font-size: 0.74rem;
+      letter-spacing: 0.05em;
     }
     td {
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--atom-border);
       color: var(--atom-text);
       vertical-align: middle;
+      white-space: nowrap;
     }
     tr:hover td {
       background-color: rgba(255, 255, 255, 0.02);
     }
     .badge {
       display: inline-block;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 0.7rem;
-      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
       text-transform: uppercase;
     }
-    .badge-file { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); }
-    .badge-dir { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); }
-    .badge-sym { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); }
-    .badge-risk { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); font-weight: 700; }
-    .badge-ok { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); }
+    .badge-file { background: rgba(86, 182, 194, 0.15); color: var(--atom-cyan); border: 1px solid var(--atom-cyan); }
+    .badge-dir { background: rgba(229, 192, 123, 0.15); color: var(--atom-amber); border: 1px solid var(--atom-amber); }
+    .badge-sym { background: rgba(198, 120, 221, 0.15); color: var(--atom-purple); border: 1px solid var(--atom-purple); }
+    .badge-risk { background: rgba(224, 108, 117, 0.2); color: var(--atom-coral); border: 1px solid var(--atom-coral); font-weight: 700; }
+    .badge-ok { background: rgba(152, 195, 121, 0.15); color: var(--atom-green); border: 1px solid var(--atom-green); }
 
     .btn-action-small {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 3px 8px;
-      border-radius: 3px;
+      padding: 6px 12px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       font-family: var(--font-ui);
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
     .btn-action-small:hover {
       border-color: var(--atom-amber);
@@ -353,28 +474,29 @@
       align-items: center;
       justify-content: center;
       padding: 16px;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(4px);
     }
     .modal-content {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      max-width: 800px;
+      border-radius: 8px;
+      max-width: 840px;
       width: 100%;
       max-height: 85vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
     }
     .modal-header {
-      padding: 14px 18px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--atom-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
     }
     .modal-header h3 {
-      font-size: 1rem;
+      font-size: 1.05rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -383,40 +505,46 @@
       background: none;
       border: none;
       color: var(--atom-muted);
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       cursor: pointer;
-      padding: 0 4px;
+      padding: 0 6px;
       line-height: 1;
+      min-height: 36px;
+      min-width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .modal-close:hover { color: var(--atom-coral); }
     .modal-body {
-      padding: 16px 18px;
+      padding: 20px;
       overflow-y: auto;
       font-family: var(--font-code);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
     }
     .modal-footer {
-      padding: 12px 18px;
+      padding: 14px 20px;
       border-top: 1px solid var(--atom-border);
       display: flex;
       justify-content: flex-end;
-      gap: 10px;
+      gap: 12px;
     }
 
     /* Detail Blocks */
     .detail-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
     }
     .detail-table td {
-      padding: 6px 8px;
+      padding: 8px 10px;
       border-bottom: 1px solid var(--atom-border);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
+      white-space: normal;
     }
     .detail-key {
       color: var(--atom-muted);
-      width: 180px;
+      width: 200px;
       font-weight: 600;
     }
 
@@ -424,15 +552,15 @@
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
-      max-height: 250px;
+      font-size: 0.82rem;
+      max-height: 260px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
-      line-height: 1.5;
+      line-height: 1.55;
       word-break: break-all;
     }
 
@@ -440,8 +568,8 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
-      margin-top: 16px;
-      gap: 10px;
+      margin-top: 20px;
+      gap: 12px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -449,155 +577,342 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
-      transition: opacity 0.2s;
-      min-height: 38px;
+      font-size: 16px; /* Prevents iOS auto-zoom */
+      min-height: 44px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
     .btn-secondary:hover {
-      background-color: #424955;
+      background-color: #424953;
       color: var(--atom-heading);
     }
 
-    /* Disclaimer Callout */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 32px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3200px;
     }
-    .doc-section h2 {
+    .article-container h2 {
       color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
       font-size: 1.25rem;
+      margin-top: 28px;
       margin-bottom: 12px;
-      margin-top: 24px;
+      font-family: var(--font-code);
     }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul {
-      margin-left: 20px;
-      margin-bottom: 16px;
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
     }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
 
-    /* Mobile Responsive Optimizations */
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
     @media (max-width: 768px) {
-      .navbar { padding: 10px 14px; }
-      .nav-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      .trust-badge, .ip-pill-nav { width: 100%; justify-content: flex-start; }
-      .wrapper { padding: 18px 12px 48px; }
-      .tool-header h1 { font-size: 1.45rem; }
-      .tool-card { padding: 14px; }
-      .dropzone { padding: 24px 12px; }
-      .meta-grid { grid-template-columns: 1fr; }
-      .table-controls { flex-direction: column; align-items: stretch; }
-      .search-input { max-width: 100%; }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
       .btn-row { flex-direction: column; }
       .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
+      .table-controls { flex-direction: column; align-items: stretch; }
+      .search-input { max-width: 100%; }
       .modal-content { max-height: 92vh; }
-      .detail-key { width: 110px; font-size: 0.74rem; }
-      .bottom-bar { flex-direction: column; align-items: flex-start; }
+      .detail-key { width: 120px; font-size: 0.76rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Network Egress
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / tar-inspector
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Forensics</a>
+      <span class="sep">/</span>
+      <span class="current">TAR Inspector</span>
     </nav>
 
     <!-- Header -->
     <div class="tool-header">
-      <h1>TAR Archive Forensics & Header Inspector</h1>
-      <p>Inspect POSIX USTAR, GNU, PAX, and V7 tape archive headers in client-side memory. Audit block checksums, detect path traversal exploits, analyze permission bitmasks, and extract file entries with zero server upload.</p>
+      <h1>TAR Archive Forensics &amp; Header Inspector</h1>
+      <p>Inspect POSIX USTAR, GNU, PAX, and V7 tape archive headers directly inside sandboxed browser memory. Audit 512-byte block checksums, detect path traversal exploits (Tar Slip), analyze permission bitmasks, and extract file entries with zero server upload.</p>
     </div>
 
-    <!-- Active Workspace -->
-    <div class="tool-card">
-      <div class="dropzone" id="dropArea">
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive TAR Header Forensics Terminal">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="Archive file upload drop area">
         <span class="dropzone-icon">📦</span>
-        <p><strong>Click to select a TAR archive</strong> or drag & drop here</p>
-        <span class="dropzone-hint">Supports uncompressed .tar and gzip-compressed .tar.gz / .tgz (Stream parsed in memory)</span>
+        <p><strong>Click to select a TAR archive</strong> or drag &amp; drop here</p>
+        <span class="dropzone-hint">Supports uncompressed .tar and gzip-compressed .tar.gz / .tgz (Stream parsed in volatile memory)</span>
         <input type="file" id="filePicker" class="file-input-hidden" accept=".tar,.tar.gz,.tgz,application/x-tar,application/gzip" />
       </div>
 
@@ -607,7 +922,7 @@
 
         <div class="meta-grid">
           <div class="meta-item">
-            <div class="meta-label">Archive File</div>
+            <div class="meta-label">Archive File &amp; Size</div>
             <div class="meta-val" id="metaFileName">-</div>
           </div>
           <div class="meta-item">
@@ -627,14 +942,14 @@
             <div class="meta-val" id="metaRisks">-</div>
           </div>
           <div class="meta-item">
-            <div class="meta-label">Trailer Padding</div>
+            <div class="meta-label">Trailer Padding &amp; Slack</div>
             <div class="meta-val" id="metaTrailer">-</div>
           </div>
         </div>
 
         <!-- Filter Controls -->
         <div class="table-controls">
-          <input type="text" id="searchInput" class="search-input" placeholder="Filter by filename, user, or type..." />
+          <input type="text" id="searchInput" class="search-input" placeholder="Filter by filename, owner, type, or anomaly..." />
           <div class="table-stats" id="tableStats">Showing 0 of 0 entries</div>
         </div>
 
@@ -643,14 +958,14 @@
           <table>
             <thead>
               <tr>
-                <th style="width: 70px;">Type</th>
+                <th style="width: 75px;">Type</th>
                 <th>File Path</th>
-                <th style="width: 100px;">Size</th>
-                <th style="width: 85px;">Mode</th>
-                <th style="width: 130px;">Owner (UID/GID)</th>
-                <th style="width: 150px;">MTime (UTC)</th>
-                <th style="width: 80px;">Integrity</th>
-                <th style="width: 75px; text-align: center;">Action</th>
+                <th style="width: 105px;">Size</th>
+                <th style="width: 90px;">Mode</th>
+                <th style="width: 135px;">Owner (UID/GID)</th>
+                <th style="width: 155px;">MTime (UTC)</th>
+                <th style="width: 90px;">Integrity</th>
+                <th style="width: 80px; text-align: center;">Action</th>
               </tr>
             </thead>
             <tbody id="entriesTableBody">
@@ -664,19 +979,19 @@
           <button class="btn-atom btn-secondary" id="btnClear">Clear Workspace</button>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Inspector Modal -->
-    <div class="modal-overlay" id="inspectorModal">
+    <div class="modal-overlay" id="inspectorModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-content">
         <div class="modal-header">
           <h3 id="modalTitle">Entry Header Details</h3>
-          <button class="modal-close" id="modalCloseBtn">&times;</button>
+          <button class="modal-close" id="modalCloseBtn" aria-label="Close dialog">&times;</button>
         </div>
         <div class="modal-body">
           <table class="detail-table" id="modalDetailTable"></table>
           
-          <div class="meta-label" style="margin-top: 14px; margin-bottom: 6px;">Entry Payload Preview:</div>
+          <div class="meta-label" style="margin-top: 16px; margin-bottom: 8px;">Entry Payload Preview:</div>
           <div class="viewer-box" id="modalPreviewBox">No preview available for this entry type.</div>
         </div>
         <div class="modal-footer">
@@ -686,131 +1001,557 @@
       </div>
     </div>
 
-    <!-- Operational Disclaimer Callout -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal & Operational Boundary Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible:</strong> BitDark.net and its creators make no warranties, representations, or claims regarding the accuracy, completeness, authenticity, or forensic legal validity of parsed archive headers or file extraction results. All operations execute strictly in your local browser sandbox without server verification. BitDark.net assumes no liability or responsibility for file loss, corrupted archives, undetected exploits, malicious archive payloads, path traversal vulnerabilities, or forensic investigative conclusions derived from this software. Always confirm critical forensic artifacts in an isolated, air-gapped forensic environment with established command-line toolsets.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        This application executes strictly inside your local web browser sandbox using JavaScript typed arrays and the Web Crypto API. No files, metadata, or telemetry are transmitted to BitDark.net or any remote infrastructure. While this tool identifies standard structural anomalies (such as invalid block checksums, path traversal sequences, SUID/SGID bits, and non-zero trailer slack space), malicious actors can construct sophisticated, nested, or polymorphic archive exploits designed to evade automated heuristic parsing. Critical evidentiary artifacts and high-assurance forensic casework must always be verified in an isolated, air-gapped laboratory environment utilizing write-blocked physical media and formally validated command-line toolsets.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>How TAR Archive Structure Works</h2>
-      <p>The Tape Archive (TAR) format specifies an uncompressed sequential byte stream structured into contiguous <strong>512-byte blocks</strong>. Each archived item begins with a 512-byte header block defining file metadata, followed immediately by the payload data rounded up to the nearest 512-byte multiple, followed by a 1024-byte zero-block end-of-archive marker.</p>
+    <!-- Long-Form Authoritative SEO Documentation (2500+ Words) -->
+    <article class="article-container">
+      <h2>The Critical Role of Archive Forensics in Modern Cybersecurity</h2>
+      <p>
+        In modern digital forensics, incident response (DFIR), cloud infrastructure security, and software supply chain auditing, archives represent the ubiquitous packaging medium of digital reality. From Linux distribution package managers (Debian <code>.deb</code>, Red Hat <code>.rpm</code>) to Open Container Initiative (OCI) and Docker container image layers, to language package registries (Python Wheels/sdist, npm tarballs, Ruby Gems), application binaries and configuration baselines are overwhelmingly serialized as <strong>Tape Archive (TAR)</strong> streams.
+      </p>
+      <p>
+        Yet despite its widespread adoption, the TAR specification is among the oldest, most fragmented binary formats in active enterprise computing. Conceived in the late 1970s at Bell Laboratories for sequential magnetic tape storage on Unix systems, the TAR format lacks a centralized file allocation table or directory index. Instead, it is structured as an unindexed, sequential byte stream partitioned into uniform <strong>512-byte blocks</strong>.
+      </p>
+      <p>
+        This legacy architecture creates significant forensic and operational security challenges. Naive extraction routines—such as invoking <code>tar -xf</code> with administrative privileges or running unvalidated automated unpackers in CI/CD build agents—frequently introduce critical vulnerabilities. Threat actors weaponize archive headers to execute arbitrary file overwrites via path traversal (Tar Slip), establish stealthy administrative persistence through SUID/SGID permission bit manipulation, drop symlink race-condition exploits, or conceal steganographic command-and-control payloads within unused trailer slack space. Static, client-side binary header inspection provides the necessary visibility to dissect these risks without exposing host filesystems to execution hazards.
+      </p>
 
-      <h2>Supported Format Standards & Field Offsets</h2>
+      <h2>How to Use the BitDark TAR Forensics &amp; Header Inspector</h2>
+      <p>
+        The BitDark TAR Archive Forensics &amp; Header Inspector delivers forensically sound, deterministic binary parsing directly within your local browser sandbox without requiring server uploads, external libraries, or local tool installations:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Target Archive:</strong> Drag and drop any <code>.tar</code> or gzip-compressed <code>.tar.gz</code> / <code>.tgz</code> file directly onto the dropzone, or click the area to open your workstation's file selector.
+        </li>
+        <li>
+          <strong>In-Memory Cryptographic Ingestion:</strong> The browser streams the file directly into a sandboxed <code>ArrayBuffer</code>. The native W3C Web Crypto API immediately computes a hardware-accelerated SHA-256 cryptographic digest across the raw archive bytes. If the file is gzip-compressed (identified by magic bytes <code>0x1F 0x8B</code>), the browser's hardware-accelerated <code>DecompressionStream</code> inflates the byte stream completely inside volatile RAM.
+        </li>
+        <li>
+          <strong>Examine Summary Diagnostics:</strong> Review the metadata grid to verify the identified format standard (V7 Legacy, POSIX USTAR, GNU TAR, or PAX Extended), total extracted entries, combined uncompressed payload size, flagged security anomalies, and trailer slack byte status.
+        </li>
+        <li>
+          <strong>Filter &amp; Audit Archive Entries:</strong> Use the real-time search filter to locate specific files, examine Unix permission strings (e.g., <code>-rwsr-xr-x</code>), audit User ID (UID) and Group ID (GID) ownership mappings, and inspect UTC modification timestamps (MTime). Anomaly flags (such as red "Flagged" badges) immediately isolate high-risk entries.
+        </li>
+        <li>
+          <strong>Inspect Deep Block Metadata &amp; Hex Preview:</strong> Click the "Inspect" button on any table row to open the detailed modal drawer. This displays exact header and payload physical byte offsets, octal bitmasks, declared versus computed checksum validation, PAX extended attributes, and an integrated UTF-8 text or binary hex dump of the entry payload.
+        </li>
+        <li>
+          <strong>Carve Files or Export Forensic Manifest:</strong> Select "Download Entry File" to extract a single suspicious binary without unpacking the entire archive, or click "Export Manifest JSON" to generate a comprehensive, machine-readable forensic audit trail for formal casework documentation.
+        </li>
+      </ol>
+
+      <h2>When to Use TAR Archive Forensics: Threat Modeling &amp; Use Cases</h2>
+      <p>
+        Static archive header analysis provides indispensable diagnostic intelligence across diverse defensive cybersecurity and auditing disciplines:
+      </p>
       <ul>
-        <li><strong>V7 (Early Unix):</strong> Legacy headers containing basic 100-character name, 8-character octal mode, UID, GID, size, mtime, and checksum fields.</li>
-        <li><strong>POSIX USTAR (IEEE Std 1003.1):</strong> Introduces the <code>ustar\0</code> magic signature at offset 257, uname/gname text strings, and a 155-byte <code>prefix</code> field allowing total paths up to 256 bytes.</li>
-        <li><strong>GNU TAR:</strong> Extends USTAR with <code>././@LongLink</code> blocks (types <code>L</code> and <code>K</code>) to accommodate arbitrarily long filenames and symlink targets without string truncation.</li>
-        <li><strong>PAX Extended Format (POSIX.1-2001):</strong> Uses typeflag <code>x</code> and <code>g</code> blocks formatted with UTF-8 key-value records to support nanosecond timestamps, unlimited file sizes, and international paths.</li>
+        <li>
+          <strong>Container Image Security (Docker &amp; OCI Layers):</strong> Docker and OCI container images are distributed as tarballs composed of stacked filesystem layers. Threat actors and compromised CI/CD runners can inject backdoored binaries, malicious startup scripts, or stealthy whiteout deletion markers into hidden layers. Inspecting layer archives prior to container engine importation prevents host compromise.
+        </li>
+        <li>
+          <strong>Software Supply Chain Triage (npm &amp; PyPI sdist Packages):</strong> Malicious packages published to npm, PyPI, or RubyGems frequently disguise trojanized pre-install scripts or obfuscated payloads inside compressed release archives. Auditing the archive headers reveals file anomalies—such as hidden dotfiles, mismatched ownership, or unexpected symlinks—before running dependency installation routines.
+        </li>
+        <li>
+          <strong>Incident Response (DFIR) &amp; Memory Dump Triage:</strong> During live triage, incident responders often gather forensic evidence (log files, memory dumps, process trees) into compressed tarballs. Analysts must verify that recovered archives have not been tampered with in transit by re-calculating block checksums and evaluating trailer slack space.
+        </li>
+        <li>
+          <strong>Malware Analysis &amp; Evasion Detection:</strong> Malware authors routinely craft malformed TAR headers—intentionally manipulating header length fields, corrupting checksum records, or inserting trailing non-zero slack bytes—to crash automated sandbox unpackers while allowing native Linux kernels to execute the payload normally.
+        </li>
+        <li>
+          <strong>Air-Gapped &amp; Regulatory Compliance Auditing:</strong> Defense contractors, healthcare entities, and financial institutions handling classified or protected health information (PHI) are legally prohibited from uploading proprietary codebases or forensic logs to external cloud scanning services. BitDark's zero-network-egress model guarantees compliance with strict data sovereignty mandates.
+        </li>
       </ul>
 
-      <h2>Forensic Checksums and Threat Audits</h2>
-      <p>This analyzer performs the following client-side forensic validations:</p>
+      <h2>Deep Dive: Anatomical Architecture of 512-Byte TAR Blocks</h2>
+      <p>
+        To understand how forensic scanners dissect an archive, one must examine the low-level byte structure of the TAR format. Every item in a TAR archive—whether a regular file, hard link, symbolic link, character device, block device, directory, or FIFO named pipe—is represented by at least one <strong>512-byte header block</strong>, followed immediately by zero or more 512-byte payload data blocks.
+      </p>
+
+      <pre><code>+-------------------------------------------------------------------------+
+|                  THE 512-BYTE TAR RECORD ARCHITECTURE                   |
++-------------------------------------------------------------------------+
+| Byte Offset | Field Length | Field Name | Data Representation & Description  |
++-------------+--------------+------------+---------------------------------------+
+| 0           | 100 bytes    | name       | File path / name (NUL-terminated ASCII)|
+| 100         | 8 bytes      | mode       | File permission bitmask (Octal ASCII) |
+| 108         | 8 bytes      | uid        | User ID of owner (Octal ASCII)        |
+| 116         | 8 bytes      | gid        | Group ID of owner (Octal ASCII)       |
+| 124         | 12 bytes     | size       | File size in bytes (Octal / Base-256) |
+| 136         | 12 bytes     | mtime      | Last modification time (Epoch Octal)  |
+| 148         | 8 bytes      | chksum     | Header checksum (Octal ASCII & spaces)|
+| 156         | 1 byte       | typeflag   | File type indicator ('0', '1', '2'...) |
+| 157         | 100 bytes    | linkname   | Target path for symlinks / hardlinks  |
+| 257         | 6 bytes      | magic      | USTAR magic string ("ustar\0" or GNU) |
+| 263         | 2 bytes      | version    | USTAR version ("00" or spaces)        |
+| 265         | 32 bytes     | uname      | User name of owner (ASCII string)     |
+| 297         | 32 bytes     | gname      | Group name of owner (ASCII string)    |
+| 329         | 8 bytes      | devmajor   | Major device number (Character/Block) |
+| 337         | 8 bytes      | devminor   | Minor device number (Character/Block) |
+| 345         | 155 bytes    | prefix     | Path prefix string (USTAR path split) |
+| 500         | 12 bytes     | padding    | Reserved zero-filled trailer bytes    |
++-------------------------------------------------------------------------+</code></pre>
+
+      <h3>1. Payload Alignment &amp; Zero-Padding Rules</h3>
+      <p>
+        If an archived file contains 1,000 bytes of data, it cannot simply occupy 1,000 bytes on disk. In accordance with the TAR specification, payload data must be padded with null bytes (<code>0x00</code>) to the next multiple of 512:
+      </p>
+      <blockquote>
+        $$\text{Padded Blocks} = \left\lceil \frac{\text{File Size}}{512} \right\rceil, \quad \text{Total Bytes on Disk} = \text{Padded Blocks} \times 512$$
+      </blockquote>
+      <p>
+        For a 1,000-byte file, the payload consumes $\lceil 1000 / 512 \rceil = 2$ blocks (1,024 bytes). The file payload occupies the first 1,000 bytes, while the remaining 24 bytes are filled with zeros. In forensic investigations, these trailing 24 bytes are termed <strong>block padding slack</strong>, a known location where steganographic payloads or hidden exfiltration channels can be embedded without altering reported file lengths.
+      </p>
+
+      <h3>2. The End-of-Archive (EOA) Marker</h3>
+      <p>
+        A valid TAR archive terminates with an End-of-Archive (EOA) marker defined as <strong>two consecutive 512-byte zero blocks</strong> (a total of 1,024 contiguous null bytes <code>0x00</code>). When a standards-compliant parser encounters two successive all-zero blocks, it halts processing. 
+      </p>
+      <p>
+        Any data located physically after these two zero blocks is categorized as <strong>trailer slack space</strong>. While modern tape-drive legacy drivers sometimes appended uninitialized blocks to fill physical tape records, in modern digital filesystems, non-zero bytes discovered past the EOA marker represent an immediate forensic red flag—indicating concatenated archives, incomplete file truncations, or deliberately concealed data.
+      </p>
+
+      <h2>Format Evolution: V7 vs POSIX USTAR vs GNU TAR vs PAX</h2>
+      <p>
+        Because the TAR format evolved across five decades without breaking backwards compatibility, multiple divergent standards exist in modern operating environments:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Specification</th>
+              <th>Magic Identifier</th>
+              <th>Max Path Length</th>
+              <th>Max File Size</th>
+              <th>Timestamp Resolution</th>
+              <th>Forensic Characteristics</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Early Unix V7 (1979)</strong></td>
+              <td>None (Offset 257 unassigned)</td>
+              <td>100 bytes</td>
+              <td>8 GB ($8^{11}-1$)</td>
+              <td>1 second (Unix Epoch)</td>
+              <td>Primitive legacy header; no user/group text names, no prefix field.</td>
+            </tr>
+            <tr>
+              <td><strong>POSIX USTAR (IEEE 1003.1-1988)</strong></td>
+              <td><code>ustar\0</code> (ASCII + NUL)</td>
+              <td>256 bytes (155 prefix + 100 name)</td>
+              <td>8 GB</td>
+              <td>1 second</td>
+              <td>Standardized <code>prefix</code> field; introduced text <code>uname</code> and <code>gname</code> fields.</td>
+            </tr>
+            <tr>
+              <td><strong>GNU TAR (Pre-POSIX &amp; Extended)</strong></td>
+              <td><code>ustar  \0</code> (ASCII + 2 spaces)</td>
+              <td>Unlimited (via <code>././@LongLink</code>)</td>
+              <td>&gt;8 GB (Base-256 binary)</td>
+              <td>1 second (Nanoseconds in PAX)</td>
+              <td>Uses synthetic pseudo-entries (types <code>L</code> and <code>K</code>) to store overflow path strings.</td>
+            </tr>
+            <tr>
+              <td><strong>PAX Format (POSIX.1-2001)</strong></td>
+              <td><code>ustar\0</code></td>
+              <td>Unlimited (UTF-8 records)</td>
+              <td>Unlimited (Text integers)</td>
+              <td>Nanosecond precision</td>
+              <td>Universal standard; uses type <code>x</code> and <code>g</code> extended headers with key-value pairs.</td>
+            </tr>
+            <tr>
+              <td><strong>STAR Format (Schily TAR)</strong></td>
+              <td><code>tar\0</code> / <code>ustar\0</code></td>
+              <td>Unlimited</td>
+              <td>Unlimited</td>
+              <td>Nanosecond precision</td>
+              <td>Early precursor to PAX; embeds extended metadata records in reserved header blocks.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>1. The POSIX USTAR Prefix Mechanism</h3>
+      <p>
+        To solve the 100-character path limitation of Unix V7 without breaking legacy tape readers, the POSIX USTAR specification added a 155-byte <code>prefix</code> field at byte offset 345. If a file path exceeds 100 characters, the archiver splits the path on a directory slash boundary (<code>/</code>), placing the parent directory path inside <code>prefix</code> and the filename inside <code>name</code>. The reconstructing parser resolves the full path by concatenating:
+      </p>
+      <blockquote>
+        $$\text{Resolved Path} = \text{prefix} + \text{"/"} + \text{name}$$
+      </blockquote>
+      <p>
+        While this expanded total addressable path lengths to 256 characters, it introduced edge-case parsing bugs in unhardened software when filenames could not be cleanly split across the 155/100 boundary.
+      </p>
+
+      <h3>2. GNU TAR LongLink Entries (Typeflag 'L' and 'K')</h3>
+      <p>
+        Rather than relying on split fields, GNU TAR introduced special pseudo-file header blocks:
+      </p>
       <ul>
-        <li><strong>Checksum Recalculation:</strong> Sums all 512 bytes with the 8 checksum bytes (offset 148–155) treated as ASCII spaces (0x20), verifying both unsigned and signed sums to detect tampered headers.</li>
-        <li><strong>Path Traversal Risk (Zip Slip / Tar Slip):</strong> Flags archive entries utilizing directory traversal strings (<code>../</code>, absolute root <code>/</code>, or Windows drive prefixes) designed to escape extraction target roots.</li>
-        <li><strong>Privilege Escalation Artifacts:</strong> Highlights SUID (<code>04000</code>) and SGID (<code>02000</code>) permission bits that could introduce security vulnerabilities if extracted onto Unix hosts.</li>
-        <li><strong>Trailer Slack & Anomaly Detection:</strong> Evaluates bytes beyond the standard two 512-byte zero blocks to discover steganographic payloads or hidden slack data.</li>
+        <li><strong>Typeflag <code>L</code> (LongName):</strong> Precedes an actual file entry. The payload data of the type <code>L</code> block contains the complete, un-truncated filename string. The parser reads this payload, assigns it as the filename for the <em>subsequent</em> file header, and ignores the truncated name in the following header.</li>
+        <li><strong>Typeflag <code>K</code> (LongLink):</strong> Operates identically to type <code>L</code>, but supplies the target destination string for symbolic and hard links exceeding 100 characters.</li>
       </ul>
+
+      <h3>3. PAX Extended Headers (Typeflag 'x' and 'g')</h3>
+      <p>
+        The <strong>Portable Archive Interchange (PAX)</strong> specification (standardized in POSIX.1-2001) represents the modern universal format. Rather than inventing proprietary binary hacks, PAX introduces self-contained, human-readable UTF-8 attribute blocks using typeflag <code>x</code> (extended header applying to the next file) or <code>g</code> (global extended header applying to all subsequent files).
+      </p>
+      <p>
+        A PAX record is formatted as a sequence of lines conforming to the pattern:
+      </p>
+      <pre><code>[total_length] [key]=[value]\n</code></pre>
+      <p>
+        For example, a PAX header recording a long Unicode path, a 20-gigabyte file size, and nanosecond modification timestamps appears as:
+      </p>
+      <pre><code>48 path=/var/log/surveillance/camera_01_north.raw\n
+25 size=21474836480\n
+31 mtime=1772658135.849201948\n</code></pre>
+      <p>
+        Because the format is open-ended, archivers can insert arbitrary extended attributes, including SELinux security contexts (<code>SCHILY.xattr.security.selinux</code>), POSIX Access Control Lists (ACLs), and digital signatures.
+      </p>
+
+      <h2>Worked Forensic Walkthrough: Header Dissection &amp; Checksum Verification</h2>
+      <p>
+        To illustrate how the BitDark analyzer processes an archive in memory, let us trace the byte-by-byte inspection of a real-world USTAR header block.
+      </p>
+
+      <h3>1. Raw Header Byte Representation</h3>
+      <p>
+        Consider a 512-byte block extracted from an archive at offset <code>0x00000000</code> representing the Unix password file <code>etc/passwd</code>:
+      </p>
+      <pre><code>Offset (Hex)  00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  ASCII
+00000000      65 74 63 2F 70 61 73 73 77 64 00 00 00 00 00 00  etc/passwd......
+... [Padding nulls up to offset 100]
+00000064      30 30 30 30 36 34 34 00 30 30 30 30 30 30 30 00  0000644.0000000.
+00000074      30 30 30 30 30 30 30 00 30 30 30 30 30 30 30 34  0000000.00000004
+00000084      32 30 30 00 31 34 37 32 35 30 36 31 37 31 30 00  200.14725061710.
+00000094      30 31 32 34 35 36 00 20 30 00 00 00 00 00 00 00  012456. 0.......
+...
+00000100      75 73 74 61 72 00 30 30 72 6F 6F 74 00 00 00 00  ustar.00root....
+00000110      00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000120      00 00 00 00 00 00 00 00 72 6F 6F 74 00 00 00 00  ........root....</code></pre>
+
+      <h3>2. Field Extraction &amp; Octal Parsing</h3>
+      <p>
+        The forensic parser extracts individual fields based on fixed offsets, converting octal ASCII strings into native JavaScript 64-bit numerical values:
+      </p>
+      <ul>
+        <li><strong>File Name (Offset 0–99):</strong> <code>"etc/passwd"</code> (NUL-terminated at byte 10).</li>
+        <li><strong>Permissions Mode (Offset 100–107):</strong> ASCII <code>"0000644\0"</code>. Octal $644_8 = (6 \times 64) + (4 \times 8) + 4 = 420_{10}$. Permissions decode to Owner: Read/Write (<code>rw-</code>), Group: Read (<code>r--</code>), Other: Read (<code>r--</code>).</li>
+        <li><strong>User ID (Offset 108–115):</strong> ASCII <code>"0000000\0"</code> $\rightarrow$ UID 0 (<code>root</code>).</li>
+        <li><strong>Group ID (Offset 116–123):</strong> ASCII <code>"0000000\0"</code> $\rightarrow$ GID 0 (<code>root</code>).</li>
+        <li><strong>Payload Size (Offset 124–135):</strong> ASCII <code>"00000004200\0"</code>. Octal $4200_8 = (4 \times 512) + (2 \times 64) = 2,048 + 128 = 2,176$ bytes. Padded payload blocks: $\lceil 2176 / 512 \rceil = 5$ blocks (2,560 bytes).</li>
+        <li><strong>Modification Time (Offset 136–147):</strong> ASCII <code>"14725061710\0"</code>. Octal $14725061710_8 = 1,732,455,368_{10}$ Unix epoch seconds $\rightarrow$ <code>2024-11-24 13:36:08 UTC</code>.</li>
+        <li><strong>Typeflag (Offset 156):</strong> Byte value <code>0x30</code> (ASCII <code>'0'</code>) $\rightarrow$ Standard Regular File.</li>
+        <li><strong>Magic &amp; Version (Offset 257–264):</strong> <code>"ustar\0"</code> followed by <code>"00"</code> $\rightarrow$ POSIX USTAR standard.</li>
+        <li><strong>User &amp; Group Names (Offset 265–328):</strong> <code>uname = "root"</code>, <code>gname = "root"</code>.</li>
+      </ul>
+
+      <h3>3. Cryptographic Checksum Computation Walkthrough</h3>
+      <p>
+        The declared checksum at offset 148 is the ASCII string <code>"012456\0 "</code> (Octal $12456_8 = 5,422_{10}$). To verify whether the header has been tampered with:
+      </p>
+      <ol>
+        <li>The parser copies the 512-byte header block into a temporary memory buffer.</li>
+        <li>The 8 bytes comprising the checksum field (offsets 148 to 155) are overwritten with ASCII space characters (<code>0x20</code>, decimal 32).</li>
+        <li>The engine iterates through all 512 bytes, computing the unsigned summation:
+        $$\sum_{i=0}^{511} \text{byte}[i]$$
+        </li>
+        <li>If the resulting sum equals $5,422$, the checksum is verified. If a compiler compiled the original archiver on an architecture where <code>char</code> was signed (values -128 to 127), the parser also evaluates the signed sum. If neither matches, the parser flags the entry with <strong>"Invalid Checksum (Header Tampered/Corrupted)"</strong>.</li>
+      </ol>
+
+      <h2>Forensic Threat Vectors: Exploits Hidden Inside TAR Archives</h2>
+      <p>
+        Attackers routinely exploit legacy TAR implementations and unhardened extraction algorithms to compromise target machines. The BitDark inspector audits for four primary classes of archive-borne attacks:
+      </p>
+
+      <h3>1. The Tar Slip / Zip Slip Path Traversal Exploit</h3>
+      <p>
+        Disclosed formally across dozens of major ecosystems (including Docker, npm, Apache Maven, and Kubernetes), the <strong>Tar Slip</strong> vulnerability (e.g., CVE-2018-1002200) is an arbitrary file overwrite flaw.
+      </p>
+      <p>
+        When creating a TAR archive, an adversary crafts an entry where the filename field contains directory traversal sequences:
+      </p>
+      <pre><code>../../../../../../../../home/victim/.ssh/authorized_keys</code></pre>
+      <p>
+        If an extraction library or automated build pipeline extracts this archive by simply resolving:
+      </p>
+      <pre><code>const targetPath = path.join(destDir, entry.name);
+fs.writeFileSync(targetPath, entry.data);</code></pre>
+      <p>
+        The <code>path.join</code> resolution navigates out of the intended extraction sandbox and overwrites the user's SSH keys, cron jobs (<code>/etc/cron.d/backdoor</code>), or system libraries. The BitDark inspector performs real-time path canonicalization on every entry, instantly flagging any path containing <code>../</code>, <code>..\</code>, or absolute leading slashes (<code>/</code> or <code>C:\</code>).
+      </p>
+
+      <h3>2. Privilege Escalation via SUID and SGID Bit Manipulation</h3>
+      <p>
+        In Unix-like operating systems, the file permission bitmask includes special execution flags:
+      </p>
+      <ul>
+        <li><strong>Set UID (SUID, <code>04000</code>):</strong> When an executable with the SUID bit is launched, it executes with the privileges of the file owner (e.g., <code>root</code>) rather than the launching user.</li>
+        <li><strong>Set GID (SGID, <code>02000</code>):</strong> Executes with the privileges of the file group.</li>
+        <li><strong>Sticky Bit (<code>01000</code>):</strong> Restricts file deletion in shared directories (like <code>/tmp</code>).</li>
+      </ul>
+      <p>
+        If an administrator extracts an untrusted archive as <code>root</code> (or using <code>sudo tar -xf</code>), the native <code>tar</code> utility preserves ownership and permission bitmasks by default. An attacker who packages a copy of <code>/bin/bash</code> with mode <code>04755</code> (SUID root) can immediately escalate privileges from a low-privileged account once extracted. The BitDark analyzer highlights SUID and SGID flags in high-contrast red alerts to notify analysts prior to extraction.
+      </p>
+
+      <h3>3. Tarbombs and Denial of Service (DoS)</h3>
+      <p>
+        A <strong>tarbomb</strong> is an archive deliberately constructed without a containing root folder, containing hundreds of thousands of files or files with names that conflict with critical system files (e.g., <code>.bashrc</code>, <code>Makefile</code>, <code>package.json</code>). When unpacked in a user's working directory, it clutters the workspace, overwrites existing configurations, and can exhaust filesystem inodes. 
+      </p>
+      <p>
+        Furthermore, <strong>TAR decompression bombs</strong> leverage nested compression or sparse file headers to declare virtual sizes in the terabyte range while compressing into a few megabytes on disk, designed to exhaust disk capacity and cause system denial of service.
+      </p>
+
+      <h3>4. Steganography and Data Exfiltration in Trailer Slack Space</h3>
+      <p>
+        Because standard TAR tools stop reading immediately upon encountering the two 512-byte zero blocks marking End-of-Archive, threat actors can append arbitrary binary payloads, encrypted C2 beacons, or private keys directly to the physical end of the archive file. Standard unpackers ignore this data completely, while forensic scanners like BitDark detect the presence of non-zero trailer bytes and alert the investigator.
+      </p>
+
+      <h2>Comparison: TAR vs. ZIP vs. CPIO vs. 7-Zip Architectures</h2>
+      <p>
+        Understanding the structural differences between major archive containers clarifies why forensic procedures differ fundamentally across formats:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Archive Format</th>
+              <th>Index Architecture</th>
+              <th>Compression Mechanism</th>
+              <th>Metadata Preservation</th>
+              <th>Random Access Capability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TAR (Tape Archive)</strong></td>
+              <td><strong>None</strong> (Sequential 512-byte block stream)</td>
+              <td>External stream (gzip, bzip2, xz, zstd)</td>
+              <td>Full Unix permissions (UID/GID, SUID, symlinks)</td>
+              <td><strong>No</strong> (Must stream sequentially from byte 0)</td>
+            </tr>
+            <tr>
+              <td><strong>ZIP (.zip)</strong></td>
+              <td><strong>Central Directory</strong> located at file EOF</td>
+              <td>Per-file compression (Deflate, Bzip2)</td>
+              <td>Limited (Basic DOS/Unix attributes via extra fields)</td>
+              <td><strong>Yes</strong> (Locate Central Directory and read offsets)</td>
+            </tr>
+            <tr>
+              <td><strong>CPIO (.cpio)</strong></td>
+              <td>Sequential byte records with magic headers</td>
+              <td>External stream</td>
+              <td>Full Unix permissions &amp; device major/minor nodes</td>
+              <td><strong>No</strong> (Sequential record stream)</td>
+            </tr>
+            <tr>
+              <td><strong>7-Zip (.7z)</strong></td>
+              <td>Centralized header stream at file EOF</td>
+              <td>Solid block or per-stream compression (LZMA/LZMA2)</td>
+              <td>Windows &amp; Unix permissions (ACLs via extensions)</td>
+              <td><strong>Yes</strong> (Indexed metadata table)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Forensic Pitfalls &amp; Extraction Best Practices</h2>
+      <p>
+        When triaging unknown archives during an investigation, avoid these common procedural errors:
+      </p>
+      <ul>
+        <li>
+          <strong>Extracting Archives on Host Systems with Native Tools:</strong> Never run <code>tar -xf archive.tar</code> on an investigative workstation without strict containment. Always perform static inspection first to verify that no path traversal strings or SUID binaries are present.
+        </li>
+        <li>
+          <strong>Neglecting File Ownership Overrides:</strong> If extraction is required on a Unix system, always enforce ownership and permission sanitization flags:
+          <pre><code>tar --no-same-owner --no-same-permissions --strip-components=1 -xf archive.tar -C /tmp/sandbox/</code></pre>
+        </li>
+        <li>
+          <strong>Overlooking Symlink and Hardlink Redirection:</strong> An archive entry can establish a symbolic link pointing to <code>/etc</code> (e.g., <code>link_dir -> /etc</code>), followed immediately by a second entry writing to <code>link_dir/shadow</code>. This two-stage link traversal bypasses naive path checks that only evaluate individual string names.
+        </li>
+        <li>
+          <strong>Trusting Unsigned Checksum Calculations:</strong> Legacy Unix systems implemented signed character comparisons for header checksums. If an archive fails unsigned verification, ensure your tooling validates against signed byte summation before declaring the header corrupted or maliciously altered.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What does "USTAR" stand for in TAR archive headers?</div>
+          <div class="faq-answer">
+            USTAR stands for "Uniform Standard Tape Archive." It was formalized in 1988 under IEEE Std 1003.1 (POSIX.1) to standardize tape archive headers across divergent Unix platforms. USTAR introduced the 6-byte magic identifier "ustar\0" at byte offset 257, added username and groupname text strings, and introduced the 155-byte prefix field to expand maximum file paths from 100 to 256 characters.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the BitDark inspector compute both signed and unsigned checksums?</div>
+          <div class="faq-answer">
+            In early Unix implementations (such as V7 and BSD on PDP-11 and VAX hardware), the C compiler treated the standard "char" data type as a signed 8-bit integer (-128 to 127). When summing block bytes to calculate the header checksum, bytes with values greater than 127 produced negative sums. Later implementations standardized on unsigned 8-bit integers (0 to 255). To ensure forensically valid analysis across both modern and legacy archives, the BitDark engine tests both unsigned and signed summation algorithms.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does GNU TAR represent files larger than 8 Gigabytes?</div>
+          <div class="faq-answer">
+            Standard USTAR headers store file sizes as 11 octal ASCII characters, imposing a mathematical limit of 8^11 - 1 = 8,589,934,591 bytes (~8 GB). To support massive files without altering header boundaries, GNU TAR utilizes a binary base-256 encoding. If the most significant bit of the size field (byte 124) is set to 0x80, the remaining 11 bytes are treated as a big-endian binary integer, enabling file sizes up to 2^88 bytes.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is trailer slack space and why does the tool flag it?</div>
+          <div class="faq-answer">
+            A standard TAR archive concludes with two consecutive 512-byte blocks of zeros (1,024 null bytes) representing the End-of-Archive (EOA) marker. Modern extraction tools stop reading at this point. Any data physically residing past these 1,024 zero bytes is considered trailer slack space. Non-zero bytes in trailer slack often indicate steganographic payloads, concatenated hidden archives, or unallocated data remnants carved during digital forensic investigations.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can a malformed TAR header crash or exploit my web browser?</div>
+          <div class="faq-answer">
+            No. The BitDark TAR inspector operates strictly as an in-memory byte parser utilizing high-performance JavaScript TypedArrays (Uint8Array, DataView). The browser does not mount the archive, execute binary code, or write files to your physical disk. The entire analysis occurs inside an isolated, unprivileged JavaScript sandbox.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is a sparse file entry in GNU TAR archives?</div>
+          <div class="faq-answer">
+            Sparse files are files that contain large blocks of empty zero data that the operating system allocates virtually without consuming physical disk sectors. GNU TAR supports sparse files using typeflag 'S'. The header block and subsequent extended blocks record map tables containing offset-and-numbytes pairs, instructing the extractor where data blocks belong while skipping unallocated zero gaps.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark support compressed archives like .tar.gz, .tar.bz2, or .tar.xz?</div>
+          <div class="faq-answer">
+            The BitDark inspector natively decompresses .tar.gz and .tgz archives in real time using the W3C Web Streams DecompressionStream API directly within browser RAM. For .tar.bz2, .tar.xz, or .tar.zst archives, the outer compression layer must be decompressed prior to ingestion, or parsed once native WebAssembly codecs are loaded.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark log or store my uploaded archive files?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security architecture. All SHA-256 calculation, GZIP inflation, header parsing, and hex previewing execute purely inside your workstation's local browser memory. Zero bytes or diagnostic metrics are transmitted over the network.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Forensics, Cryptography &amp; Binary Analysis Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Inspect binary file headers, hex magic signatures, and detect extension spoofing entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Extract printable ASCII and dual-pass UTF-16LE Unicode strings from executables, archives, and dumps in memory.</div>
+          </a>
+          <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
+            <div class="related-card-title"><span>[⚙️]</span> PE &amp; ELF Binary Viewer</div>
+            <div class="related-card-desc">Inspect Windows Portable Executables and Linux ELF headers, section tables, and entry points offline.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <!-- Bottom Bar -->
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry with Independent Endpoints & Timeout Protection
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      // Local testing environments
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      const fetchWithTimeout = async (url, timeoutMs = 3500) => {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
-          clearTimeout(id);
-          return res;
-        } catch (err) {
-          clearTimeout(id);
-          throw err;
-        }
-      };
-
-      // 1. IPv4 Resolution (Ensures strictly IPv4 address returned)
-      (async () => {
-        try {
-          const res = await fetchWithTimeout("https://api.ipify.org?format=json");
-          if (res.ok) {
-            const data = await res.json();
-            if (data.ip && !data.ip.includes(":")) {
-              ipv4El.textContent = data.ip;
-              return;
-            }
-          }
-          throw new Error("Invalid IPv4 payload");
-        } catch {
-          try {
-            const fb = await fetchWithTimeout("https://ipv4.icanhazip.com");
-            if (fb.ok) {
-              const text = (await fb.text()).trim();
-              if (text && !text.includes(":")) {
-                ipv4El.textContent = text;
-                return;
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
               }
             }
-          } catch {}
-          ipv4El.textContent = "Unavailable";
-        }
-      })();
-
-      // 2. IPv6 Resolution (Queries dedicated IPv6-only endpoints)
-      (async () => {
-        try {
-          const res = await fetchWithTimeout("https://api6.ipify.org?format=json");
-          if (res.ok) {
-            const data = await res.json();
-            if (data.ip && data.ip.includes(":")) {
-              ipv6El.textContent = data.ip;
-              return;
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
             }
           }
-          throw new Error("Invalid IPv6 payload");
-        } catch {
-          try {
-            const fb = await fetchWithTimeout("https://ipv6.icanhazip.com");
-            if (fb.ok) {
-              const text = (await fb.text()).trim();
-              if (text && text.includes(":")) {
-                ipv6El.textContent = text;
-                return;
-              }
-            }
-          } catch {}
-          ipv6El.textContent = "Not Detected";
-        }
-      })();
+        });
+      });
+
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // DOM References
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. TAR Forensic Inspection Core Engine (100% Client-Side Memory Processing, Unaltered Parsing Logic)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -843,6 +1584,13 @@
 
     // Drag & Drop Interactions
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(evt => {
       dropArea.addEventListener(evt, (e) => {
@@ -1432,7 +2180,6 @@
       const slice = u8Array.subarray(start, start + length);
       const dec = new TextDecoder("utf-8", { fatal: false });
       let text = dec.decode(slice);
-      // Remove trailing null bytes if present
       const nullIdx = text.indexOf("\0");
       return nullIdx !== -1 ? text.substring(0, nullIdx) : text;
     }
@@ -1506,7 +2253,7 @@
     function isAsciiOrUtf8(u8) {
       for (let i = 0; i < u8.length; i++) {
         const b = u8[i];
-        if (b === 0) return false; // Null byte indicates binary
+        if (b === 0) return false;
       }
       return true;
     }
@@ -1531,6 +2278,12 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+
+    // Initialize Observers & Accordions on DOM Loaded
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
