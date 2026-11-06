@@ -6,10 +6,108 @@
   
   <title>Binary Strings Extractor — Free Offline Forensic Tool | BitDark</title>
   <meta name="title" content="Binary Strings Extractor — Free Offline Forensic Tool | BitDark" />
-  <meta name="description" content="Extract printable ASCII and Unicode (UTF-16LE dual-pass) strings from binaries, executables, malware samples, and firmware directly in your browser. Zero tracking, zero network egress." />
-  <meta name="keywords" content="strings extractor, binary strings online, reverse engineering strings, malware analysis string dumper, ascii unicode extractor, offline forensics tool, bitdark" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/strings" />
+  <meta name="description" content="Extract printable ASCII and Unicode (UTF-16LE dual-pass) strings from binaries, executables, malware samples, and firmware directly in browser memory. 100% offline, zero network egress." />
+  <meta name="keywords" content="binary strings extractor, online strings tool, reverse engineering strings dumper, malware analysis strings, ascii unicode extractor, utf-16le dual pass strings, offline forensics tool, memory dump strings parser, c2 domain extractor, bitdark" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/strings/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/strings/" />
+  <meta property="og:title" content="Binary Strings Extractor — Free Offline Forensic Tool | BitDark" />
+  <meta property="og:description" content="Extract printable ASCII and dual-pass UTF-16LE Unicode strings from raw binaries, firmware, and memory dumps client-side. Zero tracking, zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/strings/" />
+  <meta name="twitter:title" content="Binary Strings Extractor | BitDark" />
+  <meta name="twitter:description" content="Extract ASCII and Unicode strings from executables and memory dumps inside your browser. Zero telemetry, 100% private." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Binary Strings Extractor",
+        "url": "https://bitdark.net/tools/forensics/strings/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side digital forensics utility to extract printable ASCII and wide UTF-16LE Unicode strings from raw binaries, executables, malware samples, and firmware dumps using sandboxed browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Binary Strings Forensics: Dual-Pass UTF-16LE Alignment, Carry-Over Streaming, and Malware Triage",
+        "url": "https://bitdark.net/tools/forensics/strings/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-14",
+        "dateModified": "2026-11-06",
+        "description": "Exhaustive technical guide on static binary string extraction, byte alignment challenges in 16-bit wide encodings, carry-over buffer slicing algorithms, and static malware indicators."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is binary string extraction and why is it the first step in malware triage?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Binary string extraction is the static analysis process of scanning compiled executables, libraries, firmware images, or memory buffers for contiguous sequences of human-readable characters. It serves as the primary initial triage step because it rapidly reveals hardcoded command-and-control (C2) domains, IP addresses, dropped file names, registry keys, error strings, API function imports, and internal debugging paths without requiring code execution in a sandbox."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the dual-pass UTF-16LE alignment problem in string extraction?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In Windows PE binaries and modern operating systems, wide-character strings are encoded in UTF-16LE where each ASCII-equivalent glyph occupies two bytes: the printable character followed by a 0x00 null byte. If a string starts at an odd physical byte offset (due to struct packing or data alignment), scanning only even word offsets will read null bytes first, completely missing the string. Dual-pass scanning inspects both even (offset 0, 2, 4...) and odd (offset 1, 3, 5...) byte alignments to ensure 100% extraction coverage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do standard command-line tools split long strings across chunk boundaries?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Naive streaming implementations read files in fixed chunk buffers (such as 4MB or 64KB blocks). If a string straddles the boundary between two read cycles, it is severed into two truncated substrings, breaking regex filters for long URLs or cryptographic certificates. BitDark prevents this via a carry-over boundary buffer that maintains incomplete trailing sequences into the subsequent slice."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can binary strings extraction detect packed or cryptographically obfuscated malware?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Standard string extraction only extracts plaintext sequences present in the file on disk. Binaries packed with UPX, Themida, or custom XOR/RC4 stubs will yield very few readable strings—often only loader boilerplate like LoadLibraryA or GetProcAddress. In such cases, the scarcity of strings combined with high section entropy serves as a primary forensic indicator of packing, signaling that dynamic memory dump extraction or unpacking is required."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my sensitive binary artifacts or extracted strings uploaded to an external server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on an air-gapped zero-network-egress architecture. All file slicing, TypedArray iteration, UTF-16 decoding, regex filtering, and SHA-256 calculation execute purely inside your browser's private Web Worker and JavaScript memory space."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -27,8 +125,8 @@
       --atom-green: #98c379;
       --atom-purple: #c678dd;
       --atom-blue: #61afef;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,158 +135,176 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       min-height: 100vh;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
     
-    .nav-stats {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .trust-badge {
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 5px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      max-width: 100%;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
     /* Layout Wrapper */
     .wrapper {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 24px 16px 60px;
+      padding: 30px 20px 60px;
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 16px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      overflow-x: auto;
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
     
-    .tool-header { margin-bottom: 24px; }
+    .tool-header { margin-bottom: 28px; }
     .tool-header h1 {
-      font-size: 1.8rem;
+      font-size: 2.2rem;
       color: var(--atom-heading);
-      margin-bottom: 6px;
+      margin-bottom: 12px;
+      font-weight: 700;
       line-height: 1.25;
+      letter-spacing: -0.01em;
     }
     .tool-header p {
       color: var(--atom-text);
-      font-size: 0.95rem;
+      font-size: 1.05rem;
+      max-width: 980px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
     }
 
     /* Tool Workspace Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 560px;
     }
 
     /* Drag & Drop */
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 36px 16px;
+      border-radius: 8px;
+      padding: 44px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
-    .dropzone:hover, .dropzone.dragover {
+    .dropzone:focus,
+    .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
     .dropzone-icon {
-      font-size: 2.2rem;
-      margin-bottom: 8px;
+      font-size: 2.6rem;
+      margin-bottom: 12px;
       display: block;
     }
     .dropzone p {
-      font-size: 0.92rem;
+      font-size: 1.05rem;
       color: var(--atom-heading);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .dropzone-hint {
-      font-size: 0.76rem;
+      font-size: 0.84rem;
       color: var(--atom-muted);
       font-family: var(--font-code);
       display: block;
+      margin-top: 4px;
     }
     .file-input-hidden { display: none; }
 
     /* Configuration Panel */
     .config-panel {
-      margin-top: 18px;
-      padding-top: 18px;
+      margin-top: 22px;
+      padding-top: 20px;
       border-top: 1px solid var(--atom-border);
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
       align-items: center;
     }
     .config-group {
@@ -201,7 +317,7 @@
       font-family: var(--font-code);
       color: var(--atom-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
       display: flex;
       justify-content: space-between;
     }
@@ -209,17 +325,20 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      min-height: 44px;
     }
     .config-select {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 10px;
+      padding: 10px 12px;
       border-radius: 4px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
       width: 100%;
+      min-height: 44px;
+      cursor: pointer;
     }
     .config-select:focus {
       border-color: var(--atom-border-focus);
@@ -228,24 +347,25 @@
       width: 100%;
       accent-color: var(--atom-amber);
       cursor: pointer;
+      height: 24px;
     }
     .badge-val {
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.86rem;
       color: var(--atom-amber);
       font-weight: 700;
     }
 
     /* Processing Progress Bar */
     .progress-box {
-      margin-top: 16px;
+      margin-top: 18px;
       display: none;
     }
     .progress-bar-bg {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      height: 8px;
-      border-radius: 4px;
+      height: 10px;
+      border-radius: 5px;
       overflow: hidden;
       margin-bottom: 6px;
     }
@@ -257,7 +377,7 @@
     }
     .progress-text {
       font-family: var(--font-code);
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       color: var(--atom-muted);
       display: flex;
       justify-content: space-between;
@@ -265,7 +385,7 @@
 
     /* Results Workspace */
     .results-area {
-      margin-top: 24px;
+      margin-top: 28px;
       display: none;
     }
     
@@ -274,12 +394,13 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 8px;
-      padding: 12px 14px;
-      border-radius: 4px;
-      margin-bottom: 18px;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
     .status-found {
       background-color: rgba(152, 195, 121, 0.12);
@@ -294,25 +415,26 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 10px 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
     .meta-label {
-      font-size: 0.70rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.84rem;
+      font-size: 0.92rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -322,39 +444,44 @@
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 10px;
+      margin-bottom: 16px;
       align-items: center;
     }
     .filter-input {
-      flex: 1 1 200px;
+      flex: 1 1 240px;
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-heading);
-      padding: 8px 12px;
-      border-radius: 4px;
+      padding: 10px 14px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       outline: none;
+      min-height: 44px;
     }
     .filter-input:focus { border-color: var(--atom-border-focus); }
     .filter-chip-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
     .chip {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
       font-family: var(--font-code);
-      font-size: 0.74rem;
-      padding: 6px 12px;
-      border-radius: 4px;
+      font-size: 0.82rem;
+      padding: 8px 14px;
+      border-radius: 6px;
       cursor: pointer;
       user-select: none;
       transition: all 0.15s ease;
       touch-action: manipulation;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .chip:hover { border-color: var(--atom-cyan); color: var(--atom-cyan); }
     .chip.active {
@@ -370,20 +497,20 @@
       justify-content: space-between;
       align-items: center;
       font-family: var(--font-code);
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       color: var(--atom-muted);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 16px;
       font-family: var(--font-code);
-      font-size: 0.80rem;
-      height: 440px;
+      font-size: 0.84rem;
+      height: 460px;
       overflow-y: auto;
       overflow-x: auto;
       white-space: pre;
@@ -396,8 +523,8 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
-      margin-top: 14px;
-      gap: 8px;
+      margin-top: 18px;
+      gap: 12px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -405,166 +532,347 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 9px 16px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
+      font-size: 16px;
+      min-height: 44px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 8px;
       transition: opacity 0.15s ease;
       touch-action: manipulation;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-atom-secondary {
-      background-color: var(--atom-bg);
+      background-color: var(--atom-border);
       color: var(--atom-text);
       border: 1px solid var(--atom-border);
     }
     .btn-atom-secondary:hover {
-      border-color: var(--atom-amber);
+      background-color: #424953;
       color: var(--atom-heading);
     }
 
-    /* BitDark Disclaimer Card */
+    /* Authoritative Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 30px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 24px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3200px;
     }
-    .doc-section h2 {
+    .article-container h2 {
       color: var(--atom-heading);
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      margin-top: 22px;
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
     }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
 
     /* Mobile Responsive Optimizations */
     @media (max-width: 768px) {
-      .navbar { padding: 8px 12px; }
-      .nav-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .nav-stats {
-        width: 100%;
-        justify-content: space-between;
-      }
-      .trust-badge, .ip-pill-nav {
-        font-size: 0.70rem;
-      }
-      .wrapper { padding: 18px 12px 40px; }
-      .tool-header h1 { font-size: 1.45rem; }
-      .tool-card { padding: 14px 10px; }
-      .dropzone { padding: 22px 10px; }
-      .btn-row {
-        flex-direction: column;
-        width: 100%;
-      }
-      .btn-atom, .btn-atom-secondary {
-        width: 100%;
-        justify-content: center;
-        padding: 11px;
-      }
-      .meta-grid {
-        grid-template-columns: 1fr;
-      }
-      .bottom-bar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .tool-card { padding: 18px; }
+      .dropzone { padding: 28px 14px; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .btn-row { flex-direction: column; width: 100%; }
+      .btn-atom, .btn-atom-secondary { width: 100%; justify-content: center; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-input { width: 100%; }
+      .filter-chip-group { width: 100%; justify-content: space-between; }
+      .chip { flex: 1 1 calc(50% - 6px); text-align: center; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="nav-stats">
-        <div class="trust-badge">
-          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-        </div>
-        <div class="ip-pill-nav">
-          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-          <span class="ip-divider">·</span>
-          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
-        </div>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / strings-extractor
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Forensics &amp; Incident Response</a>
+      <span class="sep">/</span>
+      <span class="current">Strings Extractor</span>
     </nav>
 
     <div class="tool-header">
       <h1>Binary Strings Extractor</h1>
-      <p>Scan and extract printable ASCII and Unicode (UTF-16LE dual-pass) text sequences from raw binaries, executables, malware payloads, firmware, or memory dumps entirely inside your browser's local sandbox.</p>
+      <p>Scan and extract printable ASCII and Unicode (UTF-16LE dual-pass) text sequences from raw binaries, executables, malware payloads, firmware blobs, and memory dumps entirely inside your browser's sandboxed RAM.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card" id="toolWorkspace">
-      <div class="dropzone" id="dropArea">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Binary Strings Extraction Workspace">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="Binary artifact upload drop area">
         <span class="dropzone-icon">📜</span>
-        <p><strong>Click to choose a file</strong> or drag & drop binary artifact here</p>
-        <span class="dropzone-hint">Supports EXE, DLL, ELF, Mach-O, APK, PDF, PCAP, RAW, firmware & memory dumps (0-byte upload)</span>
+        <p><strong>Click to choose a file</strong> or drag &amp; drop binary artifact here</p>
+        <span class="dropzone-hint">Supports EXE, DLL, ELF, Mach-O, APK, PDF, PCAP, RAW, firmware &amp; memory dumps (0-byte upload)</span>
         <input type="file" id="filePicker" class="file-input-hidden" />
       </div>
 
@@ -583,7 +891,7 @@
         <div class="config-group">
           <label class="config-label" for="encodingSelect">Encoding Modes</label>
           <select id="encodingSelect" class="config-select">
-            <option value="both" selected>ASCII & Unicode (UTF-16LE Dual-Pass)</option>
+            <option value="both" selected>ASCII &amp; Unicode (UTF-16LE Dual-Pass)</option>
             <option value="ascii">ASCII Only (7-bit printable)</option>
             <option value="unicode">Unicode Only (UTF-16LE Dual-Pass)</option>
           </select>
@@ -657,104 +965,538 @@
           <button class="btn-atom btn-atom-secondary" id="btnReset">Clear</button>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- BitDark Disclaimer Notice -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> BitDark Legal & Forensic Disclaimer
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
         <strong>bitdark.net is not responsible</strong> for how binary data, extracted strings, hardcoded secrets, cryptographic artifacts, or source code remnants are accessed, interpreted, or utilized. This tool operates entirely client-side inside the user's browser for security research, incident response, reverse engineering, and educational triage. <strong>bitdark.net</strong> accepts no liability for damages, regulatory non-compliance, forensic invalidation, intellectual property violations, or system disruptions arising from the ingestion, handling, or analysis of malicious, copyrighted, or proprietary binaries.
       </p>
     </aside>
 
-    <!-- Technical & Methodological Documentation -->
-    <article class="doc-section">
-      <h2>How Browser-Based Strings Extraction Works</h2>
-      <p>The standard Unix/Sysinternals <code>strings</code> command scans files for consecutive printable byte sequences. BitDark implements this utility natively using high-speed TypedArray evaluation (<code>Uint8Array</code> and <code>DataView</code>) inside a local browser sandbox:</p>
+    <!-- Technical & Methodological Documentation (2500+ Words) -->
+    <article class="article-container">
+      <h2>The Critical Role of Static String Extraction in Binary Forensics</h2>
+      <p>
+        In modern digital forensics, incident response (DFIR), and malware analysis, triage velocity is paramount. When a security operations center (SOC) detects an unknown binary artifact executing on an endpoint, analysts rarely possess the immediate runway to launch dynamic debuggers, configure hypervisor sandboxes, or perform hours of disassembly in IDA Pro or Ghidra. The foundational first step in reverse engineering has remained constant across four decades of computer security: <strong>string extraction</strong>.
+      </p>
+      <p>
+        At its core, compiled binary code consists of machine instructions (opcodes), struct alignment padding, relocations, and data sections. However, software rarely operates in isolation from human language or environmental protocols. Compilers invariably embed plain text strings into executables to facilitate user interface rendering, format log output, interact with system APIs, make network socket calls, and query registry paths.
+      </p>
+      <p>
+        For defenders, these strings represent high-fidelity digital telemetry. In malicious software, static strings frequently reveal command-and-control (C2) domain names, hardcoded drop-server IP addresses, targeted anti-virus process lists, credential-harvesting registry keys, custom mutex names, user-agent strings, and developer compilation artifacts (such as Program Database <code>.pdb</code> debug paths). Extracting these indicators provides immediate indicators of compromise (IOCs) that can be queried across enterprise SIEM pipelines within minutes of artifact discovery.
+      </p>
+
+      <h2>How to Use the BitDark Binary Strings Extractor</h2>
+      <p>
+        The BitDark Binary Strings Extractor provides high-speed, byte-exact string dumping natively in your web browser without transmitting binary artifacts to cloud infrastructure:
+      </p>
+      <ol>
+        <li>
+          <strong>Select or Drop Target Binary:</strong> Ingest any file format—including Windows Portable Executables (<code>.exe</code>, <code>.dll</code>, <code>.sys</code>), Linux ELF binaries, macOS Mach-O binaries, compiled Android APKs, PDF documents, firmware flash dumps, or raw memory slices—by dragging it onto the dropzone.
+        </li>
+        <li>
+          <strong>Configure Extraction Sensitivity:</strong>
+          <ul>
+            <li><strong>Min String Length:</strong> Set the minimum threshold of contiguous printable characters (default is 4). Increasing to 6 or 8 drastically suppresses false-positive noise in dense numeric tables; decreasing to 3 captures short abbreviations and DOS commands.</li>
+            <li><strong>Encoding Modes:</strong> Choose between standard 7-bit ASCII, wide UTF-16LE Unicode, or simultaneous dual-mode extraction.</li>
+            <li><strong>Offset Display:</strong> Display the exact physical byte position where each string begins in Hexadecimal (e.g., <code>0x0004FA10</code>) or Decimal format to facilitate correlation in hex editors.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Interactive Triage and Regex Filtering:</strong> Use the dedicated preset chips to isolate high-value forensic indicators instantly:
+          <ul>
+            <li><strong>URLs / Endpoints:</strong> Filters for HTTP/HTTPS web endpoints, FTP servers, and C2 paths.</li>
+            <li><strong>IP Addresses:</strong> Extracts both IPv4 addresses and strictly formatted IPv6 addresses while suppressing false-positive C++ scope operators (<code>::</code>).</li>
+            <li><strong>File / Reg Paths:</strong> Captures Windows drives (<code>C:\</code>), registry keys (<code>HKLM\</code>, <code>HKCU\</code>), Unix paths (<code>/etc/</code>, <code>/var/</code>), and file extensions.</li>
+            <li><strong>Emails:</strong> Scans for developer contact information and compromised account credentials.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Export Forensics:</strong> Download the complete filtered dataset as a clean UTF-8 text file, or copy the active preview buffer directly to your system clipboard for reporting.
+        </li>
+      </ol>
+
+      <h2>When to Use Strings Analysis: Threat Modeling &amp; Use Cases</h2>
+      <p>
+        Static string extraction is a universal capability across several defensive and investigative disciplines:
+      </p>
       <ul>
-        <li><strong>ASCII Sequences:</strong> Inspects consecutive bytes strictly within the standard printable range (<code>0x20</code> space through <code>0x7E</code> tilde), accompanied by horizontal tab (<code>0x09</code>).</li>
-        <li><strong>Dual-Pass UTF-16LE Wide Unicode:</strong> Scans both <strong>even</strong> (offset <code>0, 2, 4...</code>) and <strong>odd</strong> (offset <code>1, 3, 5...</code>) byte alignments to capture wide strings regardless of compiler data padding or struct boundaries.</li>
-        <li><strong>Carry-Over Streaming Pipeline:</strong> Analyzes artifacts in non-blocking slices using carry-over boundary buffers. This guarantees strings crossing 4 MB chunk boundaries are never split or duplicated, while protecting browser memory from heap overflows.</li>
-        <li><strong>Zero Network Egress:</strong> The entire process leverages the HTML5 File API and Web Cryptography API (<code>crypto.subtle.digest</code>). No files are uploaded to any server.</li>
+        <li>
+          <strong>Malware Triage &amp; Rapid IOC Hunting:</strong> Identify hardcoded C2 infrastructure, dropped executable names, persistence run keys (e.g., <code>Software\Microsoft\Windows\CurrentVersion\Run</code>), and ransom notes before setting up virtualized sandbox detonation.
+        </li>
+        <li>
+          <strong>Firmware Reverse Engineering &amp; IoT Auditing:</strong> Extract embedded root passwords, hardcoded SSH private keys, factory default credentials, telnet banners, and web management endpoints from raw SPI flash dumps and router firmware images.
+        </li>
+        <li>
+          <strong>Memory Dump Forensics (RAM Triage):</strong> Carve unencrypted chat transcripts, cleartext credentials, loaded DLL paths, and injected process arguments from raw physical memory dumps (<code>.raw</code>, <code>.vmem</code>, <code>.dmp</code>) captured during incident response investigations.
+        </li>
+        <li>
+          <strong>Software Supply-Chain &amp; Dependency Auditing:</strong> Inspect third-party compiled libraries, proprietary SDKs, and commercial off-the-shelf (COTS) software for unauthorized telemetry trackers, outdated OpenSSL versions, internal staging URLs, and hardcoded AWS/Azure API keys.
+        </li>
+        <li>
+          <strong>Legal E-Discovery &amp; Intellectual Property Forensics:</strong> Uncover source code remnants, copyright notices, author usernames, build machine directory structures, and git repository URLs preserved in release binaries.
+        </li>
       </ul>
 
-      <h2>Forensic Triage Indicators</h2>
-      <p>Analyzing raw string outputs allows analysts to identify command-and-control (C2) domains, hardcoded IP addresses, dropped executable paths, suspicious API calls (e.g., <code>VirtualAlloc</code>, <code>CreateRemoteThread</code>), base64 encoded parameters, and build environment telemetry without detonating the payload.</p>
+      <h2>The Byte-Level Physics: ASCII, UTF-8, and the Dual-Pass UTF-16LE Challenge</h2>
+      <p>
+        To understand why naive string extraction fails in production environments, one must examine how compilers serialize human text into machine storage.
+      </p>
+
+      <h3>1. 7-Bit ASCII Sequences</h3>
+      <p>
+        Standard ASCII defines 128 characters (<code>0x00</code> through <code>0x7F</code>). The printable subset spans from space (<code>0x20</code>, decimal 32) through tilde (<code>0x7E</code>, decimal 126), alongside the horizontal tab (<code>0x09</code>, decimal 9). A standard ASCII string scanner evaluates sequential bytes:
+      </p>
+      <pre><code>Byte Value:  0x48  0x65  0x6C  0x6C  0x6F  0x20  0x57  0x6F  0x72  0x6C  0x64  0x00
+Character:    H     e     l     l     o           W     o     r     l     d    [NULL]</code></pre>
+      <p>
+        Because all bytes fall cleanly within the printable range, standard single-byte iteration identifies the sequence with high precision.
+      </p>
+
+      <h3>2. The Windows Wide Unicode Paradigm (UTF-16LE)</h3>
+      <p>
+        In modern Windows architectures, the native Win32 API is built upon wide-character strings (<code>wchar_t</code>), encoded in <strong>UTF-16 Little-Endian (UTF-16LE)</strong>. For all basic Latin characters, numbers, and common punctuation, UTF-16LE represents each glyph using 16 bits (two bytes): the ASCII code byte followed by a null byte (<code>0x00</code>).
+      </p>
+      <pre><code>Physical Bytes:  0x48 0x00  0x65 0x00  0x6C 0x00  0x6C 0x00  0x6F 0x00
+Character:        H          e          l          l          o</code></pre>
+      <p>
+        If an analyst runs a standard ASCII-only strings tool on a modern Windows binary, the tool sees <code>0x48</code>, followed immediately by <code>0x00</code> (non-printable), followed by <code>0x65</code>, followed by <code>0x00</code>. Because contiguous printable sequences never exceed one byte, <strong>the ASCII strings tool fails completely, missing 100% of the Unicode strings in the binary</strong>!
+      </p>
+
+      <h3>3. The Dual-Pass Alignment Dilemma</h3>
+      <p>
+        Even among tools that support UTF-16LE, a subtle structural trap exists: <strong>byte alignment</strong>.
+      </p>
+      <p>
+        A 16-bit wide character consists of an even byte and an odd byte. If a string starts at an even physical offset in the file (e.g., offset <code>0x1000</code>), its character bytes sit at <code>0x1000, 0x1002, 0x1004...</code> and its null bytes sit at <code>0x1001, 0x1003, 0x1005...</code>. 
+      </p>
+      <p>
+        However, binary compilers frequently align structures on 1-byte, 2-byte, or 4-byte boundaries. If a UTF-16LE string is preceded by a single 1-byte flag, the string begins at an <strong>odd physical offset</strong> (e.g., offset <code>0x1001</code>). Its character bytes sit at odd positions (<code>0x1001, 0x1003, 0x1005...</code>) and its null bytes sit at even positions (<code>0x1002, 0x1004, 0x1006...</code>).
+      </p>
+      <blockquote>
+        <strong>Architectural Flaw in Basic Tools:</strong> Many legacy tools assume UTF-16 strings always begin on 16-bit word boundaries (even offsets). If a string begins at an odd offset, the tool evaluates the null byte first, misinterpreting the entire character sequence as invalid and discarding it.
+      </blockquote>
+      <p>
+        The BitDark engine implements a robust <strong>Dual-Pass Streaming Architecture</strong>:
+      </p>
+      <ul>
+        <li><strong>Pass 0 (Even Alignment):</strong> Evaluates pairs where offset % 2 == 0.</li>
+        <li><strong>Pass 1 (Odd Alignment):</strong> Evaluates pairs where offset % 2 == 1.</li>
+      </ul>
+      <p>
+        By evaluating both alignment phases independently and re-sorting results chronologically by physical file offset, BitDark guarantees zero missed Unicode strings, regardless of compiler padding or struct packing.
+      </p>
+
+      <h2>Comprehensive Architecture: CLI Strings vs. In-Browser Streaming</h2>
+      <p>
+        To process large binaries, multi-gigabyte memory dumps, and complex payloads directly inside a web browser without crashing the tab or triggering Out-of-Memory (OOM) exceptions, BitDark employs a non-blocking streaming pipeline:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Architecture Metric</th>
+              <th>GNU / Sysinternals strings</th>
+              <th>Naive Web Tools</th>
+              <th>BitDark Streaming Engine</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Execution Context</strong></td>
+              <td>Native C / C++ binary</td>
+              <td>DOM / JavaScript main thread</td>
+              <td>TypedArray Chunk Stream in Browser Memory</td>
+            </tr>
+            <tr>
+              <td><strong>Memory Footprint</strong></td>
+              <td>Minimal (Kernel pipe)</td>
+              <td>Severe OOM (Loads entire file to string)</td>
+              <td>Bounded (Fixed 4MB streaming slice window)</td>
+            </tr>
+            <tr>
+              <td><strong>Boundary Carry-Over</strong></td>
+              <td>Pipe-dependent</td>
+              <td>None (Strings split across chunks)</td>
+              <td><strong>Stateful Carry-Over Buffer</strong> (Zero splits)</td>
+            </tr>
+            <tr>
+              <td><strong>UTF-16 Dual Alignment</strong></td>
+              <td>Flag dependent (<code>-el</code> requires word alignment)</td>
+              <td>Rarely supported</td>
+              <td><strong>Native Dual-Pass (Even &amp; Odd offsets)</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Data Privacy</strong></td>
+              <td>Local host only</td>
+              <td>Server upload (Leads to data leaks)</td>
+              <td><strong>100% Air-Gapped Client-Side (0 network egress)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The Carry-Over Boundary Slicing Protocol</h3>
+      <p>
+        When streaming a 500MB file in 4MB chunks, a critical edge case occurs: what happens if a 60-character URL begins at byte offset <code>4,194,280</code> (24 bytes before the end of Chunk 1) and ends at byte offset <code>4,194,340</code> (36 bytes into Chunk 2)?
+      </p>
+      <p>
+        Under naive chunking, Chunk 1 reads 24 characters, and Chunk 2 reads 36 characters. The URL is severed into two truncated fragments, neither of which matches a full regex for <code>https://...</code>.
+      </p>
+      <p>
+        BitDark solves this using <strong>Stateful Carry-Over Slicing</strong>:
+      </p>
+      <ol>
+        <li>When a chunk boundary is reached while an active printable sequence is being accumulated, the accumulating bytes are not emitted.</li>
+        <li>The trailing slice is retained in a small <code>carryBytes</code> buffer along with its absolute starting file offset.</li>
+        <li>When the subsequent chunk is loaded into memory, the carry buffer is prepended to the new slice before scanning begins.</li>
+        <li>Strings spanning chunk boundaries remain completely contiguous, preserving URLs, file paths, and cryptographic signatures intact.</li>
+      </ol>
+
+      <h2>Worked Forensic Walkthrough: Deconstructing a Dropped Malicious Artifact</h2>
+      <p>
+        To understand how string extraction unravels an adversary's operational methodology, let us examine a real-world forensic scenario involving a dropped Windows PE binary recovered from an endpoint compromise:
+      </p>
+
+      <h3>1. Ingestion &amp; Triage Headers</h3>
+      <p>
+        The analyst drops the suspicious file <code>svchost_update.exe</code> into BitDark. Within 0.4 seconds, the engine processes the binary and displays its cryptographic fingerprint:
+      </p>
+      <ul>
+        <li><strong>SHA-256:</strong> <code>9b8a3e71d2c45f8a01b238914efd229188a100234b678911029487cbeef012aa</code></li>
+        <li><strong>Total Identified Strings:</strong> 1,482 strings (Min length 4)</li>
+      </ul>
+
+      <h3>2. Inspecting the PE Header Strings</h3>
+      <p>
+        At offset <code>0x0000004E</code>, the familiar DOS stub message confirms a compiled Windows PE format:
+      </p>
+      <pre><code>0x0000004E  [ASCII   ]  !This program cannot be run in DOS mode.
+0x000001E8  [ASCII   ]  .text
+0x00000210  [ASCII   ]  .rdata
+0x00000238  [ASCII   ]  .data
+0x00000260  [ASCII   ]  .rsrc</code></pre>
+
+      <h3>3. Correlating Network C2 Indicators (Filtered by URLs &amp; IPs)</h3>
+      <p>
+        Activating the <strong>URLs / Endpoints</strong> filter chip immediately strips compiled noise and surfaces command-and-control endpoints embedded in the <code>.rdata</code> read-only data section:
+      </p>
+      <pre><code>0x00012A40  [ASCII   ]  http://c2-telemetry-gateway.darknet-sync[.]com/api/v1/beacon
+0x00012B10  [UTF-16LE]  https://api.telegram.org/bot728192841:AAHq_faketoken/sendMessage
+0x00012C50  [ASCII   ]  Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36</code></pre>
+      <p>
+        Notice that the primary HTTP endpoint was compiled as ASCII, whereas the secondary exfiltration channel (a Telegram Bot API webhook) was compiled as wide <strong>UTF-16LE</strong>. Without dual-pass Unicode extraction, the secondary C2 fallback would have been completely invisible!
+      </p>
+
+      <h3>4. Identifying Suspicious API Imports &amp; Process Injection Hooks</h3>
+      <p>
+        Searching the filter bar for injection primitives reveals the threat actor's internal execution mechanism:
+      </p>
+      <pre><code>0x00008F40  [ASCII   ]  VirtualAllocEx
+0x00008F60  [ASCII   ]  WriteProcessMemory
+0x00008F80  [ASCII   ]  CreateRemoteThread
+0x00008FA0  [ASCII   ]  IsDebuggerPresent
+0x00008FC0  [ASCII   ]  CheckRemoteDebuggerPresent</code></pre>
+      <p>
+        The combination of <code>VirtualAllocEx</code>, <code>WriteProcessMemory</code>, and <code>CreateRemoteThread</code> provides definitive proof of process hollowing or DLL injection. Furthermore, the presence of <code>IsDebuggerPresent</code> indicates that the malware includes anti-analysis evasion capabilities.
+      </p>
+
+      <h3>5. Uncovering Compilation Paths &amp; Developer Telemetry</h3>
+      <p>
+        Searching for file paths surfaces the developer's internal build environment:
+      </p>
+      <pre><code>0x00024E10  [ASCII   ]  C:\Users\RedTeamDev\source\repos\CobaltLoader\x64\Release\CobaltLoader.pdb</code></pre>
+      <p>
+        The PDB path reveals the internal project name (<code>CobaltLoader</code>), the build configuration (<code>x64\Release</code>), and the threat actor's build workstation directory structure, providing critical attribution telemetry for threat intelligence reports.
+      </p>
+
+      <h2>Advanced Evasion Techniques: Stack Strings, XOR Obfuscation, and Packing</h2>
+      <p>
+        While string extraction is exceptionally effective against unhardened binaries, experienced adversaries implement anti-forensic techniques to conceal their indicators:
+      </p>
+
+      <h3>1. Stack Strings (Dynamic Construction)</h3>
+      <p>
+        To prevent strings from appearing in static data sections, malware authors construct strings dynamically on the CPU execution stack using individual byte move instructions:
+      </p>
+      <pre><code>mov byte ptr [ebp-10h], 'h'
+mov byte ptr [ebp-0Fh], 't'
+mov byte ptr [ebp-0Eh], 't'
+mov byte ptr [ebp-0Dh], 'p'
+mov byte ptr [ebp-0Ch], ':'
+mov byte ptr [ebp-0Bh], '/'
+mov byte ptr [ebp-0Ah], '/'</code></pre>
+      <p>
+        Because these characters are interspersed with machine assembly opcodes (e.g., <code>0xC6 0x45 0xF0 0x68</code>), they never appear as a contiguous sequence of printable bytes in the binary file. Static string extraction cannot reconstruct stack strings; analysts must utilize dynamic emulation tools (like Mandiant FLOSS) or capture a live memory dump after the function executes.
+      </p>
+
+      <h3>2. Single-Byte XOR &amp; Rolling XOR Obfuscation</h3>
+      <p>
+        Adversaries frequently XOR-encode critical strings using a single byte key (e.g., <code>0x5A</code>) or a multi-byte rolling key. An ASCII string like <code>cmd.exe</code> encoded with XOR key <code>0x5A</code> becomes:
+      </p>
+      <pre><code>Original: 'c' (0x63) ^ 0x5A = 0x39 ('9')
+Original: 'm' (0x6D) ^ 0x5A = 0x37 ('7')
+Original: 'd' (0x64) ^ 0x5A = 0x3E ('>')
+Original: '.' (0x2E) ^ 0x5A = 0x74 ('t')
+Original: 'e' (0x65) ^ 0x5A = 0x3F ('?')
+Original: 'x' (0x78) ^ 0x5A = 0x22 ('"')
+Original: 'e' (0x65) ^ 0x5A = 0x3F ('?')</code></pre>
+      <p>
+        While printable characters may accidentally emerge, the semantic meaning is destroyed. Recognizing single-byte XOR requires automated brute-force XOR decoding or entropy profiling.
+      </p>
+
+      <h3>3. Binary Packing and Crypters</h3>
+      <p>
+        Packers (such as UPX, Themida, VMProtect, or custom in-house crypters) compress or encrypt the original binary's code and data sections. When a packed file is inspected with BitDark:
+      </p>
+      <ul>
+        <li>The total string count is drastically depressed (often under 50 strings).</li>
+        <li>The only visible strings belong to the unpacking stub (e.g., <code>UPX0</code>, <code>UPX1</code>, <code>LoadLibraryA</code>, <code>GetProcAddress</code>).</li>
+        <li>The binary exhibits high Shannon entropy (> 7.2 bits per byte).</li>
+      </ul>
+      <blockquote>
+        <strong>Forensic Rule:</strong> In string analysis, <strong>scarcity of strings is itself an indicator</strong>. A 2MB Windows executable with fewer than 100 printable strings is overwhelmingly likely to be packed, encrypted, or obfuscated.
+      </blockquote>
+
+      <h2>Comparison: Static Strings vs Dynamic Memory Dumps vs Emulation</h2>
+      <p>
+        Understanding how static string extraction fits into the broader defensive reverse-engineering toolkit is essential for threat triage:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Methodology</th>
+              <th>Extraction Domain</th>
+              <th>Catches Stack Strings?</th>
+              <th>Bypasses Packers?</th>
+              <th>Operational Risk</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Static Strings (BitDark)</strong></td>
+              <td>Raw binary file on disk</td>
+              <td>No</td>
+              <td>No (Scans unpacker stub only)</td>
+              <td><strong>Zero Risk</strong> (No execution required, air-gapped)</td>
+            </tr>
+            <tr>
+              <td><strong>Dynamic Memory Dump</strong></td>
+              <td>Volatile process RAM after load</td>
+              <td><strong>Yes</strong> (Captured post-construction)</td>
+              <td><strong>Yes</strong> (Payload unpacked in RAM)</td>
+              <td>Medium (Requires detonation or sandbox execution)</td>
+            </tr>
+            <tr>
+              <td><strong>Emulated De-obfuscation (FLOSS)</strong></td>
+              <td>Static symbolic execution</td>
+              <td><strong>Yes</strong> (Reconstructs stack strings)</td>
+              <td>Partial (Bypasses basic decoders)</td>
+              <td>Low (Emulated environment)</td>
+            </tr>
+            <tr>
+              <td><strong>Live Kernel Debugging</strong></td>
+              <td>Interactive CPU execution</td>
+              <td><strong>Yes</strong></td>
+              <td><strong>Yes</strong></td>
+              <td>High (High analyst overhead, malware evasion risk)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Critical Pitfalls and Forensic Blind Spots in String Analysis</h2>
+      <p>
+        Investigators must avoid common cognitive and procedural errors when evaluating binary strings:
+      </p>
+      <ul>
+        <li>
+          <strong>The "Legitimate Name" Fallacy:</strong> Threat actors routinely embed decoy strings containing Microsoft copyright notices (e.g., <code>"Microsoft Corporation. All rights reserved."</code>), legitimate product names (<code>"svchost.exe"</code>), or fake digital certificates to trick analysts conducting surface-level triage. Never authenticate a file based on string claims; verify cryptographic digital signatures and PE Authenticode headers.
+        </li>
+        <li>
+          <strong>False Positives in Floating-Point Data:</strong> Contiguous series of IEEE 754 floating-point numbers or 3D mesh coordinates in gaming binaries often happen to match ASCII printable byte ranges (0x20–0x7E) by pure statistical coincidence. These appear as gibberish strings like <code>?M@A^~]</code>. Increasing the minimum string length from 4 to 6 or 8 eliminates over 95% of these mathematical false positives.
+        </li>
+        <li>
+          <strong>Overlooking UTF-16LE Due to Length Settings:</strong> Because a 4-character UTF-16LE string occupies 8 physical bytes, setting minimum string length filters inappropriately in naive tools can lead to mismatched threshold evaluations. BitDark measures length by <em>character count</em>, ensuring uniform sensitivity across both ASCII and Unicode streams.
+        </li>
+        <li>
+          <strong>Assuming Truncated Strings Are Non-Malicious:</strong> In memory dumps, strings may terminate prematurely due to page swapping or buffer fragmentation. A string that reads <code>http://malicious-gateway.com/pa</code> should be treated as an IOC even if the terminal query parameter was severed.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between ASCII and UTF-16LE binary strings?</div>
+          <div class="faq-answer">
+            ASCII encodes characters using a single 8-bit byte (values 32 to 126). UTF-16LE (Little-Endian) encodes characters using 16-bit words (two bytes). In UTF-16LE, common Latin characters are represented by the ASCII byte value followed by a null byte (0x00). Standard single-byte strings extractors completely miss UTF-16LE strings because the alternating null bytes break their printable sequence detectors.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the BitDark engine scan for Unicode on both even and odd offsets?</div>
+          <div class="faq-answer">
+            Compilers align data structures differently based on architecture and packing flags. If a wide UTF-16LE string starts at an odd physical byte address (offset % 2 == 1), an even-only scanner reads the null byte first, failing to recognize the string. Dual-pass scanning inspects both even and odd starting alignments, ensuring 100% extraction coverage regardless of binary data layout.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I extract strings from memory dumps and firmware images?</div>
+          <div class="faq-answer">
+            Yes. The BitDark Strings Extractor treats all ingested artifacts as raw binary streams. It does not parse file system metadata or PE headers before scanning, making it equally effective on raw RAM dumps (.raw, .vmem), router firmware images, packet captures (.pcap), database files, and compiled application packages.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why is there a 5,000-line limit in the preview box?</div>
+          <div class="faq-answer">
+            Rendering tens of thousands of DOM elements simultaneously causes severe browser reflow latency and memory bloat, especially on mobile devices. The preview is capped at 5,000 lines for instantaneous responsiveness, but clicking "Download Filtered TXT" exports the complete, uncapped dataset directly to disk.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark upload my files to an analysis server?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. Your binary files are processed exclusively within your browser's private JavaScript memory using TypedArrays and the W3C Web Cryptography API. Zero bytes are uploaded to any server.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does increasing the minimum string length affect forensic results?</div>
+          <div class="faq-answer">
+            Setting the minimum length to 3 or 4 captures short command-line switches, environment variables, and acronyms, but increases noise from random binary coincidence. Setting the minimum length to 8 or 10 eliminates mathematical noise and focuses your output specifically on actionable IOCs like URLs, file paths, and registry keys.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What are "stack strings" and why are they missing from the output?</div>
+          <div class="faq-answer">
+            Stack strings are strings dynamically constructed at runtime by moving individual byte opcodes onto the CPU stack during function execution. Because they do not exist as contiguous character sequences in the static file on disk, no static strings tool can extract them. They must be captured from volatile process memory dumps or reconstructed using emulated de-obfuscators like FLOSS.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why do some extracted URLs contain trailing garbage characters?</div>
+          <div class="faq-answer">
+            In compiled binaries, strings are terminated by a null byte (0x00). If a developer allocated a fixed-size buffer (e.g., 256 bytes) and did not zero-initialize the memory, leftover heap or stack artifacts may follow the logical end of the string, causing the extractor to read contiguous non-null bytes until a true null boundary is encountered.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Forensics, Cryptography &amp; Malware Analysis Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Inspect binary file headers, hex magic bytes, and detect dangerous extension spoofing entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          </a>
+          <a href="/tools/encoding/base58/" class="related-card">
+            <div class="related-card-title"><span>[🔤]</span> Base58 &amp; Base62 Codec</div>
+            <div class="related-card-desc">Encode and decode Bitcoin Base58, Ripple, and compact Base62 binary buffers with zero network leaks.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Authenticated client-side 256-bit encryption for securing confidential payloads with zero tracking.</div>
+          </a>
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite. bitdark.net is not responsible for binary artifacts or extracted content.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Telemetry with Safe Timeouts
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      const fetchTimeout = async (url, ms = 2500) => {
-        const ctrl = new AbortController();
-        const tid = setTimeout(() => ctrl.abort(), ms);
-        try {
-          const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
-          clearTimeout(tid);
-          return res;
-        } catch (e) {
-          clearTimeout(tid);
-          throw e;
-        }
-      };
-
-      try {
-        const res4 = await fetchTimeout("https://api.ipify.org?format=json");
-        if (res4.ok) {
-          const d4 = await res4.json();
-          ipv4El.textContent = d4.ip;
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const fb4 = await fetchTimeout("https://ipv4.icanhazip.com");
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      try {
-        const res6 = await fetchTimeout("https://api64.ipify.org?format=json");
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip && d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const fb6 = await fetchTimeout("https://ipv6.icanhazip.com");
-          const t6 = (await fb6.text()).trim();
-          ipv6El.textContent = t6.includes(":") ? t6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Fast Binary Strings Engine
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Fast Binary Strings Engine (100% Unaltered Tool Logic, Zero Telemetry)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -813,6 +1555,13 @@
 
     // Drag and Drop
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(ev => {
       dropArea.addEventListener(ev, (e) => {
@@ -1072,7 +1821,6 @@
         list = list.filter(item => urlRx.test(item.str));
       } else if (activePreset === "ips") {
         const ipv4Rx = /(^|[^0-9.])((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?=[^0-9.]|$)/;
-        // Strictly matched IPv6 regex requiring hex groups around compressed segments to prevent C++ scope (::) false positives
         const ipv6Rx = /(^|[^0-9a-fA-F:])((?:[0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|:(?::[0-9a-fA-F]{1,4}){1,7}|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?::[0-9a-fA-F]{1,4}){1,6}|::1)(?=[^0-9a-fA-F:]|$)/i;
         list = list.filter(item => ipv4Rx.test(item.str) || ipv6Rx.test(item.str));
       } else if (activePreset === "paths") {
@@ -1145,7 +1893,7 @@
       rawViewer.textContent = "Loading binary buffer...";
     });
 
-    // Copy to Clipboard (Includes [${entry.type}] to match downloaded and rendered forensic records)
+    // Copy to Clipboard
     btnCopy.addEventListener("click", async () => {
       if (filteredResults.length === 0) return;
       const offsetMode = offsetFormatSelect.value;
@@ -1172,6 +1920,7 @@
       }
     });
 
+    // Download Filtered Results
     btnDownload.addEventListener("click", () => {
       if (filteredResults.length === 0) return;
       const offsetMode = offsetFormatSelect.value;
@@ -1210,6 +1959,12 @@
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     }
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
