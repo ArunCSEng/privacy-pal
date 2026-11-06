@@ -2,14 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Zip Slip Archive Inspector — Free Offline Forensics Tool | BitDark</title>
-  <meta name="title" content="Zip Slip Archive Inspector — Free Offline Forensics Tool | BitDark" />
+  <title>Zip Slip Directory Traversal Scanner — Free Offline Forensics Tool | BitDark</title>
+  <meta name="title" content="Zip Slip Directory Traversal Scanner — Free Offline Forensics Tool | BitDark" />
   <meta name="description" content="Audit ZIP, JAR, WAR, and APK archives locally for directory traversal breakout sequences, relative path exploits, and arbitrary file write attack vectors. Zero tracking, zero network egress." />
-  <meta name="keywords" content="zip slip detector, directory traversal scanner, zip path traversal, arbitrary file write audit, offline zip forensics, unzipping security inspector" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/zip-slip" />
+  <meta name="keywords" content="zip slip scanner, directory traversal scanner, zip path traversal, arbitrary file write audit, offline zip forensics, unzipping security inspector, cwe-22 scanner, tar slip, central directory parser, malicious archive detector" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/zip-slip-scanner/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/zip-slip-scanner/" />
+  <meta property="og:title" content="Zip Slip Directory Traversal Scanner — Local Memory Parser | BitDark" />
+  <meta property="og:description" content="Audit ZIP, JAR, WAR, and APK archives offline in browser memory for relative path traversal and arbitrary file write breakouts before extraction. Zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/zip-slip-scanner/" />
+  <meta name="twitter:title" content="Zip Slip Directory Traversal Scanner | BitDark" />
+  <meta name="twitter:description" content="Audit archives for Zip Slip directory traversal vulnerabilities locally inside your browser memory. 100% Client-Side with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Zip Slip Directory Traversal Scanner",
+        "url": "https://bitdark.net/tools/forensics/zip-slip-scanner/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side cybersecurity tool to audit ZIP, JAR, WAR, APK, and Office Open XML archives directly in browser RAM for directory traversal breakouts, absolute paths, and arbitrary file write exploits (CWE-22)."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Zip Slip Vulnerability Analysis: PKZIP Central Directory Forensics, Path Sanitization Failures, and In-Memory Archive Auditing",
+        "url": "https://bitdark.net/tools/forensics/zip-slip-scanner/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-14",
+        "dateModified": "2026-11-06",
+        "description": "Exhaustive technical reference and forensic guide to Zip Slip (CWE-22), PKZIP internal file architecture, EOCD backwards scanning, canonical path boundary verification, and secure archive extraction routines across modern programming languages."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the Zip Slip vulnerability (CWE-22) and how does it compromise systems?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Zip Slip is a widespread arbitrary file overwrite vulnerability occurring when an archive (such as ZIP, TAR, JAR, or WAR) containing filenames with directory traversal sequences (e.g., ../../../etc/cron.d/malicious) is extracted by an application that fails to validate the canonical target boundary. When unpacked, the file escapes the intended extraction directory and writes files into arbitrary system locations, enabling remote code execution via overwriting system binaries, configuration files, SSH keys, or web application roots."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the BitDark Zip Slip Scanner inspect archives without extracting them?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The tool parses the archive's internal binary records directly within local browser memory using JavaScript ArrayBuffer and DataView. It performs a reverse byte scan to locate the End of Central Directory (EOCD) record, determines the offset of the Central Directory Headers, and inspects every entry's filename field against heuristic path breakout rules without unpacking or writing any file to disk."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can an archive contain malicious traversal paths in Local File Headers that differ from Central Directory Headers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. This forensic anomaly is known as Central Directory Shadowing or Desynchronization. Standard unarchivers read the Central Directory at the end of the archive, but naive or streaming unzippers process entries sequentially starting from the beginning using Local File Headers. The BitDark scanner utilizes Central Directory parsing as primary and features a fallback sequential scan of Local File Headers to ensure comprehensive coverage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is simple string filtering like path.replace('../', '') unsafe for mitigating Zip Slip?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Naive string replacement routines are trivial to bypass using nested sequences (e.g., ....// collapses into ../ after a single non-recursive pass), encoded characters (%2e%2e%2f), alternative slashes (..\\ on Windows), or Unicode homoglyphs. Safe mitigation mandates canonical path resolution (e.g., file.getCanonicalPath() or os.path.realpath()) followed by verifying that the resolved path strictly starts with the destination directory boundary plus a path separator."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my archive files uploaded to external cloud servers for scanning?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. BitDark operates on a strict air-gapped zero-network-egress security model. All binary ingestion, SHA-256 computation, Central Directory parsing, and threat evaluations execute purely inside your browser's private volatile RAM. No file bytes, filenames, or hashes leave your local machine."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,7 +123,9 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --atom-purple: #c678dd;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
       --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
@@ -35,156 +135,182 @@
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
-      flex-shrink: 0;
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
+    /* Layout Wrapper */
     .wrapper { 
-      max-width: 1100px; 
-      width: 100%;
+      max-width: 1200px; 
       margin: 0 auto; 
-      padding: 24px 16px 60px; 
-      flex: 1;
+      padding: 30px 20px 60px; 
     }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 18px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      word-break: break-word;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
+
+    .tool-header { margin-bottom: 28px; }
     .tool-header h1 { 
-      font-size: 1.65rem; 
+      font-size: 2.2rem; 
       color: var(--atom-heading); 
-      margin-bottom: 8px; 
+      margin-bottom: 12px; 
+      font-weight: 700;
       line-height: 1.25;
+      letter-spacing: -0.01em;
     }
     .tool-header p { 
       color: var(--atom-text); 
-      font-size: 0.94rem; 
-      max-width: 820px;
+      font-size: 1.05rem; 
+      max-width: 950px;
       line-height: 1.6;
     }
 
-    /* Tool Card & Workspace */
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 520px;
     }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 36px 16px;
+      border-radius: 8px;
+      padding: 44px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
+    .dropzone:focus,
     .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
-    .dropzone-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; }
-    .dropzone p { font-size: 0.9rem; color: var(--atom-text); margin-bottom: 8px; }
+    .dropzone-icon { 
+      font-size: 2.6rem; 
+      margin-bottom: 12px; 
+      display: block; 
+    }
+    .dropzone p { 
+      font-size: 1.05rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
     .dropzone-hint { 
-      font-size: 0.76rem; 
+      font-size: 0.84rem; 
       color: var(--atom-muted); 
       font-family: var(--font-code); 
-      display: inline-block;
-      max-width: 90%;
-      line-height: 1.4;
+      display: block;
+      margin-top: 4px;
     }
-
     .file-input-hidden { display: none; }
 
     /* Results Workspace */
-    .results-area { margin-top: 24px; display: none; }
+    .results-area { 
+      margin-top: 28px; 
+      display: none; 
+    }
     
     .status-banner {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 12px 16px;
-      border-radius: 4px;
-      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 0.9rem;
       font-weight: 600;
     }
     .status-found {
@@ -200,93 +326,107 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 12px;
-      border-radius: 4px;
+      padding: 14px 18px;
+      border-radius: 6px;
     }
     .meta-label { 
-      font-size: 0.72rem; 
+      font-size: 0.74rem; 
       color: var(--atom-muted); 
       text-transform: uppercase; 
       font-family: var(--font-code); 
-      margin-bottom: 4px; 
+      margin-bottom: 6px; 
+      letter-spacing: 0.05em;
     }
     .meta-val { 
-      font-size: 0.85rem; 
+      font-size: 0.92rem; 
       color: var(--atom-heading); 
       font-family: var(--font-code); 
       word-break: break-all; 
     }
 
-    /* Table Container */
-    .table-responsive {
+    .subheading {
+      font-family: var(--font-code);
+      font-size: 0.95rem;
+      color: var(--atom-heading);
+      margin: 24px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Tables */
+    .table-container {
       width: 100%;
       overflow-x: auto;
-      margin-bottom: 20px;
-      border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      background-color: var(--atom-bg);
       -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 20px;
+      background-color: var(--atom-bg);
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
       font-family: var(--font-code);
-      text-align: left;
+      font-size: 0.84rem;
       min-width: 620px;
     }
     th, td {
-      padding: 10px 14px;
+      padding: 12px 14px;
+      text-align: left;
       border-bottom: 1px solid var(--atom-border);
     }
     th {
-      background-color: var(--atom-gutter);
-      color: var(--atom-text);
+      background-color: var(--atom-surface);
+      color: var(--atom-cyan);
       font-weight: 600;
       text-transform: uppercase;
-      font-size: 0.72rem;
-      letter-spacing: 0.5px;
+      font-size: 0.74rem;
+      letter-spacing: 0.05em;
     }
     tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+
     .threat-tag {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 3px 8px;
+      border-radius: 4px;
       font-size: 0.72rem;
       font-weight: 700;
+      font-family: var(--font-code);
       white-space: nowrap;
     }
-    .threat-vuln { background-color: rgba(224, 108, 117, 0.2); color: var(--atom-coral); }
-    .threat-safe { background-color: rgba(152, 195, 121, 0.2); color: var(--atom-green); }
+    .threat-vuln { background-color: rgba(224, 108, 117, 0.2); color: var(--atom-coral); border: 1px solid var(--atom-coral); }
+    .threat-safe { background-color: rgba(152, 195, 121, 0.2); color: var(--atom-green); border: 1px solid var(--atom-green); }
 
     .viewer-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 14px;
+      border-radius: 6px;
+      padding: 18px;
       font-family: var(--font-code);
-      font-size: 0.80rem;
-      max-height: 340px;
+      font-size: 0.84rem;
+      max-height: 400px;
       overflow-y: auto;
       white-space: pre-wrap;
+      word-break: break-all;
       color: var(--atom-heading);
       line-height: 1.6;
-      word-break: break-word;
     }
 
     .btn-row {
       display: flex;
-      flex-wrap: wrap;
       justify-content: flex-end;
-      margin-top: 16px;
-      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      gap: 12px;
     }
     .btn-atom {
       background-color: var(--atom-amber);
@@ -294,139 +434,336 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 10px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
-      transition: opacity 0.15s;
+      font-size: 16px; /* Prevents iOS auto-zoom */
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s, opacity 0.2s;
     }
-    .btn-atom:hover { opacity: 0.9; }
-    .btn-atom-secondary {
+    .btn-atom:hover { opacity: 0.92; }
+    .btn-secondary {
       background-color: var(--atom-border);
       color: var(--atom-text);
     }
+    .btn-secondary:hover {
+      background-color: #424953;
+      color: var(--atom-heading);
+    }
 
-    /* Disclaimer Card */
+    /* Forensic Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 16px 18px;
-      margin-bottom: 32px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs Section */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 28px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3200px;
     }
-    .doc-section h2 { 
-      color: var(--atom-heading); 
-      font-size: 1.25rem; 
-      margin-bottom: 10px; 
-      margin-top: 22px; 
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
     }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
-      font-size: 0.82em;
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
 
-    /* Mobile Responsive Optimizations */
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
+
+    /* Mobile Accessibility Breakpoints */
     @media (max-width: 768px) {
-      .navbar { padding: 10px 14px; }
-      .nav-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .trust-badge, .ip-pill-nav {
-        font-size: 0.70rem;
-        padding: 4px 8px;
-      }
-      .wrapper { padding: 18px 12px 40px; }
-      .tool-card { padding: 16px; }
-      .tool-header h1 { font-size: 1.4rem; }
-      .dropzone { padding: 26px 12px; }
-      .btn-row { flex-direction: column; width: 100%; }
-      .btn-atom { width: 100%; text-align: center; }
-      .bottom-bar { flex-direction: column; align-items: flex-start; }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / zip-slip
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Forensics</a>
+      <span class="sep">/</span>
+      <span class="current">Zip Slip Scanner</span>
     </nav>
 
     <div class="tool-header">
       <h1>Zip Slip Path Traversal Archive Inspector</h1>
-      <p>Audit ZIP, JAR, WAR, and APK archives locally for directory traversal breakout sequences, relative path exploits, and arbitrary file write attack vectors before extraction.</p>
+      <p>Audit ZIP, JAR, WAR, and APK archives locally for directory traversal breakout sequences, relative path exploits, and arbitrary file write attack vectors before extraction. Zero tracking, zero network egress.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card" id="toolWorkspace">
-      <div class="dropzone" id="dropArea">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive Zip Slip Archive Inspector">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="Archive file upload drop area">
         <span class="dropzone-icon">📦</span>
-        <p><strong>Click to choose an archive</strong> or drag & drop ZIP/JAR/WAR here</p>
+        <p><strong>Click to choose an archive</strong> or drag &amp; drop ZIP/JAR/WAR here</p>
         <span class="dropzone-hint">Analyzes Central Directory Headers directly in browser memory (0-byte network transmission)</span>
         <input type="file" id="filePicker" class="file-input-hidden" accept=".zip,.jar,.war,.apk,.docx,.xlsx,.pptx" />
       </div>
@@ -436,7 +773,7 @@
 
         <div class="meta-grid">
           <div class="meta-item">
-            <div class="meta-label">Archive Name & Size</div>
+            <div class="meta-label">Archive Name &amp; Size</div>
             <div class="meta-val" id="metaFile">-</div>
           </div>
           <div class="meta-item">
@@ -453,8 +790,8 @@
           </div>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 8px;">Detailed Path Security Breakdown:</div>
-        <div class="table-responsive">
+        <div class="subheading">📑 Detailed Path Security Breakdown:</div>
+        <div class="table-container">
           <table>
             <thead>
               <tr>
@@ -469,114 +806,568 @@
           </table>
         </div>
 
-        <div class="meta-label" style="margin-bottom: 6px;">Parsed Forensic Extraction Report (JSON):</div>
+        <div class="subheading">🔍 Parsed Forensic Extraction Report (JSON):</div>
         <div class="viewer-box" id="rawViewer">Parsing archive headers...</div>
 
         <div class="btn-row">
           <button class="btn-atom" id="btnDownloadJson">Export Forensic Report</button>
-          <button class="btn-atom btn-atom-secondary" id="btnReset">Clear & New Scan</button>
+          <button class="btn-atom btn-secondary" id="btnReset">Clear &amp; New Scan</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Legal Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal Disclaimer & Operational Scope
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible:</strong> This utility is provided on an "as-is" and "as-available" basis strictly for educational, defensive security auditing, and forensic analysis purposes. BitDark.net, its maintainers, and contributors accept no responsibility or liability whatsoever for any direct, indirect, incidental, or consequential damages, operational disruptions, security breaches, data loss, or legal consequences arising from the analysis, extraction, handling of malicious files, or implementation of unzipping workflows. Always execute untrusted archives inside hardened sandbox environments.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        This utility is provided strictly for defensive security auditing, penetration testing verification, incident response triage, and educational research. While this tool evaluates PKZIP archives against canonical traversal standards, malicious threat actors continually develop multi-pass encoding, symlink redirection, and archive parser differential techniques. Always inspect untrusted archives inside strictly isolated, non-privileged virtual machine sandboxes or containerized runtimes with read-only root filesystems.
       </p>
     </aside>
 
-    <!-- Technical & Educational Content -->
-    <article class="doc-section">
-      <h2>What is Zip Slip (CWE-22)?</h2>
-      <p>Zip Slip is a critical arbitrary file overwrite vulnerability that occurs when unpacking archives containing filenames structured with directory traversal paths (e.g., <code>../../../../etc/shadow</code> or <code>..\..\..\Windows\System32\cmd.exe</code>). If an unpacking library concatenates the destination directory directly with the archived entry's name without enforcing canonical boundary verification, the extractor writes files outside the targeted directory.</p>
-      
-      <h2>Common Threat Vectors Detected</h2>
+    <!-- Long-Form Authoritative SEO Documentation (2500+ Words) -->
+    <article class="article-container">
+      <h2>The Critical Mechanics of Zip Slip (CWE-22)</h2>
+      <p>
+        Among software supply-chain vulnerabilities, few architectural flaws possess the destructive simplicity and widespread impact of <strong>Zip Slip</strong>. Disclosed broadly in 2018 by the Snyk security research team, Zip Slip is a widespread arbitrary file overwrite vulnerability that occurs when an archive containing directory traversal filenames is extracted by an application using vulnerable decompression logic.
+      </p>
+      <p>
+        Formally categorized under <strong>CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')</strong>, Zip Slip affects virtually any archive format that encapsulates hierarchical directory trees—including standard <code>.zip</code>, Java <code>.jar</code> and <code>.war</code> archives, Android <code>.apk</code> packages, Microsoft Office Open XML documents (<code>.docx</code>, <code>.xlsx</code>, <code>.pptx</code>), <code>.tar</code>, <code>.cpio</code>, and <code>.7z</code> files.
+      </p>
+      <p>
+        The vulnerability does not stem from a flaw in the archive specification itself, nor does it require memory corruption or buffer overflows. Rather, it exploits an unstated, perilous assumption made by application developers: <em>the belief that archive entry names are benign, relative paths confined to the folder where they are being extracted.</em>
+      </p>
+      <p>
+        When an unarchiving library or custom developer script concatenates a designated destination directory (e.g., <code>/var/www/uploads/</code>) with an attacker-crafted archive entry path (e.g., <code>../../../../etc/shadow</code>) without validating canonical path boundaries, the operating system's filesystem resolver traverses upwards out of the intended directory. The resulting write operation lands in arbitrary filesystem locations, allowing an unauthenticated attacker to overwrite mission-critical files, inject scheduled tasks, place web shells, or replace executable binaries.
+      </p>
+
+      <h2>How to Use the BitDark Zip Slip Archive Inspector</h2>
+      <p>
+        The BitDark Zip Slip Inspector enables security auditors, devops engineers, and forensic analysts to safely inspect archives before extraction without touching the local filesystem:
+      </p>
+      <ol>
+        <li>
+          <strong>Select or Drag the Target Archive:</strong> Load your archive (ZIP, JAR, WAR, APK, or Office Open XML document) directly into the drag-and-drop workspace.
+        </li>
+        <li>
+          <strong>In-Memory Binary Ingestion:</strong> The file is read directly into a sandboxed <code>ArrayBuffer</code>. The Web Crypto API computes a hardware-accelerated SHA-256 cryptographic checksum while JavaScript typed arrays parse the raw binary structures.
+        </li>
+        <li>
+          <strong>Central Directory Traversal Scan:</strong> The tool locates the End of Central Directory (EOCD) record via backwards scanning, resolves the Central Directory table, and extracts every declared filename entry without decompressing or executing payload streams.
+        </li>
+        <li>
+          <strong>Evaluate Security Status:</strong> Review the Detailed Path Security Breakdown table. Each entry is classified as <strong>SAFE</strong> or <strong>VULNERABLE</strong>, highlighting specific traversal risks, absolute path attempts, alternate data streams, or reserved device names.
+        </li>
+        <li>
+          <strong>Export Structured JSON Forensics:</strong> Click "Export Forensic Report" to generate an authoritative JSON audit log containing file hashes, parsed paths, security findings, and heuristic classifications for inclusion in DFIR case documentation.
+        </li>
+      </ol>
+
+      <h2>When to Use Archive Traversal Inspection: Threat Modeling &amp; Use Cases</h2>
+      <p>
+        Inspecting archives for path breakout sequences provides vital defensive telemetry across diverse enterprise operations:
+      </p>
       <ul>
-        <li><strong>Relative Traversal Sequences:</strong> Encounters with <code>../</code>, <code>..\</code>, or terminal <code>/..</code> designed to step up and escape destination boundaries.</li>
-        <li><strong>Absolute & Drive-Root Overwrites:</strong> Entries prefixed with root indicators like <code>/etc/</code>, Windows drive indicators like <code>C:\</code>, single leading backslashes (<code>\Windows\...</code>), or UNC network shares (<code>\\server\share</code>).</li>
-        <li><strong>Windows Drive-Relative Bypasses:</strong> Paths formatted as <code>C:payload.exe</code> without leading slashes.</li>
-        <li><strong>NTFS Alternate Data Streams (ADS):</strong> Hidden executable or data stream injections using colon syntax (<code>file:stream</code> or <code>::$DATA</code>).</li>
-        <li><strong>Unicode Homoglyphs & Obfuscation:</strong> Full-width characters (<code>\uFF0F</code>, <code>\uFF0E</code>) and multi-pass URL encodings (<code>..%2f</code>, <code>%252e</code>).</li>
-        <li><strong>Null Byte Injection:</strong> Entries embedding <code>\0</code> or <code>%00</code> byte characters to evade legacy string terminators.</li>
-        <li><strong>DOS / Windows Reserved Device Names:</strong> Entries named <code>CON</code>, <code>PRN</code>, <code>AUX</code>, <code>NUL</code>, <code>COM1-9</code>, or <code>LPT1-9</code> that trigger operating system locks.</li>
+        <li>
+          <strong>Secure CI/CD Build Pipelines &amp; Dependency Ingestion:</strong> Continuous integration runners frequently pull third-party packages, Gradle/Maven dependencies (<code>.jar</code>/<code>.aar</code>), or npm tarballs. Ingesting an untrusted package harboring Zip Slip payloads can compromise the build server, poison release artifacts, or exfiltrate pipeline secrets.
+        </li>
+        <li>
+          <strong>Web Application Upload Gateways:</strong> Web services that accept user-uploaded ZIP archives—such as avatar image packs, bulk document importers, CMS theme installers, or SCORM educational modules—must validate incoming archives before invoking background decompression workers.
+        </li>
+        <li>
+          <strong>Incident Response (DFIR) &amp; Malware Triage:</strong> Threat actors frequently deliver payloads inside multi-stage ZIP archives designed to extract decoy documents in user directories while silently writing secondary malware into the Windows <code>Startup</code> folder or Linux <code>/etc/cron.d/</code>.
+        </li>
+        <li>
+          <strong>Mobile Security &amp; Android APK Auditing:</strong> Android application packages (APKs) are specialized ZIP containers. Malicious APKs can exploit vulnerable installer routines or third-party backup managers by embedding traversal sequences that escape sandbox boundaries.
+        </li>
+        <li>
+          <strong>Software Supply-Chain Penetration Testing:</strong> Red teams and security auditors verify whether custom archive parsing code in enterprise applications correctly enforces canonical path containment.
+        </li>
       </ul>
 
-      <h2>Safe Extraction Implementation Pattern</h2>
-      <p>When extracting archive payloads in backend workflows, verify that the canonical destination path of the extracted entry strictly begins with the intended root directory path:</p>
+      <h2>Deep Dive: The Binary Architecture of PKZIP Archives</h2>
+      <p>
+        To understand why Zip Slip is so ubiquitous and how this scanner detects it without extracting payload data, one must understand the internal architecture of the PKZIP file format, designed by Phil Katz in 1989.
+      </p>
+      <p>
+        Unlike simple sequential file streams, a ZIP file is structured into three distinct logical segments:
+      </p>
+
+      <pre><code>[PKZIP File Layout]
++------------------------------------------------------------------+
+| Local File Header 1 (0x04034B50) + Compressed Payload Data 1     |
++------------------------------------------------------------------+
+| Local File Header 2 (0x04034B50) + Compressed Payload Data 2     |
++------------------------------------------------------------------+
+| ... Local File Header N + Compressed Payload Data N              |
++------------------------------------------------------------------+
+| Central Directory Header 1 (0x02014B50)                          |
++------------------------------------------------------------------+
+| Central Directory Header 2 (0x02014B50)                          |
++------------------------------------------------------------------+
+| ... Central Directory Header N                                   |
++------------------------------------------------------------------+
+| End of Central Directory Record (EOCD - 0x06054B50)              |
++------------------------------------------------------------------+</code></pre>
+
+      <h3>1. The Central Directory vs. Local File Headers</h3>
+      <p>
+        Every entry in a ZIP file possesses two independent records containing metadata:
+      </p>
       <ul>
-        <li><strong>Python:</strong> Ensure <code>os.path.commonpath([target_dir, resolved_path]) == target_dir</code> before writing.</li>
-        <li><strong>Java:</strong> Ensure <code>file.toPath().normalize().startsWith(destDirectory.toPath())</code>.</li>
-        <li><strong>Node.js:</strong> Ensure <code>path.resolve(destDir, entryName).startsWith(path.resolve(destDir) + path.sep)</code>.</li>
+        <li>
+          <strong>Local File Header (LFH):</strong> Precedes each chunk of compressed payload data at the start of the archive. It contains file sizes, compression method (e.g., DEFLATE, BZIP2, or uncompressed Store), CRC-32 checksums, and the filename.
+        </li>
+        <li>
+          <strong>Central Directory (CD) Header:</strong> Clustered together near the very end of the file. This acts as the authoritative table of contents for the entire archive. It repeats the filename, flags, and attributes, while providing a 32-bit pointer indicating the exact byte offset where the corresponding Local File Header begins.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Guarantee</h2>
-      <p>This tool extracts and validates Central Directory Records and Local Headers exclusively within your browser's client-side memory using typed <code>ArrayBuffer</code> and <code>DataView</code> constructs. No archive payloads, file titles, or hashes leave your device.</p>
+      <h3>2. The End of Central Directory (EOCD) Record</h3>
+      <p>
+        Standard archive utilities do not read ZIP files from front to back. Instead, they seek directly to the end of the file to find the <strong>End of Central Directory (EOCD)</strong> record, identified by the 4-byte signature <code>0x06054B50</code> (or <code>PK\x05\x06</code>).
+      </p>
+      <p>
+        The EOCD record specifies:
+      </p>
+      <ul>
+        <li>The total number of Central Directory records on this disk.</li>
+        <li>The total size of the Central Directory in bytes.</li>
+        <li>The byte offset of the start of the Central Directory relative to the start of the archive.</li>
+        <li>A variable-length archive comment (up to 65,535 bytes).</li>
+      </ul>
+      <p>
+        Because the archive comment can vary in length, locating the EOCD requires scanning backward from the final byte of the file across a 65KB window—a procedure implemented with boundary validation in the BitDark scanning engine.
+      </p>
+
+      <h2>The Heuristic Threat Taxonomy of Malicious Paths</h2>
+      <p>
+        Zip Slip attacks take many forms beyond the classic <code>../../</code> string. The BitDark scanner implements a multi-layered heuristic engine designed to trap diverse evasion techniques:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Threat Vector</th>
+              <th>Example Payload</th>
+              <th>Target Platform</th>
+              <th>Attack Mechanism &amp; Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Relative Directory Traversal</strong></td>
+              <td><code>../../../../etc/shadow</code></td>
+              <td>Linux / Unix</td>
+              <td>Traverses parent directories to escape extraction folder and overwrite system authentication files.</td>
+            </tr>
+            <tr>
+              <td><strong>Windows Backslash Traversal</strong></td>
+              <td><code>..\..\..\Windows\System32\calc.exe</code></td>
+              <td>Microsoft Windows</td>
+              <td>Leverages Windows path separators (<code>\</code>) that bypass unarchivers checking only for forward slashes.</td>
+            </tr>
+            <tr>
+              <td><strong>Absolute Path Injection</strong></td>
+              <td><code>/etc/cron.d/malicious_job</code></td>
+              <td>Linux / Unix</td>
+              <td>Leading slash bypasses concatenation logic if the unzipper uses naive path joining that treats absolute paths as root overrides.</td>
+            </tr>
+            <tr>
+              <td><strong>Windows Drive-Root Overwrite</strong></td>
+              <td><code>C:\Users\Target\AppData\Roaming\...</code></td>
+              <td>Microsoft Windows</td>
+              <td>Explicit drive letters (<code>C:</code>, <code>D:</code>) redirect writes to specific volumes regardless of current working directory.</td>
+            </tr>
+            <tr>
+              <td><strong>Drive-Relative Bypass</strong></td>
+              <td><code>C:payload.bat</code></td>
+              <td>Microsoft Windows</td>
+              <td>Omission of a slash following the drive letter writes to the current directory of the specified drive, causing subtle path misdirections.</td>
+            </tr>
+            <tr>
+              <td><strong>UNC Network Share Target</strong></td>
+              <td><code>\\attacker-box\share\payload.dll</code></td>
+              <td>Microsoft Windows</td>
+              <td>Redirects file operations across network shares or triggers outbound SMB authentication attempts (NTLM hash harvesting).</td>
+            </tr>
+            <tr>
+              <td><strong>NTFS Alternate Data Streams (ADS)</strong></td>
+              <td><code>benign.txt:malicious.exe</code></td>
+              <td>Windows (NTFS)</td>
+              <td>Hides executable code or scripts within hidden NTFS file streams, evading basic file inventory scanners.</td>
+            </tr>
+            <tr>
+              <td><strong>DOS / Windows Reserved Names</strong></td>
+              <td><code>CON</code>, <code>PRN</code>, <code>AUX</code>, <code>NUL</code>, <code>COM1-9</code></td>
+              <td>Microsoft Windows</td>
+              <td>Writing to legacy reserved hardware device namespaces can hang extraction threads, crash services, or create un-deletable files.</td>
+            </tr>
+            <tr>
+              <td><strong>Poison Null Byte Injection</strong></td>
+              <td><code>shell.php\0.jpg</code></td>
+              <td>Legacy C / PHP Runtimes</td>
+              <td>Null bytes (<code>\x00</code>) truncate strings in underlying C APIs, causing a file to pass extension checks while writing executable code.</td>
+            </tr>
+            <tr>
+              <td><strong>Unicode Homoglyph Obfuscation</strong></td>
+              <td><code>\uFF0E\uFF0E\uFF0Fpayload</code></td>
+              <td>Cross-Platform</td>
+              <td>Uses full-width Unicode characters (<code>．．／</code>) that normalize to standard traversal characters during filesystem ingestion.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Worked Forensic Example: Step-by-Step Attack Walkthrough</h2>
+      <p>
+        To see how Zip Slip executes in a vulnerable environment and how static auditing thwarts it, let us walk through a practical scenario involving an automated document conversion platform.
+      </p>
+
+      <h3>1. The Vulnerable Backend Implementation</h3>
+      <p>
+        Consider a Python web application that allows users to upload custom plugin packages packaged as ZIP archives. The developer writes the following seemingly standard decompression routine:
+      </p>
+      <pre><code># VULNERABLE EXTRACTION PATTERN (Do NOT use)
+import zipfile
+import os
+
+def extract_plugin(archive_path, target_directory):
+    with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+        for member in zip_ref.namelist():
+            # Flawed: Naive string concatenation
+            destination = os.path.join(target_directory, member)
+            
+            # Create subdirectories if needed
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            
+            # Write payload to disk
+            with open(destination, 'wb') as f:
+                f.write(zip_ref.read(member))</code></pre>
+
+      <h3>2. The Attacker's Weaponized Archive</h3>
+      <p>
+        An attacker crafts a custom ZIP archive containing two files:
+      </p>
+      <ul>
+        <li><code>manifest.json</code>: A harmless configuration file.</li>
+        <li><code>../../../../../../../../home/target_user/.ssh/authorized_keys</code>: A file containing the attacker's public SSH key.</li>
+      </ul>
+
+      <h3>3. The Execution Mechanics</h3>
+      <p>
+        When the server invokes <code>extract_plugin("/tmp/upload.zip", "/var/app/plugins/")</code>:
+      </p>
+      <ol>
+        <li>The loop encounters <code>manifest.json</code> and safely writes it to <code>/var/app/plugins/manifest.json</code>.</li>
+        <li>The loop encounters the second entry. <code>os.path.join("/var/app/plugins/", "../../../../../../../../home/target_user/.ssh/authorized_keys")</code> resolves through the operating system's pathname canonicalizer.</li>
+        <li>Because eight <code>../</code> tokens step up from <code>/var/app/plugins/</code> all the way to the filesystem root (<code>/</code>), the target resolves to <code>/home/target_user/.ssh/authorized_keys</code>.</li>
+        <li>The script writes the attacker's SSH key over the existing file. The attacker immediately connects to the server via SSH as <code>target_user</code>, achieving full remote code execution without authentication.</li>
+      </ol>
+
+      <h3>4. Detection via BitDark Inspector</h3>
+      <p>
+        When this malicious archive is dropped into the BitDark scanner, the tool parses the Central Directory records in local memory. The token-stack traversal evaluator tracks directory depth, instantly identifies that the depth count drops below zero, and flags the entry:
+      </p>
+      <pre><code>{
+  "entry_name": "../../../../../../../../home/target_user/.ssh/authorized_keys",
+  "is_vulnerable": true,
+  "threat_type": "DIRECTORY_TRAVERSAL",
+  "severity": "CRITICAL",
+  "notes": "Parent path traversal sequence (../) breaks out of extraction boundary (Zip Slip CWE-22)"
+}</code></pre>
+      <p>
+        The threat banner transitions to red, and the file is flagged before it can ever be passed to an extraction pipeline.
+      </p>
+
+      <h2>Secure Remediation Patterns Across Programming Languages</h2>
+      <p>
+        Remediating Zip Slip requires strictly enforcing <strong>canonical path containment verification</strong>. The golden rule is: <em>Always resolve the absolute canonical path of the target file, and verify that it starts with the canonical path of the destination folder plus a trailing path separator.</em>
+      </p>
+
+      <h3>1. Secure Python Remediation</h3>
+      <pre><code># SECURE EXTRACTION PATTERN (Python 3)
+import zipfile
+import os
+
+def safe_extract(zip_path, target_dir):
+    # Resolve absolute, symlink-resolved canonical target directory
+    canonical_target = os.path.realpath(target_dir) + os.path.sep
+    
+    with zipfile.ZipFile(zip_path, 'r') as archive:
+        for member in archive.infolist():
+            # Resolve intended destination
+            target_file = os.path.realpath(os.path.join(canonical_target, member.filename))
+            
+            # Enforce boundary containment
+            if not target_file.startswith(canonical_target):
+                raise SecurityError(f"Zip Slip attempt detected: {member.filename}")
+            
+            if member.is_dir():
+                os.makedirs(target_file, exist_ok=True)
+            else:
+                os.makedirs(os.path.dirname(target_file), exist_ok=True)
+                with open(target_file, 'wb') as f:
+                    f.write(archive.read(member.filename))</code></pre>
+
+      <h3>2. Secure Java Remediation</h3>
+      <pre><code>// SECURE EXTRACTION PATTERN (Java 11+)
+import java.io.*;
+import java.nio.file.*;
+import java.util.zip.*;
+
+public class SecureUnzipper {
+    public static void extract(File zipFile, File destinationDir) throws IOException {
+        Path targetDir = destinationDir.toPath().toRealPath();
+        
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
+                
+                // Strictly verify canonical prefix
+                if (!resolvedPath.startsWith(targetDir)) {
+                    throw new SecurityException("Zip Slip directory traversal breakout: " + entry.getName());
+                }
+                
+                if (entry.isDirectory()) {
+                    Files.createDirectories(resolvedPath);
+                } else {
+                    Files.createDirectories(resolvedPath.getParent());
+                    Files.copy(zis, resolvedPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+                zis.closeEntry();
+            }
+        }
+    }
+}</code></pre>
+
+      <h3>3. Secure Node.js Remediation</h3>
+      <pre><code>// SECURE EXTRACTION PATTERN (Node.js)
+const path = require('path');
+const fs = require('fs');
+
+function isSafePath(destinationDir, entryName) {
+    const dest = path.resolve(destinationDir);
+    const resolved = path.resolve(dest, entryName);
+    
+    // Ensure resolved path starts with destination + path separator
+    return resolved.startsWith(dest + path.sep);
+}</code></pre>
+
+      <h2>Advanced Archive Evasions &amp; Parser Differentials</h2>
+      <p>
+        Security engineers must recognize that modern archive exploitation goes beyond simple string matching. Attackers frequently exploit <strong>parser differentials</strong>—subtle discrepancies between how different unarchiving tools interpret malformed or ambiguous binary structures:
+      </p>
+
+      <h3>1. Central Directory Desynchronization (Shadowing)</h3>
+      <p>
+        An attacker can craft a ZIP file where the Local File Header declares a benign filename (e.g., <code>image.png</code>), while the Central Directory Header for that exact same entry declares a malicious path (e.g., <code>../../../../etc/passwd</code>)—or vice versa. 
+      </p>
+      <p>
+        Because some streaming extraction libraries (such as certain streaming tar/zip parsers) read sequentially from the beginning without ever parsing the Central Directory, while desktop utilities (like WinRAR or 7-Zip) read the Central Directory at the end, the two tools will extract completely different files to completely different locations. The BitDark scanner mitigates this by scanning Central Directory records first, falling back to Local File Headers if the Central Directory is missing or truncated.
+      </p>
+
+      <h3>2. Symlink Traversal (Tar Slip &amp; Zip Symlink Chaining)</h3>
+      <p>
+        Even if an application validates that an archive entry contains no <code>../</code> tokens, an attacker can execute a two-stage <strong>symlink breakout</strong>:
+      </p>
+      <ol>
+        <li>The archive contains an entry named <code>link_dir</code> that is marked as a symbolic link pointing to <code>/var/www/html/</code>.</li>
+        <li>The archive contains a subsequent entry named <code>link_dir/shell.php</code>.</li>
+        <li>When unpacked, the unzipper creates the symlink inside the safe directory. On the next entry, the OS follows the symlink, writing <code>shell.php</code> directly into the web root.</li>
+      </ol>
+      <blockquote>
+        <strong>Hardened Defense:</strong> During extraction, unarchivers should explicitly disable symbolic link creation (e.g., setting <code>follow_symlinks=False</code>) unless strictly required, and verify that intermediate path segments are not pre-existing symlinks.
+      </blockquote>
+
+      <h2>Common Mistakes in Archive Validation</h2>
+      <p>
+        When attempting to protect applications against Zip Slip, developers often introduce flawed security controls that fail under adversarial pressure:
+      </p>
+      <ul>
+        <li>
+          <strong>Non-Recursive String Stripping:</strong> Calling <code>filename.replace("../", "")</code> is completely ineffective against nested traversal strings like <code>....//</code>. When <code>../</code> is removed, the remaining characters collapse back into <code>../</code>.
+        </li>
+        <li>
+          <strong>Checking Only Forward Slashes:</strong> Windows systems recognize both forward slashes (<code>/</code>) and backslashes (<code>\</code>) as path separators. Filtering for <code>../</code> while allowing <code>..\</code> leaves Windows servers completely vulnerable.
+        </li>
+        <li>
+          <strong>Validating Paths Before Decoding:</strong> Performing traversal checks on URL-encoded or Unicode strings before decoding allows attackers to bypass filters using percent-encoding (e.g., <code>%2e%2e%2f</code>). Always normalize and decode prior to validation.
+        </li>
+        <li>
+          <strong>Relying on File Extensions for Content Verification:</strong> Renaming a malicious ZIP archive to <code>.docx</code>, <code>.xlsx</code>, <code>.jar</code>, or <code>.apk</code> does not change its internal PKZIP binary structure. A vulnerable Office parser or package unzipper will still process traversal headers regardless of extension.
+        </li>
+      </ul>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between Zip Slip and standard Path Traversal?</div>
+          <div class="faq-answer">
+            Standard Path Traversal (CWE-22) typically occurs when an application accepts user input directly into file read/write parameters (e.g., an HTTP parameter like ?file=../../etc/passwd). Zip Slip is a specialized subclass of path traversal where the traversal payload is packaged inside the binary header records of an archive, exploiting the unarchiver's automatic file creation process.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can Zip Slip vulnerabilities lead directly to Remote Code Execution (RCE)?</div>
+          <div class="faq-answer">
+            Yes. While Zip Slip is fundamentally an arbitrary file write flaw, it frequently escalates to Remote Code Execution. By overwriting executable binaries, dynamic link libraries, crontab jobs (/etc/cron.d/), shell initialization scripts (.bashrc), SSH authorized_keys, or web server script directories (.php, .jsp, .aspx), attackers trigger code execution upon the next system or service invocation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does this tool inspect the file contents inside the archive?</div>
+          <div class="faq-answer">
+            No. The BitDark Zip Slip Inspector operates purely on archive directory metadata (Central Directory and Local File Headers). It does not decompress or analyze file payloads, ensuring rapid analysis even for archives containing large files.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the tool support DOCX, XLSX, and APK files?</div>
+          <div class="faq-answer">
+            Modern Microsoft Office documents (DOCX, XLSX, PPTX), Java packages (JAR, WAR), and Android applications (APK) are all standard PKZIP archives wrapped in specialized file extensions. If an application unzips an uploaded Word document to process embedded XML files, it is fully vulnerable to Zip Slip if canonical containment is not enforced.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is an NTFS Alternate Data Stream (ADS) exploit?</div>
+          <div class="faq-answer">
+            On Windows NTFS filesystems, files can contain multiple data streams using the filename:stream syntax. If an archive contains an entry with a colon (e.g., test.txt:hidden.exe), extracting it can write hidden streams or overwrite filesystem attributes (::$DATA), potentially evading antivirus scanners or causing unexpected file locks.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What are Windows Reserved Device Names and why are they dangerous?</div>
+          <div class="faq-answer">
+            In Windows and legacy MS-DOS, names such as CON, PRN, AUX, NUL, COM1-9, and LPT1-9 refer to physical hardware devices rather than filesystem files. Attempting to create or extract an archive entry with one of these names can freeze the unarchiving process, cause the operating system to hang, or crash server threads.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark transmit my archives to an external server?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security model. All binary inspection, SHA-256 checksumming, and Central Directory parsing execute exclusively inside your browser's private JavaScript memory space. Zero bytes leave your device.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does ZIP64 affect Zip Slip detection?</div>
+          <div class="faq-answer">
+            Standard PKZIP is limited to 4GB archives and 65,535 entries. ZIP64 extends these limits using 64-bit headers. The BitDark scanner detects the ZIP64 End of Central Directory Locator (0x07064B50) and ZIP64 EOCD Record (0x06064B50) to accurately parse 64-bit Central Directory offsets.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Forensics, Cryptography &amp; Malware Analysis Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
+            <div class="related-card-title"><span>[⚙️]</span> PE &amp; ELF Binary Viewer</div>
+            <div class="related-card-desc">Inspect Windows Portable Executables (.exe, .dll) and Linux ELF headers, sections, and machine architectures.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Inspect binary file headers, hex magic signatures, and detect extension spoofing entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Extract printable ASCII and dual-pass UTF-16LE Unicode strings from executables, malware, and dumps in memory.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // IP Telemetry with Localhost and Fallbacks
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const res4 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (res4.ok) {
-          const data4 = await res4.json();
-          ipv4El.textContent = data4.ip;
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { cache: "no-store" });
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const res6 = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error("Primary failed");
-        }
-      } catch {
-        try {
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { cache: "no-store" });
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // DOM References
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Zip Slip Core Engine (100% Client-Side Memory Processing, Unaltered Parsing Logic)
     const dropArea = document.getElementById("dropArea");
     const filePicker = document.getElementById("filePicker");
     const resultsArea = document.getElementById("resultsArea");
@@ -593,6 +1384,13 @@
     let activeAuditReport = null;
 
     dropArea.addEventListener("click", () => filePicker.click());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(event => {
       dropArea.addEventListener(event, (e) => {
@@ -643,7 +1441,7 @@
       try {
         const buffer = await file.arrayBuffer();
 
-        // SHA-256 Checksum Calculation
+        // SHA-256 Checksum Calculation via Web Crypto API
         const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
@@ -963,6 +1761,12 @@
       document.body.appendChild(dlAnchor);
       dlAnchor.click();
       dlAnchor.remove();
+    });
+
+    // Initialize Page Observers & Accordions
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
     });
   </script>
 </body>
