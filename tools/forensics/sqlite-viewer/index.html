@@ -2,14 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Offline SQLite Database Viewer & Inspector | BitDark</title>
-  <meta name="title" content="Offline SQLite Database Viewer & Inspector | BitDark" />
-  <meta name="description" content="Open, query, and inspect SQLite (.db, .sqlite, .sqlite3) databases directly in your browser. Zero uploads, zero tracking, entirely client-side." />
-  <meta name="keywords" content="sqlite viewer, sqlite online reader, client-side sqlite inspector, read sqlite browser offline, sqlite forensics tool" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/forensics/sqlite-viewer" />
+  <title>Offline SQLite Database Viewer &amp; Inspector — Free Forensic Tool | BitDark</title>
+  <meta name="title" content="Offline SQLite Database Viewer &amp; Inspector — Free Forensic Tool | BitDark" />
+  <meta name="description" content="Open, query, and inspect SQLite (.db, .sqlite, .sqlite3) databases directly in your browser RAM. Zero uploads, zero telemetry, air-gapped WebAssembly engine." />
+  <meta name="keywords" content="sqlite viewer, sqlite online reader, client-side sqlite inspector, read sqlite browser offline, sqlite forensics tool, inspect sqlite schema, sqlite wasm viewer, browser history forensics, sql.js viewer, sqlite table export csv" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/forensics/sqlite-viewer/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/forensics/sqlite-viewer/" />
+  <meta property="og:title" content="Offline SQLite Database Viewer &amp; Inspector | BitDark" />
+  <meta property="og:description" content="Inspect schemas, browse tables, and execute SQL queries inside your browser WebAssembly sandbox. 100% private, zero network egress." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/forensics/sqlite-viewer/" />
+  <meta name="twitter:title" content="Offline SQLite Database Viewer | BitDark" />
+  <meta name="twitter:description" content="Client-side SQLite database reader and query inspector in WebAssembly. Zero uploads, zero tracking." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Offline SQLite Database Viewer & Inspector",
+        "url": "https://bitdark.net/tools/forensics/sqlite-viewer/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Client-side forensic SQLite inspection and query utility running sql.js compiled to WebAssembly. Analyzes .db, .sqlite, and .sqlite3 files in volatile memory without server transfers."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "SQLite Binary Architecture, B-Tree Page Mechanics, Write-Ahead Logs, and Digital Forensics Triage",
+        "url": "https://bitdark.net/tools/forensics/sqlite-viewer/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-04-14",
+        "dateModified": "2026-11-06",
+        "description": "Comprehensive technical guide to the internal binary format of SQLite 3 database files, B-Tree structures, cell pointer arrays, freelists, WAL journal mechanics, and forensic data recovery."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Are my database files uploaded to any server or cloud service?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The BitDark SQLite Viewer runs entirely inside your browser's private WebAssembly memory sandbox using sql.js. The entire file is read into a local ArrayBuffer in RAM. Zero network packets, database rows, or metadata bytes are transmitted to any remote server."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can executing SQL queries in this viewer corrupt or modify my original file on disk?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The browser operates strictly on an in-memory virtual image of the file. Any CREATE, DROP, UPDATE, or INSERT commands modify only the ephemeral WebAssembly memory buffer. Your original physical file stored on your hard drive remains completely read-only and untouched."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What causes the 'Missing SQLite format 3 header' error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Every valid SQLite 3 database file begins with a mandatory 16-byte magic ASCII header: 'SQLite format 3\\0'. If a file has been encrypted (e.g., SQLCipher), corrupted, or saved as a plain SQL text script (.sql dump) rather than a compiled binary database, this header check will fail."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does SQLite store deleted records, and can they be viewed?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When a row is deleted in SQLite without PRAGMA secure_delete enabled, the database engine does not overwrite the data with zeros. Instead, it unlinks the cell from the B-Tree page and places the byte range onto a page-level freeblock chain or freelist page. The raw string and numeric data remain intact in the unallocated space until overwritten by new inserts or scrubbed via VACUUM."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why are Write-Ahead Log (-wal) files important when inspecting SQLite databases?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In WAL mode, recent transactions are written to a companion -wal sidecar file rather than directly committed to the main .db file. If you inspect only the .db file without checking whether uncommitted transactions remain in the WAL journal, the database may appear out-of-date or missing recent evidence."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,26 +123,28 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --atom-purple: #c678dd;
+      --atom-blue: #61afef;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
-    html, body {
+    body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
 
-    /* Navbar */
+    /* Navbar: Centered & Clean (Zero IP Telemetry) */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
@@ -53,109 +153,156 @@
       max-width: 1200px;
       margin: 0 auto;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      align-items: center;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
     
-    .nav-stats {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-    .trust-badge {
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.74rem;
+      gap: 8px;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 10px;
-      border-radius: 4px;
+
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
+    
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
+      color: var(--atom-muted);
+      display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
-
-    /* Layout */
-    .wrapper { max-width: 1200px; margin: 0 auto; padding: 20px 14px 60px; }
-
-    .breadcrumb {
-      font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 16px;
-      color: var(--atom-muted);
-      word-break: break-all;
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    .tool-header { margin-bottom: 20px; }
-    .tool-header h1 { font-size: 1.55rem; color: var(--atom-heading); margin-bottom: 6px; word-break: break-word; }
-    .tool-header p { color: var(--atom-text); font-size: 0.92rem; }
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
 
-    /* Tool Card */
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Workspace Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 560px;
     }
 
     .dropzone {
       border: 2px dashed var(--atom-border);
-      border-radius: 6px;
-      padding: 36px 14px;
+      border-radius: 8px;
+      padding: 44px 24px;
       text-align: center;
       cursor: pointer;
       background-color: var(--atom-bg);
       transition: border-color 0.2s, background-color 0.2s;
     }
+    .dropzone:focus,
     .dropzone.dragover {
+      outline: none;
       border-color: var(--atom-amber);
       background-color: rgba(229, 192, 123, 0.05);
     }
-    .dropzone-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; }
-    .dropzone p { font-size: 0.9rem; color: var(--atom-text); margin-bottom: 6px; }
-    .dropzone-hint { font-size: 0.74rem; color: var(--atom-muted); font-family: var(--font-code); display: block; }
+    .dropzone-icon { 
+      font-size: 2.6rem; 
+      margin-bottom: 12px; 
+      display: block; 
+    }
+    .dropzone p { 
+      font-size: 1.05rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 8px; 
+    }
+    .dropzone-hint { 
+      font-size: 0.84rem; 
+      color: var(--atom-muted); 
+      font-family: var(--font-code); 
+      display: block;
+      margin-top: 4px;
+    }
     .file-input-hidden { display: none; }
 
     .global-alert {
-      padding: 10px 14px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 6px;
       font-family: var(--font-code);
-      font-size: 0.8rem;
-      margin-bottom: 16px;
+      font-size: 0.86rem;
+      margin-bottom: 20px;
       display: none;
+      line-height: 1.5;
     }
     .global-alert.error {
       background-color: rgba(224, 108, 117, 0.15);
@@ -169,37 +316,49 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 10px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 10px 12px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 6px;
     }
-    .meta-label { font-size: 0.68rem; color: var(--atom-muted); text-transform: uppercase; font-family: var(--font-code); margin-bottom: 4px; }
-    .meta-val { font-size: 0.8rem; color: var(--atom-heading); font-family: var(--font-code); word-break: break-all; }
+    .meta-label { 
+      font-size: 0.72rem; 
+      color: var(--atom-muted); 
+      text-transform: uppercase; 
+      font-family: var(--font-code); 
+      margin-bottom: 4px; 
+      letter-spacing: 0.05em;
+    }
+    .meta-val { 
+      font-size: 0.88rem; 
+      color: var(--atom-heading); 
+      font-family: var(--font-code); 
+      word-break: break-all; 
+    }
 
     /* Database Split Pane (min-width: 0 prevents table blowouts) */
     .db-container {
       display: grid;
-      grid-template-columns: 240px minmax(0, 1fr);
-      gap: 14px;
-      margin-bottom: 16px;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
       min-width: 0;
     }
 
     .tables-panel {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 520px;
+      gap: 10px;
+      max-height: 540px;
       min-width: 0;
     }
     .tables-panel-header {
@@ -207,22 +366,23 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--atom-border);
-      padding-bottom: 6px;
+      padding-bottom: 8px;
     }
     .tables-panel-header h3 {
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-family: var(--font-code);
       color: var(--atom-muted);
+      letter-spacing: 0.05em;
     }
     .table-search-input {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 3px;
-      padding: 6px 8px;
+      border-radius: 4px;
+      padding: 8px 10px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.75rem;
+      font-size: 16px; /* Prevents iOS Safari auto-zoom */
       outline: none;
       width: 100%;
     }
@@ -232,10 +392,10 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       overflow-y: auto;
       flex: 1;
-      padding-right: 2px;
+      padding-right: 4px;
     }
     .table-btn {
       width: 100%;
@@ -244,12 +404,15 @@
       border: 1px solid transparent;
       color: var(--atom-text);
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      padding: 7px 8px;
+      font-size: 0.82rem;
+      padding: 8px 10px;
       border-radius: 4px;
       cursor: pointer;
       word-break: break-all;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
     }
     .table-btn:hover {
       background-color: var(--atom-surface);
@@ -266,28 +429,28 @@
     .query-panel {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       min-width: 0;
     }
     .sql-editor-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
     }
     .sql-input {
       width: 100%;
-      height: 95px;
+      height: 105px;
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 10px;
+      border-radius: 6px;
+      padding: 12px;
       font-family: var(--font-code);
-      font-size: 0.84rem;
+      font-size: 16px; /* Prevents iOS auto-zoom */
       color: var(--atom-heading);
       resize: vertical;
       outline: none;
-      line-height: 1.45;
+      line-height: 1.5;
     }
     .sql-input:focus { border-color: var(--atom-border-focus); }
 
@@ -296,7 +459,7 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
     }
     .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -306,12 +469,12 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 8px 14px;
+      padding: 10px 18px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.8rem;
+      font-size: 0.86rem;
       transition: opacity 0.2s;
-      min-height: 38px;
+      min-height: 44px; /* Mobile accessibility */
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -329,7 +492,7 @@
     .table-viewport {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       max-height: 420px;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -340,25 +503,27 @@
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-code);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       text-align: left;
     }
     table.sql-table th {
       background-color: var(--atom-bg);
       color: var(--atom-amber);
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--atom-border);
       position: sticky;
       top: 0;
       white-space: nowrap;
       z-index: 2;
+      font-weight: 600;
+      letter-spacing: 0.03em;
     }
     table.sql-table td {
-      padding: 7px 12px;
+      padding: 8px 14px;
       border-bottom: 1px solid var(--atom-border);
       color: var(--atom-text);
       white-space: nowrap;
-      max-width: 320px;
+      max-width: 340px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -366,11 +531,12 @@
 
     .query-msg {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      padding: 8px 12px;
+      font-size: 0.82rem;
+      padding: 10px 14px;
       border-radius: 4px;
       display: none;
       word-break: break-all;
+      line-height: 1.5;
     }
     .query-msg.error {
       background-color: rgba(224, 108, 117, 0.12);
@@ -385,127 +551,325 @@
       display: block;
     }
 
-    /* Disclaimer Card */
+    /* Authoritative Disclaimer Card */
     .disclaimer-card {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin-bottom: 24px;
-      font-size: 0.82rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 4px;
-      font-size: 0.86rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Docs */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 24px;
-      font-size: 0.86rem;
-      line-height: 1.6;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 3200px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.15rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 10px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 12px; }
-    .doc-section li { margin-bottom: 4px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 5px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 16px;
-      border-top: 1px solid var(--atom-border);
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
       display: flex;
-      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      font-size: 0.76rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
 
     /* Mobile Overrides */
     @media (max-width: 820px) {
       .db-container { grid-template-columns: 1fr; }
-      .tables-panel { max-height: 220px; }
+      .tables-panel { max-height: 240px; }
     }
 
-    @media (max-width: 600px) {
-      .navbar { padding: 8px 12px; }
-      .nav-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .nav-stats { width: 100%; justify-content: space-between; }
-      .ip-pill-nav { width: 100%; justify-content: space-between; font-size: 0.68rem; }
-      .wrapper { padding: 14px 10px 50px; }
-      .tool-header h1 { font-size: 1.35rem; }
-      .tool-card { padding: 12px; }
-      .dropzone { padding: 24px 10px; }
-      .sql-input { font-size: 16px; } /* Prevents iOS Safari auto-zoom */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
       .action-row { flex-direction: column; align-items: stretch; }
       .btn-group { width: 100%; }
       .btn-group .btn-atom { flex: 1; }
       #btnCloseDb { width: 100%; }
-      .meta-grid { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="nav-stats">
-        <div class="trust-badge">
-          <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-        </div>
-        <div class="ip-pill-nav">
-          <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-          <span class="ip-divider">·</span>
-          <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
-        </div>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#forensics">Forensics</a> / sqlite-viewer
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/forensics/">Forensics</a>
+      <span class="sep">/</span>
+      <span class="current">SQLite Viewer</span>
     </nav>
 
     <div class="tool-header">
-      <h1>Offline SQLite Database Viewer</h1>
-      <p>Inspect schemas, browse tables, and execute custom SQL queries locally inside your browser WebAssembly sandbox.</p>
+      <h1>Offline SQLite Database Viewer &amp; Inspector</h1>
+      <p>Inspect schemas, browse tables, and execute custom SQL queries locally inside your browser WebAssembly sandbox. Read SQLite (.db, .sqlite, .sqlite3) databases with zero network uploads, zero tracking, and complete forensic isolation.</p>
+    </div>
+
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
 
     <!-- Active Tool Workspace -->
-    <div class="tool-card" id="toolWorkspace">
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive SQLite Database Inspector">
       <div id="globalAlert" class="global-alert"></div>
 
-      <div class="dropzone" id="dropArea">
+      <div class="dropzone" id="dropArea" tabindex="0" role="button" aria-label="Database file upload drop area">
         <span class="dropzone-icon">🗄️</span>
-        <p><strong>Click to choose a database</strong> or drag & drop file here</p>
+        <p><strong>Click to choose a database</strong> or drag &amp; drop file here</p>
         <span class="dropzone-hint">Supports .db, .sqlite, .sqlite3, .sqlitedb (Memory processing only, 0-byte upload)</span>
       </div>
       <!-- File input positioned outside dropzone to eliminate bubbling/double-dialog bugs -->
@@ -514,7 +878,7 @@
       <div class="workspace-area" id="workspaceArea">
         <div class="meta-grid">
           <div class="meta-item">
-            <div class="meta-label">File & Size</div>
+            <div class="meta-label">File &amp; Size</div>
             <div class="meta-val" id="metaFile">-</div>
           </div>
           <div class="meta-item">
@@ -561,44 +925,503 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Legal Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal Disclaimer & Data Reliability Notice
+        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages</strong> arising from the use of this tool, including data corruption, unrecovered forensic records, misinterpretation of database schemas, or loss of proprietary information. All processing executes strictly within client-side memory using WebAssembly. Users maintain sole responsibility for ensuring compliance with applicable data privacy, security, and digital chain-of-custody protocols before opening or querying critical database files.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        All database operations execute strictly inside client-side memory using WebAssembly compiled binaries (sql.js). Users maintain sole responsibility for ensuring compliance with applicable data privacy, enterprise confidentiality, and forensic chain-of-custody protocols before opening or querying critical database files. When conducting legal forensics on evidentiary media, always verify digital hashes against write-blocked source disk images.
       </p>
     </aside>
 
-    <!-- Technical Guide -->
-    <article class="doc-section">
-      <h2>In-Browser WebAssembly Architecture</h2>
-      <p>This utility initializes an isolated SQLite virtual machine compiled directly to WebAssembly (sql.js). When a file is loaded, it is read into an <code>ArrayBuffer</code> and instantiated completely offline within memory:</p>
+    <!-- Comprehensive Technical Authority Article (2500+ Words) -->
+    <article class="article-container">
+      <h2>The Ubiquity of SQLite in Modern Digital Forensics</h2>
+      <p>
+        SQLite is the most widely deployed software module in the history of computer science. Designed in the spring of 2000 by D. Richard Hipp for the United States Navy's guided missile destroyers, SQLite was engineered around a radical requirement: absolute reliability without a database administrator, without server daemon processes, and without external network configuration. Today, SQLite databases reside silently inside billions of smartphones, desktop web browsers, smart televisions, automotive telemetry modules, IoT controllers, and cloud orchestration layers.
+      </p>
+      <p>
+        In modern <strong>Digital Forensics and Incident Response (DFIR)</strong>, SQLite files represent the single most information-dense evidentiary artifacts available to an investigator. Every web navigation event in Google Chrome or Mozilla Firefox, every SMS and encrypted messaging chat log in Signal or WhatsApp (before local encryption), every geolocation track point in Apple iOS Health and Maps, and every system event log in modern Linux distributions is written directly to a binary SQLite container.
+      </p>
+      <p>
+        However, analyzing these files in corporate or intelligence environments presents a severe operational security dilemma: traditional desktop GUI viewers require administrative installation privileges, while online database converters transmit proprietary customer data, employee passwords, or evidentiary records across third-party cloud infrastructure. The BitDark Offline SQLite Viewer eliminates this threat vector entirely by compiling the entire SQLite C virtual machine into WebAssembly (Wasm), executing 100% of schema inspections and SQL queries inside your browser's private volatile RAM.
+      </p>
+
+      <h2>How to Use the BitDark Offline SQLite Viewer</h2>
+      <p>
+        Conducting forensic analysis or schema diagnostics with the BitDark SQLite Viewer is intuitive, fast, and completely private:
+      </p>
+      <ol>
+        <li>
+          <strong>Load Target Database:</strong> Drag and drop any <code>.db</code>, <code>.sqlite</code>, <code>.sqlite3</code>, or <code>.sqlitedb</code> file onto the dropzone, or click the area to launch your system's native file picker.
+        </li>
+        <li>
+          <strong>Automated Header Verification &amp; Hashing:</strong> The parser immediately verifies the 16-byte magic identification header (<code>SQLite format 3\0</code>) and uses the hardware-accelerated W3C Web Crypto API to compute an SHA-256 fingerprint of the entire binary buffer.
+        </li>
+        <li>
+          <strong>In-Memory Virtual Machine Boot:</strong> The WebAssembly engine compiles the file into an in-memory database image. The left-hand panel lists all user tables and views, complete with an interactive real-time filter.
+        </li>
+        <li>
+          <strong>Inspect Tables &amp; Execute SQL:</strong> Click any table name in the sidebar to view the first 100 records. Type arbitrary SQL queries into the query editor (such as complex <code>JOIN</code> operations, <code>WHERE</code> clauses, or aggregations) and click "Execute SQL".
+        </li>
+        <li>
+          <strong>Schema Inspection &amp; CSV Export:</strong> Click "Inspect Schema" to review table columns, primary keys, and data types via SQLite's internal <code>PRAGMA table_info()</code>, or export sanitized, injection-defended query results to a standard RFC-4180 CSV file for external documentation.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Investigative Threat Modeling &amp; Use Cases</h2>
+      <p>
+        Client-side SQLite inspection addresses critical workflows across defensive cybersecurity, incident investigation, and software engineering:
+      </p>
       <ul>
-        <li><strong>Zero Network Egress:</strong> Database records, sensitive credential caches, or browser history stores are never uploaded across network ports.</li>
-        <li><strong>Read-Only Safety:</strong> Queries run against the in-memory virtual image, ensuring original local files remain untouched and unmodified on disk.</li>
-        <li><strong>Forensics & Inspection:</strong> Allows instant query diagnostics for mobile app databases, browser storage files (e.g., Chrome/Firefox History or Cookies), and system caches without external native software installation.</li>
+        <li>
+          <strong>Browser History &amp; Session Triage:</strong> Triage compromised workstation profiles by extracting navigation histories, download records, and autofill caches from Google Chrome's <code>History</code> database, Edge's <code>Web Data</code>, or Firefox's <code>places.sqlite</code> without contaminating system timestamps.
+        </li>
+        <li>
+          <strong>Mobile Application Forensics:</strong> Analyze unpacked Android APK and iOS application sandboxes. Inspect app-specific SQLite databases to recover local session tokens, cached API responses, and user chat databases during authorized security audits.
+        </li>
+        <li>
+          <strong>Malware Persistence Auditing:</strong> Inspect local Windows system databases—including Cortana caches, Notification Center SQLite databases (<code>wpndatabase.db</code>), and Windows Search index stores—to detect persistence mechanisms established by advanced persistent threat (APT) groups.
+        </li>
+        <li>
+          <strong>Air-Gapped &amp; Classified Network Investigation:</strong> Perform immediate database queries inside classified or SCIF environments where external internet access is prohibited and installing native binaries (like DB Browser for SQLite) violates strict system change-management policies.
+        </li>
+        <li>
+          <strong>Developer Database Prototyping:</strong> Quickly verify schema migrations, inspect SQLite dumps from automated test suites, and test analytical SQL queries without launching a terminal or spinning up database containers.
+        </li>
       </ul>
+
+      <h2>Deep Dive: Architecture of the SQLite Binary File Format</h2>
+      <p>
+        To perform competent forensic analysis, an investigator must understand how raw bytes on disk translate into logical tables. An SQLite 3 database file is not an arbitrary stream of records: it is structured as an array of fixed-size <strong>Pages</strong>, indexed from 1 to $N$. Page sizes are always a power of two between 512 and 65,536 bytes (with 4,096 bytes being the modern default).
+      </p>
+
+      <pre><code>+--------------------------------------------------------------------------+
+| Page 1: Database Header (100 Bytes) + Master Schema Table                |
+|  * 0x00 - 0x0F: Magic String "SQLite format 3\0"                          |
+|  * 0x10 - 0x11: Page Size (e.g., 0x1000 = 4096 bytes)                    |
+|  * 0x18 - 0x1B: File Change Counter (Increments on write)                |
+|  * 0x20 - 0x23: First Freelist Trunk Page Pointer                         |
+|  * 0x24 - 0x27: Total Freelist Pages Count                               |
+|  * 0x2C - 0x2F: Schema Cookie (Increments on DDL changes)                 |
+|  * 0x38 - 0x3B: Text Encoding (1 = UTF-8, 2 = UTF-16le, 3 = UTF-16be)    |
+|  * 0x44 - 0x63: Reserved for expansion (Must be zero)                    |
++--------------------------------------------------------------------------+
+| Page 2 to Page N: B-Tree Pages (Interior Pages, Leaf Pages, Overflow)    |
+|  * Page Header (8 or 12 bytes): Page Type, Cell Count, Content Offset    |
+|  * Cell Pointer Array (Array of 2-byte offsets to payload cells)         |
+|  * Unallocated Free Space (Grows inward from Cell Pointers)              |
+|  * Cell Content Area (Grows backward from bottom of the page)            |
++--------------------------------------------------------------------------+</code></pre>
+
+      <h3>1. The 100-Byte File Header</h3>
+      <p>
+        The first 100 bytes of Page 1 form the global database header. Crucial forensic fields include:
+      </p>
+      <ul>
+        <li><strong>Magic Header String (Offset 0x00, 16 bytes):</strong> Must match exactly <code>SQLite format 3\0</code> (ASCII bytes <code>53 51 4C 69 74 65 20 66 6F 72 6D 61 74 20 33 00</code>).</li>
+        <li><strong>Page Size (Offset 0x10, 2 bytes):</strong> Defines the size of every page in the file. A value of <code>1</code> represents 65,536 bytes.</li>
+        <li><strong>File Change Counter (Offset 0x18, 4 bytes):</strong> A 32-bit integer incremented each time a transaction commits. Comparing this counter between disk images taken at different times reveals whether writes occurred.</li>
+        <li><strong>Freelist Trunk &amp; Count (Offsets 0x20 &amp; 0x24, 8 bytes):</strong> Points to the head of the linked list of pages containing deleted, reusable database pages—the primary hunting ground for carving carved forensic records.</li>
+        <li><strong>Database Text Encoding (Offset 0x38, 4 bytes):</strong> Declares whether strings are encoded in UTF-8 (1), UTF-16 Little Endian (2), or UTF-16 Big Endian (3).</li>
+      </ul>
+
+      <h3>2. B-Tree Pages: Interior vs. Leaf Nodes</h3>
+      <p>
+        SQLite organizes all table records and indices into <strong>B-Trees</strong>. A B-Tree page begins with an 8-byte header (for leaf pages) or a 12-byte header (for interior pages). The first byte declares the page type:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Flag Byte</th>
+              <th>Page Architecture</th>
+              <th>Payload Content</th>
+              <th>Forensic Significance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>0x0D</code> (13)</td>
+              <td><strong>Table B-Tree Leaf Page</strong></td>
+              <td>Full Table Row Data (Payloads + RowIDs)</td>
+              <td>Contains actual table records, column values, and unallocated deleted row cells.</td>
+            </tr>
+            <tr>
+              <td><code>0x05</code> (5)</td>
+              <td><strong>Table B-Tree Interior Page</strong></td>
+              <td>Child Page Pointers + Integer Keys</td>
+              <td>Navigation node. Contains pointers to lower-level leaf pages; holds no raw column text.</td>
+            </tr>
+            <tr>
+              <td><code>0x0A</code> (10)</td>
+              <td><strong>Index B-Tree Leaf Page</strong></td>
+              <td>Index Keys + RowIDs</td>
+              <td>Contains sorted index entries. Extremely useful for carving historical data even if tables were dropped.</td>
+            </tr>
+            <tr>
+              <td><code>0x02</code> (2)</td>
+              <td><strong>Index B-Tree Interior Page</strong></td>
+              <td>Child Page Pointers + Index Keys</td>
+              <td>Navigational tree index routing nodes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>3. Cell Pointer Arrays and Memory Allocation</h3>
+      <p>
+        Within each Table Leaf Page (<code>0x0D</code>), records are stored as <strong>Cells</strong>. SQLite uses a dual-growth memory layout:
+      </p>
+      <ul>
+        <li>The <strong>Cell Pointer Array</strong> starts immediately after the page header and grows <em>downward</em> toward the end of the page. Each pointer is a 2-byte integer specifying the offset of a cell.</li>
+        <li>The <strong>Cell Content Area</strong> begins at the physical end of the page and grows <em>upward</em> toward the top.</li>
+        <li>The unallocated space between the end of the cell pointer array and the start of the cell content area is the <strong>Free Space</strong>.</li>
+      </ul>
+
+      <h2>Variable-Length Integers (Varints) and the Record Format</h2>
+      <p>
+        To minimize file size, SQLite extensively utilizes <strong>Variable-Length Integers (Varints)</strong>. A varint encodes 64-bit integers using 1 to 9 bytes: the most significant bit (MSB) of each byte indicates whether another byte follows (MSB = 1), while the lower 7 bits carry data. The 9th byte carries a full 8 bits.
+      </p>
+      <p>
+        Every data row in an SQLite table is stored in the <strong>Record Format</strong>, consisting of a header and a body:
+      </p>
+      <blockquote>
+        $$\text{Record} = \text{Record Header Length (Varint)} + [\text{Serial Type 1}, \text{Serial Type 2}, \dots] + [\text{Value 1}, \text{Value 2}, \dots]$$
+      </blockquote>
+      <p>
+        The <strong>Serial Type</strong> codes tell the parser exactly how to interpret the subsequent data bytes:
+      </p>
+      <ul>
+        <li><code>0</code>: NULL value (0 bytes in body).</li>
+        <li><code>1</code>: 8-bit two's complement integer (1 byte).</li>
+        <li><code>2</code>: 16-bit integer (2 bytes, big-endian).</li>
+        <li><code>3</code>: 24-bit integer (3 bytes, big-endian).</li>
+        <li><code>4</code>: 32-bit integer (4 bytes, big-endian).</li>
+        <li><code>7</code>: 64-bit IEEE 754 floating-point number (8 bytes).</li>
+        <li><code>N &ge; 12 and Even</code>: Binary BLOB of length $(N - 12) / 2$.</li>
+        <li><code>N &ge; 13 and Odd</code>: Text string of length $(N - 13) / 2$ in the database text encoding.</li>
+      </ul>
+
+      <h2>Worked Forensic Examples: Real-World Database Dissection</h2>
+      <p>
+        To understand how SQLite data analysis operates in forensic investigations, consider two practical walkthroughs: carving deleted records and auditing Google Chrome web navigation histories.
+      </p>
+
+      <h3>Scenario A: Carving Deleted Records from Freelist Space</h3>
+      <p>
+        A suspect deletes several incriminating chat messages from a local SQLite communication database. When the suspect executes <code>DELETE FROM messages WHERE id = 42;</code>:
+      </p>
+      <ol>
+        <li>The SQLite B-Tree engine unlinks the cell corresponding to RowID 42 from the Cell Pointer Array on Page 4.</li>
+        <li>The 2-byte pointer is removed from the array, and the <code>cell_count</code> field in the page header is decremented.</li>
+        <li>The byte range occupied by the message cell in the Cell Content Area is prepended to the page's internal <strong>Freeblock Chain</strong>, or if large enough, the entire page is moved to the global <strong>Freelist</strong>.</li>
+        <li><strong>Crucial Forensic Reality:</strong> The raw text string containing the message is <em>not wiped or overwritten</em>. It remains entirely intact in the page's unallocated gap until new records overwrite it or the user runs a manual <code>VACUUM</code> operation.</li>
+      </ol>
+      <p>
+        By inspecting raw byte dumps of the database with the BitDark viewer's WebAssembly sandbox, an analyst can query <code>PRAGMA freelist_count;</code> to discover unallocated pages and extract historical strings before they are scrubbed.
+      </p>
+
+      <h3>Scenario B: Analyzing Chrome Browser History (`History` Database)</h3>
+      <p>
+        Google Chrome stores user browsing activity inside an SQLite 3 database located at:
+      </p>
+      <pre><code>Windows:  %LOCALAPPDATA%\Google\Chrome\User Data\Default\History
+macOS:    ~/Library/Application Support/Google/Chrome/Default/History
+Linux:    ~/.config/google-chrome/Default/History</code></pre>
+      <p>
+        Opening this file in the BitDark SQLite Viewer exposes the central <code>urls</code> and <code>visits</code> tables. Google Chrome represents timestamps as <strong>WebKit Timestamps</strong> (microseconds elapsed since January 1, 1601 UTC). To translate these timestamps into human-readable ISO-8601 strings, execute this forensic SQL query:
+      </p>
+      <pre><code>SELECT 
+  id, 
+  url, 
+  title, 
+  visit_count, 
+  typed_count, 
+  datetime(last_visit_time / 1000000 - 11644473600, 'unixepoch', 'localtime') AS visit_time_local
+FROM urls
+ORDER BY last_visit_time DESC
+LIMIT 50;</code></pre>
+      <p>
+        <strong>Forensic Findings:</strong>
+      </p>
+      <ul>
+        <li><code>typed_count &gt; 0</code>: Demonstrates affirmative user intent (the user manually typed the domain into the address bar rather than clicking a passive hyperlink or ad redirect).</li>
+        <li><code>visit_count</code>: Establishes pattern of life and frequency of access.</li>
+        <li><code>datetime(...)</code>: Correctly normalizes the Windows/WebKit 1601 epoch offset ($11,644,473,600$ seconds) into a standardized local timestamp.</li>
+      </ul>
+
+      <h2>Comparative Analysis: SQLite vs. Alternative Embedded Storage Formats</h2>
+      <p>
+        Understanding how SQLite compares to other storage mechanisms encountered during incident triage is essential:
+      </p>
+
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Storage Engine</th>
+              <th>Data Model</th>
+              <th>Transaction Model</th>
+              <th>Forensic Data Carving Ease</th>
+              <th>Typical Artifact Locations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>SQLite 3</strong></td>
+              <td>Relational (Tables, SQL, B-Trees)</td>
+              <td>ACID (Rollback Journal or WAL)</td>
+              <td><strong>High</strong> (Unallocated cell gaps, freelist pages)</td>
+              <td>Browsers, mobile apps, Windows index, macOS caches</td>
+            </tr>
+            <tr>
+              <td><strong>LevelDB / RocksDB</strong></td>
+              <td>Key-Value (Log-Structured Merge Tree)</td>
+              <td>Atomic Batches, Write-Ahead Logs</td>
+              <td><strong>Medium-High</strong> (Immutable SSTable fragments survive)</td>
+              <td>Chromium IndexedDB, blockchain nodes, Slack desktop</td>
+            </tr>
+            <tr>
+              <td><strong>Berkeley DB (BDB)</strong></td>
+              <td>Key-Value / Hash / B-Tree</td>
+              <td>Configurable ACID</td>
+              <td><strong>Medium</strong> (Complex page sub-allocations)</td>
+              <td>Legacy Linux authentication, RPM package databases</td>
+            </tr>
+            <tr>
+              <td><strong>Flat JSON / CSV</strong></td>
+              <td>Hierarchical / Tabular Text</td>
+              <td>None (Full-file overwrites)</td>
+              <td><strong>Low</strong> (Overwritten during file writes unless carved from disk)</td>
+              <td>Developer configurations, simple application logs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Write-Ahead Logging (WAL) and Journal Mechanics</h2>
+      <p>
+        Historically, SQLite utilized <strong>Rollback Journals</strong> (<code>database.db-journal</code>) to ensure transaction atomicity. Before modifying a page, the engine wrote the original, untouched copy to the journal file. If power failed mid-write, the original page was restored.
+      </p>
+      <p>
+        Since version 3.7.0, modern applications overwhelmingly utilize <strong>Write-Ahead Logging (WAL)</strong> mode. In WAL mode:
+      </p>
+      <ul>
+        <li>The main database file (<code>.db</code>) remains completely untouched during writes.</li>
+        <li>New transactions are appended sequentially to a separate sidecar file: <code>database.db-wal</code>.</li>
+        <li>A companion shared-memory index file, <code>database.db-shm</code>, maps active WAL frames for rapid in-memory searching.</li>
+        <li>Periodically, SQLite executes a <strong>Checkpoint</strong>, copying all committed frames from the <code>-wal</code> file back into the primary <code>.db</code> file.</li>
+      </ul>
+      <blockquote>
+        <strong>Forensic Warning:</strong> If an investigator extracts only the primary <code>.db</code> file from a running suspect machine while omitting the companion <code>-wal</code> and <code>-shm</code> files, the most recent database records (including critical recent messages or browsing history) will be completely missing from the analysis! Always capture all three files together.
+      </blockquote>
+
+      <h2>Common Forensic Pitfalls and Anti-Analysis Evasion</h2>
+      <p>
+        When evaluating SQLite database files, watch out for these standard forensic traps and evasion tactics:
+      </p>
+
+      <h3>1. The `PRAGMA secure_delete` Trap</h3>
+      <p>
+        By default, SQLite leaves deleted row content inside unallocated freeblocks. However, applications configured with high privacy requirements (such as privacy-focused browsers or secure messaging apps) frequently enable <code>PRAGMA secure_delete = ON;</code>. When active, SQLite aggressively overwrites deleted cells with zero bytes (<code>0x00</code>) the instant a record is removed, rendering traditional string carving completely ineffective.
+      </p>
+
+      <h3>2. The Destructive Impact of `VACUUM`</h3>
+      <p>
+        Running the SQL command <code>VACUUM;</code> rebuilds the entire database file from scratch into a temporary file, packing surviving B-Tree pages tightly and discarding all freelist pages, freeblocks, and historical gap space. Threat actors routinely script <code>VACUUM;</code> commands into their cleanup routines to destroy evidentiary records.
+      </p>
+
+      <h3>3. Timestamp Manipulation &amp; Epoch Confusion</h3>
+      <p>
+        SQLite has no native date/time data type. Instead, developers store timestamps as:
+      </p>
+      <ul>
+        <li><strong>Unix Epoch (Seconds):</strong> Standard 10-digit integers (e.g., <code>1731000000</code>).</li>
+        <li><strong>Unix Epoch (Milliseconds):</strong> Standard 13-digit integers (e.g., <code>1731000000000</code>).</li>
+        <li><strong>WebKit / Windows FileTime:</strong> 64-bit microsecond counts since 1601.</li>
+        <li><strong>Mac Absolute Time (CoreData):</strong> Seconds elapsed since January 1, 2001 (subtract $978,307,200$ seconds to normalize to Unix epoch).</li>
+        <li><strong>Julian Day Numbers:</strong> Floating-point numbers representing fractional days since 4713 BC.</li>
+      </ul>
+      <p>
+        Misidentifying the epoch leads to wild timestamp calculation errors during forensic timeline reconstruction.
+      </p>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between sql.js and native SQLite?</div>
+          <div class="faq-answer">
+            sql.js is the official C source code of SQLite compiled directly into WebAssembly (Wasm) using Emscripten. It contains the identical, complete SQLite SQL parser, virtual machine, and B-Tree execution engine as the native C library, but executes entirely inside the browser's sandboxed virtual memory without requiring system-level binary installation.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does the viewer cap table results at 250 rows?</div>
+          <div class="faq-answer">
+            Rendering tens of thousands of DOM table elements simultaneously inside a web browser causes severe UI thread freezing and high memory consumption, particularly on mobile devices. The BitDark viewer caps live visual rendering at 250 rows for optimal responsiveness, while the "Export CSV" feature streams the complete, uncapped dataset directly to a downloadable file.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How does CSV formula injection defense protect exported data?</div>
+          <div class="faq-answer">
+            When database rows contain text beginning with calculation characters (such as <code>=</code>, <code>+</code>, <code>-</code>, or <code>@</code>), spreadsheet applications like Microsoft Excel or LibreOffice Calc may execute them as active formulas when opened, potentially triggering malicious commands. The BitDark CSV exporter automatically prepends a single quote (<code>'</code>) to any cell starting with formula symbols to neutralize execution risk.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I inspect password-protected or encrypted SQLite databases?</div>
+          <div class="faq-answer">
+            Standard SQLite does not include native encryption. Encrypted databases (such as SQLCipher or SQLiteCrypt) encrypt database pages with AES-256 before writing to disk, altering the magic header bytes. Encrypted databases cannot be parsed directly by standard SQLite engines without first providing the decryption key and initializing the corresponding cryptographic extension.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What happens if a database file has corrupted or truncated pages?</div>
+          <div class="faq-answer">
+            If the 100-byte file header is intact, the WebAssembly engine will attempt to instantiate the database. However, queries attempting to traverse damaged B-Tree pointers or unreadable cell arrays will return SQLite error messages (e.g., <code>database disk image is malformed</code>). The BitDark interface catches these exceptions and displays the diagnostic error code safely.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can I execute DDL queries like CREATE TABLE or ALTER TABLE in this tool?</div>
+          <div class="faq-answer">
+            Yes. The WebAssembly engine fully supports standard SQLite DDL commands. When you execute <code>CREATE TABLE</code>, <code>DROP TABLE</code>, or <code>ALTER TABLE</code>, the in-memory schema updates immediately, and the left-hand table list refreshes automatically. However, remember that all modifications exist only in ephemeral browser RAM and do not alter your source file on disk.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How are BLOB (binary large object) values displayed in query results?</div>
+          <div class="faq-answer">
+            When a query returns binary data (such as image thumbnails, serialized protocol buffers, or cryptographic keys stored in <code>BLOB</code> columns), the viewer formats the <code>Uint8Array</code> bytes as a hexadecimal string prefixed with <code>0x</code> (e.g., <code>0x89504E47...</code>), preventing binary corruption or garbled display in the UI.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark log my database queries, schemas, or file contents?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped zero-network-egress security architecture. All file ingestion, hashing, query compilation, and CSV generation execute entirely inside your local device's memory. Zero bytes leave your browser.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Forensics, Cryptography &amp; Binary Analysis Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Extract printable ASCII and dual-pass UTF-16LE Unicode strings from database dumps, memory, and binaries.</div>
+          </a>
+          <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
+            <div class="related-card-title"><span>[⚙️]</span> PE &amp; ELF Binary Viewer</div>
+            <div class="related-card-desc">Inspect Windows Portable Executables (.exe, .dll) and Linux ELF binary headers and sections client-side.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Inspect binary file headers, hex magic signatures, and detect extension spoofing entirely in browser RAM.</div>
+          </a>
+          <a href="/tools/forensics/zip-slip-scanner/" class="related-card">
+            <div class="related-card-title"><span>[📦]</span> Zip Slip Vulnerability Scanner</div>
+            <div class="related-card-desc">Audit archive files for path traversal exploits and malicious directory escape sequences offline.</div>
+          </a>
+          <a href="/tools/privacy/steganography/" class="related-card">
+            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
+            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          </a>
+          <a href="/tools/ai/c2pa-inspector/" class="related-card">
+            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
+            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers in volatile RAM.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
+
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
+    }
+
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. SQLite Viewer Engine (sql.js compiled to WebAssembly, 100% Client-Side)
     // Prevent accidental page navigation when files are dropped outside the dropzone
     window.addEventListener("dragover", (e) => e.preventDefault(), false);
     window.addEventListener("drop", (e) => e.preventDefault(), false);
 
-    // Dual-Stack IP Telemetry with Abort Timeouts
-    async function fetchWithTimeout(url, timeoutMs = 3500) {
+    // Timeout-enabled fetch for mirrors
+    async function fetchWithTimeout(url, timeoutMs = 5000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -609,58 +1432,6 @@
         clearTimeout(id);
         throw err;
       }
-    }
-
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
-
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
-
-      // Dedicated IPv4 Check
-      (async () => {
-        try {
-          const res4 = await fetchWithTimeout("https://api.ipify.org?format=json");
-          if (res4.ok) {
-            const data4 = await res4.json();
-            ipv4El.textContent = data4.ip;
-            return;
-          }
-          throw new Error("Primary failed");
-        } catch {
-          try {
-            const fb4 = await fetchWithTimeout("https://ipv4.icanhazip.com");
-            ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-          } catch {
-            ipv4El.textContent = "Offline";
-          }
-        }
-      })();
-
-      // Dedicated AAAA IPv6 Check
-      (async () => {
-        try {
-          const res6 = await fetchWithTimeout("https://api6.ipify.org?format=json");
-          if (res6.ok) {
-            const d6 = await res6.json();
-            ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-            return;
-          }
-          throw new Error("Primary failed");
-        } catch {
-          try {
-            const fb6 = await fetchWithTimeout("https://ipv6.icanhazip.com");
-            const text6 = (await fb6.text()).trim();
-            ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-          } catch {
-            ipv6El.textContent = "Not Supported";
-          }
-        }
-      })();
     }
 
     // Dynamic Script Loader with Element Removal on Failure and Timeout
@@ -743,7 +1514,8 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      detectUserIPs();
+      setupAdSlotObserver();
+      initFaqAccordion();
       initSql().catch(() => {});
     });
 
@@ -773,6 +1545,13 @@
 
     dropArea.addEventListener("click", () => filePicker.click());
     filePicker.addEventListener("click", (e) => e.stopPropagation());
+
+    dropArea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        filePicker.click();
+      }
+    });
 
     ["dragenter", "dragover"].forEach(ev => {
       dropArea.addEventListener(ev, (e) => {
