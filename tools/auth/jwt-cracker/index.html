@@ -6,8 +6,8 @@
   
   <title>Offline JWT Secret Key Cracker — Free In-Browser HS256 Auditor | BitDark</title>
   <meta name="title" content="Offline JWT Secret Key Cracker — Free In-Browser HS256 Auditor | BitDark" />
-  <meta name="description" content="Audit, evaluate, and dictionary-test weak HMAC-SHA256 (HS256) JWT secret signing keys entirely offline in your browser memory. Zero tracking, zero telemetry, zero network egress." />
-  <meta name="keywords" content="jwt cracker, crack jwt secret offline, hs256 brute force, jwt dictionary attack, test weak jwt secret, client-side jwt cracker, recover jwt secret, json web token security audit, hmac sha256 key recovery, bitdark" />
+  <meta name="description" content="Audit your own HS256 JWT for a weak signing secret with an in-browser dictionary check, and learn how to choose a secret that resists cracking. Runs in your browser; tokens stay local." />
+  <meta name="keywords" content="jwt secret audit, hs256 weak secret, jwt dictionary attack, test jwt signing key, jwt secret strength, rfc 7518 key size, jwt security" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/jwt-cracker/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/jwt-cracker/" />
   <meta property="og:title" content="Offline JWT Secret Key Cracker — In-Memory HS256 Security Tool | BitDark" />
-  <meta property="og:description" content="Audit weak HMAC-SHA256 JWT signing keys via client-side dictionary attacks using native WebCrypto in browser memory. Air-gapped execution with zero network egress." />
+  <meta property="og:description" content="Check whether your HS256 JWT uses a weak signing secret, and learn how to pick one that can't be brute-forced. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/jwt-cracker/" />
   <meta name="twitter:title" content="Offline JWT Secret Key Cracker | BitDark" />
-  <meta name="twitter:description" content="Audit and dictionary-test weak HMAC-SHA256 JWT secrets locally in browser RAM with zero server communication." />
+  <meta name="twitter:description" content="Audit your own HS256 JWT for a weak secret in your browser. Tokens stay local." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Offline JWT Secret Key Cracker",
         "url": "https://bitdark.net/tools/auth/jwt-cracker/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side security utility to audit and dictionary-test weak HMAC-SHA256 (HS256) JSON Web Token signing secrets locally in browser memory via native W3C WebCrypto APIs."
+        "description": "Browser-based HS256 JWT secret auditor that tests a token's signature against a wordlist to detect weak signing keys."
       },
       {
         "@type": "TechArticle",
-        "headline": "Cryptographic Cryptanalysis of Symmetric JWTs: HMAC-SHA256 Entropy Requirements, Dictionary Vulnerabilities, and Defensive Mitigation",
+        "headline": "Auditing HS256 JWT Secrets: How Weak Keys Are Cracked and How to Pick a Strong One",
         "url": "https://bitdark.net/tools/auth/jwt-cracker/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-05-18",
-        "dateModified": "2026-10-31",
-        "description": "Exhaustive technical treatise on symmetric JWT signing flaws, HMAC-SHA256 key entropy requirements, offline dictionary cryptanalysis, algorithm confusion vectors, and Zero Trust authentication architecture."
+        "dateModified": "2026-11-08",
+        "description": "Why weak HS256 secrets let attackers forge tokens, how the in-browser dictionary audit works, a worked example of weak versus strong secrets, and how to choose a secret that resists cracking."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How does an offline dictionary attack against a JWT work?",
+            "name": "Is this legal to use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Because a JSON Web Token encapsulates its header, payload, and signature entirely within the token string, an attacker does not need network access to the issuing authentication server. By taking the exact header and payload strings and repeatedly computing HMAC-SHA256 hashes against a list of candidate secret keys, the attacker compares each computed signature against the token's existing signature. A match reveals the secret signing key."
+              "text": "Use it only on tokens and secrets you own or are authorised to test, such as your own application in a test environment. Testing tokens from systems you don't control may be illegal. It's a defensive tool for checking that your own signing secret is strong."
             }
           },
           {
             "@type": "Question",
-            "name": "Why are HMAC-SHA256 (HS256) tokens uniquely vulnerable to offline secret cracking?",
+            "name": "Does \"Wordlist Exhausted\" mean my secret is secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "HS256 relies on a symmetric shared secret known to both token issuer and verifier. Unlike asymmetric algorithms (RS256, ES256) that use mathematically complex public-private key pairs, symmetric HMAC verification can be computed millions of times per second using consumer hardware or client-side WebCrypto. If developers configure short, predictable, or dictionary-based strings as secrets, they can be cracked within seconds."
+              "text": "No. It only means the secret wasn't in the list you tested, at this browser's speed. A dedicated GPU cracker is far faster and uses much larger lists. A short or word-based secret can still be broken. Use a long random secret of at least 32 bytes."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the minimum recommended secret length for HS256 according to RFC 7518?",
+            "name": "Why does it only support HS256?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "RFC 7518 Section 3.2 explicitly dictates that a key of the same size as the hash output or larger MUST be used with HMAC-SHA256. Because SHA-256 outputs a 256-bit digest, the signing secret MUST contain at least 256 bits (32 bytes) of cryptographically secure pseudorandom entropy."
+              "text": "HS256 uses one shared secret for signing and verifying, so a guessed secret can be checked against a token. RS256, ES256 and EdDSA use a private signing key that isn't in the token, so there's nothing to brute-force from the token alone."
             }
           },
           {
             "@type": "Question",
-            "name": "What can an attacker do if they recover my JWT secret signing key?",
+            "name": "What should I do if a secret is cracked?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Recovering the secret key grants complete administrative compromise over token verification. The adversary can forge arbitrary claims, arbitrary user IDs, elevate their privileges to system administrator, modify expiration timestamps, and sign the forged token. Any backend microservice trusting that secret key will validate the forged token as authentic."
+              "text": "Replace it with a new long random secret, roll it out to every service that verifies tokens, and invalidate existing sessions and tokens. Assume any token signed with the weak secret could have been forged, and review logs for suspicious activity."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my tokens or candidate wordlists transmitted over the internet?",
+            "name": "Is my token uploaded?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All cryptographic operations execute 100% locally in browser memory via native crypto.subtle Web Cryptography APIs. Zero network requests, analytics, or background telemetry are ever transmitted."
+              "text": "No. Parsing, signing and comparison run in your browser with the Web Crypto API, and the tool makes no network requests with your token or wordlist. Even so, prefer a test token over a live production one."
             }
           }
         ]
@@ -770,7 +770,7 @@
 
     <div class="tool-header">
       <h1>Offline JWT Secret Key Cracker</h1>
-      <p>Audit weak HMAC-SHA256 (HS256) signing keys through local in-browser dictionary attacks. Test token resilience against common password lists entirely in browser memory with zero network egress.</p>
+      <p>Check whether an HS256 JSON Web Token uses a weak, guessable signing secret by testing it against a wordlist in your browser. Use it on your own tokens to confirm your secret is strong. Nothing is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -861,377 +861,114 @@
       </div>
     </div>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Ethical &amp; Defensive Usage Mandate:</strong> This utility is engineered exclusively for authorized security verification, penetration testing with written consent, defensive credential auditing, and local software development hygiene. Unauthorized access, credential cracking, or token forgery against external computer networks and authentication services violates federal and international cyber laws. All cryptographic operations execute 100% locally inside your client browser RAM via standard WebCrypto APIs; neither the token string nor candidate passwords ever leave your machine.
+        <strong>Use this only on tokens and secrets you own or are authorised to test.</strong> "Wordlist Exhausted" means the secret wasn't in that list at this speed, not that it's strong: dedicated crackers are far faster. Protect tokens with a long random secret of at least 32 bytes. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Cryptographic Anatomy of JSON Web Tokens (JWT)</h2>
+      <h2>Why Weak JWT Secrets Are a Problem</h2>
       <p>
-        In contemporary cloud computing, microservice meshes, and modern single-page applications, <strong>JSON Web Tokens (JWT, RFC 7519)</strong> serve as the ubiquitous standard for stateless authentication and authorization. Rather than querying centralized session databases on every HTTP request, web architectures rely on digitally signed JSON assertions passed via the <code>Authorization: Bearer</code> header.
+        A JSON Web Token signed with HS256 is protected by a single shared secret. The server uses that secret both to sign tokens and to verify them. Anyone who learns the secret can forge a valid token for any user, including an admin. If the secret is a dictionary word or a short string, an attacker who has one real token can test candidate secrets offline until a signature matches, without ever contacting your server.
       </p>
       <p>
-        A standard compact serialization JWT comprises three URL-safe Base64-encoded segments concatenated with periods (<code>.</code>):
+        This tool lets you run that same check against <strong>your own</strong> tokens, so you can confirm your signing secret isn't guessable before an attacker does. Only test tokens and secrets you are authorised to test.
       </p>
-      <pre><code>[Base64URL-Header] . [Base64URL-Payload] . [Base64URL-Signature]</code></pre>
+
+      <h2>How the Audit Works</h2>
+      <p>
+        Paste an HS256 token and a wordlist. For each candidate, the tool recomputes the HMAC-SHA256 signature over the token's header and payload and compares it with the token's real signature. A match means that candidate is the signing secret. It never contacts the server, because verifying a signature needs only the public parts of the token plus the guessed secret.
+      </p>
       <ul>
-        <li>
-          <strong>The Header (JOSE):</strong> Specifies the container type (typically <code>JWT</code>) and the cryptographic signing algorithm (such as <code>HS256</code>, <code>RS256</code>, or <code>ES256</code>).
-        </li>
-        <li>
-          <strong>The Payload (Claims):</strong> Contains identity assertions, user identifiers (<code>sub</code>), operational roles, issuance timestamps (<code>iat</code>), and expiration thresholds (<code>exp</code>).
-        </li>
-        <li>
-          <strong>The Signature:</strong> The cryptographic checksum calculated over the concatenated header and payload strings using a secret or private key.
-        </li>
+        <li><strong>HS256 only.</strong> The tool rejects other algorithms. RS256, ES256 and EdDSA sign with a private key that isn't in the token, so there's nothing to guess this way.</li>
+        <li><strong>Dictionary attack.</strong> It tests the exact strings you provide, one per line. It doesn't generate variations or try every possible character combination.</li>
+        <li><strong>Load a bigger wordlist</strong> with "Load Wordlist File" to test against a real password list.</li>
       </ul>
-      <p>
-        When an authentication service relies on the symmetric <strong>HMAC-SHA256 (HS256)</strong> algorithm, both token generation and token verification depend on a single shared secret string. Because the complete header and payload are visible in plaintext to any client handling the bearer token, an attacker possessing an intercepted token can attempt to reverse-engineer the secret key through an <strong>offline cryptanalytic dictionary attack</strong>.
-      </p>
 
-      <h2>The Mechanics of Offline HMAC-SHA256 Dictionary Attacks</h2>
-      <p>
-        Traditional credential cracking against web login forms is bottlenecked by network round-trip latency, intrusion prevention systems (IPS), web application firewalls (WAF), and automated account lockout policies. If an adversary attempts to brute-force a login endpoint, submitting 100 incorrect passwords triggers rate-limiting or IP bans.
-      </p>
-      <p>
-        <strong>Offline JWT cracking completely bypasses these network-layer defenses.</strong>
-      </p>
-      <p>
-        Because the signature is calculated deterministically as:
-      </p>
-      <blockquote>
-        $$\text{Signature} = \text{Base64URL}\Big(\text{HMAC-SHA256}\big(\text{Header}_{\text{b64}} \,\|\, \text{"."} \,\|\, \text{Payload}_{\text{b64}}, \;\; \text{Key}\big)\Big)$$
-      </blockquote>
-      <p>
-        The adversary does not need to send a single packet to the authentication server. They can load the intercepted token into memory and test candidate keys from password lists (such as <em>rockyou.txt</em>, common dictionary lists, or default framework credentials) at the maximum execution throughput of their local hardware.
-      </p>
-      <p>
-        Once a candidate key produces a Base64URL-encoded HMAC digest identical to the third segment of the targeted token, the secret signing key is definitively recovered.
-      </p>
-
-      <h2>How to Use the BitDark Offline JWT Secret Cracker</h2>
-      <p>
-        Auditing token resilience using the BitDark engine is instantaneous, forensically non-destructive, and strictly confined to your browser's private WebCrypto memory:
-      </p>
+      <h2>How to Use It</h2>
       <ol>
-        <li>
-          <strong>Input the Target Bearer Token:</strong> Paste your compact 3-part HS256 JWT into the left-hand text area. The parser will immediately dissect the JOSE header and verify the signing algorithm.
-        </li>
-        <li>
-          <strong>Configure Candidate Wordlist:</strong> Paste candidate secrets into the right-hand dictionary box (one candidate per line), or click <strong>Load Wordlist File</strong> to ingest large <code>.txt</code> or <code>.dict</code> wordlists directly from disk.
-        </li>
-        <li>
-          <strong>Test with Built-In Presets:</strong> If evaluating the cracker's functionality, choose a preset from the dropdown (e.g., <em>Preset 1: secret-test-key</em>) and click <strong>Load Sample Target</strong> to generate a mathematically valid, in-memory signed JWT.
-        </li>
-        <li>
-          <strong>Initiate In-Memory Audit:</strong> Click <strong>Start Audit</strong>. The engine initializes native WebCrypto workers, hashing candidates in micro-batches to keep the browser responsive while displaying real-time hash velocity and recovery status.
-        </li>
-        <li>
-          <strong>Analyze Results &amp; Remediation:</strong> If a candidate matches, the recovery log flags the token as compromised and reveals the exact key. If the dictionary finishes without a match, the token is deemed resilient against that wordlist.
-        </li>
+        <li><strong>Try the demo first.</strong> Pick a preset secret and click to generate a valid token, then start the audit to watch a weak secret fall.</li>
+        <li><strong>Test your own token.</strong> Paste a real HS256 token from your app (preferably a test-environment one) and run it against a password list.</li>
+        <li><strong>Read the result.</strong> "Secret Key Cracked" means your secret is weak and must be rotated. "Wordlist Exhausted" means it wasn't in that list, which is reassuring but not proof of strength (see below).</li>
+        <li><strong>If a secret is found, rotate it everywhere</strong> and invalidate existing tokens, since anyone who had the secret could have forged tokens.</li>
       </ol>
 
-      <h2>When to Use This Tool: Operational Threat Modeling</h2>
+      <h2>Worked Example: Weak vs Strong Secret</h2>
       <p>
-        Auditing JWT secret strength is a foundational procedure across multiple defensive security practices:
+        We generated tokens with this tool and audited them:
       </p>
-      <ul>
-        <li>
-          <strong>CI/CD Pipeline Security Audits:</strong> Scan staging and pre-production environment configurations to verify that junior developers did not commit placeholder secrets (such as <code>secret</code>, <code>jwt-secret</code>, or company names) into deployment manifests.
-        </li>
-        <li>
-          <strong>Authorized Penetration Testing:</strong> Verify whether tokens issued by legacy microservices or single-sign-on (SSO) gateways can be cracked offline before adversaries exploit them.
-        </li>
-        <li>
-          <strong>Zero-Egress Security Triage:</strong> Incident response teams analyzing leaked bearer tokens often cannot paste tokens into public web debuggers without violating internal data loss prevention (DLP) mandates. BitDark's air-gapped architecture ensures tokens never leak.
-        </li>
-        <li>
-          <strong>Defensive Credential Hardening:</strong> System architects evaluating migration paths from symmetric HMAC to asymmetric public-key cryptography (RS256 or ES256) can demonstrate the risk of symmetric secrets to engineering stakeholders.
-        </li>
-      </ul>
-
-      <h2>The Devastating Blast Radius of a Compromised JWT Secret</h2>
-      <p>
-        In asymmetric encryption architectures (such as public-key infrastructure), possessing a public verification key does not permit an attacker to forge tokens. However, in <strong>symmetric HS256</strong> implementations, the key used to verify a token is identical to the key used to forge it.
-      </p>
-      <p>
-        If an attacker cracks the symmetric signing secret, the security boundaries of the application collapse entirely:
-      </p>
-      <ul>
-        <li>
-          <strong>Arbitrary Privilege Escalation:</strong> The attacker can decode the payload JSON, change <code>"role": "guest"</code> to <code>"role": "admin"</code> or <code>"role": "super-user"</code>, re-compute the HMAC-SHA256 signature using the cracked secret, and present the forged token. The backend will validate it as legitimate.
-        </li>
-        <li>
-          <strong>Authentication Bypass &amp; Impersonation:</strong> The attacker can change the subject claim (<code>sub</code>) to any target user ID, impersonating corporate executives, database administrators, or financial controllers.
-        </li>
-        <li>
-          <strong>Expiration Tampering:</strong> Short-lived tokens designed to expire in 15 minutes can have their <code>exp</code> claim pushed decades into the future, creating immortal backdoor tokens.
-        </li>
-      </ul>
-
-      <h2>Step-by-Step Mathematical Walkthrough of HMAC-SHA256</h2>
-      <p>
-        To understand why HMAC-SHA256 is computationally fast—and why high entropy is mandatory—consider the formal byte-level pipeline defined by <strong>RFC 2104</strong>:
-      </p>
-      <blockquote>
-        $$\text{HMAC}(K, m) = H\Big((K' \oplus opad) \;\|\; H\big((K' \oplus ipad) \;\|\; m\big)\Big)$$
-      </blockquote>
-      <p>
-        Where:
-      </p>
-      <ul>
-        <li>$H$ is the cryptographic hash function (SHA-256).</li>
-        <li>$B$ is the block size of the hash function (64 bytes for SHA-256).</li>
-        <li>$L$ is the output size of the hash function (32 bytes).</li>
-        <li>$K$ is the secret signing key. If $K$ is longer than $B$, it is hashed: $K' = H(K)$. If shorter, it is padded with zero-bytes to length $B$.</li>
-        <li>$ipad$ is the inner padding constant: the byte <code>0x36</code> repeated 64 times.</li>
-        <li>$opad$ is the outer padding constant: the byte <code>0x5C</code> repeated 64 times.</li>
-        <li>$m$ is the message: <code>Base64URL(Header) + "." + Base64URL(Payload)</code>.</li>
-      </ul>
-
-      <h3>Byte-Level Walkthrough with Candidate Key "password"</h3>
-      <p>
-        Suppose an application issues a token with header <code>{"alg":"HS256","typ":"JWT"}</code> and payload <code>{"sub":"1234","admin":false}</code>, signed with the weak secret <code>"password"</code>:
-      </p>
-
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Pipeline Stage</th>
-              <th>Mathematical Operation</th>
-              <th>Internal Value / Representation</th>
+              <th>Signing secret</th>
+              <th>Wordlist</th>
+              <th>Result</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>1. Message Assembly</strong></td>
-              <td>Base64URL String Concatenation</td>
-              <td><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0IiwiYWRtaW4iOmZhbHNlfQ</code></td>
-            </tr>
-            <tr>
-              <td><strong>2. Key Normalization ($K'$)</strong></td>
-              <td>Zero-pad <code>"password"</code> to 64 bytes</td>
-              <td><code>70 61 73 73 77 6f 72 64 00 00 00 ... [56 zero bytes]</code></td>
-            </tr>
-            <tr>
-              <td><strong>3. Inner Pad ($K' \oplus ipad$)</strong></td>
-              <td>XOR key bytes with <code>0x36</code></td>
-              <td><code>(0x70 ^ 0x36) (0x61 ^ 0x36) ... = 46 57 45 45 41 59 44 52 36 36 ...</code></td>
-            </tr>
-            <tr>
-              <td><strong>4. Inner Hash Pass</strong></td>
-              <td>$H_1 = \text{SHA256}((K' \oplus ipad) \,\|\, m)$</td>
-              <td>32-byte intermediate hash digest buffer</td>
-            </tr>
-            <tr>
-              <td><strong>5. Outer Pad ($K' \oplus opad$)</strong></td>
-              <td>XOR key bytes with <code>0x5C</code></td>
-              <td><code>(0x70 ^ 0x5C) (0x61 ^ 0x5C) ... = 2C 3D 2F 2F 2B 33 2E 38 5C 5C ...</code></td>
-            </tr>
-            <tr>
-              <td><strong>6. Final Digest</strong></td>
-              <td>$H_2 = \text{SHA256}((K' \oplus opad) \,\|\, H_1)$</td>
-              <td>32-byte binary HMAC digest</td>
-            </tr>
-            <tr>
-              <td><strong>7. URL-Safe Base64</strong></td>
-              <td>Replace <code>+</code> with <code>-</code>, <code>/</code> with <code>_</code>, strip <code>=</code></td>
-              <td>Matches the 3rd segment of the target token</td>
-            </tr>
+            <tr><td><code>jwtsecret</code></td><td>Built-in 30-word list</td><td>Cracked immediately</td></tr>
+            <tr><td><code>jwtsecret</code></td><td>3,000 decoys plus the real word</td><td>Cracked; the word was found when its turn came</td></tr>
+            <tr><td><code>S9f2!xQ8vKw3mZ1pR7tLbN4hJ6yD0cE</code> (31 random chars)</td><td>Common-password list</td><td>Not found: "Wordlist Exhausted"</td></tr>
+            <tr><td>An RS256 token</td><td>—</td><td>Rejected: "Unsupported Algorithm"</td></tr>
           </tbody>
         </table>
       </div>
-
       <p>
-        Because standard modern microprocessors can execute millions of SHA-256 cycles per second, dictionary words and short alphanumeric strings offer zero meaningful protection against offline recovery.
+        In the browser, this single-threaded tool tested roughly 1,000 to 2,000 candidates per second. That's fine for a quick check, but it's far slower than real attack tools. Auth0's own testing showed a 32-bit secret falling in about 6 seconds and the word <code>secret</code> in under an hour with a native cracker, and GPU-based tools run many orders of magnitude faster still. So "Wordlist Exhausted" here only means your secret survived <em>that list at this speed</em>, not that it's strong.
       </p>
 
-      <h2>Cryptographic Algorithm Comparison: HS256 vs RS256 vs ES256 vs Ed25519</h2>
-      <p>
-        Choosing the appropriate signing algorithm requires balancing architectural complexity against cryptographic attack surface:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Cryptographic Primitive</th>
-              <th>Key Type</th>
-              <th>Offline Dictionary Threat</th>
-              <th>Recommended Key Size</th>
-              <th>Use Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>HS256 (HMAC-SHA256)</strong></td>
-              <td>Symmetric Secret Hashing</td>
-              <td>Shared Secret</td>
-              <td><strong>High</strong> (If key entropy &lt; 128 bits)</td>
-              <td>At least 256 bits (32 random bytes)</td>
-              <td>Internal, trusted, single-service APIs</td>
-            </tr>
-            <tr>
-              <td><strong>RS256 (RSA PKCS#1 v1.5)</strong></td>
-              <td>Asymmetric Public Key</td>
-              <td>RSA Private/Public Pair</td>
-              <td><strong>Zero</strong> (Public key cannot sign tokens)</td>
-              <td>2048 to 4096 bits</td>
-              <td>Public federated identity (OAuth2 / OIDC)</td>
-            </tr>
-            <tr>
-              <td><strong>ES256 (ECDSA P-256)</strong></td>
-              <td>Elliptic Curve Digital Signature</td>
-              <td>EC Private/Public Pair</td>
-              <td><strong>Zero</strong> (Resistant to dictionary attacks)</td>
-              <td>256-bit curve (NIST P-256)</td>
-              <td>High-throughput mobile &amp; cloud microservices</td>
-            </tr>
-            <tr>
-              <td><strong>EdDSA (Ed25519)</strong></td>
-              <td>Edwards-Curve Digital Signature</td>
-              <td>Curve25519 Pair</td>
-              <td><strong>Zero</strong> (State-of-the-art resilience)</td>
-              <td>256-bit Curve25519</td>
-              <td>Modern zero-trust architectures &amp; Web3</td>
-            </tr>
-            <tr>
-              <td><strong>PS256 (RSA-PSS)</strong></td>
-              <td>Probabilistic Signature Scheme</td>
-              <td>RSA Private/Public Pair</td>
-              <td><strong>Zero</strong> (Mathematically hardened RSA)</td>
-              <td>2048 to 4096 bits</td>
-              <td>High-compliance banking and open banking APIs</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common JWT Architectural Vulnerabilities &amp; Implementation Blunders</h2>
-      <p>
-        In real-world security assessments, authentication vulnerabilities rarely stem from flaws in the underlying math of SHA-256. Instead, they arise from severe configuration mistakes in token handling libraries:
-      </p>
-
-      <h3>1. The "Algorithm Confusion" Attack (HMAC vs RSA)</h3>
-      <p>
-        One of the most famous JWT vulnerabilities occurs when a backend verification library accepts both symmetric (HS256) and asymmetric (RS256) algorithms without strict whitelisting. If an application is designed to sign tokens using an RSA private key and verify them using the RSA public key:
-      </p>
+      <h2>Choosing a Secret That Can't Be Cracked</h2>
       <ul>
-        <li>An attacker captures the application's public verification key (which is publicly accessible via <code>/.well-known/jwks.json</code>).</li>
-        <li>The attacker crafts a malicious token, changes the JOSE header from <code>"alg": "RS256"</code> to <code>"alg": "HS256"</code>, and signs the forged payload using the <em>public RSA key as the symmetric HMAC secret</em>.</li>
-        <li>If the server's verification logic naively passes the public key into the verifier without enforcing algorithm constraints, the library verifies the signature using HMAC-SHA256, treating the public key text as the secret. The forged token is accepted.</li>
+        <li><strong>Follow the spec minimum.</strong> RFC 7518 requires an HS256 key of at least 256 bits (32 bytes). Auth0 recommends treating that as the floor and uses 512-bit secrets itself.</li>
+        <li><strong>Make it random, not memorable.</strong> Generate it from a cryptographically secure source, for example <code>openssl rand -base64 48</code>, and never reuse a password, app name or environment word.</li>
+        <li><strong>Keep it out of code.</strong> Store it in a secret manager or environment variable, not in your repository or client-side code.</li>
+        <li><strong>Consider asymmetric signing.</strong> RS256 or ES256 sign with a private key and verify with a public one, so a leaked verification key can't forge tokens and there's no shared secret to brute-force.</li>
+        <li><strong>Reject <code>alg: none</code> and algorithm switching.</strong> Pin the expected algorithm on the server so an attacker can't downgrade a token.</li>
       </ul>
-
-      <h3>2. The Insecure "alg: none" Vulnerability</h3>
-      <p>
-        The JWT specification includes an algorithm identifier named <code>none</code> for unsigned tokens (used in debugging or secure channels like mutual TLS). Flawed verification libraries historically accepted tokens where <code>"alg": "none"</code> without verifying any signature at all, allowing an attacker to simply strip the third segment and elevate privileges.
-      </p>
-
-      <h3>3. Hardcoding Secrets from Tutorials into Production</h3>
-      <p>
-        Framework quick-starts (such as Node.js Express, Python Flask, or Spring Boot tutorials) frequently use placeholder secrets like <code>"secret"</code>, <code>"your-256-bit-secret"</code>, or <code>"keyboard-cat"</code>. Hundreds of production systems inadvertently ship to cloud environments with these exact strings embedded in configuration files.
-      </p>
-
-      <h3>4. Exposing Secrets in Client-Side JavaScript Bundles</h3>
-      <p>
-        In single-page applications (React, Vue, Next.js), developers sometimes bundle token verification logic into client-side code, accidentally exposing the symmetric HMAC secret in compiled frontend <code>main.js</code> chunks. Anyone opening browser Developer Tools can recover the secret in seconds.
-      </p>
-
-      <h2>Defensive Hardening: How to Secure Your JWT Infrastructure</h2>
-      <p>
-        Securing JWT-based authentication against offline dictionary recovery and signature tampering requires implementing defense-in-depth:
-      </p>
-      <ol>
-        <li>
-          <strong>Enforce High Entropy for Symmetric Keys:</strong> If using HS256, generate keys using cryptographically secure pseudorandom number generators (CSPRNG). On Unix systems, run:
-          <pre><code>openssl rand -hex 32</code></pre>
-          This generates 256 bits of pure cryptographic entropy, rendering offline dictionary and brute-force attacks mathematically impossible.
-        </li>
-        <li>
-          <strong>Migrate to Asymmetric Algorithms (RS256 / ES256):</strong> In multi-service architectures, decouple signing from verification. Only the central identity provider (IdP) holds the private key required to issue tokens; downstream services hold only the public key. Even if an attacker compromises a downstream microservice, they cannot forge tokens.
-        </li>
-        <li>
-          <strong>Strictly Whitelist Algorithms:</strong> Never allow incoming tokens to dictate the verification algorithm. Hardcode the expected algorithm in backend verification middleware:
-          <pre><code>// Hardened verification configuration example
-jwt.verify(token, publicKey, { algorithms: ['RS256'] });</code></pre>
-        </li>
-        <li>
-          <strong>Maintain Short Expiration Windows:</strong> Access tokens should have lifespans limited to 5 to 15 minutes. Pair short-lived access tokens with revocable refresh tokens stored securely in <code>HttpOnly</code>, <code>Secure</code>, <code>SameSite=Strict</code> cookies.
-        </li>
-        <li>
-          <strong>Inject Key Rotation Identifiers (kid):</strong> Include a Key ID (<code>kid</code>) in the JOSE header to allow seamless zero-downtime rotation of signing keys whenever a potential leak is suspected.
-        </li>
-      </ol>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Can this tool crack tokens signed with RS256, ES256, or EdDSA?</div>
+          <div class="faq-question">Is this legal to use?</div>
           <div class="faq-answer">
-            No. Asymmetric algorithms (RS256, ES256, EdDSA) do not use shared secrets; they use mathematically paired private and public cryptographic keys based on integer factorization, elliptic curve discrete logarithms, or Edwards curves. Public keys cannot be dictionary-cracked because the private signing key never appears in the token and cannot be derived from brute-forcing simple strings.
+            Use it only on tokens and secrets you own or are authorised to test, such as your own application in a test environment. Testing tokens from systems you don't control may be illegal. It's a defensive tool for checking that your own signing secret is strong.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the cracker run entirely inside my web browser?</div>
+          <div class="faq-question">Does "Wordlist Exhausted" mean my secret is secure?</div>
           <div class="faq-answer">
-            BitDark operates on an air-gapped, zero-network-egress security model. Pasting sensitive authentication tokens into cloud-based web tools risks leaking active bearer credentials, admin sessions, and confidential claims to third-party servers. By executing all HMAC-SHA256 computations inside local browser memory via W3C WebCrypto, your tokens never touch a network wire.
+            No. It only means the secret wasn't in the list you tested, at this browser's speed. A dedicated GPU cracker is far faster and uses much larger lists. A short or word-based secret can still be broken. Use a long random secret of at least 32 bytes.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How fast can this client-side JavaScript engine test candidate keys?</div>
+          <div class="faq-question">Why does it only support HS256?</div>
           <div class="faq-answer">
-            In modern browsers, native WebCrypto (<code>crypto.subtle</code>) executes between 1,000 and 15,000 key evaluations per second on a single CPU thread, depending on your device processor. While dedicated offline GPU tools (like Hashcat) can reach millions of hashes per second, BitDark is designed for immediate, zero-install defensive auditing of common password lists and configuration blunders.
+            HS256 uses one shared secret for signing and verifying, so a guessed secret can be checked against a token. RS256, ES256 and EdDSA use a private signing key that isn't in the token, so there's nothing to brute-force from the token alone.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What should I do immediately if my production JWT secret is cracked?</div>
+          <div class="faq-question">What should I do if a secret is cracked?</div>
           <div class="faq-answer">
-            Immediately invalidate the compromised secret key on your authentication server. Generate a new 256-bit secret using a CSPRNG (e.g., <code>openssl rand -hex 32</code>), update your environment variables or key vault, invalidate all existing active refresh tokens, and audit authentication logs for any unauthorized administrative actions taken with forged tokens.
+            Replace it with a new long random secret, roll it out to every service that verifies tokens, and invalidate existing sessions and tokens. Assume any token signed with the weak secret could have been forged, and review logs for suspicious activity.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I upload my own custom wordlist file to test?</div>
+          <div class="faq-question">Is my token uploaded?</div>
           <div class="faq-answer">
-            Yes. Click the "Load Wordlist File" button above the dictionary area to select any plain text wordlist (<code>.txt</code>, <code>.lst</code>, <code>.dict</code>) from your computer. The file is read directly into browser memory via the HTML5 FileReader API without being uploaded to any server.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does changing the token payload invalidate the signature?</div>
-          <div class="faq-answer">
-            Yes. The signature is calculated directly over the Base64URL-encoded header and payload. Changing even a single character in the payload produces a completely different cryptographic digest. Without knowing the secret key, an attacker cannot generate a valid signature for the modified payload.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is the difference between a JWT debugger and a JWT cracker?</div>
-          <div class="faq-answer">
-            A JWT debugger (like BitDark's Offline JWT Debugger) decodes the Base64URL header and payload into readable JSON and verifies signatures if you already provide the correct secret key. A JWT cracker actively attempts to discover an unknown secret key by testing candidate passwords against the existing signature.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Is it safe to store sensitive user data inside a JWT payload?</div>
-          <div class="faq-answer">
-            No. Standard JWTs are digitally signed, but they are not encrypted. The header and payload are merely Base64URL-encoded strings that anyone possessing the token can decode in milliseconds. Never store passwords, Social Security numbers, unencrypted credit cards, or internal network topology inside standard JWT claims.
+            No. Parsing, signing and comparison run in your browser with the Web Crypto API, and the tool makes no network requests with your token or wordlist. Even so, prefer a test token over a live production one.
           </div>
         </div>
       </section>
@@ -1250,7 +987,7 @@ jwt.verify(token, publicKey, { algorithms: ['RS256'] });</code></pre>
           </a>
           <a href="/tools/crypto/aes-gcm/" class="related-card">
             <div class="related-card-title"><span>[🔐]</span> AES-GCM Encryptor</div>
-            <div class="related-card-desc">Encrypt confidential text and payload files with military-grade 256-bit authenticated encryption.</div>
+            <div class="related-card-desc">Encrypt text and files with AES-256-GCM authenticated encryption in your browser.</div>
           </a>
           <a href="/tools/auth/pkce-generator/" class="related-card">
             <div class="related-card-title"><span>[🛡️]</span> OAuth2 PKCE Generator</div>
