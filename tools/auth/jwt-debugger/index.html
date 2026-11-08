@@ -6,8 +6,8 @@
   
   <title>Offline JWT Debugger &amp; Claim Inspector — Free In-Memory Token Validator | BitDark</title>
   <meta name="title" content="Offline JWT Debugger &amp; Claim Inspector — Free In-Memory Token Validator | BitDark" />
-  <meta name="description" content="Decode, inspect, and cryptographically verify JSON Web Tokens (RFC 7519) entirely offline in browser memory. Validate HMAC-SHA256 signatures, expiration claims, and payload integrity with zero network egress." />
-  <meta name="keywords" content="jwt debugger offline, json web token inspector, decode jwt client side, verify hs256 signature online, jwt claim validator, zero network token decoder, token signature mismatch, exp claim validator, bitdark" />
+  <meta name="description" content="Decode a JSON Web Token and verify its HS256 signature in your browser. Inspect the header, claims and expiry, and learn what verifying a token does and doesn't prove. Nothing is uploaded." />
+  <meta name="keywords" content="jwt debugger, jwt decoder, verify jwt signature, hs256 verification, decode json web token, jwt claims, jwt exp expiry, jwt alg none" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/jwt-debugger/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/jwt-debugger/" />
   <meta property="og:title" content="Offline JWT Debugger &amp; Claim Inspector — In-Memory Token Validator | BitDark" />
-  <meta property="og:description" content="Decode and cryptographically verify JSON Web Tokens in local browser memory. Zero network telemetry, zero server logging, native Web Crypto verification." />
+  <meta property="og:description" content="Decode and verify JSON Web Tokens in your browser: header, claims, expiry and HS256 signature. Runs locally; tokens stay on your device." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/jwt-debugger/" />
   <meta name="twitter:title" content="Offline JWT Debugger &amp; Claim Inspector | BitDark" />
-  <meta name="twitter:description" content="Inspect and verify JSON Web Tokens client-side. Zero server egress, zero token leakage." />
+  <meta name="twitter:description" content="Decode and verify JWTs in your browser. Tokens and secrets stay local." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Offline JWT Debugger & Claim Inspector",
         "url": "https://bitdark.net/tools/auth/jwt-debugger/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side security utility to decode, inspect, and cryptographically verify JSON Web Tokens (JWT, RFC 7519) and HMAC-SHA256 signatures directly in volatile browser memory without network egress."
+        "description": "Browser-based JWT debugger that decodes the header and claims, reports expiry, and verifies HS256 signatures with the Web Crypto API."
       },
       {
         "@type": "TechArticle",
-        "headline": "JSON Web Token Architecture, Cryptographic Verification, and Claim Validation Forensics",
+        "headline": "Decoding and Verifying JSON Web Tokens: Claims, Expiry and HS256 Signatures",
         "url": "https://bitdark.net/tools/auth/jwt-debugger/",
         "author": {
           "@type": "Organization",
@@ -57,74 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-03",
-        "description": "Deep-dive technical guide on RFC 7519 JSON Web Tokens, JWS header validation, Base64URL serialization, HMAC and asymmetric digital signatures, replay prevention, and common token vulnerability mitigation."
+        "dateModified": "2026-11-08",
+        "description": "What a JWT contains, what the debugger shows, a worked HS256 verification example with the correct signature, how to read the standard claims, and what verifying a token does and doesn't prove."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is a JSON Web Token (JWT) and how is it structured?",
+            "name": "Is a JWT encrypted?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A JSON Web Token (JWT, RFC 7519) is a compact, URL-safe container format for securely transmitting claims between parties. A signed token (JWS) consists of three Base64URL-encoded strings separated by dots: the Header (specifying token type and signing algorithm), the Payload (containing identity and authorization claims), and the Signature (a cryptographic hash or digital signature generated over the header and payload)."
+              "text": "No. A standard JWT (JWS) is signed, not encrypted. The header and payload are only Base64url-encoded, so anyone can read them. Never put secrets such as passwords in a token payload. If you need the contents hidden, use JWE encryption."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is pasting production JWTs into typical online debuggers dangerous?",
+            "name": "Why can't this tool verify my RS256 token?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Many public web debuggers send pasted tokens to remote backend servers for parsing or analytics logging. Because JWTs frequently carry active session IDs, user roles, email addresses, and OAuth access scopes, exposing them across the internet allows rogue servers, proxy logs, or CDN caches to harvest bearer credentials. BitDark parses tokens entirely in volatile browser RAM using the native Web Cryptography API with zero network egress."
+              "text": "RS256, ES256 and EdDSA are asymmetric: they're signed with a private key and verified with the matching public key. This tool decodes them and shows the claims, but signature verification needs the issuer's public key, which isn't a shared secret you can type in here."
             }
           },
           {
             "@type": "Question",
-            "name": "Does decoding a JWT prove that its contents are valid and trusted?",
+            "name": "What does \"alg: none\" mean?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Decoding a JWT simply converts Base64URL-encoded strings back into readable JSON. Anyone can decode or alter claims in an unencrypted JWT. A token's claims can only be trusted if its cryptographic signature is verified against a known, pre-shared secret key (for symmetric algorithms like HS256) or the issuer's authenticated public key certificate (for asymmetric algorithms like RS256 or ES256)."
+              "text": "It's a token with no signature. The standard allows it, but accepting one means anyone can forge a token by writing any claims and leaving the signature empty. Servers should reject alg: none unless they have a specific reason to allow it."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the critical 'alg: none' vulnerability?",
+            "name": "Is the exp claim in seconds or milliseconds?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The 'alg: none' flaw occurs when a verification library accepts tokens with the algorithm header set to 'none' without enforcing a signature check. Malicious actors exploit this by tampering with payload claims (such as modifying 'admin: false' to 'admin: true') and stripping the signature entirely. Production authentication gateways must explicitly whitelist expected algorithms and reject 'none'."
+              "text": "Seconds since 1 January 1970 (Unix time), per RFC 7519. A common bug is to use JavaScript's Date.now(), which is in milliseconds; that makes a token look valid for thousands of years. This tool reads exp as seconds."
             }
           },
           {
             "@type": "Question",
-            "name": "How does this tool verify HS256 signatures offline?",
+            "name": "Is my token or secret sent anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The tool uses the browser's native W3C Web Cryptography API (crypto.subtle). It imports your shared secret key as an HMAC-SHA256 key, calculates the cryptographic signature across the exact encoded string 'header.payload', and compares the resulting Base64URL digest against the token's existing signature segment in local memory."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What is the difference between Base64 and Base64URL encoding?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Standard Base64 uses '+' and '/' characters and '=' padding, which require URL-encoding when passed in HTTP headers, cookies, or URI query parameters. Base64URL replaces '+' with '-' (minus), '/' with '_' (underscore), and omits trailing '=' padding characters, making the token safe for direct transmission in URLs and HTTP Authorization headers."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What are the standard numeric timestamp claims in a JWT?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "RFC 7519 defines three core Unix timestamp claims (NumericDate, measured in seconds since January 1, 1970 UTC): 'iat' (Issued At), identifying when the token was created; 'nbf' (Not Before), specifying the earliest time the token is active; and 'exp' (Expiration Time), marking the moment after which the token must be rejected."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Can an attacker forge a token if they don't know the HMAC secret?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No, assuming the HMAC key has sufficient cryptographic entropy (e.g., 256 bits of true randomness). Because HMAC-SHA256 is a one-way pseudorandom function, an attacker cannot forge a valid signature for an altered payload without brute-forcing or guessing the exact secret key."
+              "text": "No. Decoding and HS256 verification run in your browser with the Web Crypto API, and the tool makes no network requests with your token or secret. Even so, avoid pasting live production tokens; use a test token where you can."
             }
           }
         ]
@@ -780,7 +756,7 @@
 
     <div class="tool-header">
       <h1>JWT Debugger &amp; Claim Inspector</h1>
-      <p>Decode, inspect, and cryptographically verify JSON Web Tokens (RFC 7519) entirely inside local browser memory. Validate HMAC-SHA256 signatures, evaluate expiration claims, and audit token headers with zero network telemetry or remote logging.</p>
+      <p>Decode a JSON Web Token's header and claims, check its expiry, and verify an HS256 signature against your secret. Everything runs in your browser; your token and secret are never uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -862,356 +838,140 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Forensic Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Offline Sandbox Guarantee:</strong> All Base64URL parsing and HMAC-SHA256 cryptographic verification execute strictly in volatile browser RAM via the W3C Web Cryptography API. Secrets, public certificates, bearer tokens, and session payloads are never transmitted to external cloud servers or stored in persistent browser storage. Decoding a token does not imply authorization; always verify cryptographic trust chains in your production authorization gateways.
+        <strong>Verifying a token here checks its signature and expiry, not your whole auth setup.</strong> Servers must also pin the algorithm, reject alg: none, and check iss, aud and timing. The header and payload are only encoded, not encrypted, so never put secrets in a token. Prefer test tokens over live ones. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article (2500+ Words) -->
     <article class="article-container">
-      <h2>The Mechanics of JSON Web Tokens (RFC 7519)</h2>
+      <h2>What a JWT Is</h2>
       <p>
-        Modern distributed systems, cloud-native microservices, and Single-Sign-On (SSO) architectures rely heavily on stateless authentication. Before the widespread adoption of stateless tokens, web architectures maintained centralized session stores (such as Redis or Memcached clusters) that mapped opaque session cookies to user records. While conceptually simple, centralized state requires continuous network round-trips from every backend service to the session database, creating significant scalability bottlenecks and single points of failure.
-      </p>
-      <p>
-        The <strong>JSON Web Token (JWT)</strong> standard, formally defined in <strong>RFC 7519</strong> as part of the JSON Web Signature (JWS) and JSON Web Encryption (JWE) family, solved this architectural limitation by packaging identity claims into a portable, self-contained, digitally signed JSON container. When a client authenticates against an Identity Provider (such as Keycloak, Auth0, Okta, or AWS Cognito), the authorization server mints a JWT containing the user's identifier, permissions, tenant scopes, and lifecycle timestamps. Downstream microservices can independently verify the token's mathematical authenticity without querying the central database on every request.
-      </p>
-      <p>
-        However, statelessness introduces substantial operational risks. Because a JWT carries its own cryptographic integrity check, any flaw in how a system parses, verifies, or revokes tokens can compromise an entire application perimeter. Furthermore, developers frequently confuse token <em>encoding</em> with token <em>encryption</em>, mistakenly believing that Base64URL strings conceal sensitive credentials from prying eyes. Understanding the underlying anatomy, validation pipeline, and threat vectors of RFC 7519 is essential for every software engineer and security auditor.
+        A JSON Web Token (RFC 7519) is three Base64url parts joined by dots: <code>header.payload.signature</code>. The header says which algorithm signed the token; the payload holds the claims (who the user is, when the token expires); the signature lets the server confirm the token hasn't been changed. The header and payload are only encoded, not encrypted, so anyone can read them. This debugger decodes all three and, for HS256, checks the signature against a secret you provide.
       </p>
 
-      <h2>How to Use the BitDark Offline JWT Debugger</h2>
+      <h2>What This Tool Shows</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>What it reports</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Algorithm (alg)</td><td>The signing algorithm from the header, or <code>none</code></td></tr>
+            <tr><td>Token Type (typ)</td><td>Usually <code>JWT</code></td></tr>
+            <tr><td>Expiration (exp)</td><td>Whether the <code>exp</code> claim is in the past, and the time remaining or the expiry date</td></tr>
+            <tr><td>Signature Verification</td><td>For HS256, whether the signature matches your secret; for other algorithms, decode only</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        Verifying tokens with the BitDark JWT Debugger is designed to be frictionless, instantaneous, and completely air-gapped from network logging:
+        An <code>alg: none</code> token is flagged as unsigned. RS256, ES256 and EdDSA tokens are decoded and their claims shown, but the tool doesn't verify them, because that needs the issuer's public key rather than a shared secret.
       </p>
+
+      <h2>How to Use the JWT Debugger</h2>
       <ol>
-        <li>
-          <strong>Input Token:</strong> Paste your raw JWT into the left-hand text area. The parser accepts standard compact serialization strings formed as three period-separated segments: <code>header.payload.signature</code>.
-        </li>
-        <li>
-          <strong>Real-Time Client-Side Parsing:</strong> The browser immediately splits the token at the period boundaries and decodes the Base64URL byte stream into UTF-8 JSON objects. The algorithm (<code>alg</code>), token type (<code>typ</code>), and expiration status (<code>exp</code>) populate in the diagnostic overview grid.
-        </li>
-        <li>
-          <strong>Examine Header and Claims:</strong> Review the decoded JSON blocks in the right column. The <span style="color:var(--atom-coral)">Header</span> exposes the cryptographic parameters; the <span style="color:var(--atom-magenta)">Payload</span> reveals user identity attributes, audience scopes, and validity timestamps.
-        </li>
-        <li>
-          <strong>Validate Cryptographic Signature (HS256):</strong> To verify whether an HMAC-SHA256 signature is genuine, enter your secret key into the "HMAC-SHA256 Secret Key" field. If your key is encoded as raw Base64 bytes (common in many cloud authorization frameworks), check the "Secret is Base64 encoded" box. The tool executes <code>crypto.subtle.sign</code> in local memory and verifies whether the computed digest matches the token's third segment.
-        </li>
-        <li>
-          <strong>Export or Reset:</strong> Click "Copy Decoded JSON" to copy the combined header and payload objects directly to your clipboard for documentation, or click "Clear" to wipe the memory workspace entirely.
-        </li>
+        <li><strong>Paste a token</strong> into the encoded box. The header and payload decode as you type, and the expiry status updates.</li>
+        <li><strong>To verify an HS256 token</strong>, enter the signing secret. Tick "Secret is Base64 encoded" if your secret is stored that way.</li>
+        <li><strong>Read the banner.</strong> "Signature Verified" means the token is authentic for that secret; "Verification Failed" means the secret is wrong or the token was altered.</li>
+        <li><strong>Copy the decoded JSON</strong> for a bug report or test. Prefer test tokens over live ones.</li>
       </ol>
 
-      <h2>When to Use This Tool: Operational Scenarios</h2>
+      <h2>Worked Example: Verifying an HS256 Token</h2>
       <p>
-        Token inspection is an everyday necessity across application security, software development, and incident response:
+        Click "Load Sample JWT" and the tool builds and verifies this token, signed with the secret <code>secret-test-key</code>:
       </p>
-      <ul>
-        <li>
-          <strong>Debugging OAuth 2.0 &amp; OpenID Connect (OIDC) Flows:</strong> When configuring Authorization Code or Client Credentials grants, tokens frequently fail at the API gateway due to mismatched audience (<code>aud</code>) strings, incorrect issuer (<code>iss</code>) URLs, or expired lifetimes. Inspecting the raw claims isolates configuration mismatches immediately.
-        </li>
-        <li>
-          <strong>Sanitizing and Auditing Production Bearer Tokens:</strong> When troubleshooting customer authorization issues, support engineers must inspect bearer tokens without risking data leakage. Standard web debuggers log tokens to remote servers; BitDark runs 100% in local memory, keeping session tokens safe from third-party interception.
-        </li>
-        <li>
-          <strong>Security Code Audits &amp; Pentesting:</strong> Security researchers evaluating microservice endpoints can quickly identify insecure algorithm declarations (such as <code>alg: none</code>), weak symmetric HMAC secrets vulnerable to dictionary attacks, or unverified claims.
-        </li>
-        <li>
-          <strong>Testing Clock Skew and Expiration Logic:</strong> By inspecting the exact Unix numeric timestamps in <code>exp</code>, <code>nbf</code>, and <code>iat</code>, developers can calculate the precise number of seconds remaining before a token expires and calibrate appropriate clock-skew tolerance in their backend verifiers.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Anatomical Structure of RFC 7519 / RFC 7515</h2>
+      <pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIFZlcmdlcyIsImFkbWluIjp0cnVlLCJpYXQiOjE3MDQwMDAwMDAsImV4cCI6MTg5MzQ1NjAwMH0.Svlk8WLmcq6_Gj7IYz-7DLRpGcRTRNZTPzbUN1R2iIk</code></pre>
       <p>
-        A JSON Web Signature (JWS) in compact serialization format is a single string constructed from three distinct components separated by ASCII period (<code>.</code>, <code>0x2E</code>) characters:
+        The header is <code>{"alg":"HS256","typ":"JWT"}</code> and the payload decodes to:
+      </p>
+      <pre><code>{
+  "sub": "1234567890",
+  "name": "Alice Verges",
+  "admin": true,
+  "iat": 1704000000,
+  "exp": 1893456000
+}</code></pre>
+      <p>
+        The signature is <code>HMAC-SHA256(header.payload, secret)</code>, Base64url-encoded. With the secret <code>secret-test-key</code> that value is <code>Svlk8WLmcq6_Gj7IYz-7DLRpGcRTRNZTPzbUN1R2iIk</code>, which matches the token, so the tool reports "Signature Verified". Change a single character of the payload or the secret and the signature no longer matches, which is exactly how tampering is detected. We confirmed this value independently against a standard HMAC-SHA256 implementation.
       </p>
 
-      <pre><code>+--------------------------------------------------------------------------+
-|                          JSON Web Token (JWT)                            |
-|                                                                          |
-|  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 .                                  |
-|  eyJzdWIiOiIxMjM0NTYiLCJ1c2VyIjoiQWxpY2UiLCJleHAiOjE4OTM0NTYwMDB9 .       |
-|  dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk                             |
-+--------------------------------------------------------------------------+
-       |                                      |                         |
-       v                                      v                         v
-+--------------+                      +---------------+         +---------------+
-|    Header    |                      |    Payload    |         |   Signature   |
-| (Algorithm & |                      | (Claims &     |         | (Cryptographic|
-|  Token Type) |                      |  Timestamps)  |         |  Verification)|
-+--------------+                      +---------------+         +---------------+</code></pre>
-
-      <h3>1. The JWS Header (JOSE Header)</h3>
-      <p>
-        The header defines the cryptographic parameters and algorithms used to generate and verify the signature. Key parameters include:
-      </p>
-      <ul>
-        <li><code>alg</code> (Algorithm): Specifies the cryptographic algorithm used to secure the JWS. Standard RFC 7518 values include <code>HS256</code> (HMAC using SHA-256), <code>RS256</code> (RSASSA-PKCS1-v1_5 using SHA-256), <code>ES256</code> (ECDSA using P-256 and SHA-256), and <code>none</code> (unsecured).</li>
-        <li><code>typ</code> (Type): Declares the media type of the token. Typically set to <code>JWT</code> to disambiguate the payload from other JWS objects.</li>
-        <li><code>kid</code> (Key ID): A hint indicating which specific key was used to secure the JWS, allowing authorization servers to perform automated key rotation across a JSON Web Key Set (JWKS).</li>
-      </ul>
-
-      <h3>2. The JWS Payload (Claim Set)</h3>
-      <p>
-        The payload houses the claims—statements made about an entity (typically the authenticated subject) and additional contextual metadata. RFC 7519 categorizes claims into three tiers:
-      </p>
+      <h2>Reading the Standard Claims</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Claim Category</th>
-              <th>RFC 7519 Specification</th>
-              <th>Examples</th>
-              <th>Description &amp; Security Purpose</th>
-            </tr>
+            <tr><th>Claim</th><th>Meaning</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Registered Claims</strong></td>
-              <td>Predefined, standard metadata claims</td>
-              <td><code>iss</code>, <code>sub</code>, <code>aud</code>, <code>exp</code>, <code>nbf</code>, <code>iat</code>, <code>jti</code></td>
-              <td>Recommended standard claims that provide core identity, audience containment, and lifecycle boundaries.</td>
-            </tr>
-            <tr>
-              <td><strong>Public Claims</strong></td>
-              <td>Custom claims defined by organizations</td>
-              <td><code>https://bitdark.net/role</code>, <code>tenant_id</code></td>
-              <td>Claims defined to avoid collision by registering them in the IANA JSON Web Token Registry or using collision-resistant URIs.</td>
-            </tr>
-            <tr>
-              <td><strong>Private Claims</strong></td>
-              <td>Bespoke producer-consumer claims</td>
-              <td><code>user_id</code>, <code>department</code>, <code>can_edit</code></td>
-              <td>Ad-hoc claims agreed upon between communicating parties; prone to namespace collisions if shared across external services.</td>
-            </tr>
+            <tr><td><code>iss</code></td><td>Issuer: who created the token</td></tr>
+            <tr><td><code>sub</code></td><td>Subject: who the token is about, often a user ID</td></tr>
+            <tr><td><code>aud</code></td><td>Audience: who the token is for; your service should check it names you</td></tr>
+            <tr><td><code>exp</code></td><td>Expiry, as a Unix timestamp in seconds</td></tr>
+            <tr><td><code>nbf</code></td><td>Not valid before this time</td></tr>
+            <tr><td><code>iat</code></td><td>Issued-at time</td></tr>
+            <tr><td><code>jti</code></td><td>A unique token ID, useful for revocation</td></tr>
           </tbody>
         </table>
       </div>
+      <p>
+        Timestamps are seconds since 1970, not milliseconds. This tool reads <code>exp</code> and tells you whether the token has expired; a real server must enforce that, and should also check <code>nbf</code>, <code>iss</code> and <code>aud</code>.
+      </p>
 
-      <h3>3. The Cryptographic Signature</h3>
+      <h2>What Verifying a Token Does and Doesn't Prove</h2>
       <p>
-        The signature is computed over the Base64URL-encoded header and payload concatenated with a period:
-      </p>
-      <blockquote>
-        $$\text{Data to Sign} = \text{Base64URL}(\text{Header}) \mathbin{\Vert} \text{"."} \mathbin{\Vert} \text{Base64URL}(\text{Payload})$$
-      </blockquote>
-      <p>
-        For symmetric HMAC-SHA256 (HS256), the signature is generated by applying the HMAC algorithm with the shared secret key over this exact byte sequence:
-      </p>
-      <blockquote>
-        $$\text{Signature} = \text{Base64URL}\Big(\text{HMAC-SHA256}\big(K, \text{Base64URL}(\text{Header}) \mathbin{\Vert} \text{"."} \mathbin{\Vert} \text{Base64URL}(\text{Payload})\big)\Big)$$
-      </blockquote>
-
-      <h2>Base64 vs Base64URL Encoding: The Web-Safe Standard</h2>
-      <p>
-        A frequent source of developer confusion is the difference between standard Base64 (RFC 4648 §4) and URL-safe Base64URL (RFC 4648 §5).
-      </p>
-      <p>
-        Standard Base64 utilizes the 64-character alphabet <code>A–Z</code>, <code>a–z</code>, <code>0–9</code>, <code>+</code>, and <code>/</code>, with <code>=</code> used as trailing padding when the byte sequence is not a multiple of 3. In web contexts, both <code>+</code> and <code>/</code> carry reserved semantic meanings in URLs: <code>+</code> is frequently converted to space characters by web frameworks, and <code>/</code> acts as a path segment delimiter. Furthermore, the <code>=</code> padding character requires URL percent-encoding (<code>%3D</code>).
-      </p>
-      <p>
-        Base64URL solves this by substituting reserved characters and stripping padding:
+        A valid signature proves the token was issued by someone who holds the secret (HS256) or private key (RS256/ES256) and hasn't been changed since. It does <strong>not</strong> prove the token is still valid for use. The server must also:
       </p>
       <ul>
-        <li><code>+</code> (plus, <code>0x2B</code>) is replaced with <code>-</code> (minus, <code>0x2D</code>).</li>
-        <li><code>/</code> (slash, <code>0x2F</code>) is replaced with <code>_</code> (underscore, <code>0x5F</code>).</li>
-        <li>All trailing <code>=</code> padding characters are explicitly omitted.</li>
-      </ul>
-
-      <h2>Worked Example: Step-by-Step HS256 Token Generation &amp; Verification</h2>
-      <p>
-        Let us trace the complete mathematical and byte-level workflow of generating and verifying a signed HS256 token by hand.
-      </p>
-
-      <h3>Step 1: Construct the JSON Header</h3>
-      <pre><code>{"alg":"HS256","typ":"JWT"}</code></pre>
-      <p>
-        Converting this 27-character string to UTF-8 bytes and encoding via Base64URL yields:
-      </p>
-      <pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</code></pre>
-
-      <h3>Step 2: Construct the JSON Payload</h3>
-      <pre><code>{"sub":"1234567890","name":"Alice Verges","admin":true,"iat":1704000000,"exp":1893456000}</code></pre>
-      <p>
-        Converting this 89-character JSON string to UTF-8 bytes and encoding via Base64URL yields:
-      </p>
-      <pre><code>eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIFZlcmdlcyIsImFkbWluIjp0cnVlLCJpYXQiOjE3MDQwMDAwMDAsImV4cCI6MTg5MzQ1NjAwMH0</code></pre>
-
-      <h3>Step 3: Assemble the Input Stream</h3>
-      <p>
-        Concatenating the two strings with a period produces the message payload for the hashing engine:
-      </p>
-      <pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIFZlcmdlcyIsImFkbWluIjp0cnVlLCJpYXQiOjE3MDQwMDAwMDAsImV4cCI6MTg5MzQ1NjAwMH0</code></pre>
-
-      <h3>Step 4: Compute the HMAC-SHA256 Hash</h3>
-      <p>
-        Using the secret passphrase <code>secret-test-key</code>, the HMAC-SHA256 algorithm calculates a 32-byte (256-bit) digest. Encoding these raw 32 bytes using Base64URL results in:
-      </p>
-      <pre><code>1kF_XgIeM4vYc_Z8QjM5q9x0N3e4tK_mR9X7fW2pQ1g</code></pre>
-
-      <h3>Step 5: Assemble the Complete Compact Token</h3>
-      <pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIFZlcmdlcyIsImFkbWluIjp0cnVlLCJpYXQiOjE3MDQwMDAwMDAsImV4cCI6MTg5MzQ1NjAwMH0.1kF_XgIeM4vYc_Z8QjM5q9x0N3e4tK_mR9X7fW2pQ1g</code></pre>
-
-      <h2>Comparison: HS256 vs RS256 vs ES256 vs Ed25519</h2>
-      <p>
-        Selecting the appropriate signing algorithm is one of the most critical security decisions in token architecture:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Key Architecture</th>
-              <th>Signature Size</th>
-              <th>Verification Speed</th>
-              <th>Security &amp; Key Management Profile</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>HS256 (HMAC-SHA256)</strong></td>
-              <td>Symmetric (Shared Secret)</td>
-              <td>32 bytes (43 Base64 chars)</td>
-              <td><strong>Ultra Fast</strong> (~10x faster than RSA)</td>
-              <td>Vulnerable if secret is shared with untrusted microservices. Both signer and verifier hold identical signing capability.</td>
-            </tr>
-            <tr>
-              <td><strong>RS256 (RSA 2048-bit)</strong></td>
-              <td>Asymmetric (Private / Public)</td>
-              <td>256 bytes (342 Base64 chars)</td>
-              <td>Moderate</td>
-              <td>Industry standard for OIDC. Auth server holds private key; all microservices verify using public JWKS without risk of forgery.</td>
-            </tr>
-            <tr>
-              <td><strong>ES256 (ECDSA P-256)</strong></td>
-              <td>Asymmetric (Elliptic Curve)</td>
-              <td>64 bytes (86 Base64 chars)</td>
-              <td>Fast</td>
-              <td>High cryptographic strength per bit. Compact signature compared to RSA; requires cryptographically sound random number generation (RFC 6979).</td>
-            </tr>
-            <tr>
-              <td><strong>EdDSA (Ed25519)</strong></td>
-              <td>Asymmetric (Edwards-curve)</td>
-              <td>64 bytes (86 Base64 chars)</td>
-              <td><strong>Extremely Fast</strong></td>
-              <td>Modern standard (RFC 8037). Immune to side-channel timing attacks and implementation-dependent curve flaws.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Severe Threat Vectors &amp; Real-World Token Vulnerabilities</h2>
-      <p>
-        Because JWT verification logic is implemented across hundreds of diverse programming libraries, several historic and modern vulnerability patterns persist:
-      </p>
-
-      <h3>1. The "Algorithm Confusion" Attack (RS256 to HS256 Downgrade)</h3>
-      <p>
-        Algorithm confusion occurs when an authorization server issues tokens signed with asymmetric RS256, but a downstream resource server uses a flexible verification library that dynamically trusts the token's header <code>alg</code> claim. 
-      </p>
-      <p>
-        An attacker captures a valid RS256 token, obtains the authorization server's public key (which is publicly visible on <code>/.well-known/jwks.json</code>), modifies the payload to grant administrative privileges, and changes the header algorithm to <code>HS256</code>. When signing the modified token, the attacker uses the authorization server's <em>public key PEM text</em> as the symmetric HMAC secret! If the backend verification function blindly passes its stored public key into a generic <code>jwt.verify(token, key)</code> function, the library treats the public key as a symmetric HMAC key, validating the forged token as authentic.
-      </p>
-      <blockquote>
-        <strong>Defensive Rule:</strong> Never allow the incoming token's header to determine the verification algorithm. Hardcode the expected algorithm strictly on the backend: <code>jwt.verify(token, publicKey, { algorithms: ['RS256'] })</code>.
-      </blockquote>
-
-      <h3>2. The "alg: none" Bypass</h3>
-      <p>
-        The JWS specification includes an unsecured token option where <code>alg: "none"</code>. Early versions of several prominent open-source libraries failed to verify signatures if <code>alg</code> was set to <code>none</code>, assuming the developer had deliberately chosen an unsigned token. Attackers simply changed the algorithm to <code>none</code>, stripped the signature portion (leaving <code>header.payload.</code>), and submitted the token for privileged access. Modern verifiers must reject <code>alg: none</code> unconditionally in production environments.
-      </p>
-
-      <h3>3. Weak Symmetric Secrets &amp; Offline Dictionary Cracking</h3>
-      <p>
-        Because signed tokens are transmitted openly in HTTP headers, anyone who captures an HS256 token can attempt to recover the shared secret key offline. Attackers utilize GPU-accelerated cracking tools (like Hashcat mode 16500) to execute billions of HMAC-SHA256 calculations per second against dictionary wordlists. If an organization uses a weak secret (such as <code>secret123</code> or <code>jwt_dev_key</code>), the key can be recovered in minutes, giving the attacker total capability to forge arbitrary tokens. Symmetric keys must always be generated from cryptographically secure random sources with at least 256 bits of entropy.
-      </p>
-
-      <h3>4. Clock Skew &amp; Token Replay Vulnerabilities</h3>
-      <p>
-        Distributed systems suffer from time synchronization drift between server nodes. When an authorization server issues a token with an expiration timestamp <code>exp</code>, network latency or server clock drift may cause valid tokens to be rejected prematurely or expired tokens to be accepted. While libraries implement clock skew tolerance (typically 1 to 2 minutes via an <code>ignoreExpiration</code> or <code>clockTolerance</code> parameter), setting this margin too wide extends the attack window for stolen bearer tokens.
-      </p>
-
-      <h2>Common Implementation Mistakes &amp; Best Practices</h2>
-      <ul>
-        <li>
-          <strong>Treating JWTs as Encrypted Vaults:</strong> Base64URL encoding provides zero confidentiality. Never store passwords, unhashed social security numbers, confidential API secrets, or personally identifiable information (PII) inside standard JWS payloads. If confidential data must be embedded, encrypt the token using JSON Web Encryption (JWE, RFC 7516).
-        </li>
-        <li>
-          <strong>Failing to Validate the <code>aud</code> (Audience) Claim:</strong> If multiple microservices share an Identity Provider, an attacker holding a valid token issued for a low-privilege service (e.g., a community forum) might present that same token to a high-privilege payment service. Microservices must strictly verify that their own service identifier is present in the token's <code>aud</code> array.
-        </li>
-        <li>
-          <strong>Indefinite Token Lifetimes:</strong> Because stateless JWTs cannot be easily revoked before they expire without introducing stateful blacklists, access tokens must carry very short lifespans (e.g., 5 to 15 minutes), paired with securely stored, rotatable refresh tokens.
-        </li>
-        <li>
-          <strong>Storing Bearer Tokens in Browser <code>localStorage</code>:</strong> Storing JWTs in <code>localStorage</code> leaves them vulnerable to extraction by any Cross-Site Scripting (XSS) vulnerability in any third-party script running on the page. Where possible, store session tokens in <code>HttpOnly</code>, <code>Secure</code>, <code>SameSite=Strict</code> cookies.
-        </li>
+        <li><strong>Pin the algorithm.</strong> Decide which algorithm you accept and reject the rest. Don't trust the <code>alg</code> in the header to choose how to verify, or an attacker can switch an RS256 token to HS256 and sign it with your public key as the secret. The JWT Best Current Practices (RFC 8725) covers this.</li>
+        <li><strong>Reject <code>alg: none</code></strong> unless you specifically expect unsigned tokens, which is rare.</li>
+        <li><strong>Check expiry and timing</strong> (<code>exp</code>, <code>nbf</code>), with only a small allowance for clock differences.</li>
+        <li><strong>Check <code>iss</code> and <code>aud</code></strong> so a token meant for another service isn't accepted by yours.</li>
+        <li><strong>Use a strong HS256 secret</strong> of at least 256 bits, or asymmetric keys, so the secret can't be guessed.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What does "Signature Verified" vs "Signature Invalid" mean in this tool?</div>
+          <div class="faq-question">Is a JWT encrypted?</div>
           <div class="faq-answer">
-            "Signature Verified" confirms that the cryptographic HMAC-SHA256 digest calculated over your token's header and payload using the provided secret key perfectly matches the signature embedded in the token. "Signature Invalid" indicates that either the secret key is incorrect or the token's header or payload was modified after the signature was originally generated.
+            No. A standard JWT (JWS) is signed, not encrypted. The header and payload are only Base64url-encoded, so anyone can read them. Never put secrets such as passwords in a token payload. If you need the contents hidden, use JWE encryption.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I verify RS256 or ES256 signatures in this tool?</div>
+          <div class="faq-question">Why can't this tool verify my RS256 token?</div>
           <div class="faq-answer">
-            This tool performs real-time cryptographic verification for symmetric HS256 tokens using the browser's native Web Crypto API. For asymmetric algorithms like RS256 or ES256, verification requires the corresponding RSA or EC public key certificate (typically hosted on a JWKS endpoint). The tool fully decodes and inspects the headers and payloads of RS256/ES256 tokens and highlights their cryptographic metadata.
+            RS256, ES256 and EdDSA are asymmetric: they're signed with a private key and verified with the matching public key. This tool decodes them and shows the claims, but signature verification needs the issuer's public key, which isn't a shared secret you can type in here.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the expiration status show "Expired" for an old token?</div>
+          <div class="faq-question">What does "alg: none" mean?</div>
           <div class="faq-answer">
-            The tool evaluates the <code>exp</code> claim by comparing the stored Unix timestamp (in seconds) against the current client system time. If the current time is greater than the <code>exp</code> value, the token is flagged as expired along with the human-readable UTC expiration date.
+            It's a token with no signature. The standard allows it, but accepting one means anyone can forge a token by writing any claims and leaving the signature empty. Servers should reject alg: none unless they have a specific reason to allow it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between a JWT and a JWS?</div>
+          <div class="faq-question">Is the exp claim in seconds or milliseconds?</div>
           <div class="faq-answer">
-            A JWS (JSON Web Signature, RFC 7515) is the concrete container specification that describes how to cryptographically sign arbitrary content using Base64URL-encoded headers, payloads, and signatures. A JWT (RFC 7519) is a specific profile of a JWS where the payload is guaranteed to be a JSON object representing identity claims.
+            Seconds since 1 January 1970 (Unix time), per RFC 7519. A common bug is to use JavaScript's Date.now(), which is in milliseconds; that makes a token look valid for thousands of years. This tool reads exp as seconds.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is a JWKS (JSON Web Key Set)?</div>
+          <div class="faq-question">Is my token or secret sent anywhere?</div>
           <div class="faq-answer">
-            A JWKS (RFC 7517) is a JSON document published by an authorization server (usually at <code>/.well-known/jwks.json</code>) containing the public keys used to verify tokens. Resource servers periodically download and cache this set, allowing automated key rotation without service restarts.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Is it possible to revoke a stateless JWT immediately?</div>
-          <div class="faq-answer">
-            Because JWTs are stateless and self-validating, an application server does not query a database during normal verification. Immediate revocation requires introducing state—such as checking the token's unique ID (<code>jti</code>) against a distributed Redis revocation blocklist, or tracking the user's password change timestamp against the token's <code>iat</code> (issued at) claim.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why should symmetric HMAC keys be at least 256 bits?</div>
-          <div class="faq-answer">
-            A 256-bit key provides $2^{256}$ possible combinations, making brute-force dictionary attacks mathematically impossible against modern supercomputers and GPU clusters. Using a short or human-guessable passphrase allows offline cracking via precomputed rainbow tables or dictionary attacks.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark store or log my analyzed tokens?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All decoding, JSON parsing, timestamp evaluation, and Web Crypto HMAC-SHA256 calculations occur exclusively in volatile browser RAM. Closing the tab or clicking "Clear" immediately purges all data.
+            No. Decoding and HS256 verification run in your browser with the Web Crypto API, and the tool makes no network requests with your token or secret. Even so, avoid pasting live production tokens; use a test token where you can.
           </div>
         </div>
       </section>
