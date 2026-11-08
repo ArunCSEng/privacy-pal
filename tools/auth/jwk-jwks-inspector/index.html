@@ -4,12 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>JWK & JWKS Inspector & Converter — Free Offline Web Crypto Tool | BitDark</title>
-  <meta name="title" content="JWK & JWKS Inspector & Converter — Free Offline Web Crypto Tool | BitDark" />
-  <meta name="description" content="Inspect, validate, and convert JSON Web Keys (JWK/JWKS) to and from PEM public keys (RSA/EC) locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="jwk to pem, jwks inspector, rsa jwk converter, ec public key pem, oauth2 jwks viewer, client side crypto" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bitdark.net/tools/auth/jwk-jwks-inspector" />
+  <title>JWK & JWKS Inspector & Converter — Free In-Memory Key Conversion | BitDark</title>
+  <meta name="title" content="JWK & JWKS Inspector & Converter — Free In-Memory Key Conversion | BitDark" />
+  <meta name="description" content="Inspect, parse, validate, and convert JSON Web Keys (JWK) and Key Sets (JWKS) to and from standard PEM (SPKI/PKCS#1) public keys in browser RAM. Zero network egress, zero logs." />
+  <meta name="keywords" content="jwk to pem, jwks converter, rsa jwk to pem, ec public key pem to jwk, rfc 7517 inspector, rfc 7638 thumbprint generator, oauth2 jwks viewer, openid connect discovery keys, client side cryptography" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://bitdark.net/tools/auth/jwk-jwks-inspector/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bitdark.net/tools/auth/jwk-jwks-inspector/" />
+  <meta property="og:title" content="JWK & JWKS Inspector & Converter — In-Memory Key Conversion | BitDark" />
+  <meta property="og:description" content="Inspect and convert JSON Web Keys (RSA/EC) to and from standard PEM public keys directly inside browser memory. Zero network telemetry." />
+  <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://bitdark.net/tools/auth/jwk-jwks-inspector/" />
+  <meta name="twitter:title" content="JWK & JWKS Inspector & Converter | BitDark" />
+  <meta name="twitter:description" content="Parse and convert JWK/JWKS to PEM public keys in browser RAM. 100% Client-Side with zero network egress." />
+
+  <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "JWK & JWKS Inspector & Converter",
+        "url": "https://bitdark.net/tools/auth/jwk-jwks-inspector/",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "All modern browsers (Offline-ready)",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Defensive client-side cryptographic utility to parse, validate, and bidirectional convert JSON Web Keys (JWK/JWKS, RFC 7517) to and from PEM SubjectPublicKeyInfo (SPKI) and PKCS#1 public keys using native Web Crypto and volatile browser memory."
+      },
+      {
+        "@type": "TechArticle",
+        "headline": "Cryptographic Key Serialization: RFC 7517 JWK Architecture, ASN.1 DER Mapping, and RFC 7638 Thumbprints",
+        "url": "https://bitdark.net/tools/auth/jwk-jwks-inspector/",
+        "author": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "BitDark.NET",
+          "url": "https://bitdark.net/"
+        },
+        "datePublished": "2024-05-18",
+        "dateModified": "2026-11-08",
+        "description": "Comprehensive engineering guide to JSON Web Key (JWK) specifications, ASN.1 DER serialization, X.509 SubjectPublicKeyInfo structures, and client-side cryptographic key transformation."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the difference between a JWK and a PEM public key?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A JWK (JSON Web Key, RFC 7517) represents cryptographic key parameters as native JSON objects using Base64URL-encoded attributes (such as n and e for RSA, or x and y for Elliptic Curves). A PEM (Privacy-Enhanced Mail) key encodes raw ASN.1 DER binary structures inside Base64 strings framed by textual header and footer delimiters (e.g., -----BEGIN PUBLIC KEY-----). JWKs are natively consumed by web applications and OAuth2/OIDC servers, while PEM is standard in OpenSSL, TLS daemons, and traditional server backends."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I convert private keys using this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. This tool is intentionally engineered to parse, inspect, and convert only public keys. Pasting private cryptographic material (such as RSA private exponents d, p, q or EC private scalars d) into web browser contexts represents severe operational risk and is strongly discouraged."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is an RFC 7638 JWK Thumbprint?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An RFC 7638 JWK Thumbprint is a deterministic SHA-256 digest computed over the canonical, lexicographically sorted JSON string of a key's essential mathematical parameters. It produces a unique, tamper-evident fingerprint commonly used to populate the key ID (kid) parameter in OAuth2 and OpenID Connect key rotation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does my RSA PEM conversion require an extra zero byte (0x00) in ASN.1 DER?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In ASN.1 DER integer encoding, integers are represented using two's complement. If the most significant bit (MSB) of the modulus is 1 (hexadecimal 0x80 or greater), the DER specification requires prepending a leading 0x00 byte to ensure the integer is interpreted as a positive value rather than a negative number."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my cryptographic keys sent to BitDark or third-party servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Never. All ASN.1 DER parsing, Base64URL decoding, and cryptographic thumbprint calculations execute 100% locally inside your web browser's sandboxed JavaScript memory. Zero network requests or telemetry packets are transmitted."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <style>
     :root {
@@ -25,112 +123,148 @@
       --atom-amber: #e5c07b;
       --atom-coral: #e06c75;
       --atom-green: #98c379;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --atom-purple: #c678dd;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--atom-gutter);
       color: var(--atom-text);
       font-family: var(--font-ui);
-      line-height: 1.5;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Navbar */
+    /* Navbar: Clean, Single-Row Trust Layout */
     .navbar {
       background-color: var(--atom-bg);
       border-bottom: 1px solid var(--atom-border);
-      padding: 10px 16px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
     }
     .nav-inner {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
     .brand {
-      font-size: 1.15rem;
+      font-size: 1.25rem;
       font-weight: 700;
       font-family: var(--font-code);
       color: var(--atom-heading);
       text-decoration: none;
-      white-space: nowrap;
+      letter-spacing: -0.02em;
     }
     .brand span { color: var(--atom-amber); }
-    .trust-badge {
-      justify-self: center;
+    
+    .nav-center-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.74rem;
+      gap: 8px;
+      font-size: 0.78rem;
       font-family: var(--font-code);
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 4px;
       color: var(--atom-text);
-      white-space: nowrap;
     }
-    .orbit-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--atom-cyan); box-shadow: 0 0 6px var(--atom-cyan);
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--atom-cyan); box-shadow: 0 0 8px var(--atom-cyan);
     }
-    .ip-pill-nav {
-      justify-self: end;
-      background-color: var(--atom-gutter);
-      border: 1px solid var(--atom-border);
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-family: var(--font-code);
-      font-size: 0.72rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .ip-pill-nav strong { color: var(--atom-amber); }
-    .ip-divider { color: var(--atom-border); }
 
-    /* Layout */
-    .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+    /* Layout Wrapper */
+    .wrapper { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 30px 20px 60px; 
+    }
     
-    .breadcrumb {
+    /* Breadcrumb Hierarchy with Strict Trailing Slashes */
+    .breadcrumb-nav {
       font-family: var(--font-code);
-      font-size: 0.78rem;
-      margin-bottom: 16px;
+      font-size: 0.82rem;
+      margin-bottom: 24px;
       color: var(--atom-muted);
-      overflow-x: auto;
-      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .breadcrumb a { color: var(--atom-cyan); text-decoration: none; }
-    
-    .tool-header { margin-bottom: 24px; }
-    .tool-header h1 { font-size: 1.7rem; color: var(--atom-heading); margin-bottom: 6px; }
-    .tool-header p { color: var(--atom-text); font-size: 0.95rem; }
+    .breadcrumb-nav a { 
+      color: var(--atom-cyan); 
+      text-decoration: none; 
+      transition: color 0.15s ease;
+    }
+    .breadcrumb-nav a:hover { 
+      color: var(--atom-amber); 
+      text-decoration: underline; 
+    }
+    .breadcrumb-nav .sep { color: var(--atom-border); }
+    .breadcrumb-nav .current { color: var(--atom-heading); font-weight: 600; }
 
-    /* Tool Workspace Card */
+    .tool-header { margin-bottom: 28px; }
+    .tool-header h1 { 
+      font-size: 2.2rem; 
+      color: var(--atom-heading); 
+      margin-bottom: 12px; 
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tool-header p { 
+      color: var(--atom-text); 
+      font-size: 1.05rem; 
+      max-width: 950px;
+      line-height: 1.6;
+    }
+
+    /* Zero-CLS Ad Container Slot */
+    .ad-container-slot {
+      display: none;
+      min-height: 0;
+      margin: 28px 0;
+      text-align: center;
+      background: var(--atom-bg);
+      border: 1px dashed var(--atom-border);
+      border-radius: 6px;
+      padding: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+    }
+    .ad-container-slot:has(iframe),
+    .ad-container-slot:has(ins[data-ad-status="filled"]) {
+      display: block !important;
+      min-height: 100px;
+    }
+
+    /* Tool Interactive Card */
     .tool-card {
       background-color: var(--atom-surface);
       border: 1px solid var(--atom-border);
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 540px;
     }
 
     .tab-bar {
       display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 20px;
       border-bottom: 1px solid var(--atom-border);
-      padding-bottom: 10px;
+      padding-bottom: 12px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -138,13 +272,20 @@
       background: var(--atom-bg);
       border: 1px solid var(--atom-border);
       color: var(--atom-text);
-      padding: 8px 16px;
-      font-size: 0.8rem;
+      padding: 10px 20px;
+      font-size: 0.88rem;
       font-family: var(--font-code);
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       white-space: nowrap;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
       transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      border-color: var(--atom-border-focus);
+      color: var(--atom-heading);
     }
     .tab-btn.active {
       background-color: var(--atom-amber);
@@ -154,22 +295,23 @@
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .form-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.75rem;
+      font-size: 0.82rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       gap: 8px;
+      letter-spacing: 0.05em;
     }
     .samples-links {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
     }
     .samples-links a {
@@ -177,20 +319,26 @@
       text-transform: none;
       text-decoration: none;
       cursor: pointer;
+      font-size: 0.82rem;
+      padding: 2px 4px;
     }
-    .samples-links a:hover { text-decoration: underline; }
+    .samples-links a:hover { 
+      color: var(--atom-amber);
+      text-decoration: underline; 
+    }
 
     textarea {
       width: 100%;
-      background-color: var(--atom-bg);
+      background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
+      border-radius: 6px;
       color: var(--atom-heading);
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      padding: 12px;
-      line-height: 1.5;
+      font-size: 16px; /* Prevents iOS Safari auto-zoom */
+      padding: 14px;
+      line-height: 1.55;
       resize: vertical;
+      min-height: 160px;
     }
     textarea:focus {
       outline: none;
@@ -200,8 +348,8 @@
     .btn-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 12px;
+      margin-top: 16px;
       justify-content: flex-end;
     }
     .btn-atom {
@@ -210,24 +358,24 @@
       font-weight: 700;
       border: none;
       border-radius: 4px;
-      padding: 10px 18px;
+      padding: 12px 24px;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
+      font-size: 16px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      min-height: 40px;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
       transition: opacity 0.2s ease;
     }
-    .btn-atom:hover { opacity: 0.9; }
+    .btn-atom:hover { opacity: 0.92; }
     .btn-secondary {
-      background-color: var(--atom-gutter);
+      background-color: var(--atom-border);
       color: var(--atom-text);
-      border: 1px solid var(--atom-border);
     }
     .btn-secondary:hover {
-      background-color: var(--atom-bg);
+      background-color: #424953;
       color: var(--atom-heading);
     }
 
@@ -237,11 +385,11 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
-      border-radius: 4px;
-      margin-bottom: 18px;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 20px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       gap: 8px;
     }
     .status-banner.success {
@@ -257,26 +405,27 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 10px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
     }
     .meta-item {
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 10px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 6px;
       min-width: 0;
     }
     .meta-label {
-      font-size: 0.70rem;
+      font-size: 0.74rem;
       color: var(--atom-muted);
       text-transform: uppercase;
       font-family: var(--font-code);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
     }
     .meta-val {
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       color: var(--atom-heading);
       font-family: var(--font-code);
       word-break: break-all;
@@ -285,11 +434,11 @@
     .output-box {
       background-color: var(--atom-gutter);
       border: 1px solid var(--atom-border);
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 6px;
+      padding: 16px;
       font-family: var(--font-code);
-      font-size: 0.82rem;
-      max-height: 380px;
+      font-size: 0.84rem;
+      max-height: 420px;
       overflow-y: auto;
       white-space: pre-wrap;
       color: var(--atom-heading);
@@ -302,114 +451,309 @@
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
       border-left: 4px solid var(--atom-amber);
-      border-radius: 4px;
-      padding: 14px 16px;
-      margin-bottom: 30px;
-      font-size: 0.84rem;
-      line-height: 1.6;
+      border-radius: 6px;
+      padding: 22px 24px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      line-height: 1.7;
       color: var(--atom-text);
     }
     .disclaimer-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-code);
       font-weight: 700;
       color: var(--atom-amber);
-      margin-bottom: 6px;
-      font-size: 0.88rem;
+      margin-bottom: 10px;
+      font-size: 1rem;
     }
     .disclaimer-card strong { color: var(--atom-heading); }
 
-    /* Technical Documentation */
-    .doc-section {
-      border-top: 1px solid var(--atom-border);
-      padding-top: 24px;
-      font-size: 0.88rem;
-      line-height: 1.7;
+    /* Long-Form Authoritative SEO Documentation */
+    .article-container {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 8px;
+      padding: 44px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+      font-size: 0.98rem;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 2500px;
     }
-    .doc-section h2 { color: var(--atom-heading); font-size: 1.15rem; margin-bottom: 10px; margin-top: 20px; }
-    .doc-section h2:first-of-type { margin-top: 0; }
-    .doc-section p { margin-bottom: 12px; }
-    .doc-section ul { margin-left: 20px; margin-bottom: 14px; }
-    .doc-section li { margin-bottom: 6px; }
-    .doc-section code {
+    .article-container h2 {
+      color: var(--atom-heading);
+      font-size: 1.65rem;
+      margin-top: 40px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--atom-border);
+      letter-spacing: -0.01em;
+    }
+    .article-container h2:first-of-type { margin-top: 0; }
+    .article-container h3 {
+      color: var(--atom-cyan);
+      font-size: 1.25rem;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-family: var(--font-code);
+    }
+    .article-container h4 {
+      color: var(--atom-amber);
+      font-size: 1.05rem;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-family: var(--font-ui);
+      font-weight: 600;
+    }
+    .article-container p { margin-bottom: 18px; color: var(--atom-text); }
+    .article-container ul, .article-container ol {
+      margin-left: 28px;
+      margin-bottom: 22px;
+    }
+    .article-container li { margin-bottom: 10px; color: var(--atom-text); }
+    .article-container code {
       font-family: var(--font-code);
       background-color: var(--atom-bg);
       border: 1px solid var(--atom-border);
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 6px;
+      border-radius: 4px;
       color: var(--atom-cyan);
+      font-size: 0.88em;
+    }
+    .article-container pre {
+      background-color: var(--atom-bg);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      overflow-x: auto;
+      font-family: var(--font-code);
+      font-size: 0.85rem;
+      color: var(--atom-heading);
+      margin-bottom: 22px;
+      line-height: 1.55;
+    }
+    .article-container blockquote {
+      border-left: 4px solid var(--atom-cyan);
+      background-color: var(--atom-bg);
+      padding: 18px 22px;
+      margin: 24px 0;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--atom-heading);
     }
 
-    /* Footer */
-    .bottom-bar {
-      margin-top: 40px;
-      padding-top: 20px;
+    /* Comparison & Spec Tables */
+    .tech-table-wrapper {
+      overflow-x: auto;
+      margin: 26px 0;
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .tech-table th, .tech-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--atom-border);
+    }
+    .tech-table th {
+      background-color: var(--atom-bg);
+      color: var(--atom-heading);
+      font-family: var(--font-code);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+    }
+    .tech-table tr:last-child td { border-bottom: none; }
+    .tech-table tr:hover td { background-color: rgba(255,255,255,0.02); }
+
+    /* Interactive Accordion FAQs */
+    .faq-block { margin-top: 36px; }
+    .faq-item {
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      margin-bottom: 14px;
+      background-color: var(--atom-bg);
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--atom-heading);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      min-height: 44px;
+      font-size: 1rem;
+    }
+    .faq-question::after {
+      content: "+";
+      font-family: var(--font-code);
+      font-size: 1.3rem;
+      color: var(--atom-cyan);
+      transition: transform 0.2s;
+    }
+    .faq-item.active .faq-question::after {
+      content: "−";
+      color: var(--atom-amber);
+    }
+    .faq-answer {
+      padding: 0 22px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, padding 0.3s ease;
+      color: var(--atom-text);
+      font-size: 0.94rem;
+      line-height: 1.75;
+    }
+    .faq-item.active .faq-answer {
+      padding: 0 22px 20px;
+      max-height: 600px;
+    }
+
+    /* Related Tools Grid (Internal SEO) */
+    .related-tools-section {
+      margin-top: 48px;
+      padding-top: 32px;
       border-top: 1px solid var(--atom-border);
+    }
+    .related-tools-section h3 {
+      font-size: 1.35rem;
+      color: var(--atom-heading);
+      margin-bottom: 20px;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .related-card {
+      background-color: var(--atom-surface);
+      border: 1px solid var(--atom-border);
+      border-radius: 6px;
+      padding: 18px;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 110px;
+    }
+    .related-card:hover {
+      border-color: var(--atom-amber);
+      transform: translateY(-2px);
+    }
+    .related-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--atom-heading);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .related-card-title span { color: var(--atom-cyan); }
+    .related-card-desc {
+      font-size: 0.84rem;
+      color: var(--atom-muted);
+      line-height: 1.5;
+    }
+
+    /* Master Clean Footer */
+    .footer {
+      border-top: 1px solid var(--atom-border);
+      padding: 36px 0 24px;
+      margin-top: 50px;
+      font-size: 0.86rem;
+      color: var(--atom-muted);
+      font-family: var(--font-code);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      padding: 0 20px;
+    }
+    .footer-left { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      color: var(--atom-text);
+    }
+    .footer-links-right {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      font-size: 0.78rem;
-      font-family: var(--font-code);
-      color: var(--atom-muted);
+      gap: 18px;
     }
-    .bottom-bar a { color: var(--atom-text); text-decoration: none; }
-    .bottom-bar a:hover { color: var(--atom-amber); }
+    .footer-links-right a {
+      color: var(--atom-text);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .footer-links-right a:hover { color: var(--atom-amber); }
 
-    /* Mobile Responsiveness & iOS Auto-Zoom Mitigation */
+    /* Mobile Accessibility Breakpoints */
     @media (max-width: 768px) {
-      .nav-inner {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        gap: 8px;
-        padding: 4px 0;
-      }
-      .brand { justify-self: center; }
-      .trust-badge { justify-self: center; }
-      .ip-pill-nav {
-        justify-self: center;
-        font-size: 0.68rem;
-        padding: 4px 8px;
-      }
-      .tool-card { padding: 14px; }
-      .form-label { flex-direction: column; align-items: flex-start; gap: 4px; }
-      textarea { font-size: 16px; }
-      .btn-row { justify-content: stretch; }
-      .btn-atom { flex: 1; justify-content: center; width: 100%; }
-      .bottom-bar { flex-direction: column; text-align: center; }
+      .navbar { padding: 12px 16px; }
+      .nav-inner { justify-content: space-between; }
+      .tool-header h1 { font-size: 1.7rem; }
+      .article-container { padding: 26px 18px; font-size: 0.94rem; }
+      .form-label { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .btn-row { flex-direction: column; }
+      .btn-atom { width: 100%; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+      .footer-links-right { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cockpit Header: Cleaned (Brand + Trust Badge Only, Zero IP Telemetry) -->
   <header class="navbar">
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
-      <div class="trust-badge">
-        <span class="orbit-dot"></span> 100% Client-Side • Zero Logs
-      </div>
-      <div class="ip-pill-nav">
-        <span>IPv4: <strong id="ipv4Display">Checking...</strong></span>
-        <span class="ip-divider">·</span>
-        <span>IPv6: <strong id="ipv6Display">Checking...</strong></span>
+      <div class="nav-center-badge">
+        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
       </div>
     </div>
   </header>
 
   <main class="wrapper">
-    <nav class="breadcrumb">
-      <a href="/">Home</a> / <a href="/#auth">Auth & Crypto</a> / jwk-jwks-inspector
+    <!-- Breadcrumb Hierarchy with Strict Trailing Slashes -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/tools/auth/">Auth & Crypto</a>
+      <span class="sep">/</span>
+      <span class="current">JWK & JWKS Inspector</span>
     </nav>
 
     <div class="tool-header">
       <h1>JWK & JWKS Inspector & Converter</h1>
-      <p>Analyze JSON Web Keys and Sets (RFC 7517) and convert public keys between JWK and PEM (SPKI) entirely in browser memory.</p>
+      <p>Analyze JSON Web Keys and Sets (RFC 7517) and convert public keys between JWK and standard PEM (SPKI/PKCS#1) entirely in browser memory. Validate key parameters, compute RFC 7638 SHA-256 thumbprints, and bridge modern OAuth2/OIDC discovery keys with legacy backend crypto engines with zero telemetry.</p>
     </div>
 
-    <div class="tool-card">
+    <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
+    <div class="ad-container-slot" id="topAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
+    </div>
+
+    <!-- Active Tool Workspace -->
+    <section class="tool-card" id="toolWorkspace" aria-label="Interactive JWK and PEM Conversion Terminal">
       <div class="tab-bar">
         <button class="tab-btn active" id="tabJwkToPem" onclick="switchMode('jwk-to-pem')">JWK / JWKS → PEM</button>
         <button class="tab-btn" id="tabPemToJwk" onclick="switchMode('pem-to-jwk')">PEM → JWK</button>
@@ -468,114 +812,522 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- BitDark Legal & Security Disclaimer -->
+    <!-- Authoritative Operational Boundaries & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Legal & Security Disclaimer
+        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
       </div>
       <p>
-        <strong>bitdark.net is not responsible for any misuse, compromised private keys, or operational failures arising from the use of this tool.</strong>
-        All key serialization, decoding, and cryptographic operations run exclusively on the client side in your web browser memory. BitDark never transmits, logs, stores, or inspects any input payloads or output keys. It is the user's sole responsibility to ensure that private key material is never pasted into public-facing environments or untrusted systems.
+        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
+      </p>
+      <p style="margin-top: 10px;">
+        <strong>Never paste private keys into web browsers or third-party tools.</strong> This tool processes only public key parameters. Private keys (e.g., RSA <code>d</code>, <code>p</code>, <code>q</code> or Elliptic Curve private scalar <code>d</code>) must remain physically isolated inside secure enclaves, Hardware Security Modules (HSMs), or encrypted secret stores. While BitDark operates with zero network egress, good operational security mandates verifying that all key strings input into web interfaces represent exclusively public cryptographic parameters.
       </p>
     </aside>
 
-    <!-- Technical Documentation -->
-    <article class="doc-section">
-      <h2>About JSON Web Keys (JWK) & Sets (JWKS)</h2>
+    <!-- Comprehensive Technical Authority Article -->
+    <article class="article-container">
+      <h2>The Cryptographic Identity Dilemma: JSON Web Keys (RFC 7517) vs. Legacy PEM Standards</h2>
       <p>
-        A <strong>JSON Web Key (JWK)</strong> is an open cryptographic data structure standardized under <strong>RFC 7517</strong> that represents a cryptographic key using standard JSON naming conventions. A <strong>JSON Web Key Set (JWKS)</strong> is a container object featuring an array of JWKs, typically distributed by OAuth 2.0 and OpenID Connect (OIDC) identity providers (such as Auth0, Okta, Keycloak, or Google) at well-known discovery endpoints (<code>/.well-known/jwks.json</code>).
+        Modern distributed identity architectures—dominated by OAuth 2.0 (RFC 6749), OpenID Connect (OIDC Core 1.0), and JSON Web Tokens (JWT, RFC 7519)—rely on public key cryptography to establish stateless, cryptographically verifiable trust across decoupled microservices. At the center of this ecosystem sits the <strong>JSON Web Key (JWK)</strong> and <strong>JSON Web Key Set (JWKS)</strong> standardized under <strong>RFC 7517</strong>. Identity Providers (IdPs) such as Auth0, Okta, Keycloak, Microsoft Entra ID, and Google Cloud Identity expose their public verification keys via well-known discovery endpoints (such as <code>/.well-known/jwks.json</code>), allowing API gateways and resource servers to periodically refresh public keys and verify signed access tokens.
+      </p>
+      <p>
+        However, a deep architectural friction persists across modern software stacks. While modern web frameworks, Node.js libraries, and serverless runtimes consume JWKs as native JavaScript objects, the vast majority of low-level cryptographic libraries, hardware security modules, operating system key stores, TLS daemons (such as NGINX, HAProxy, and Envoy), and legacy programming environments (C/C++, Java KeyStore, OpenSSL CLI, Python <code>cryptography</code>) require keys formatted in <strong>Privacy-Enhanced Mail (PEM)</strong> or <strong>Abstract Syntax Notation One (ASN.1) Distinguished Encoding Rules (DER)</strong>.
+      </p>
+      <p>
+        Bridging this impedance mismatch requires converting between high-level JSON dictionaries and binary X.509 <code>SubjectPublicKeyInfo</code> (SPKI) bitstreams. Doing so securely, deterministically, and with zero exposure of sensitive telemetry is the foundational engineering purpose of the BitDark JWK & JWKS Inspector.
       </p>
 
-      <h2>Key Conversion & Web Crypto Compatibility</h2>
+      <h2>How to Use the BitDark JWK & JWKS Inspector & Converter</h2>
       <p>
-        This utility natively interfaces with the browser's <code>window.crypto.subtle</code> engine and internal ASN.1 DER parsers to deserialize SubjectPublicKeyInfo (SPKI) X.509 structures and map them directly to standard JWK parameters without any server-side dependencies:
+        Operating this utility is entirely local, executed directly inside your browser's private volatile RAM:
+      </p>
+      <ol>
+        <li>
+          <strong>Select Conversion Direction:</strong> Choose the <strong>JWK / JWKS → PEM</strong> tab if you have JSON Web Keys and need standard <code>.pem</code> public keys, or choose the <strong>PEM → JWK</strong> tab if you have an X.509 SPKI or PKCS#1 PEM file and need a JSON Web Key or JWKS payload.
+        </li>
+        <li>
+          <strong>Input Key Material or Load Samples:</strong>
+          <ul>
+            <li>In <em>JWK → PEM</em> mode: Paste a single JWK object (e.g., <code>{"kty":"RSA", ...}</code>) or a complete JWKS container (<code>{"keys": [...]}</code>). Click "Sample RSA", "Sample EC", or "Sample JWKS" to inspect working RFC-compliant structures.</li>
+            <li>In <em>PEM → JWK</em> mode: Paste a standard public key starting with <code>-----BEGIN PUBLIC KEY-----</code> (X.509 SPKI) or <code>-----BEGIN RSA PUBLIC KEY-----</code> (PKCS#1).</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Execute Local Conversion:</strong> Click "Inspect & Convert to PEM" or "Convert to JWK". The parser decodes the byte stream, extracts mathematical key parameters, validates curve dimensions or modulus lengths, and displays an analytical breakdown.
+        </li>
+        <li>
+          <strong>Audit Cryptographic Metadata:</strong> Inspect the parsed metadata grid, which highlights detected key algorithms, bit length, usage intentions (<code>use</code>), Key IDs (<code>kid</code>), and the computed <strong>RFC 7638 SHA-256 Thumbprint</strong>.
+        </li>
+        <li>
+          <strong>Export or Copy:</strong> Use "Copy to Clipboard" for direct configuration injection, or "Download" to save the output as a <code>public-key.pem</code> or <code>key.jwks.json</code> file.
+        </li>
+      </ol>
+
+      <h2>When to Use This Tool: Real-World Engineering Scenarios</h2>
+      <p>
+        Client-side public key conversion is an essential operational requirement across security operations, identity engineering, and backend development:
       </p>
       <ul>
-        <li><strong>RSA Keys:</strong> Supports modulus (<code>n</code>) and exponent (<code>e</code>) mapping for standard key sizes (1024, 2048, 3072, 4096 bits) with PKCS#1 and SPKI compatibility.</li>
-        <li><strong>Elliptic Curves:</strong> Supports NIST curves <code>P-256</code>, <code>P-384</code>, and <code>P-521</code> with validated coordinate points (<code>x</code>, <code>y</code>).</li>
-        <li><strong>RFC 7638 Thumbprints:</strong> Standard SHA-256 JWK thumbprints are computed over required key components in lexicographical order to calculate deterministic <code>kid</code> identifiers.</li>
+        <li>
+          <strong>Debugging JWT Signature Verification Failures:</strong> When an API gateway returns <code>401 Unauthorized</code> or <code>invalid_signature</code> errors, engineers can extract the public key from the identity provider's <code>/.well-known/jwks.json</code>, convert it to PEM, and use OpenSSL to test verification against raw JWT tokens offline.
+        </li>
+        <li>
+          <strong>Configuring Reverse Proxies & Ingress Controllers:</strong> Systems like NGINX Plus, Kong Gateway, and Envoy Proxy often require PEM-encoded public certificates or public keys to validate incoming bearer tokens locally at the edge without issuing network callbacks to an IdP for every request.
+        </li>
+        <li>
+          <strong>Validating Automated Key Rotation:</strong> During automated blue-green key rotation drills, security engineers inspect JWKS endpoints to verify that retiring keys and newly staged keys maintain deterministic <code>kid</code> hashes and conform to intended curve coordinates.
+        </li>
+        <li>
+          <strong>Legacy Service Integration:</strong> Connecting modern OAuth 2.0 authentication systems to legacy enterprise platforms (e.g., IBM WebSphere, Oracle WebLogic, SAP NetWeaver) that lack native JSON Web Key parsers and accept only X.509 PEM certificates.
+        </li>
+        <li>
+          <strong>Air-Gapped & Regulated Environment Key Audit:</strong> In defense, healthcare, and financial environments where development machines operate behind strict Data Loss Prevention (DLP) proxies, developers cannot use public API endpoints to parse keys. BitDark operates 100% locally with zero external network egress.
+        </li>
       </ul>
 
-      <h2>Zero Network Egress Security Model</h2>
+      <h2>Anatomy of Cryptographic Key Structures: ASN.1 DER, SPKI, and PKCS#1</h2>
       <p>
-        Key manipulation tools that execute on remote servers present severe compliance and security risks. BitDark's JWK/JWKS Inspector operates 100% locally inside your browser sandbox. No telemetry, third-party trackers, or key payloads ever leave your physical device.
+        To understand how a JSON Web Key translates into a PEM file, one must examine the binary encapsulation standards defined across ITU-T and RFC specifications.
       </p>
+
+      <h3>1. Abstract Syntax Notation One (ASN.1) and DER Encoding</h3>
+      <p>
+        ASN.1 is a formal interface definition language used to specify abstract data structures independently of machine architectures. <strong>Distinguished Encoding Rules (DER)</strong> is a strict, deterministic subset of Basic Encoding Rules (BER) that produces exactly one unambiguous binary representation for any ASN.1 data structure.
+      </p>
+      <p>
+        Every DER element is serialized using a <strong>Type-Length-Value (TLV)</strong> triplet:
+      </p>
+      <ul>
+        <li><strong>Tag (Type):</strong> A 1-byte identifier specifying the data type (e.g., <code>0x02</code> for INTEGER, <code>0x03</code> for BIT STRING, <code>0x06</code> for OBJECT IDENTIFIER, and <code>0x30</code> for SEQUENCE).</li>
+        <li><strong>Length:</strong> One or more bytes indicating the length of the payload value. If the value is 127 bytes or fewer, length is encoded in a single byte. For values of 128 bytes or greater, a multi-byte long form is used (e.g., <code>0x82 0x01 0x00</code> for 256 bytes).</li>
+        <li><strong>Value:</strong> The raw binary payload of the element.</li>
+      </ul>
+
+      <h3>2. PKCS#1 vs. SubjectPublicKeyInfo (SPKI) Formats</h3>
+      <p>
+        In the PEM universe, two distinct public key structures are frequently encountered:
+      </p>
+      <ul>
+        <li>
+          <strong>PKCS#1 (<code>RSAPublicKey</code>):</strong> Defined in RFC 8017. It contains <em>only</em> the raw RSA parameters: an ASN.1 SEQUENCE of two integers: the modulus $n$ and the public exponent $e$. It carries the header <code>-----BEGIN RSA PUBLIC KEY-----</code>. PKCS#1 is algorithm-specific and cannot represent Elliptic Curve keys.
+        </li>
+        <li>
+          <strong>SubjectPublicKeyInfo (SPKI, X.509):</strong> Defined in RFC 5280. This is the universal modern public key container, carrying the header <code>-----BEGIN PUBLIC KEY-----</code>. SPKI wraps the key inside an outer envelope containing an <code>AlgorithmIdentifier</code> (with standard Object Identifiers) and a bit-string holding the actual key bytes. SPKI can encapsulate RSA, ECDSA, Ed25519, and post-quantum keys identically.
+        </li>
+      </ul>
+
+      <pre><code>ASN.1 SubjectPublicKeyInfo (SPKI) Hierarchy:
+SEQUENCE {
+  SEQUENCE {                              <-- AlgorithmIdentifier
+    OBJECT IDENTIFIER 1.2.840.113549.1.1.1  (rsaEncryption) or 1.2.840.10045.2.1 (id-ecPublicKey)
+    OPTIONAL parameters                     (e.g., NULL for RSA, NamedCurve OID for EC)
+  }
+  BIT STRING {                            <-- SubjectPublicKey
+    SEQUENCE {                            (For RSA: RSAPublicKey)
+      INTEGER n                           (Modulus, big-endian)
+      INTEGER e                           (Public Exponent, e.g., 65537)
+    }
+  }
+}</code></pre>
+
+      <h2>The Byte-Level Mathematics of Key Transformation</h2>
+      <p>
+        Converting between JWK and PEM requires strict bitwise precision. The transformation depends on whether the underlying key is an RSA integer pair or an Elliptic Curve coordinate point.
+      </p>
+
+      <h3>1. RSA Key Decomposition & Construction</h3>
+      <p>
+        An RSA public JWK contains two mandatory attributes:
+      </p>
+      <ul>
+        <li><code>n</code>: The Base64URL-encoded RSA modulus, which represents the product of two large prime numbers ($n = p \times q$). For a 2048-bit key, this represents an unsigned integer exactly 256 bytes long.</li>
+        <li><code>e</code>: The Base64URL-encoded public exponent, almost universally set to <code>AQAB</code> ($65537 = 2^{16} + 1$).</li>
+      </ul>
+      <p>
+        When transforming this into an ASN.1 DER sequence, a subtle but critical mathematical rule applies: <strong>Two's Complement Sign Preservation</strong>. Because ASN.1 integers are signed, if the highest-order bit of the modulus byte array is 1 (i.e., byte value $\ge \text{0x80}$ or 128), a parser will interpret it as a negative number unless a leading null byte (<code>0x00</code>) is prepended. Failing to insert this leading padding byte causes OpenSSL, Java, and crypto runtimes to reject the generated PEM as malformed.
+      </p>
+
+      <h3>2. Elliptic Curve Affine Coordinates & Uncompressed Points</h3>
+      <p>
+        An Elliptic Curve JWK represents a point on an algebraic curve ($y^2 \equiv x^3 + ax + b \pmod p$). Under RFC 7517, the public key is defined by:
+      </p>
+      <ul>
+        <li><code>crv</code>: The curve identifier (e.g., <code>P-256</code>, <code>P-384</code>, <code>P-521</code>).</li>
+        <li><code>x</code>: The Base64URL-encoded affine X-coordinate.</li>
+        <li><code>y</code>: The Base64URL-encoded affine Y-coordinate.</li>
+      </ul>
+      <p>
+        To construct an SPKI PEM from an EC JWK, the coordinates are assembled into an <strong>uncompressed SEC1 point</strong>:
+      </p>
+      <blockquote>
+        $$\text{Point} = \text{0x04} \,||\, X \,||\, Y$$
+      </blockquote>
+      <p>
+        The single-byte prefix <code>0x04</code> explicitly denotes an uncompressed point (carrying both X and Y coordinates), followed by the exact fixed-width byte array for coordinate $X$ and coordinate $Y$ (32 bytes each for P-256, 48 bytes each for P-384, and 66 bytes each for P-521). This point is wrapped inside an ASN.1 BIT STRING and paired with the standard EC OID (<code>1.2.840.10045.2.1</code>) and the curve-specific parameter OID (e.g., <code>1.2.840.10045.3.1.7</code> for NIST P-256 / secp256r1).
+      </p>
+
+      <h2>RFC 7638 Cryptographic Key Thumbprints</h2>
+      <p>
+        In complex authentication systems, verifying key identity across distributed caches requires a deterministic, collision-resistant identifier. Rather than relying on arbitrary string names, <strong>RFC 7638</strong> defines the official <strong>JSON Web Key (JWK) Thumbprint</strong> specification.
+      </p>
+      <p>
+        To compute an RFC 7638 thumbprint, an engine must construct a canonical JSON object containing <em>only</em> the required mathematical parameters of the key, strictly sorted in lexicographical ASCII order with no whitespace:
+      </p>
+      <ul>
+        <li><strong>For RSA Keys:</strong> Keys ordered as <code>{"e":"...","kty":"RSA","n":"..."}</code></li>
+        <li><strong>For EC Keys:</strong> Keys ordered as <code>{"crv":"...","kty":"EC","x":"...","y":"..."}</code></li>
+      </ul>
+      <p>
+        The canonical string is encoded as UTF-8 octets, digested via the SHA-256 cryptographic hash function, and output as a Base64URL string:
+      </p>
+      <blockquote>
+        $$\text{Thumbprint} = \text{Base64URL}(\text{SHA-256}(\text{CanonicalJSON}))$$
+      </blockquote>
+      <p>
+        This thumbprint is mathematically unique to that specific public key. In OpenID Connect and modern JWT infrastructures, identity providers routinely use the first 16 characters or full hash of this thumbprint as the key's <code>kid</code> (Key ID).
+      </p>
+
+      <h2>Worked Technical Examples: Byte-by-Byte Cryptographic Deconstruction</h2>
+
+      <h3>Worked Example 1: Deconstructing an RSA 2048-Bit JWK into SubjectPublicKeyInfo (SPKI) PEM</h3>
+      <p>
+        Consider a standard 2048-bit RSA public key represented as a JWK:
+      </p>
+      <pre><code>{
+  "kty": "RSA",
+  "n": "u_gvCQaCzpwjOKwrn7l5F3YwWeQ6bCPAFZKeopqHSFBWOH2Dp083LAUPfSMjs0D7tFm3lTIpZLcPfvYkpZo7hk7lb5cQnmaiZXxjtnCLe1ZN3Oxq2pd_CxbemiLKBbVjFLSzZP9voq4VdGXVFCZoc3sgZHIYHjVGLgNLe2BysxDg08oYg4Ay5ZCBNWw7FS73YrBmgDVZkPi2nH2oVIMq-huIQzrGZkB58ucIlXqfdF9f_vudGBd36oCkBhT1bnK-pwfm1AREZ75Bs7XOsmYdgb70eD9-XONFJaDEYnodCKteEE6mO_g391TkTNTZ_ObU7NzK7O6cE9c-usToxazLt2s",
+  "e": "AQAB",
+  "alg": "RS256",
+  "use": "sig",
+  "kid": "bitdark-rsa-2048"
+}</code></pre>
+      <p>
+        To convert this into standard SPKI PEM format, the BitDark client-side engine executes the following byte assembly sequence:
+      </p>
+      <ol>
+        <li>
+          <strong>Base64URL Decoding:</strong> The modulus string <code>n</code> is decoded from Base64URL into raw binary octets. Because $2048 \text{ bits} / 8 = 256 \text{ bytes}$, the resulting array is exactly 256 octets. The exponent <code>AQAB</code> decodes to 3 bytes: <code>0x01, 0x00, 0x01</code> ($65537$).
+        </li>
+        <li>
+          <strong>Sign-Bit Check & ASN.1 Integer Framing:</strong> The first byte of the modulus array is inspected. If its value has the high bit set ($\ge \text{0x80}$), a <code>0x00</code> byte is prepended, yielding 257 bytes. The DER INTEGER header is constructed: <code>0x02 0x82 0x01 0x01</code> (Tag: INTEGER, Length: 257 bytes).
+        </li>
+        <li>
+          <strong>RSAPublicKey Sequence Construction:</strong> The encoded modulus integer and exponent integer (<code>0x02 0x03 0x01 0x00 0x01</code>) are concatenated inside an ASN.1 SEQUENCE (Tag: <code>0x30</code>).
+        </li>
+        <li>
+          <strong>Bit String Wrapping:</strong> The RSAPublicKey sequence is encapsulated in a BIT STRING (Tag: <code>0x03</code>) with a leading <code>0x00</code> byte to indicate zero unused bits at the end of the byte stream.
+        </li>
+        <li>
+          <strong>AlgorithmIdentifier Prepending:</strong> The standard PKCS#1 RSA encryption OID sequence (<code>1.2.840.113549.1.1.1</code> with NULL parameters, encoded as 15 bytes: <code>0x30 0x0d 0x06 0x09 0x2a 0x86 0x48 0x86 0xf7 0x0d 0x01 0x01 0x01 0x05 0x00</code>) is joined with the Bit String.
+        </li>
+        <li>
+          <strong>Root Sequence & PEM Framing:</strong> The combined payload is wrapped in the outer SPKI SEQUENCE (Tag: <code>0x30</code>), Base64-encoded, chunked into 64-character lines, and enclosed between <code>-----BEGIN PUBLIC KEY-----</code> and <code>-----END PUBLIC KEY-----</code>.
+        </li>
+      </ol>
+
+      <h3>Worked Example 2: Parsing an Elliptic Curve (P-256) PEM to Extract Base64URL Coordinates</h3>
+      <p>
+        In reverse, suppose an engineer pastes the following NIST P-256 public key PEM:
+      </p>
+      <pre><code>-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE-MPjjd8dT4WFDP4t7EP27asQ8mvd
+Qd-7GTV6_DQwx_daQau3qTNm24WIfVq_b6WG57bYXWuh1ExTx-qtEZU==
+-----END PUBLIC KEY-----</code></pre>
+      <p>
+        The parser executes these steps:
+      </p>
+      <ol>
+        <li>
+          <strong>PEM Header Stripping:</strong> Removes <code>BEGIN PUBLIC KEY</code>, <code>END PUBLIC KEY</code>, and whitespace, leaving the clean Base64 string.
+        </li>
+        <li>
+          <strong>DER Tree Traversal:</strong> Traverses the root ASN.1 SEQUENCE. Child element #0 is an <code>AlgorithmIdentifier</code> sequence; child element #1 is the public key BIT STRING.
+        </li>
+        <li>
+          <strong>Algorithm & Curve Validation:</strong> The OIDs in the <code>AlgorithmIdentifier</code> are checked:
+          <ul>
+            <li><code>1.2.840.10045.2.1</code> verifies the algorithm is <code>id-ecPublicKey</code>.</li>
+            <li><code>1.2.840.10045.3.1.7</code> verifies the named curve is <code>secp256r1</code> (NIST P-256).</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Point Decomposition:</strong> The BIT STRING contains 65 bytes: a leading <code>0x00</code> unused-bits indicator followed by the 65-byte uncompressed point. Byte 0 is <code>0x04</code> (verifying uncompressed SEC1 format). The next 32 bytes represent the affine X coordinate, and the final 32 bytes represent the affine Y coordinate.
+        </li>
+        <li>
+          <strong>Base64URL Serialization:</strong> Both 32-byte slices are converted to Base64URL strings (replacing <code>+</code> with <code>-</code>, <code>/</code> with <code>_</code>, and trimming trailing <code>=</code> padding), populating the output JWK object:
+        </li>
+      </ol>
+      <pre><code>{
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "-MPjjd8dT4WFDP4t7EP27asQ8mvdQd-7GTV6_DQw",
+  "y": "x_daQau3qTNm24WIfVq_b6WG57bYXWuh1ExTx-qtEZU",
+  "use": "sig",
+  "kid": "887fa5ce414d4bc9"
+}</code></pre>
+
+      <h2>Structural Comparison: JWK vs. SPKI PEM vs. PKCS#1 vs. Raw DER vs. Hex Strings</h2>
+      <p>
+        The table below summarizes the technical specifications across primary public key serialization formats:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Format</th>
+              <th>Encoding Structure</th>
+              <th>Header Delimiters</th>
+              <th>Multi-Algorithm Support</th>
+              <th>Primary Runtime Ecosystem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>JSON Web Key (JWK)</strong></td>
+              <td>JSON / Base64URL parameters</td>
+              <td>None (Native JSON Object)</td>
+              <td><strong>Universal</strong> (RSA, EC, OKP, oct)</td>
+              <td>OAuth2, OIDC, Web Crypto API, Cloud IAM</td>
+            </tr>
+            <tr>
+              <td><strong>SPKI PEM (X.509)</strong></td>
+              <td>Base64-encoded ASN.1 DER</td>
+              <td><code>-----BEGIN PUBLIC KEY-----</code></td>
+              <td><strong>Universal</strong> (Identified via OID)</td>
+              <td>OpenSSL, NGINX, Node.js crypto, Envoy, TLS</td>
+            </tr>
+            <tr>
+              <td><strong>PKCS#1 PEM</strong></td>
+              <td>Base64-encoded ASN.1 DER</td>
+              <td><code>-----BEGIN RSA PUBLIC KEY-----</code></td>
+              <td><strong>RSA Only</strong> (Modulus + Exponent)</td>
+              <td>Legacy OpenSSL, SSH v1 tools, Apache httpd</td>
+            </tr>
+            <tr>
+              <td><strong>Raw Binary DER</strong></td>
+              <td>Binary ASN.1 TLV octets</td>
+              <td>None (Raw byte stream)</td>
+              <td><strong>Universal</strong> (Binary standard)</td>
+              <td>Smart cards, PKCS#11 tokens, Embedded HSMs</td>
+            </tr>
+            <tr>
+              <td><strong>Uncompressed Hex</strong></td>
+              <td>Raw SEC1 Coordinate Octets</td>
+              <td>Prefix <code>04</code> followed by hex</td>
+              <td><strong>Elliptic Curves Only</strong></td>
+              <td>Blockchain (Ethereum/Bitcoin), Hardware wallets</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Common Failure Modes, Key Misconfigurations, and Attack Vectors</h2>
+      <p>
+        Implementing key conversion and JWKS discovery without rigorous adherence to specifications exposes identity systems to severe operational failures and security vulnerabilities:
+      </p>
+
+      <h3>1. The "Algorithm Confusion" Vulnerability (RS256 vs. HS256)</h3>
+      <p>
+        One of the most infamous attack vectors in JWT authentication occurs when an application naively uses the same verification function for both asymmetric (RSA/ECDSA) and symmetric (HMAC) signatures. If an attacker takes an authorization server's RSA public key (obtained in PEM format), converts it into a HMAC symmetric secret, and signs a forged JWT with <code>"alg": "HS256"</code>, an insecure backend verifying with the public key string as the HMAC shared secret will validate the forgery. Enforce strict server-side algorithm whitelisting and never allow the token header to dictate key verification type.
+      </p>
+
+      <h3>2. The Base64 vs. Base64URL Discrepancy</h3>
+      <p>
+        Standard Base64 encoding utilizes the characters <code>+</code> and <code>/</code>, with <code>=</code> padding at the end. Because these characters have reserved semantic meanings in URLs, query strings, and HTTP headers, RFC 7515/7517 explicitly mandates <strong>Base64URL encoding</strong>:
+      </p>
+      <ul>
+        <li><code>+</code> is replaced with <code>-</code> (minus)</li>
+        <li><code>/</code> is replaced with <code>_</code> (underscore)</li>
+        <li>Trailing <code>=</code> padding characters are completely removed.</li>
+      </ul>
+      <p>
+        Feeding standard Base64 into a JWK parser or omitting Base64URL translation when assembling ASN.1 DER buffers is a leading cause of decoding errors in custom authorization middle-ware.
+      </p>
+
+      <h3>3. Private Key Exposure via Accidental Parameter Leakage</h3>
+      <p>
+        Public JWKs must contain only public components. For RSA, this is exclusively <code>n</code> and <code>e</code>; for EC, exclusively <code>crv</code>, <code>x</code>, and <code>y</code>. Software bugs in key generation scripts frequently serialize full key pairs, inadvertently publishing private attributes:
+      </p>
+      <ul>
+        <li><code>d</code>: Private exponent (RSA or EC)</li>
+        <li><code>p</code>, <code>q</code>: First and second prime factors (RSA)</li>
+        <li><code>dp</code>, <code>dq</code>, <code>qi</code>: Chinese Remainder Theorem coefficients (RSA)</li>
+      </ul>
+      <p>
+        If these private parameters are included in a JWKS published to a public discovery endpoint, any client can immediately forge tokens and compromise the security domain. Always inspect your published JWKS payloads with a client-side validator before committing them to production.
+      </p>
+
+      <h3>4. Key Rotation Outages & Missing <code>kid</code> Mapping</h3>
+      <p>
+        To rotate signing keys without causing downtime, identity providers maintain multiple active keys in their JWKS. Resource servers cache these keys. When an IdP signs with a new key, the token carries a <code>kid</code> header. If an application's JWKS caching policy fails to fetch unknown <code>kid</code> values or if the <code>kid</code> in the JWK does not match the token header, legitimate requests fail with signature errors. Standardizing on RFC 7638 SHA-256 thumbprints ensures consistent, collision-free key identification across services.
+      </p>
+
+      <!-- Interactive FAQ Section -->
+      <section class="faq-block">
+        <h2>Frequently Asked Technical Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between a JWK and a JWKS?</div>
+          <div class="faq-answer">
+            A JWK (JSON Web Key) is a JSON object representing a single cryptographic key. A JWKS (JSON Web Key Set) is a JSON container object containing an array of JWKs under the <code>keys</code> member (e.g., <code>{"keys": [jwk1, jwk2]}</code>). Identity providers expose JWKS containers at their discovery endpoints to support seamless key rotation without system downtime.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does an RSA PEM conversion add a leading 0x00 byte to the modulus?</div>
+          <div class="faq-answer">
+            ASN.1 DER integer values are signed two's complement numbers. If the most significant bit (MSB) of the modulus is 1 (i.e., its first byte is 0x80 or higher), an ASN.1 parser would interpret the integer as a negative value. To guarantee that the modulus is parsed as an unsigned positive integer, the DER specification requires prepending a leading 0x00 null byte.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Can this tool convert private keys?</div>
+          <div class="faq-answer">
+            No. This tool is strictly designed to inspect and convert public keys. Pasting private cryptographic keys (which include private components such as <code>d</code>, <code>p</code>, or <code>q</code>) into web browsers is an unsafe operational security practice.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What curves are supported for Elliptic Curve key conversion?</div>
+          <div class="faq-answer">
+            The inspector supports all standard NIST prime curves defined under RFC 7518: <code>P-256</code> (secp256r1, prime256v1), <code>P-384</code> (secp384r1), and <code>P-521</code>. It maps between standard uncompressed SEC1 point coordinates (0x04 || X || Y) and the native JWK coordinate fields <code>x</code> and <code>y</code>.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">How is an RFC 7638 JWK Thumbprint calculated?</div>
+          <div class="faq-answer">
+            RFC 7638 constructs a canonical JSON string containing only the essential mathematical parameters of the key, sorted in strict lexicographical order with no whitespace (for RSA: <code>e, kty, n</code>; for EC: <code>crv, kty, x, y</code>). A SHA-256 cryptographic hash is computed over this canonical UTF-8 byte stream and returned as a Base64URL string.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Does BitDark log or store my converted keys?</div>
+          <div class="faq-answer">
+            Never. BitDark operates on an air-gapped, zero-network-egress security model. All parsing, ASN.1 serialization, Base64URL operations, and Web Crypto digest calculations execute exclusively inside your web browser's private JavaScript memory.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">What is the difference between SPKI and PKCS#1 PEM files?</div>
+          <div class="faq-answer">
+            PKCS#1 headers (<code>BEGIN RSA PUBLIC KEY</code>) encapsulate only the raw RSA modulus and exponent sequence. SubjectPublicKeyInfo (<code>BEGIN PUBLIC KEY</code>) is the universal modern X.509 format that encapsulates an explicit <code>AlgorithmIdentifier</code> (specifying the key algorithm via Object Identifiers) alongside the public key bitstream, allowing it to represent any cryptographic algorithm (RSA, EC, Ed25519).
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Why does my API gateway require PEM format instead of JWKS?</div>
+          <div class="faq-answer">
+            Many high-performance reverse proxies (such as NGINX or Envoy) rely on native C/C++ cryptographic engines (like OpenSSL or BoringSSL) that consume memory pointers to compiled ASN.1 structures rather than JSON. Pre-converting discovery JWKs into static PEM files allows these gateways to verify JWT signatures at line-rate speed without JSON parsing overhead.
+          </div>
+        </div>
+      </section>
+
+      <!-- Internal SEO Linking Grid -->
+      <section class="related-tools-section">
+        <h3>Related Authentication, Cryptography & Security Utilities</h3>
+        <div class="related-grid">
+          <a href="/tools/auth/jwt-debugger/" class="related-card">
+            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          </a>
+          <a href="/tools/crypto/aes-gcm/" class="related-card">
+            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-desc">Encrypt confidential text and files with military-grade 256-bit authenticated encryption in browser RAM.</div>
+          </a>
+          <a href="/tools/auth/tls-ciphers/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> TLS Cipher Suite Auditor</div>
+            <div class="related-card-desc">Evaluate TLS 1.2 and TLS 1.3 cipher suites for forward secrecy, key exchange safety, and vulnerabilities.</div>
+          </a>
+          <a href="/tools/auth/saml-decoder/" class="related-card">
+            <div class="related-card-title"><span>[📑]</span> SAML Response Inspector</div>
+            <div class="related-card-desc">Decompress, decode, and pretty-print XML SAML assertions and examine SSO trust chains locally.</div>
+          </a>
+          <a href="/tools/auth/csp-evaluator/" class="related-card">
+            <div class="related-card-title"><span>[🛡️]</span> Content Security Policy Evaluator</div>
+            <div class="related-card-desc">Audit HTTP Content Security Policy (CSP) headers for script injection bypasses and insecure directives.</div>
+          </a>
+          <a href="/tools/privacy/pii-redactor/" class="related-card">
+            <div class="related-card-title"><span>[🔏]</span> PII & Secret Redactor</div>
+            <div class="related-card-desc">Scrub API keys, credentials, IP addresses, and personally identifiable information from log payloads.</div>
+          </a>
+        </div>
+      </section>
     </article>
 
-    <div class="bottom-bar">
-      <span>BitDark — Zero telemetry, client-side cybersecurity suite.</span>
-      <nav>
-        <a href="/">Directory</a> · <a href="/blog">Blog</a> · <a href="/privacy">Privacy</a>
-      </nav>
+    <!-- AdSense Safe Placement Slot #2 -->
+    <div class="ad-container-slot" id="bottomAdSlot" aria-label="Siloed Advertising Slot">
+      <!-- Injected ad units render here -->
     </div>
   </main>
 
+  <!-- Complete Standard Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span>© 2026 BitDark.NET</span>
+        <span>•</span>
+        <span>Zero Telemetry Defensive Suite</span>
+      </div>
+      <nav class="footer-links-right">
+        <a href="/">Home</a>
+        <a href="/about/">About</a>
+        <a href="/faq/">FAQ</a>
+        <a href="/contact/">Contact</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
+    </div>
+  </footer>
+
   <script>
-    // Dual-Stack IP Resolver with Timeout Protection & Localhost Detection
-    async function detectUserIPs() {
-      const ipv4El = document.getElementById("ipv4Display");
-      const ipv6El = document.getElementById("ipv6Display");
+    // 1. Zero-CLS AdSense Auto-Reveal Observer
+    function setupAdSlotObserver() {
+      const adSlots = document.querySelectorAll('.ad-container-slot');
+      if (!adSlots.length) return;
 
-      if (window.location.protocol === "file:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-        ipv4El.textContent = "127.0.0.1 (Local)";
-        ipv6El.textContent = "::1 (Local)";
-        return;
-      }
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'IFRAME' || (node.classList && node.classList.contains('adsbygoogle'))) {
+              const parentSlot = node.closest('.ad-container-slot');
+              if (parentSlot) {
+                parentSlot.style.display = 'block';
+              }
+            }
+          });
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-ad-status') {
+            const target = mutation.target;
+            if (target.getAttribute('data-ad-status') === 'filled') {
+              const parentSlot = target.closest('.ad-container-slot');
+              if (parentSlot) parentSlot.style.display = 'block';
+            }
+          }
+        });
+      });
 
-      // IPv4 Detection
-      try {
-        const c4 = new AbortController();
-        const t4 = setTimeout(() => c4.abort(), 3500);
-        const res4 = await fetch("https://api.ipify.org?format=json", { signal: c4.signal, cache: "no-store" });
-        clearTimeout(t4);
-        if (res4.ok) {
-          const d4 = await res4.json();
-          ipv4El.textContent = d4.ip;
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const c4b = new AbortController();
-          const t4b = setTimeout(() => c4b.abort(), 3000);
-          const fb4 = await fetch("https://ipv4.icanhazip.com", { signal: c4b.signal, cache: "no-store" });
-          clearTimeout(t4b);
-          ipv4El.textContent = fb4.ok ? (await fb4.text()).trim() : "Offline";
-        } catch {
-          ipv4El.textContent = "Offline";
-        }
-      }
-
-      // IPv6 Detection
-      try {
-        const c6 = new AbortController();
-        const t6 = setTimeout(() => c6.abort(), 3500);
-        const res6 = await fetch("https://api64.ipify.org?format=json", { signal: c6.signal, cache: "no-store" });
-        clearTimeout(t6);
-        if (res6.ok) {
-          const d6 = await res6.json();
-          ipv6El.textContent = d6.ip.includes(":") ? d6.ip : "Not Supported";
-        } else {
-          throw new Error();
-        }
-      } catch {
-        try {
-          const c6b = new AbortController();
-          const t6b = setTimeout(() => c6b.abort(), 3000);
-          const fb6 = await fetch("https://ipv6.icanhazip.com", { signal: c6b.signal, cache: "no-store" });
-          clearTimeout(t6b);
-          const text6 = (await fb6.text()).trim();
-          ipv6El.textContent = text6.includes(":") ? text6 : "Not Supported";
-        } catch {
-          ipv6El.textContent = "Not Supported";
-        }
-      }
+      adSlots.forEach((slot) => {
+        observer.observe(slot, { childList: true, subtree: true, attributes: true });
+      });
     }
-    window.addEventListener("DOMContentLoaded", detectUserIPs);
 
-    // Tab Navigation
+    // 2. Interactive FAQ Accordion Logic
+    function initFaqAccordion() {
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach((item) => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) item.classList.add('active');
+        });
+      });
+    }
+
+    // 3. Tab Navigation
     function switchMode(mode) {
       hideResults();
       if (mode === "jwk-to-pem") {
@@ -591,7 +1343,7 @@
       }
     }
 
-    // Encoding Utilities
+    // 4. Encoding Utilities (100% Unaltered Tool Logic)
     function b64UrlToB64(str) {
       let b64 = str.replace(/-/g, "+").replace(/_/g, "/");
       while (b64.length % 4 !== 0) b64 += "=";
@@ -623,8 +1375,8 @@
     function hexToBytes(hex) {
       const clean = hex.replace(/[^0-9a-fA-F]/g, "");
       const bytes = new Uint8Array(clean.length / 2);
-      for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
+      for (let i = 0; i < clean.length; i += 2) {
+        bytes[i / 2] = parseInt(clean.substr(i, 2), 16);
       }
       return bytes;
     }
@@ -645,7 +1397,7 @@
       return out;
     }
 
-    // ASN.1 DER Construction Engine
+    // 5. ASN.1 DER Construction Engine
     function encodeDerLength(len) {
       if (len < 128) return new Uint8Array([len]);
       if (len < 256) return new Uint8Array([0x81, len]);
@@ -673,7 +1425,7 @@
       return concatBytes(new Uint8Array([0x30]), len, bytes);
     }
 
-    // RFC 7638 SHA-256 JWK Thumbprint
+    // 6. RFC 7638 SHA-256 JWK Thumbprint
     async function computeJwkThumbprint(jwk) {
       let sortedObj = {};
       if (jwk.kty === "RSA") {
@@ -689,7 +1441,7 @@
       return b64ToB64Url(bytesToB64(new Uint8Array(hash)));
     }
 
-    // Low-Level ASN.1 DER Parser
+    // 7. Low-Level ASN.1 DER Parser
     function parseDerTLV(bytes, pos = 0) {
       if (pos >= bytes.length) return null;
       const tag = bytes[pos++];
@@ -730,7 +1482,7 @@
       return oid;
     }
 
-    // Convert JWK / JWKS to PEM
+    // 8. Convert JWK / JWKS to PEM
     async function convertJwkToPem() {
       hideResults();
       const raw = document.getElementById("jwkInput").value.trim();
@@ -874,7 +1626,7 @@
       resultsWrapper.style.display = "block";
     }
 
-    // Convert PEM to JWK
+    // 9. Convert PEM to JWK
     async function convertPemToJwk() {
       hideResults();
       const pem = document.getElementById("pemInput").value.trim();
@@ -1096,8 +1848,7 @@
       dl.remove();
     }
 
-    // Mathematical RFC 7517 & RFC 8017 Compliant Sample Generator
-    // 512 Hex Digits = Exactly 256 Octets = Exactly 2048 Bits
+    // 10. Sample Key Generator
     const standardRsaModulusHex = "bbf82f090682ce9c2338ac2b9fb97917763059e43a6c23c014929ea29a87485056387d83a74f372c050f7d2323b340fbb459b795322964b70fc7f624a59a3b864ee56f97109e66a2857c63b6708b7b564ddcec5ada977f0b16de322ca05b56614b44b364ff6fa2ae157465d5142668737b206472181e35462e034b7b6072b310e0d3ca18838032e59081356c3b152ef762b06680355990f8b69c7da854832afa1b88433ac6664079f2e708957a9f745f5feb9d181777ea80a40614f56e72bea707e6d4044467be41b335ceb2661d81bef4783f7e5ce34525a0c4627a1d08ab5e304ea63bf837f754e44cd4d9fce6d4ecdccaecee9c13d73ebac4e869ac5bb76b";
 
     function getSampleRsaJwk() {
@@ -1175,6 +1926,12 @@
         document.getElementById("pemInput").value = getSampleEcPem();
       }
     }
+
+    // 11. Lifecycle Initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      setupAdSlotObserver();
+      initFaqAccordion();
+    });
   </script>
 </body>
 </html>
