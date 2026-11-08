@@ -6,8 +6,8 @@
   
   <title>PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth 2.0 Tool | BitDark</title>
   <meta name="title" content="PKCE Code Verifier &amp; Challenge Generator — Free Offline OAuth 2.0 Tool | BitDark" />
-  <meta name="description" content="Generate high-entropy PKCE code verifiers, SHA-256 code challenges (S256), and authorization request URLs locally in browser memory. Conforms to RFC 7636 and OAuth 2.1 with zero network egress." />
-  <meta name="keywords" content="pkce generator, proof key for code exchange, code challenge generator, code verifier generator, oauth 2.0 pkce, s256 generator, rfc 7636, oauth 2.1 pkce, offline pkce tool, bitdark" />
+  <meta name="description" content="Generate a PKCE code verifier and S256 code challenge (RFC 7636) for OAuth 2.0 in your browser. Includes the official RFC test vector and a sample authorization URL. Nothing is uploaded." />
+  <meta name="keywords" content="pkce generator, code verifier, code challenge, s256, rfc 7636, oauth 2.0 pkce, code_challenge_method, pkce test vector" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/pkce-generator/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/pkce-generator/" />
   <meta property="og:title" content="PKCE Code Verifier &amp; Challenge Generator | BitDark" />
-  <meta property="og:description" content="Derive cryptographically secure PKCE code verifiers and SHA-256 S256 code challenges locally in browser RAM. Zero tracking, zero network egress." />
+  <meta property="og:description" content="Generate RFC 7636 PKCE code verifier and S256 challenge pairs in your browser, verified against the official test vector. Runs locally." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/pkce-generator/" />
   <meta name="twitter:title" content="PKCE Code Verifier &amp; Challenge Generator | BitDark" />
-  <meta name="twitter:description" content="Derive RFC 7636 PKCE verifiers and S256 code challenges directly in volatile browser memory. 100% Client-Side with zero server telemetry." />
+  <meta name="twitter:description" content="Generate PKCE code verifier and S256 challenge pairs in your browser." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "PKCE Code Verifier & Challenge Generator",
         "url": "https://bitdark.net/tools/auth/pkce-generator/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Client-side cryptographic utility to generate high-entropy RFC 7636 Proof Key for Code Exchange (PKCE) code verifiers, SHA-256 code challenges, and OAuth 2.0 authorization request URLs in local browser RAM without network egress."
+        "description": "Browser-based PKCE generator that creates an RFC 7636 code verifier, derives the S256 or plain code challenge, and builds a sample authorization request URL."
       },
       {
         "@type": "TechArticle",
-        "headline": "Proof Key for Code Exchange (PKCE): RFC 7636 Architecture, Threat Mitigation, and Implementation Guide",
+        "headline": "Generating PKCE Parameters: Code Verifier, S256 Challenge and the RFC 7636 Test Vector",
         "url": "https://bitdark.net/tools/auth/pkce-generator/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-18",
-        "dateModified": "2026-11-03",
-        "description": "Exhaustive technical and architectural analysis of OAuth 2.0 Proof Key for Code Exchange (PKCE, RFC 7636), authorization code interception attacks, S256 Base64URL transformation, and OAuth 2.1 security specifications."
+        "dateModified": "2026-11-08",
+        "description": "What PKCE protects, what the generator produces, a worked example using the official RFC 7636 test vector with the correct SHA-256 hash and challenge, and how to use PKCE correctly."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is PKCE and why was it created for OAuth 2.0?",
+            "name": "What's the difference between S256 and plain?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Proof Key for Code Exchange (PKCE, pronounced 'pixy') is a cryptographic extension defined in RFC 7636 designed to prevent authorization code interception attacks against public OAuth 2.0 clients (such as Single Page Applications and native mobile apps) that cannot securely store a pre-shared client secret."
+              "text": "With S256 the challenge is the SHA-256 hash of the verifier, so seeing the challenge doesn't reveal the verifier. With plain they're identical, which gives no protection if the authorization request is observed. Use S256 unless a client genuinely can't compute SHA-256."
             }
           },
           {
             "@type": "Question",
-            "name": "How does PKCE prevent authorization code interception?",
+            "name": "How long should the code verifier be?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The client creates a dynamic, high-entropy secret (code_verifier) and transmits its SHA-256 digest (code_challenge) during the initial authorization request. When exchanging the resulting authorization code for tokens, the client sends the raw code_verifier. The authorization server hashes the verifier and ensures it matches the original challenge. Even if a malicious app intercepts the authorization code, it cannot exchange it for tokens without the secret code_verifier."
+              "text": "Between 43 and 128 characters from the set A–Z, a–z, 0–9, and - . _ ~, chosen with a secure random generator. 43 is the minimum; this tool defaults to 64. Longer within the range is fine."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is the plain challenge method deprecated in modern OAuth?",
+            "name": "Do confidential server apps need PKCE?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In plain mode, code_challenge is identical to code_verifier. If an attacker inspects TLS traffic, local logs, or browser histories during the authorization step, they capture the raw verifier, neutralizing the protection. OAuth 2.1 explicitly mandates the S256 method, which relies on a one-way SHA-256 cryptographic hash."
+              "text": "It's recommended for all OAuth clients now, including confidential ones, as defense in depth. The OAuth 2.1 draft makes PKCE standard for the authorization-code flow. It complements, rather than replaces, a client secret."
             }
           },
           {
             "@type": "Question",
-            "name": "What are the character length and entropy constraints for an RFC 7636 code_verifier?",
+            "name": "Can I reuse a verifier and challenge?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "An RFC 7636 compliant code_verifier must be a high-entropy cryptographically random string between 43 and 128 characters in length, drawn exclusively from the unreserved URI character set: uppercase letters [A-Z], lowercase letters [a-z], digits [0-9], and the four punctuation symbols hyphen (-), period (.), underscore (_), and tilde (~)."
+              "text": "No. Generate a new random verifier for every authorization request and use it only once. Reusing one weakens the protection, because an attacker who ever learns a verifier could use it again."
             }
           },
           {
             "@type": "Question",
-            "name": "Does BitDark transmit generated PKCE verifiers or challenges across the network?",
+            "name": "Are the values generated here sent anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an absolute zero-network-egress security architecture. All random entropy generation via crypto.getRandomValues and SHA-256 digests via crypto.subtle.digest execute entirely in your local browser memory. Zero bytes leave your machine."
+              "text": "No. The verifier and challenge are generated and hashed in your browser with the Web Crypto API, and the tool makes no network requests with them. The sample URL is only displayed, not called."
             }
           }
         ]
@@ -739,7 +739,7 @@
 
     <div class="tool-header">
       <h1>PKCE Code Verifier &amp; Challenge Generator</h1>
-      <p>Generate high-entropy Proof Key for Code Exchange (PKCE) parameters (RFC 7636) conforming to OAuth 2.0 and OpenID Connect specifications entirely in browser memory. Derive SHA-256 S256 challenges and preview authorization URLs with zero server telemetry.</p>
+      <p>Generate a PKCE code verifier and its S256 code challenge for the OAuth 2.0 authorization-code flow (RFC 7636), or compute the challenge for a verifier you paste. Everything runs in your browser with the Web Crypto API.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -841,350 +841,116 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Security Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Operational Boundaries:</strong> The generated PKCE code verifier is a high-entropy secret that must be retained securely in your client application's temporary runtime memory (e.g., in-memory closure or sessionStorage) until exchanged for tokens and must never be committed to source code or logged to persistent telemetry. All random generation via <code>window.crypto.getRandomValues</code> and SHA-256 transformations via <code>window.crypto.subtle.digest</code> execute strictly client-side inside your local browser sandbox. Zero bytes are transmitted across network interfaces.
+        <strong>Generate a fresh verifier for every authorization request and keep it in your app only.</strong> Use the S256 method, not plain. PKCE protects the authorization-code flow but doesn't replace a client secret or the state parameter. Values are generated locally and never uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Mechanics of Proof Key for Code Exchange (PKCE)</h2>
+      <h2>What PKCE Is For</h2>
       <p>
-        In the original OAuth 2.0 framework (RFC 6749), applications were strictly partitioned into two operational classes: <strong>confidential clients</strong> and <strong>public clients</strong>. Confidential clients—such as traditional monolithic web applications running on backend servers (Node.js, Python/Django, Java Spring)—can safely store a static, pre-shared <code>client_secret</code> out of reach of end users. Conversely, public clients—such as Single Page Applications (SPAs) executing in browser runtimes and native applications installed on mobile devices (iOS, Android) or desktops—cannot maintain secret confidentiality. Any API key, client secret, or private certificate bundled into a compiled binary or client JavaScript bundle can be extracted in seconds via basic decompilers, browser developer tools, or string extraction utilities.
+        PKCE (Proof Key for Code Exchange, RFC 7636) protects the OAuth 2.0 authorization-code flow. Without it, an app that can't keep a client secret, such as a mobile or single-page app, is open to one attack: if someone intercepts the authorization code as it returns to the app, they can exchange it for tokens themselves. PKCE closes that gap by having the app prove, at the token step, that it's the same app that started the flow.
       </p>
       <p>
-        Because public clients could not authenticate themselves using static secrets, early OAuth implementations relied on the <em>Implicit Grant</em> flow or an unauthenticated <em>Authorization Code Grant</em>. Both architectures exposed severe systemic vulnerabilities. Specifically, native mobile applications registering custom URI schemes (such as <code>myapp://oauth-callback</code>) were vulnerable to <strong>Authorization Code Interception Attacks</strong>.
-      </p>
-      <p>
-        To permanently neutralize this vulnerability, the Internet Engineering Task Force (IETF) standardized <strong>Proof Key for Code Exchange (PKCE, pronounced "pixy")</strong> in <strong>RFC 7636</strong>. Rather than relying on a static shared secret, PKCE dynamically binds the authorization request to the token exchange request using a transient, dynamically generated cryptographic proof.
-      </p>
-
-      <h2>The Threat Vector: How Authorization Code Interception Operates</h2>
-      <p>
-        To understand why PKCE is required across modern authorization systems, consider the mechanics of an authorization code interception attack on a mobile or desktop operating system without PKCE:
-      </p>
-
-      <pre><code>+-------------------------------------------------------------------------------+
-|             Authorization Code Interception Attack (Without PKCE)             |
-+-------------------------------------------------------------------------------+
-|  1. LEGITIMATE APP initiates Authorization Request via OS System Browser:     |
-|     GET /authorize?response_type=code&client_id=123&redirect_uri=myapp://cb  |
-|                                                                               |
-|  2. USER AUTHENTICATES with IdP. Authorization Server issues code:            |
-|     myapp://cb?code=AUTH_CODE_XYZ                                            |
-|                                                                               |
-|  3. OPERATING SYSTEM TASK HIJACKING / CUSTOM SCHEME SNOOPING:                |
-|     A malicious app installed on the user's device has registered the exact   |
-|     same custom URI scheme ('myapp://').                                      |
-|     The OS delivers the redirect URI and code to the MALICIOUS APP.           |
-|                                                                               |
-|  4. TOKEN THEFT:                                                              |
-|     Malicious App sends: POST /token [ code=AUTH_CODE_XYZ, client_id=123 ]    |
-|     Authorization Server issues Access Token & Refresh Token to ATTACKER.     |
-+-------------------------------------------------------------------------------+</code></pre>
-
-      <p>
-        Because mobile operating systems (especially older Android and iOS revisions) allowed multiple applications to register identical custom URI schemes, an adversary could install a rogue utility that claimed the victim app's callback scheme. When the authorization server redirected the user back to the device, the OS could resolve the URI to the malicious application instead. Because the public client possessed no client secret, the attacker simply forwarded the stolen authorization code to the token endpoint and received legitimate access and refresh tokens.
-      </p>
-
-      <h2>How PKCE Mitigates the Attack: The Cryptographic Handshake</h2>
-      <p>
-        PKCE introduces two dynamic parameters that transform the authorization code exchange into a secure zero-knowledge proof:
-      </p>
-      <ol>
-        <li>
-          <strong>The Code Verifier (<code>code_verifier</code>):</strong> A cryptographically random, high-entropy string generated freshly by the client application for each authentication attempt.
-        </li>
-        <li>
-          <strong>The Code Challenge (<code>code_challenge</code>):</strong> A derived string created by hashing the verifier with SHA-256 and encoding it in URL-safe Base64: <code>BASE64URL-ENCODE(SHA256(code_verifier))</code>.
-        </li>
-      </ol>
-
-      <pre><code>+-------------------------------------------------------------------------------+
-|                     The RFC 7636 PKCE Cryptographic Flow                     |
-+-------------------------------------------------------------------------------+
-|  [ Client App ]                                    [ Authorization Server ]   |
-|         |                                                      |              |
-|   1. Generate code_verifier (CSPRNG, 43-128 chars)             |              |
-|   2. Compute code_challenge = BASE64URL(SHA256(verifier))      |              |
-|         |                                                      |              |
-|         |--- 3. /authorize?code_challenge=CHALLENGE&S256 ----->|              |
-|         |                                                      | [Stores      |
-|         |                                                      |  Challenge]  |
-|         |<-- 4. Redirect with Authorization Code --------------|              |
-|         |                                                      |              |
-|         |--- 5. /token [ code + code_verifier ] -------------->|              |
-|         |                                                      | [Computes    |
-|         |                                                      |  SHA256(v)   |
-|         |                                                      |  Matches?]   |
-|         |<-- 6. Returns Access Token & Refresh Token ----------|              |
-+-------------------------------------------------------------------------------+</code></pre>
-
-      <p>
-        Under PKCE, even if a malicious application running on the same device intercepts the authorization code in step 4, it cannot redeem it. In step 5, the authorization server refuses to issue tokens unless the client provides the raw <code>code_verifier</code>. Because the attacker only saw the one-way SHA-256 hash (<code>code_challenge</code>) transmitted in step 3, calculating the original pre-image is computationally impossible.
-      </p>
-
-      <h2>How to Use the BitDark PKCE Generator</h2>
-      <p>
-        Generating, testing, and debugging OAuth 2.0 PKCE parameters using BitDark is instantaneous and completely private:
-      </p>
-      <ol>
-        <li>
-          <strong>Configure Verifier Length:</strong> Choose a character length between 43 and 128 characters (64 characters is recommended by security best practices to provide over 256 bits of entropy).
-        </li>
-        <li>
-          <strong>Select Challenge Transformation Method:</strong> Choose <strong>S256</strong> (the modern, secure standard). The <code>plain</code> option is provided strictly for debugging legacy endpoints that lack cryptographic hashing capabilities.
-        </li>
-        <li>
-          <strong>Generate or Input Verifier:</strong> Click <strong>Generate Random</strong> to create a fresh, cryptographically strong verifier using your browser's native CSPRNG (<code>window.crypto.getRandomValues</code>), or paste an existing verifier to derive its matching challenge.
-        </li>
-        <li>
-          <strong>Configure Authorization Preview (Optional):</strong> Enter your IdP authorization endpoint (e.g., <code>https://auth0.example.com/authorize</code> or <code>https://accounts.google.com/o/oauth2/v2/auth</code>) and your <code>client_id</code> to generate a live, copy-ready sample authorization request URL.
-        </li>
-        <li>
-          <strong>Copy Parameters:</strong> Use the dedicated copy buttons to transfer the <code>code_verifier</code>, <code>code_challenge</code>, or full request URL into your Postman collection, integration tests, or OAuth client config. Click <strong>Export JSON</strong> to download a structured JSON payload for audit logging.
-        </li>
-      </ol>
-
-      <h2>When to Use PKCE: Modern Architecture Scenarios</h2>
-      <p>
-        While initially invented for native mobile clients, PKCE is now an essential defensive control across virtually all modern web and mobile architectures:
+        It works with two values the app creates:
       </p>
       <ul>
-        <li>
-          <strong>Single Page Applications (React, Vue, Angular, Svelte):</strong> SPAs run entirely in untrusted browser environments. The OAuth 2.0 Implicit Flow (which returned tokens directly in URL hash fragments) is officially deprecated due to URL history leaks, referrer header snooping, and access token injection. All SPAs must now use the Authorization Code Grant with PKCE.
-        </li>
-        <li>
-          <strong>Native Mobile Applications (iOS, Android, React Native, Flutter):</strong> Mobile apps utilizing ASWebAuthenticationSession, SFSafariViewController, or Chrome Custom Tabs rely on PKCE to secure the handoff between the external system browser and the app.
-        </li>
-        <li>
-          <strong>Desktop Applications (Electron, Tauri, native macOS/Windows):</strong> Desktop clients opening a loopback HTTP server (e.g., <code>http://127.0.0.1:port/callback</code>) to capture authorization redirects must use PKCE to prevent local port-sniffing malware from stealing codes.
-        </li>
-        <li>
-          <strong>Confidential Server-Side Clients (OAuth 2.1 Compliance):</strong> The emerging <strong>OAuth 2.1</strong> standard mandates PKCE across <em>all</em> authorization code flows—even for confidential backend servers with client secrets. This defense-in-depth approach protects against authorization code injection and cross-site request forgery if an authorization code leaks in server access logs.
-        </li>
+        <li><strong>code_verifier</strong>: a fresh random string, 43 to 128 characters from the unreserved set <code>A–Z a–z 0–9 - . _ ~</code>.</li>
+        <li><strong>code_challenge</strong>: for the <code>S256</code> method, the Base64url (no padding) encoding of the SHA-256 hash of the verifier.</li>
       </ul>
-
-      <h2>Cryptographic Deep Dive: Anatomy of RFC 7636 Unreserved Set &amp; S256</h2>
       <p>
-        RFC 7636 specifies precise character sets and encoding transformations to ensure that PKCE parameters pass transparently through URI query strings and HTTP request bodies without percent-encoding mutations.
+        The app sends the <em>challenge</em> when it starts the flow and the <em>verifier</em> when it exchanges the code. The server hashes the verifier and checks it matches the challenge it stored. An attacker who stole only the code never saw the verifier, so the exchange fails.
       </p>
 
-      <h3>1. The Code Verifier Character Set</h3>
+      <h2>What This Tool Generates</h2>
+      <ul>
+        <li>A random <strong>code_verifier</strong> of the length you choose (default 64), using the Web Crypto secure random source and the RFC 7636 character set.</li>
+        <li>The matching <strong>code_challenge</strong> for S256 (or plain, which just repeats the verifier).</li>
+        <li>A sample authorization-request URL with the challenge filled in, so you can see where the parameters go.</li>
+      </ul>
       <p>
-        The <code>code_verifier</code> must use only characters from Section 2.3 of RFC 3986 (URI Unreserved Characters):
-      </p>
-      <pre><code>unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
-ALPHA      = %x41-5A / %x61-7A  (A-Z / a-z: 52 characters)
-DIGIT      = %x30-39            (0-9: 10 characters)
-Symbols    = "-" / "." / "_" / "~" (4 characters)
-Total Allowed Character Set: 66 characters</code></pre>
-      <p>
-        The minimum allowed length is <strong>43 characters</strong>, and the maximum is <strong>128 characters</strong>. Using 66 possible symbols, a 64-character verifier provides:
-      </p>
-      <blockquote>
-        $$\text{Entropy} = 64 \times \log_2(66) \approx 64 \times 6.044 = 386.8\text{ bits of entropy}$$
-      </blockquote>
-      <p>
-        This level of entropy renders online or offline brute-force guessing attacks mathematically impossible, far exceeding the 128-bit cryptographic security threshold.
+        You can also paste an existing verifier to compute its challenge. Everything runs in your browser. Generate a new verifier for every authorization request; never reuse one.
       </p>
 
-      <h3>2. The S256 Challenge Transformation</h3>
+      <h2>How to Use the PKCE Generator</h2>
+      <ol>
+        <li><strong>Pick a length</strong> (43–128) and click "Generate / Derive PKCE", or paste your own verifier.</li>
+        <li><strong>Copy the challenge and method</strong> (<code>S256</code>) into your authorization request.</li>
+        <li><strong>Keep the verifier</strong> in your app only, and send it with the authorization code at the token endpoint.</li>
+        <li><strong>Use the sample URL</strong> to confirm the parameter names: <code>code_challenge</code> and <code>code_challenge_method</code>.</li>
+      </ol>
+
+      <h2>Worked Example: The RFC 7636 Test Vector</h2>
       <p>
-        The <code>S256</code> transformation executes three sequential mathematical operations:
+        RFC 7636 Appendix B gives an official example. Paste its verifier into this tool and you get exactly the challenge below:
+      </p>
+      <pre><code>code_verifier:  dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
+code_challenge: E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+method:         S256</code></pre>
+      <p>
+        The steps are:
       </p>
       <ol>
-        <li><strong>ASCII Octet Conversion:</strong> The ASCII string of the <code>code_verifier</code> is converted into its underlying byte array.</li>
-        <li><strong>SHA-256 Digest:</strong> The byte array is hashed using the SHA-256 cryptographic hash function (FIPS 180-4), yielding exactly 32 bytes (256 bits).</li>
-        <li><strong>Base64URL Encoding:</strong> The 32-byte digest is encoded into URL-safe Base64 according to RFC 4648 Section 5:
-          <ul>
-            <li>Replace <code>+</code> with <code>-</code> (minus).</li>
-            <li>Replace <code>/</code> with <code>_</code> (underscore).</li>
-            <li>Strip all trailing <code>=</code> (padding) characters.</li>
-          </ul>
+        <li><strong>Hash the verifier with SHA-256.</strong> The ASCII bytes of the verifier hash to:
+          <pre><code>13d31e961a1ad8ec2f16b10c4c982e0876a878ad6df144566ee1894acb70f9c3</code></pre>
         </li>
+        <li><strong>Base64url-encode those 32 bytes</strong>, with no padding, replacing <code>+</code> with <code>-</code> and <code>/</code> with <code>_</code>. That gives the challenge <code>E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM</code>.</li>
       </ol>
       <p>
-        Because the output of SHA-256 is always 32 bytes, encoding 32 bytes into Base64 produces $32 \times 8 / 6 = 42.66 \implies 43$ characters (plus one padding character that is discarded). Thus, <strong>every valid S256 code_challenge is exactly 43 characters long</strong>.
+        We confirmed these values against RFC 7636 and a standard SHA-256 implementation; the tool produces the same result.
       </p>
 
-      <h2>Step-by-Step Worked Cryptographic Example</h2>
-      <p>
-        To verify deterministic interoperability between BitDark and standard RFC 7636 test vectors (such as Appendix B of RFC 7636), let us walk through an exact derivation:
-      </p>
-
-      <h3>Reference Input:</h3>
-      <pre><code>code_verifier:
-dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk</code></pre>
-
-      <h3>1. Validation:</h3>
-      <p>
-        Length is 43 characters (satisfies $43 \le \text{length} \le 128$). All characters belong to <code>[A-Za-z0-9\-\._~]</code>.
-      </p>
-
-      <h3>2. SHA-256 Hashing:</h3>
-      <p>
-        Passing the ASCII byte sequence into SHA-256 produces the following 32-byte hexadecimal hash:
-      </p>
-      <pre><code>Hex Digest:
-33e46c7f352e4e196c46a3d52d2394e304078f4b009dd70122a5ac4f50102606</code></pre>
-
-      <h3>3. Base64URL Transformation:</h3>
-      <p>
-        Standard Base64 encoding of these 32 bytes produces:
-      </p>
-      <pre><code>M+RsfzUuThlsRqPVLSOU4wQHj0sAndcBIqWsT1AQJgY=</code></pre>
-      <p>
-        Applying RFC 7636 Base64URL rules (substituting <code>+</code> with <code>-</code>, <code>/</code> with <code>_</code>, and trimming <code>=</code>):
-      </p>
-      <pre><code>code_challenge:
-M-RsfzUuThlsRqPVLSOU4wQHj0sAndcBIqWsT1AQJgY</code></pre>
-      <p>
-        This derived challenge matches the official RFC 7636 Appendix B test vector byte-for-byte.
-      </p>
-
-      <h2>Comparison: PKCE vs. Other OAuth 2.0 Security Primitives</h2>
-      <p>
-        PKCE is one component of a defense-in-depth identity architecture. It is vital to understand how PKCE complements related OAuth parameters:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Security Mechanism</th>
-              <th>Primary Threat Mitigated</th>
-              <th>RFC Standard</th>
-              <th>Where Evaluated</th>
-              <th>Replaces PKCE?</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>PKCE (code_verifier / challenge)</strong></td>
-              <td>Authorization Code Interception &amp; Code Injection</td>
-              <td>RFC 7636</td>
-              <td>Token Endpoint (<code>/token</code>)</td>
-              <td><strong>Target Standard</strong></td>
-            </tr>
-            <tr>
-              <td><strong>State Parameter (<code>state</code>)</strong></td>
-              <td>Cross-Site Request Forgery (CSRF) on Client</td>
-              <td>RFC 6749</td>
-              <td>Client Application Callback</td>
-              <td><strong>No.</strong> Must be used alongside PKCE.</td>
-            </tr>
-            <tr>
-              <td><strong>OpenID Connect Nonce (<code>nonce</code>)</strong></td>
-              <td>ID Token Replay Attacks</td>
-              <td>OIDC Core 1.0</td>
-              <td>Client validates inside ID Token claims</td>
-              <td><strong>No.</strong> Secures ID token authenticity.</td>
-            </tr>
-            <tr>
-              <td><strong>Client Secret (<code>client_secret</code>)</strong></td>
-              <td>Client Impersonation by Unauthorized Callers</td>
-              <td>RFC 6749</td>
-              <td>Token Endpoint (Confidential clients only)</td>
-              <td><strong>No.</strong> OAuth 2.1 mandates PKCE even with secrets.</td>
-            </tr>
-            <tr>
-              <td><strong>DPoP (Demonstrating Proof-of-Possession)</strong></td>
-              <td>Access Token &amp; Refresh Token Theft / Replay</td>
-              <td>RFC 9449</td>
-              <td>Resource Server (API Endpoints)</td>
-              <td><strong>No.</strong> Protects tokens <em>after</em> issuance.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Mistakes and Security Pitfalls in PKCE Deployments</h2>
-      <p>
-        Security audits frequently identify critical vulnerabilities in how developers integrate PKCE into client applications:
-      </p>
+      <h2>Using PKCE Correctly</h2>
       <ul>
-        <li>
-          <strong>Falling Back to <code>code_challenge_method=plain</code>:</strong> Plain mode sends the raw verifier string as the challenge in the initial GET request. If the user's browser history, proxy server, or local log records query parameters, the verifier is compromised, completely negating PKCE. Never enable plain mode on production servers.
-        </li>
-        <li>
-          <strong>Generating Verifiers with Math.random():</strong> JavaScript's standard <code>Math.random()</code> is a pseudo-random number generator (PRNG) with predictable internal state. Adversaries can predict future values using seed recovery algorithms. Always generate verifiers using <code>window.crypto.getRandomValues()</code>.
-        </li>
-        <li>
-          <strong>Persisting Code Verifiers in LocalStorage:</strong> Storing the <code>code_verifier</code> in browser <code>localStorage</code> leaves it exposed to Cross-Site Scripting (XSS) attacks. Keep verifiers in temporary JavaScript memory or transient <code>sessionStorage</code> that is purged immediately after the token response is received.
-        </li>
-        <li>
-          <strong>Omitting the <code>state</code> Parameter:</strong> Some developers assume PKCE replaces the OAuth <code>state</code> parameter. While PKCE prevents an attacker from redeeming a stolen code, it does not prevent CSRF login attacks (where an attacker tricks a victim's browser into completing an authorization request initiated by the attacker). Both <code>state</code> and PKCE are mandatory.
-        </li>
-        <li>
-          <strong>Reusing Code Verifiers Across Multiple Requests:</strong> A <code>code_verifier</code> must be strictly single-use. Generating a static verifier during app startup and reusing it across multiple login attempts allows an attacker who captures one challenge to replay it against subsequent requests.
-        </li>
+        <li><strong>Use S256, not plain.</strong> The <code>plain</code> method sends the verifier as the challenge, which gives no protection if the request is observed. RFC 7636 requires clients that can do SHA-256 to use S256.</li>
+        <li><strong>One verifier per request.</strong> Generate a new random verifier each time and discard it after the exchange.</li>
+        <li><strong>Enough randomness.</strong> The RFC requires the verifier to carry enough entropy; a 43-character random string from the unreserved set is the practical minimum, and longer is fine up to 128.</li>
+        <li><strong>PKCE isn't a client secret.</strong> It proves continuity within one flow; it doesn't authenticate the app. Confidential servers should still use a client secret as well.</li>
+        <li><strong>Still validate <code>state</code>.</strong> PKCE doesn't replace the <code>state</code> parameter, which protects against CSRF on the redirect.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between PKCE and the OAuth state parameter?</div>
+          <div class="faq-question">What's the difference between S256 and plain?</div>
           <div class="faq-answer">
-            The <code>state</code> parameter protects the client application against Cross-Site Request Forgery (CSRF) by binding the user's browser session to the authorization response. PKCE protects the authorization server against authorization code interception by proving that the client exchanging the authorization code at the <code>/token</code> endpoint is the exact same entity that initiated the authorization request at the <code>/authorize</code> endpoint. Both parameters are required for secure authorization flows.
+            With S256 the challenge is the SHA-256 hash of the verifier, so seeing the challenge doesn't reveal the verifier. With plain they're identical, which gives no protection if the authorization request is observed. Use S256 unless a client genuinely can't compute SHA-256.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why must code challenges be Base64URL encoded without padding?</div>
+          <div class="faq-question">How long should the code verifier be?</div>
           <div class="faq-answer">
-            Base64URL encoding replaces characters that have reserved meanings in URIs (<code>+</code> and <code>/</code>) with URL-safe equivalents (<code>-</code> and <code>_</code>). Trailing padding characters (<code>=</code>) are stripped because some HTTP client libraries and web proxies percent-encode <code>=</code> as <code>%3D</code>, which causes cryptographic string comparison mismatches on authorization servers.
+            Between 43 and 128 characters from the set A–Z, a–z, 0–9, and - . _ ~, chosen with a secure random generator. 43 is the minimum; this tool defaults to 64. Longer within the range is fine.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does OAuth 2.1 require PKCE for confidential clients?</div>
+          <div class="faq-question">Do confidential server apps need PKCE?</div>
           <div class="faq-answer">
-            Yes. While RFC 7636 originally specified PKCE for public clients, the consolidated OAuth 2.1 specification makes PKCE mandatory for all authorization code grants, including backend confidential clients that possess client secrets. This provides defense-in-depth against code injection and authorization code leakage.
+            It's recommended for all OAuth clients now, including confidential ones, as defense in depth. The OAuth 2.1 draft makes PKCE standard for the authorization-code flow. It complements, rather than replaces, a client secret.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can an attacker crack an S256 code_challenge using brute force?</div>
+          <div class="faq-question">Can I reuse a verifier and challenge?</div>
           <div class="faq-answer">
-            No. The minimum length of a valid code verifier is 43 characters drawn from a 66-character unreserved set, yielding over 260 bits of entropy. The SHA-256 hash function has no known pre-image vulnerabilities. Reversing a SHA-256 digest with this entropy level is computationally infeasible under the laws of modern physics.
+            No. Generate a new random verifier for every authorization request and use it only once. Reusing one weakens the protection, because an attacker who ever learns a verifier could use it again.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Where should the code_verifier be stored in a Single Page App?</div>
+          <div class="faq-question">Are the values generated here sent anywhere?</div>
           <div class="faq-answer">
-            The code verifier should be stored in volatile browser memory (e.g., an in-memory variable or closure) or transient <code>sessionStorage</code>. Once the authorization code is received and exchanged at the <code>/token</code> endpoint, the verifier must be permanently deleted from client memory.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What happens if an authorization server does not support PKCE?</div>
-          <div class="faq-answer">
-            If an authorization server does not support PKCE, it will typically ignore the <code>code_challenge</code> and <code>code_challenge_method</code> query parameters and issue an authorization code normally. However, modern identity providers (such as Auth0, Okta, Microsoft Entra ID, Google Identity, and Keycloak) enforce PKCE support by default.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Are my generated verifiers or URLs sent to BitDark servers?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All random entropy generation via <code>window.crypto.getRandomValues</code> and SHA-256 hashing via <code>window.crypto.subtle.digest</code> execute entirely inside your local browser's JavaScript sandbox. No data is ever transmitted over network sockets.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why is the minimum length for a code_verifier set to 43 characters?</div>
-          <div class="faq-answer">
-            RFC 7636 established the 43-character minimum because 43 characters drawn from a 66-character set provide 256 bits of entropy ($\log_2(66^{43}) \approx 259.9$ bits). This ensures that the entropy of the verifier matches or exceeds the 256-bit security strength of the SHA-256 hashing algorithm.
+            No. The verifier and challenge are generated and hashed in your browser with the Web Crypto API, and the tool makes no network requests with them. The sample URL is only displayed, not called.
           </div>
         </div>
       </section>
