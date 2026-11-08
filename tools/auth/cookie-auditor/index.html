@@ -6,8 +6,8 @@
   
   <title>Cookie Security &amp; Attribute Auditor — Free Offline AppSec Tool | BitDark</title>
   <meta name="title" content="Cookie Security &amp; Attribute Auditor — Free Offline AppSec Tool | BitDark" />
-  <meta name="description" content="Audit, inspect, and evaluate HTTP Set-Cookie directives, security flags, SameSite attributes, and session cookie hardening in local browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="cookie security auditor, set-cookie analyzer, check secure flag, samesite checker, httponly test, cookie security audit, rfc 6265bis, host prefix cookie, secure prefix, chips partitioned cookie, session hijacking defense, bitdark" />
+  <meta name="description" content="Check a Set-Cookie header for missing Secure, HttpOnly and SameSite attributes, __Host- and __Secure- prefix rules, Domain scope and CHIPS Partitioned cookies. Runs in your browser." />
+  <meta name="keywords" content="cookie security checker, set-cookie analyzer, samesite checker, httponly secure cookie, __host- prefix, chips partitioned cookie, session cookie best practices" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/cookie-auditor/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/cookie-auditor/" />
   <meta property="og:title" content="Cookie Security &amp; Attribute Auditor — Local Memory Scanner | BitDark" />
-  <meta property="og:description" content="Inspect HTTP Set-Cookie directives for session hijacking vectors, CSRF leakage, missing Secure/HttpOnly flags, and RFC 6265bis prefix isolation. 100% Client-Side." />
+  <meta property="og:description" content="Paste a Set-Cookie header to check its security attributes and prefix rules, with notes on browser differences and what the check misses. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/cookie-auditor/" />
   <meta name="twitter:title" content="Cookie Security &amp; Attribute Auditor | BitDark" />
-  <meta name="twitter:description" content="Audit HTTP Set-Cookie headers locally in memory. Zero tracking, zero telemetry, 100% private." />
+  <meta name="twitter:description" content="Check Set-Cookie security attributes in your browser. Nothing is uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Cookie Security & Attribute Auditor",
         "url": "https://bitdark.net/tools/auth/cookie-auditor/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive cybersecurity tool to parse, evaluate, and audit HTTP Set-Cookie directives, cryptographic flags, prefix standards (__Host- and __Secure-), and SameSite attributes locally inside browser volatile memory without network egress."
+        "description": "Browser-based Set-Cookie header auditor that checks Secure, HttpOnly, SameSite, cookie prefixes, Domain scope and Partitioned attributes."
       },
       {
         "@type": "TechArticle",
-        "headline": "Modern HTTP Cookie Security Architecture: RFC 6265bis, Prefixes, SameSite Isolation, and Session Hardening",
+        "headline": "Auditing Set-Cookie Headers: Secure, HttpOnly, SameSite and Cookie Prefixes",
         "url": "https://bitdark.net/tools/auth/cookie-auditor/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-05-18",
-        "dateModified": "2026-11-03",
-        "description": "Comprehensive technical guide on HTTP Set-Cookie header security, RFC 6265bis compliance, SameSite policies, cookie prefixes, CHIPS partitioning, and defense against XSS token harvesting and CSRF."
+        "dateModified": "2026-11-08",
+        "description": "What each cookie attribute does and how the auditor rates it, a worked example with three session cookies, cookie prefix rules under RFC 6265bis, and what the auditor doesn't check."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why is the HttpOnly flag critical for web session cookies?",
+            "name": "Does HttpOnly protect against XSS?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The HttpOnly flag instructs the user agent that the cookie must not be accessible via client-side Document Object Model (DOM) scripts such as document.cookie. This provides essential defense-in-depth against session hijacking: even if an adversary discovers a Cross-Site Scripting (XSS) vulnerability on the target origin, they cannot directly read or exfiltrate the session token."
+              "text": "Only partly. HttpOnly stops JavaScript from reading the cookie, so an XSS attack can't simply steal the session token. But the attacker's script can still send requests from the victim's browser, and the browser will attach the cookie. You still need to prevent XSS itself."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between the __Host- and __Secure- cookie prefixes?",
+            "name": "Do all browsers default to SameSite=Lax?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Both prefixes enforce that the cookie can only be set over a secure HTTPS connection. However, the __Host- prefix provides far stricter boundary isolation: it requires Path=/ and strictly forbids the Domain attribute. This guarantees that the cookie is locked exclusively to the exact originating host and cannot be read, overwritten, or tossed by insecure subdomains."
+              "text": "No. Chrome and other Chromium browsers treat a cookie without SameSite as Lax. Firefox tested Lax-by-default but didn't ship it because sites broke, so it treats a missing value as None. Set SameSite explicitly on every cookie."
             }
           },
           {
             "@type": "Question",
-            "name": "Does SameSite=Lax completely eliminate Cross-Site Request Forgery (CSRF)?",
+            "name": "Should I use SameSite=Strict or Lax for login sessions?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. SameSite=Lax withholds cookies on cross-site subresource requests (such as images, iframes, and AJAX POST requests), which neutralizes classic CSRF exploits. However, cookies with SameSite=Lax are still dispatched during top-level incoming navigations using safe HTTP methods (like GET requests triggered by clicking an external link). State-changing actions performed over GET remain vulnerable."
+              "text": "Lax is the usual choice: the cookie is sent when a user follows a link to your site, so they arrive logged in, but not on cross-site form posts or embedded requests. Strict is safer but means users following a link from another site appear logged out on the first page."
             }
           },
           {
             "@type": "Question",
-            "name": "What happens if a Set-Cookie header sets SameSite=None without the Secure flag?",
+            "name": "What does the __Host- prefix protect against?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "All modern standards-compliant web browsers reject any Set-Cookie directive that declares SameSite=None without also including the Secure flag. This behavior is enforced across modern engines to prevent unencrypted plaintext transmission of cross-origin identifiers over unencrypted HTTP channels."
+              "text": "It locks the cookie to a single host over HTTPS with Path=/. A compromised or attacker-controlled subdomain can't set or overwrite a __Host- cookie for your main site, which blocks session-fixation and cookie-tossing attacks."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my session cookies or header values transmitted to BitDark servers?",
+            "name": "Is my cookie sent anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All parsing, regular expression evaluation, attribute extraction, and RFC diagnostic checks execute 100% locally in your browser's private JavaScript memory space. Zero bytes leave your device."
+              "text": "No. Parsing and checks run in JavaScript in your browser, and the tool makes no network requests with your header. Even so, avoid pasting live session tokens; replace the value with a placeholder."
             }
           }
         ]
@@ -764,7 +764,7 @@
 
     <div class="tool-header">
       <h1>Cookie Security &amp; Attribute Auditor</h1>
-      <p>Analyze HTTP Set-Cookie header directives for session hijacking risks, CSRF exposure, missing Secure/HttpOnly flags, RFC 6265bis prefix validation, CHIPS partitioning, and SameSite enforcement entirely within local browser memory.</p>
+      <p>Paste a <code>Set-Cookie</code> header to check its <code>Secure</code>, <code>HttpOnly</code> and <code>SameSite</code> attributes, <code>__Host-</code> and <code>__Secure-</code> prefix rules, <code>Domain</code> scope and CHIPS <code>Partitioned</code> setting. Everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -821,325 +821,134 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Static Set-Cookie directive parsing evaluates structural syntax and flag presence only.</strong> A syntactically hardened cookie (such as one implementing <code>__Host-</code>, <code>Secure</code>, <code>HttpOnly</code>, and <code>SameSite=Strict</code>) does not guarantee application-layer authorization immunity if underlying session tokens suffer from weak entropy, predictable cryptographic randomness, session fixation vulnerabilities, server-side reuse, or improper database revoking. Always conduct end-to-end dynamic penetration testing, verify TLS cipher suites across edge reverse proxies, and audit authorization middleware in staging environments.
+        <strong>This checks cookie attributes, not your whole session security.</strong> It doesn't evaluate expiry or cookie values, and browser defaults differ (Firefox doesn't apply SameSite=Lax by default). Results are provided as-is; test changes in your own browsers before deploying. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article (2500+ Words) -->
     <article class="article-container">
-      <h2>The Critical Architecture of Modern HTTP Cookie Security</h2>
+      <h2>What This Auditor Checks</h2>
       <p>
-        HTTP cookies, originally introduced by Netscape Communications in 1994, remain the foundational mechanism for session state preservation, user authentication, and transaction continuity across the World Wide Web. Because the Hypertext Transfer Protocol (HTTP) was architected as an inherently stateless application-layer communication system, web servers must delegate identity persistence to the client user agent. When a client successfully presents authentication credentials, the server generates an opaque session identifier or cryptographic token and returns it within an HTTP response header via the <code>Set-Cookie</code> directive.
+        Paste one <code>Set-Cookie</code> header and the auditor parses its attributes and reports on each security-relevant one:
       </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Attribute</th>
+              <th>What it does</th>
+              <th>Finding if missing or weak</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>HttpOnly</code></td><td>Hides the cookie from JavaScript (<code>document.cookie</code>)</td><td>High</td></tr>
+            <tr><td><code>Secure</code></td><td>Sends the cookie only over HTTPS</td><td>High</td></tr>
+            <tr><td><code>SameSite</code></td><td>Controls whether the cookie is sent on cross-site requests: <code>Strict</code>, <code>Lax</code> or <code>None</code></td><td>Medium if missing or <code>None</code>; High if <code>None</code> without <code>Secure</code></td></tr>
+            <tr><td><code>__Host-</code> / <code>__Secure-</code> prefix</td><td>Makes the browser enforce stricter rules on the cookie</td><td>Low if no prefix; High if a prefix's rules are broken</td></tr>
+            <tr><td><code>Domain</code></td><td>Shares the cookie with subdomains</td><td>Medium when present</td></tr>
+            <tr><td><code>Partitioned</code></td><td>CHIPS: keeps a third-party cookie separate per top-level site</td><td>High if used without <code>Secure</code></td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        On subsequent requests within matching scope, the browser automatically attaches this token within the request's <code>Cookie</code> header. However, this automated re-submission mechanism creates severe security challenges. If an adversary steals an authentication cookie via Cross-Site Scripting (XSS), intercepts it across an insecure network transit hop, or tricks the user agent into dispatching it in an unauthorized Cross-Site Request Forgery (CSRF) exploit, the attacker gains complete, undetected impersonation of the victim's session.
-      </p>
-      <p>
-        Modern application security architecture treats cookie management not as simple key-value storage, but as a critical defense perimeter governed by <strong>RFC 6265</strong> and the emerging <strong>RFC 6265bis</strong> standard. Hardening cookies requires the rigorous orchestration of defensive attributes: <code>Secure</code>, <code>HttpOnly</code>, granular <code>SameSite</code> controls, scoped <code>Path</code> and <code>Domain</code> directives, lifecycle restrictions (<code>Max-Age</code> and <code>Expires</code>), and cryptographically validated naming prefixes (<code>__Host-</code> and <code>__Secure-</code>).
+        The rating is "Insecure / High Risk" if any finding is high, "Moderate Hardening" if any is medium, and "Hardened / Robust" otherwise.
       </p>
 
-      <h2>How to Use the BitDark Cookie Security Auditor</h2>
-      <p>
-        The BitDark Cookie Security Auditor performs instantaneous, client-side static heuristic audits of <code>Set-Cookie</code> header strings. It parses directives, inspects attribute combinations against RFC 6265bis security recommendations, and diagnoses latent session vulnerabilities:
-      </p>
+      <h2>How to Use the Cookie Auditor</h2>
       <ol>
-        <li>
-          <strong>Input or Load Directives:</strong> Paste your server's raw <code>Set-Cookie</code> response header into the input box. You can include or omit the leading <code>Set-Cookie:</code> prefix. Alternatively, click any of the preset sample buttons to load reference configurations (Hardened Prefix, Default Web Session, or Vulnerable Legacy Cookie).
-        </li>
-        <li>
-          <strong>Execute In-Memory Diagnostic:</strong> Click "Audit Cookie". The client-side parser splits the parameter string, normalizes directives, checks for syntax errors, and validates flag interdependencies directly in your browser's private JavaScript heap memory.
-        </li>
-        <li>
-          <strong>Evaluate Posture Rating:</strong> Inspect the top metric cards. The engine assigns a composite rating (Hardened / Robust, Moderate Hardening, or Insecure / High Risk), verifies XSS immunity (<code>HttpOnly</code> status), and grades CSRF resilience.
-        </li>
-        <li>
-          <strong>Review Detailed Finding Cards:</strong> Examine the color-coded diagnostic findings list. High-severity alerts indicate immediate session hijacking risks or browser rejection criteria; medium-severity items highlight broad scoping or default reliance; and pass items confirm hardened conformance.
-        </li>
-        <li>
-          <strong>Inspect Parsed JSON Structure:</strong> Review the normalized JSON representation of your cookie attributes to verify that directives like <code>Path</code>, <code>Domain</code>, <code>Max-Age</code>, and <code>Partitioned</code> were interpreted identically to standard browser engine parsing rules.
-        </li>
+        <li><strong>Copy a <code>Set-Cookie</code> header</strong> from your browser's developer tools (Network tab, response headers) or from <code>curl -I https://yoursite.com</code>.</li>
+        <li><strong>Paste one cookie at a time.</strong> With several lines, the tool merges them into one cookie and the results are wrong.</li>
+        <li><strong>Click "Audit Cookie"</strong> and fix high findings first.</li>
+        <li><strong>Check the parsed attributes</strong> at the bottom to confirm the tool read your header as intended.</li>
       </ol>
 
-      <h2>When to Use This Tool: Operational Threat Modeling Scenarios</h2>
-      <p>
-        Auditing cookie attributes is an indispensable verification step across the entire software development and defensive security lifecycle:
-      </p>
-      <ul>
-        <li>
-          <strong>Application Security & Pen-Testing Triage:</strong> During Web AppSec assessments, security engineers inspect response headers emitted by authentication endpoints (<code>/api/login</code>, <code>/oauth/token</code>) to verify that session identifiers cannot be accessed by rogue third-party JavaScript dependencies.
-        </li>
-        <li>
-          <strong>Regulatory Compliance Audits (PCI-DSS v4.0 & SOC 2):</strong> Requirement 6.4.3 and Requirement 8 of the Payment Card Industry Data Security Standard (PCI-DSS) mandate strict protections around session identifiers handling cardholder data. Security teams verify that payment session cookies strictly enforce <code>Secure</code> and <code>HttpOnly</code>.
-        </li>
-        <li>
-          <strong>Zero-Trust Architecture Migration:</strong> Organizations migrating legacy monolithic applications to microservice or multi-tenant architectures must replace broad wildcard domain cookies (e.g., <code>Domain=.corp.internal</code>) with host-bound <code>__Host-</code> prefixes to prevent subdomain lateral movement.
-        </li>
-        <li>
-          <strong>API Gateway & Reverse Proxy Configuration:</strong> DevOps engineers authoring rewrite rules in Nginx, Envoy, Traefik, or Cloudflare Workers use this auditor to ensure that upstream backend application cookies have security flags properly injected before exiting to client browsers.
-        </li>
-        <li>
-          <strong>Third-Party Cookie Deprecation & CHIPS Implementation:</strong> SaaS providers embedding widgets, identity providers, or checkout frames inside customer websites audit whether their cookies properly configure the <code>Partitioned</code> attribute to maintain cross-site functionality under browser privacy sandboxes.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Core Cookie Security Attributes</h2>
-
-      <h3>1. The HttpOnly Flag: Defense Against DOM Harvesting</h3>
-      <p>
-        The <code>HttpOnly</code> attribute was originally pioneered by Microsoft in Internet Explorer 6 SP1 to mitigate the catastrophic impact of Cross-Site Scripting (XSS). When a cookie includes <code>HttpOnly</code>, the browser's JavaScript runtime engine blocks access to that cookie through the <code>document.cookie</code> DOM API.
-      </p>
-      <p>
-        While <code>HttpOnly</code> does not prevent an attacker from executing actions on behalf of the victim via Cross-Site Scripting (a technique known as Cross-Site Script Tracing or in-session XSS proxying), it completely neutralizes offline session replication. Without <code>HttpOnly</code>, an attacker who injects a single line of JavaScript (e.g., via a compromised npm dependency or stored forum post) can read <code>document.cookie</code>, transmit the token to an external Command and Control (C2) server, and maintain perpetual unauthorized access.
-      </p>
-
-      <h3>2. The Secure Flag: Transport Layer Encryption Mandate</h3>
-      <p>
-        The <code>Secure</code> attribute instructs the user agent that the cookie must only be transmitted over an encrypted communication channel (HTTPS using TLS). In the absence of the <code>Secure</code> flag, if a user navigates to an unencrypted HTTP URL (or if an active network attacker performs SSL stripping or DNS redirection to an HTTP port), the browser will transmit the cookie in cleartext over the wire. Any eavesdropper on the local Wi-Fi network, ISP transit hop, or compromised router can intercept the plaintext session token.
-      </p>
-
-      <h3>3. SameSite Directives: Granular CSRF Mitigation</h3>
-      <p>
-        Cross-Site Request Forgery (CSRF) occurs when a malicious website instructs a victim's browser to execute an unwanted state-changing action on a trusted application where the victim is authenticated. Because browsers historically dispatched all associated cookies with every outbound request regardless of the originating site, the recipient server could not distinguish between a deliberate user action and a forged cross-site request.
-      </p>
-      <p>
-        The <code>SameSite</code> attribute governs cookie transmission across cross-site contexts, offering three distinct operational modes:
-      </p>
-      <ul>
-        <li>
-          <strong><code>SameSite=Strict</code>:</strong> The most secure policy. The cookie is never dispatched in cross-site requests under any circumstances—including when the user clicks a standard hyperlink from an external email, search engine, or messaging app. While offering absolute CSRF immunity, it forces the user to re-authenticate or refresh the page when landing on the application from external links.
-        </li>
-        <li>
-          <strong><code>SameSite=Lax</code>:</strong> The default behavior in modern Chromium, Firefox, and WebKit engines. The cookie is withheld on cross-site subresource requests (such as images, iframes, script tags, and AJAX/Fetch POST requests). However, the cookie <em>is</em> included when the user performs a "top-level navigation" that uses a safe HTTP method (specifically GET navigations, such as following an external hyperlink).
-        </li>
-        <li>
-          <strong><code>SameSite=None</code>:</strong> The cookie is dispatched on all cross-site requests, including third-party iframes and cross-origin resource requests. Under modern browser standards, setting <code>SameSite=None</code> <strong>mandates</strong> the inclusion of the <code>Secure</code> flag; otherwise, the user agent will reject the Set-Cookie directive entirely.
-        </li>
-      </ul>
-
-      <h3>4. Hardened Cookie Prefixes: RFC 6265bis (__Host- and __Secure-)</h3>
-      <p>
-        Historically, the HTTP cookie mechanism suffered from a severe structural flaw known as the <em>Cookie Tossing Attack</em> or <em>Subdomain Overwriting Attack</em>. Because cookies lack origin isolation (they are scoped to hostnames and domain suffixes rather than full schemes and ports), a vulnerable, compromised, or untrusted sibling subdomain (e.g., <code>blog.example.com</code> or <code>dev.example.com</code>) could set a cookie with <code>Domain=example.com</code>, effectively overwriting or shadowing the legitimate authentication cookie used by <code>app.example.com</code>.
-      </p>
-      <p>
-        To permanently eliminate this architectural flaw, <strong>RFC 6265bis</strong> introduced cryptographically enforced cookie prefixes:
-      </p>
-
+      <h2>Worked Example: Three Session Cookies</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Cookie Prefix</th>
-              <th>Enforced Scheme</th>
-              <th>Domain Attribute Allowed?</th>
-              <th>Required Path Directive</th>
-              <th>Security Guarantees</th>
+              <th>Set-Cookie header</th>
+              <th>Rating</th>
+              <th>Key findings</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong><code>__Host-</code></strong></td>
-              <td>HTTPS Only (Secure flag required)</td>
-              <td><strong>Strictly Forbidden</strong> (No Domain allowed)</td>
-              <td><strong>Must be <code>Path=/</code></strong></td>
-              <td>Host-bound isolation. Subdomains cannot read, modify, overwrite, or shadow this cookie. Highest security profile.</td>
-            </tr>
-            <tr>
-              <td><strong><code>__Secure-</code></strong></td>
-              <td>HTTPS Only (Secure flag required)</td>
-              <td>Allowed (Can be scoped to parent domain)</td>
-              <td>Any path allowed</td>
-              <td>Guarantees transmission over TLS, but allows domain delegation across subdomains if explicitly specified.</td>
-            </tr>
+            <tr><td><code>user_auth=admin:true; Path=/app;</code></td><td>Insecure / High Risk</td><td>Missing HttpOnly (high), missing Secure (high), no SameSite (medium)</td></tr>
+            <tr><td><code>session_id=…; Secure; HttpOnly; SameSite=Lax; Path=/; Domain=example.com</code></td><td>Moderate Hardening</td><td>Domain shares it with every subdomain (medium); no prefix (low)</td></tr>
+            <tr><td><code>__Host-auth_token=…; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=7200; Partitioned</code></td><td>Hardened / Robust</td><td>All checks pass, including the <code>__Host-</code> rules</td></tr>
           </tbody>
         </table>
       </div>
-
       <p>
-        If a server attempts to issue a cookie whose name starts with <code>__Host-</code> but fails to include <code>Secure</code>, sets a <code>Domain</code> attribute, or sets a <code>Path</code> other than <code>/</code>, standards-compliant browsers will reject and drop the cookie outright.
+        The first cookie has a second problem the tool doesn't look at: its value, <code>admin:true</code>, looks like a role stored on the client, which a user could simply edit. The auditor checks attributes only, never values.
+      </p>
+      <p>
+        A good default for a session cookie is:
+      </p>
+      <pre><code>Set-Cookie: __Host-session=&lt;random value&gt;; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800</code></pre>
+      <p>
+        Use <code>SameSite=Strict</code> if users never need to arrive already logged in from links on other sites. Drop <code>Partitioned</code> for first-party session cookies; it's meant for cookies set inside embedded third-party content.
       </p>
 
-      <h3>5. CHIPS: Cookies Having Independent Partitioned State</h3>
-      <p>
-        As modern web browsers phase out unpartitioned third-party cookies to eliminate behavioral cross-site tracking, legitimate embedded services (such as chat widgets, payment gateways, and federated identity providers) require a privacy-preserving mechanism to store state inside an <code>&lt;iframe&gt;</code>.
-      </p>
-      <p>
-        The <strong>CHIPS</strong> specification introduces the <code>Partitioned</code> attribute. When a cookie is marked as <code>Partitioned</code>, the browser stores the cookie using a dual-key partition: the top-level site origin (the parent page) and the embedded frame's origin. This ensures that an embedded widget on <code>site-a.com</code> cannot access the partitioned cookie set by that same widget on <code>site-b.com</code>, eliminating cross-site tracking while preserving isolated session continuity. Under RFC standards, <code>Partitioned</code> cookies must also include the <code>Secure</code> flag.
-      </p>
-
-      <h2>Worked Technical Example: Dissecting Set-Cookie Headers</h2>
-      <p>
-        To understand how the BitDark auditor analyzes raw directives, consider the forensic comparison between an insecure legacy configuration and an enterprise-hardened session header:
-      </p>
-
-      <h3>Scenario A: Vulnerable Legacy Session Header</h3>
-      <pre><code>Set-Cookie: user_session=a8f9c2e410b3; Domain=example.com; Path=/app; Expires=Wed, 21 Oct 2026 07:28:00 GMT</code></pre>
-      <p>
-        <strong>Auditor Diagnostics for Scenario A:</strong>
-      </p>
+      <h2>Cookie Prefix Rules</h2>
       <ul>
-        <li><span style="color: var(--atom-coral);">[HIGH SEVERITY]</span> <strong>Missing <code>HttpOnly</code>:</strong> Any client-side XSS vulnerability allows full extraction of <code>user_session</code> via <code>document.cookie</code>.</li>
-        <li><span style="color: var(--atom-coral);">[HIGH SEVERITY]</span> <strong>Missing <code>Secure</code>:</strong> The browser will dispatch the session token in plaintext if the user accesses an HTTP URL.</li>
-        <li><span style="color: var(--atom-amber);">[MEDIUM SEVERITY]</span> <strong>Unspecified <code>SameSite</code>:</strong> Relies on browser-specific default heuristics; older user agents will default to cross-site sending.</li>
-        <li><span style="color: var(--atom-amber);">[MEDIUM SEVERITY]</span> <strong>Broad Domain Scoping (<code>Domain=example.com</code>):</strong> Any compromised subdomain (e.g., <code>marketing.example.com</code>) can read and manipulate this session cookie.</li>
-        <li><span style="color: var(--atom-cyan);">[LOW SEVERITY]</span> <strong>No Prefix Protection:</strong> Vulnerable to cookie tossing and path shadowing attacks.</li>
+        <li><strong><code>__Secure-</code></strong>: the cookie must have <code>Secure</code> and be set from an HTTPS page.</li>
+        <li><strong><code>__Host-</code></strong>: the same, plus <strong>no</strong> <code>Domain</code> attribute and <code>Path=/</code>. The cookie is then locked to one exact host, so a subdomain can't overwrite it.</li>
       </ul>
-
-      <h3>Scenario B: RFC 6265bis Fully Hardened Session Header</h3>
-      <pre><code>Set-Cookie: __Host-auth_token=e4c7b89f01a3d5e7; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=7200; Partitioned</code></pre>
       <p>
-        <strong>Auditor Diagnostics for Scenario B:</strong>
+        Browsers reject prefixed cookies that break these rules. The current cookie specification, RFC 6265bis, approved as an IETF Proposed Standard in December 2025 to replace RFC 6265, defines both prefixes along with <code>SameSite</code>.
       </p>
+
+      <h2>What the Auditor Doesn't Check</h2>
       <ul>
-        <li><span style="color: var(--atom-green);">[PASS]</span> <strong>Hardened <code>__Host-</code> Prefix Verified:</strong> Origin-bound; subdomains cannot toss, overwrite, or access this session token.</li>
-        <li><span style="color: var(--atom-green);">[PASS]</span> <strong><code>HttpOnly</code> Enforced:</strong> The token is invisible to DOM scripting APIs, mitigating token theft via XSS.</li>
-        <li><span style="color: var(--atom-green);">[PASS]</span> <strong><code>Secure</code> Enforced:</strong> Strict HTTPS transport; transmission over unencrypted HTTP is mathematically blocked.</li>
-        <li><span style="color: var(--atom-green);">[PASS]</span> <strong><code>SameSite=Strict</code> Configured:</strong> Total CSRF immunity; token is withheld on all cross-site navigations.</li>
-        <li><span style="color: var(--atom-green);">[PASS]</span> <strong>Bounded Lifecycle (<code>Max-Age=7200</code>):</strong> Session cookie expires deterministically after two hours without relying on fragile client clock synchronization.</li>
-      </ul>
-
-      <h2>Cookie Attributes vs Threat Vectors Matrix</h2>
-      <p>
-        The following technical reference matrix summarizes how specific cookie attributes directly mitigate classic web application threat vectors:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Attack Vector</th>
-              <th>Threat Mechanism</th>
-              <th>Mitigating Directive</th>
-              <th>Residual Risk / Considerations</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>XSS Token Theft</strong></td>
-              <td>Script reads <code>document.cookie</code> and exfiltrates token to attacker C2.</td>
-              <td><code>HttpOnly</code></td>
-              <td>Attacker can still execute blind in-session actions (XHR proxying) while script runs.</td>
-            </tr>
-            <tr>
-              <td><strong>Network Interception</strong></td>
-              <td>Plaintext packet capture on public Wi-Fi or rogue ISP transit hops.</td>
-              <td><code>Secure</code></td>
-              <td>Must be paired with HTTP Strict Transport Security (HSTS) to prevent initial HTTP downgrades.</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Site Request Forgery (CSRF)</strong></td>
-              <td>Third-party origin forces victim browser to issue authenticated requests.</td>
-              <td><code>SameSite=Strict</code> / <code>Lax</code></td>
-              <td><code>Lax</code> still transmits on top-level GET navigations. Anti-CSRF tokens recommended for state-changing endpoints.</td>
-            </tr>
-            <tr>
-              <td><strong>Subdomain Cookie Tossing</strong></td>
-              <td>Compromised subdomain overwrites parent cookie to fixate victim session.</td>
-              <td><code>__Host-</code> Prefix</td>
-              <td>Requires modern browser engine supporting RFC 6265bis prefix validation.</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Site Tracking Deprecation</strong></td>
-              <td>Browsers block third-party cookies inside embedded iframes.</td>
-              <td><code>Partitioned</code> (CHIPS)</td>
-              <td>Widget cannot maintain shared global session across different top-level sites.</td>
-            </tr>
-            <tr>
-              <td><strong>Stale Session Replay</strong></td>
-              <td>Session remains valid indefinitely if user closes browser without logging out.</td>
-              <td><code>Max-Age</code> (e.g., <code>7200</code>)</td>
-              <td>Server-side invalidation and token blacklisting remain necessary upon user logout.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Mistakes and Implementation Anti-Patterns</h2>
-      <p>
-        Software engineers, DevOps teams, and security auditors frequently encounter recurring configuration anti-patterns that undermine cookie security:
-      </p>
-      <ul>
-        <li>
-          <strong>Relying on SameSite=Lax to Protect State-Changing GET Endpoints:</strong> Many web frameworks allow developers to implement actions like <code>/api/delete-account?id=123</code> or <code>/api/transfer?amount=500</code> using HTTP GET. Because <code>SameSite=Lax</code> transmits cookies on top-level incoming GET navigations, an attacker can simply trick a victim into clicking a link, completely bypassing CSRF defenses. <em>Rule: Never use GET requests for state-changing operations.</em>
-        </li>
-        <li>
-          <strong>Specifying Redundant or Permissive Domain Attributes:</strong> Developers frequently write <code>Domain=example.com</code> under the mistaken impression that it is required for the cookie to function on <code>example.com</code>. In reality, omitting the <code>Domain</code> attribute locks the cookie exclusively to the host that issued it. Specifying <code>Domain=example.com</code> explicitly relaxes the scope, permitting all subdomains (including untrusted staging, QA, or marketing subdomains) to receive the cookie.
-        </li>
-        <li>
-          <strong>Storing Sensitive Tokens in Web Storage (localStorage) Instead of Cookies:</strong> In single-page applications (React, Angular, Vue), developers often store JSON Web Tokens (JWTs) or refresh tokens inside <code>localStorage</code> or <code>sessionStorage</code> to make them easily accessible to JavaScript HTTP interceptors. This completely bypasses all browser cookie protections: any XSS flaw allows instant token exfiltration. Session tokens must always be held in hardened <code>HttpOnly</code> cookies.
-        </li>
-        <li>
-          <strong>Using Expires Instead of Max-Age:</strong> The <code>Expires</code> directive specifies an absolute calendar date string formatted according to RFC 1123 (e.g., <code>Wed, 21 Oct 2026 07:28:00 GMT</code>). If the client machine's clock is misconfigured or out of sync with NTP servers, the browser may expire the cookie prematurely or persist it indefinitely. Modern applications should prioritize <code>Max-Age</code>, which specifies lifetime in relative seconds.
-        </li>
-        <li>
-          <strong>Omitting Path=/ on Root Session Cookies:</strong> If an authentication cookie is set without an explicit <code>Path</code> attribute, the browser defaults to the directory of the current request path (e.g., setting a cookie during a POST to <code>/api/v1/auth/login</code> sets the cookie path to <code>/api/v1/auth/</code>). Requests to other application paths (like <code>/dashboard</code> or <code>/settings</code>) will not include the cookie, causing mysterious session drops.
-        </li>
+        <li><strong>Lifetime.</strong> <code>Max-Age</code> and <code>Expires</code> aren't evaluated. A session cookie with <code>Max-Age=31536000</code> (one year) still rates "Hardened / Robust".</li>
+        <li><strong>The value.</strong> Predictable IDs, user data or role flags in the value aren't detected.</li>
+        <li><strong>Browser differences.</strong> When <code>SameSite</code> is missing, the tool shows "Lax Default". That's true in Chrome and Edge, but Firefox treats a missing <code>SameSite</code> as <code>None</code>. Always set it explicitly.</li>
+        <li><strong>Your server.</strong> It reads the header you paste; it doesn't fetch your site.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the exact RFC governing modern cookie attributes?</div>
+          <div class="faq-question">Does HttpOnly protect against XSS?</div>
           <div class="faq-answer">
-            The historical foundation is <strong>RFC 6265</strong> ("HTTP State Management Mechanism"). However, modern security enhancements—including the <code>SameSite</code> attribute, cookie prefixes (<code>__Host-</code> and <code>__Secure-</code>), and the requirement that <code>SameSite=None</code> must accompany the <code>Secure</code> flag—are formally governed under the updated <strong>RFC 6265bis</strong> specification maintained by the IETF HTTP Working Group.
+            Only partly. HttpOnly stops JavaScript from reading the cookie, so an XSS attack can't simply steal the session token. But the attacker's script can still send requests from the victim's browser, and the browser will attach the cookie. You still need to prevent XSS itself.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the auditor flag a warning for broad domain scoping?</div>
+          <div class="faq-question">Do all browsers default to SameSite=Lax?</div>
           <div class="faq-answer">
-            When a Set-Cookie directive includes an explicit domain attribute such as <code>Domain=example.com</code>, the browser automatically broadens the cookie's scope to include all current and future subdomains (e.g., <code>test.example.com</code>, <code>dev.example.com</code>, <code>corp.example.com</code>). If any single subdomain experiences an XSS compromise or is hosted on third-party infrastructure (like a hosted marketing CMS), that subdomain can read or overwrite the cookie. Omitting the Domain attribute restricts the cookie strictly to the issuing origin.
+            No. Chrome and other Chromium browsers treat a cookie without SameSite as Lax. Firefox tested Lax-by-default but didn't ship it because sites broke, so it treats a missing value as None. Set SameSite explicitly on every cookie.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can client-side JavaScript delete an HttpOnly cookie?</div>
+          <div class="faq-question">Should I use SameSite=Strict or Lax for login sessions?</div>
           <div class="faq-answer">
-            No. Because <code>HttpOnly</code> cookies are completely hidden from the Document Object Model (DOM), scripts running in the browser cannot read, modify, or delete them via <code>document.cookie = "cookie_name=; Max-Age=0"</code>. To invalidate or destroy an HttpOnly cookie, the server must issue a new <code>Set-Cookie</code> header targeting the exact same name, domain, and path with an expired date or <code>Max-Age=0</code>.
+            Lax is the usual choice: the cookie is sent when a user follows a link to your site, so they arrive logged in, but not on cross-site form posts or embedded requests. Strict is safer but means users following a link from another site appear logged out on the first page.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is a Cookie Tossing attack and how does __Host- prevent it?</div>
+          <div class="faq-question">What does the __Host- prefix protect against?</div>
           <div class="faq-answer">
-            In a cookie tossing attack, an attacker controls a subdomain (e.g., <code>attacker.example.com</code>) and issues a cookie with <code>Domain=example.com</code> matching the name of a legitimate session cookie used by <code>secure.example.com</code>. When the victim visits <code>secure.example.com</code>, the browser sends both cookies. Because the HTTP specification does not define an order of precedence, the server may accept the attacker's fixated cookie. The <code>__Host-</code> prefix prevents this by forbidding the Domain attribute, guaranteeing that only the exact host can set or modify that cookie.
+            It locks the cookie to a single host over HTTPS with Path=/. A compromised or attacker-controlled subdomain can't set or overwrite a __Host- cookie for your main site, which blocks session-fixation and cookie-tossing attacks.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What occurs if both Expires and Max-Age are defined in the same Set-Cookie header?</div>
+          <div class="faq-question">Is my cookie sent anywhere?</div>
           <div class="faq-answer">
-            Under RFC 6265bis standards, if both <code>Max-Age</code> and <code>Expires</code> are present in a single <code>Set-Cookie</code> header, <code>Max-Age</code> takes absolute precedence. Modern browsers ignore the <code>Expires</code> value entirely and compute cookie lifespan using the relative seconds specified in <code>Max-Age</code>. <code>Expires</code> is often retained solely as a backward-compatibility fallback for legacy user agents like Internet Explorer.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does this tool transmit my authentication cookies to BitDark servers?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped, zero-network-egress security model. The parsing of the Set-Cookie string, the regular expression checks, the RFC attribute evaluations, and the JSON rendering all execute exclusively inside your web browser's local JavaScript execution context. Zero bytes are transmitted across any network interface.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can I use this auditor while disconnected from the Internet?</div>
-          <div class="faq-answer">
-            Yes. Once the page is loaded in your browser, you can completely disconnect your network adapter or activate Airplane Mode. The tool has zero runtime remote dependencies, no external font or script CDNs, and no telemetry pings.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is the Partitioned (CHIPS) cookie attribute and when is it required?</div>
-          <div class="faq-answer">
-            <code>Partitioned</code> is part of the Cookies Having Independent Partitioned State (CHIPS) standard. It is required for cross-site (third-party) cookies embedded in iframes—such as customer support widgets, embedded payment checkouts, or analytics services—to function in modern browsers that block traditional third-party tracking cookies. It ties the cookie to both the top-level origin and the embedded origin, and requires the <code>Secure</code> flag.
+            No. Parsing and checks run in JavaScript in your browser, and the tool makes no network requests with your header. Even so, avoid pasting live session tokens; replace the value with a placeholder.
           </div>
         </div>
       </section>
