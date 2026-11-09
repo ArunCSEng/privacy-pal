@@ -6,8 +6,8 @@
   
   <title>SSH Public Key Fingerprint Generator & OpenSSH Parser — BitDark</title>
   <meta name="title" content="SSH Public Key Fingerprint Generator & OpenSSH Parser — BitDark" />
-  <meta name="description" content="Calculate standard OpenSSH SHA-256 and MD5 public key fingerprints completely offline in browser memory. Parse Ed25519, RSA, ECDSA, and DSA keys with zero data leakage." />
-  <meta name="keywords" content="ssh fingerprint generator, openssh key parser, sha256 ssh fingerprint, md5 ssh fingerprint, ed25519 fingerprint, rsa key fingerprint, ssh-keygen online, check ssh key type, bitdark" />
+  <meta name="description" content="Generate SHA256 and MD5 fingerprints of an SSH public key in your browser. Matches ssh-keygen, for verifying host keys and auditing authorized_keys. Public keys only. Nothing is uploaded." />
+  <meta name="keywords" content="ssh fingerprint generator, sha256 ssh key fingerprint, md5 fingerprint, ssh-keygen -lf, host key verification, authorized_keys audit, ed25519 rsa fingerprint" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/ssh-fingerprint/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/ssh-fingerprint/" />
   <meta property="og:title" content="SSH Public Key Fingerprint Generator & OpenSSH Parser | BitDark" />
-  <meta property="og:description" content="Parse OpenSSH public keys (Ed25519, RSA, ECDSA) and compute standard Base64 SHA-256 and legacy colon-separated MD5 fingerprints locally in browser memory. 100% private with zero network telemetry." />
+  <meta property="og:description" content="Compute SHA256 and MD5 fingerprints of an SSH public key locally, matching ssh-keygen, with clear guidance on verifying host keys. Public keys only." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/ssh-fingerprint/" />
   <meta name="twitter:title" content="SSH Public Key Fingerprint Generator | BitDark" />
-  <meta name="twitter:description" content="Compute OpenSSH SHA-256 and MD5 key fingerprints entirely in browser memory. Zero network egress." />
+  <meta name="twitter:description" content="Generate SHA256/MD5 SSH key fingerprints in your browser, matching ssh-keygen. Public keys only; nothing uploaded." />
 
   <!-- Structured JSON-LD: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "SSH Public Key Fingerprint Generator",
         "url": "https://bitdark.net/tools/crypto/ssh-fingerprint/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Client-side cryptographic utility to inspect, parse, and calculate standardized SHA-256 and MD5 fingerprints from OpenSSH public keys (Ed25519, RSA, ECDSA, DSA) in volatile browser memory."
+        "description": "Browser-based SSH public-key fingerprint generator that computes the OpenSSH SHA256 (Base64) and MD5 (hex) fingerprints from the key blob, matching ssh-keygen."
       },
       {
         "@type": "TechArticle",
-        "headline": "OpenSSH Public Key Architecture, Fingerprint Hashing Algorithms, and Host Verification Forensics",
+        "headline": "SSH Key Fingerprints: SHA256 vs MD5, Verifying Host Keys, and Matching ssh-keygen",
         "url": "https://bitdark.net/tools/crypto/ssh-fingerprint/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-12",
-        "dateModified": "2026-10-30",
-        "description": "Comprehensive engineering guide detailing the RFC 4253 binary serialization of OpenSSH public keys, RFC 4716 encapsulation, SHA-256 Base64 digest generation, legacy MD5 fingerprinting, and Trust-On-First-Use (TOFU) host security."
+        "dateModified": "2026-11-09",
+        "description": "What an SSH fingerprint is, the SHA256 and MD5 formats, a worked example that matches ssh-keygen, what a fingerprint is and isn't good for, and safe use with public keys only."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is an SSH public key fingerprint and how is it derived?",
+            "name": "Why are there two fingerprints for one key?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "An SSH public key fingerprint is a condensed cryptographic digest computed exclusively over the raw binary key blob (the Base64-decoded portion of a public key). Modern OpenSSH installations compute a SHA-256 hash of this byte stream, encode it in Base64 without trailing '=' padding, and prefix it with 'SHA256:'. Legacy OpenSSH versions used hex-encoded MD5 hashes separated by colons."
+              "text": "They're the same key hashed two ways. SHA256 (Base64) is the modern OpenSSH default; MD5 (colon-separated hex) is the older format still seen in legacy tools and logs. Use SHA256, and only fall back to MD5 to match something that reports it."
             }
           },
           {
             "@type": "Question",
-            "name": "Why does the fingerprint not include the key type string or comment?",
+            "name": "Does this match ssh-keygen?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In the standard OpenSSH public key line format ('ssh-ed25519 AAAAC3... user@host'), the human-readable algorithm name at the beginning and the trailing comment (e.g., email or machine name) are plain metadata. The fingerprint is computed strictly over the decoded binary wire format of the public key blob specified in RFC 4253. Changing or removing the comment has zero impact on the resulting cryptographic fingerprint."
+              "text": "Yes. The fingerprints are computed the same way ssh-keygen computes them — a hash of the key's binary blob — so they match \"ssh-keygen -lf\" (SHA256) and \"ssh-keygen -E md5 -lf\" (MD5) for the same key."
             }
           },
           {
             "@type": "Question",
-            "name": "Is it safe to paste an SSH key into this online tool?",
+            "name": "Is it safe to share a key's fingerprint?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, provided you paste ONLY your public key (ending in .pub). Public keys are designed by mathematical definition to be shared openly with remote servers and public repositories. However, you must NEVER disclose or paste private identity keys (such as id_rsa or id_ed25519 without .pub). BitDark processes all public key payloads locally in browser RAM using Web Cryptography with zero network egress."
+              "text": "Yes. A fingerprint is derived from the public key, which is already shareable, and it can't be reversed into the key. Publishing a server's SHA256 fingerprint is in fact how operators let users verify a first connection."
             }
           },
           {
             "@type": "Question",
-            "name": "Why do some servers show MD5 fingerprints while others show SHA-256?",
+            "name": "Is the MD5 fingerprint still trustworthy?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Prior to OpenSSH 6.8 (released in 2015), MD5 was the default fingerprint algorithm, displayed as sixteen colon-separated hexadecimal octets. Due to collision attacks and weaknesses in the MD5 hashing algorithm, OpenSSH transitioned to Base64 SHA-256 as the universal standard. Many legacy cloud platforms, older hypervisors, and hardware appliances still report MD5 in their management consoles."
+              "text": "For simply recognising a key you already know, a matching MD5 fingerprint is a reasonable check. But MD5 is cryptographically broken, so don't rely on it where an attacker could deliberately craft a key with a colliding fingerprint. Prefer SHA256."
             }
           },
           {
             "@type": "Question",
-            "name": "How does an SSH fingerprint prevent Man-in-the-Middle (MitM) attacks?",
+            "name": "Can I paste my private key to fingerprint it?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "When you connect to an SSH server for the first time, the client receives the host's public key and prompts you to verify its fingerprint under the Trust-On-First-Use (TOFU) model. If an attacker intercepts the connection via DNS poisoning or ARP spoofing, they present their own host key. Comparing the presented fingerprint out-of-band against the server operator's known fingerprint unmasks the interception immediately."
+              "text": "No — paste only the public key (the .pub file or the authorized_keys line). Fingerprints are made from public keys, and a private key should never be entered into any online or third-party tool. This tool runs locally and uploads nothing, but the rule stands everywhere."
             }
           }
         ]
@@ -727,7 +727,7 @@
 
     <div class="tool-header">
       <h1>SSH Public Key Fingerprint Generator</h1>
-      <p>Parse OpenSSH public keys (Ed25519, RSA, ECDSA, DSA) and compute standardized SHA-256 and MD5 fingerprints in-memory for server verification, <code>authorized_keys</code> validation, and out-of-band host key audits.</p>
+      <p>Generate the SHA256 and MD5 fingerprints of an SSH public key to verify a host key or audit an authorized_keys entry. The fingerprints match ssh-keygen exactly, and everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -795,374 +795,114 @@
       </div>
     </section>
 
-    <!-- Operational Boundaries & Forensic Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Never paste private SSH identity keys.</strong> Only supply public keys (files terminating with the <code>.pub</code> extension, such as <code>id_ed25519.pub</code> or <code>id_rsa.pub</code>). Disclosing private keys (such as unencrypted PEM files starting with <code>-----BEGIN OPENSSH PRIVATE KEY-----</code>) compromises host authentication credentials across your entire infrastructure. While modern OpenSSH implementations rely exclusively on unpadded Base64 SHA-256 digests, legacy infrastructure still outputs colon-separated MD5 fingerprints; MD5 is cryptographically weak, prone to collision attacks, and retained here strictly for legacy cross-referencing against historic audit trails. All parsing and cryptographic hashing execute volatilely in browser memory with zero network egress.
+        <strong>Public keys only — never paste a private key.</strong> A fingerprint identifies a key but is only a trust check when you compare it to a value from a trusted source, not the one a server just offered. Prefer the SHA256 format; MD5 is weak and for legacy compatibility only. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Authoritative Deep-Dive Technical Content -->
     <article class="article-container">
-      <h2>The Cryptographic Architecture of SSH Key Fingerprints</h2>
+      <h2>What an SSH Fingerprint Is</h2>
       <p>
-        The Secure Shell (SSH) protocol, defined across RFC 4251, RFC 4252, and RFC 4253, forms the bedrock of server administration, automated configuration pipelines, Git version control, and infrastructure orchestration. At the heart of SSH security lies public-key cryptography: rather than transmitting vulnerable passwords across the wire, clients authenticate to remote servers using asymmetric keypairs (RSA, Ed25519, or ECDSA), and servers authenticate themselves to connecting clients via persistent host keys.
-      </p>
-      <p>
-        However, asymmetric public keys are lengthy binary structures. An Ed25519 public key spans 32 raw bytes (encapsulated into a 68-character Base64 string), while a 4096-bit RSA public key exceeds 500 raw bytes. Comparing these expansive character sequences by human inspection during a server connection is cognitively impossible and error-prone. 
-      </p>
-      <p>
-        To solve this verification dilemma, the SSH protocol standardizes <strong>cryptographic key fingerprints</strong>. A fingerprint is an algorithmic, deterministic, one-way hash computed over the raw wire-format representation of the public key. By condensing hundreds of bytes into a compact 43-character Base64 digest or 16-byte hexadecimal string, system administrators and DevSecOps engineers can verify host authenticity out-of-band in seconds, protecting connections against active Man-in-the-Middle (MitM) and DNS-spoofing attacks.
+        An SSH key fingerprint is a short hash of a public key that stands in for the whole key when you need to recognise it. It's the value in the <code>The authenticity of host '…' can't be established … key fingerprint is SHA256:…</code> prompt you see on a first connection, and it's how you confirm an entry in an <code>authorized_keys</code> file is the key you think it is. This tool takes a public key and produces its fingerprints in your browser.
       </p>
 
-      <h2>Anatomy of an OpenSSH Public Key: On-Disk vs Wire Format</h2>
+      <h2>Two Formats: SHA256 and MD5</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr><th>Format</th><th>Looks like</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>SHA256</strong></td><td><code>SHA256:4cIZJLDHLKi5…</code> (Base64)</td><td>Current OpenSSH default — use this</td></tr>
+            <tr><td><strong>MD5</strong></td><td><code>MD5:f9:aa:d2:6d:…</code> (hex pairs)</td><td>Legacy — for matching older systems and logs only</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        To understand how fingerprints are computed, one must dissect the structure of an OpenSSH public key file (such as <code>~/.ssh/id_ed25519.pub</code> or an entry inside <code>~/.ssh/authorized_keys</code>). An OpenSSH public key file is a single-line ASCII text string composed of three distinct space-delimited fields:
-      </p>
-      <pre><code>ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGo4kIuT0j8zW8YQYgL6dD3/3gN3QY4d5p4l1o7u8n9k admin@bitdark.net
-|_________| |______________________________________________________________| |_______________|
-  Field 1                                Field 2                                  Field 3
-(Key Type)                         (Base64 Key Blob)                             (Comment)</code></pre>
-      
-      <h3>Field 1: Declared Key Type Identifier</h3>
-      <p>
-        The first field declares the public key algorithm. Standard identifiers include <code>ssh-ed25519</code>, <code>ssh-rsa</code>, <code>ecdsa-sha2-nistp256</code>, <code>ecdsa-sha2-nistp384</code>, <code>ecdsa-sha2-nistp521</code>, and legacy <code>ssh-dss</code>. Modern OpenSSH also supports FIDO/U2F hardware security keys, which declare identifiers such as <code>sk-ssh-ed25519@openssh.com</code> or <code>sk-ecdsa-sha2-nistp256@openssh.com</code>.
+        OpenSSH switched its default to the SHA256 form years ago; the MD5 form appears in older documentation, device output and logs, which is why the tool shows both. Compare like with like — a SHA256 fingerprint only matches another SHA256 fingerprint.
       </p>
 
-      <h3>Field 2: Base64-Encoded RFC 4253 Wire Format Blob</h3>
+      <h2>A Worked Example You Can Verify</h2>
       <p>
-        The second field is the meat of the key. It is a Base64-encoded binary string structured according to the SSH transport layer binary encoding rules (RFC 4253, Section 6.6). Within this decoded binary buffer, values are serialized as big-endian length-prefixed strings: a 4-byte uint32 length prefix followed immediately by that exact number of bytes.
+        The fingerprints are exactly what <code>ssh-keygen</code> produces, because they're computed the same way — a hash of the key's binary blob. For a public key file:
       </p>
+      <pre><code>ssh-keygen -lf key.pub            # the SHA256:… fingerprint
+ssh-keygen -E md5 -lf key.pub     # the MD5:… fingerprint</code></pre>
       <p>
-        For instance, an Ed25519 public key blob decodes into two consecutive binary segments:
+        Load the built-in Ed25519 sample and the tool shows <code>SHA256:4cIZJLDHLKi51KIuoBRtXhoB64LM36q0ySgBWdViHiw</code> and <code>MD5:f9:aa:d2:6d:57:e4:33:dd:03:38:7e:67:a2:b1:29:bf</code> — the same values those commands give for that key. The SHA256 form is the Base64 of the SHA-256 hash with padding removed; the MD5 form is the hash as colon-separated hex.
+      </p>
+
+      <h2>What a Fingerprint Is — and Isn't — Good For</h2>
+      <p>
+        A fingerprint lets you <em>recognise</em> a key, but only helps if you compare it against a value you got through a trusted channel:
       </p>
       <ul>
-        <li><strong>Segment A (Algorithm String):</strong> <code>0x00 0x00 0x00 0x0B</code> (11 bytes in decimal), followed by the ASCII characters <code>ssh-ed25519</code>.</li>
-        <li><strong>Segment B (Public Key Octets):</strong> <code>0x00 0x00 0x00 0x20</code> (32 bytes in decimal), followed by the raw 32-byte Ed25519 public curve point.</li>
+        <li><strong>Verifying a server on first connect.</strong> The fingerprint is only meaningful if you check it against one the server's operator published, not the one the server itself just offered. Accepting whatever appears ("trust on first use") skips the actual verification.</li>
+        <li><strong>Auditing authorized keys.</strong> Fingerprint each entry to match it against a roster of keys you expect, and spot ones you don't.</li>
+        <li><strong>Confirming two copies match.</strong> Same key, same fingerprint — a quick way to check a key wasn't altered in transit.</li>
       </ul>
       <p>
-        For an RSA public key (<code>ssh-rsa</code>), the decoded binary blob contains three segments: the algorithm string <code>ssh-rsa</code>, the public exponent $e$ (typically $65537$ serialized as an MPInt), and the public modulus $n$ (2048 to 4096 bits).
+        A fingerprint is derived from the <strong>public</strong> key, so it isn't secret and is safe to publish. Prefer the SHA256 form; while a matching MD5 fingerprint is still a useful identity check in practice, MD5 is weak and shouldn't be relied on where an attacker could craft a colliding key.
       </p>
 
-      <h3>Field 3: Arbitrary Human Comment</h3>
-      <p>
-        The third field is an optional, unauthenticated comment—often defaulting to <code>user@hostname</code> or an administrative tag. <strong>This comment is never part of the cryptographic identity.</strong> A malicious actor can edit, alter, or remove the comment in an <code>authorized_keys</code> file, yet the underlying cryptographic key and its calculated fingerprint remain completely identical.
-      </p>
-
-      <h2>The Fingerprint Hashing Pipeline: Step-by-Step</h2>
-      <p>
-        A frequent misconception among junior engineers is that calculating an SSH fingerprint involves hashing the entire text line of the <code>.pub</code> file. Doing so produces a completely invalid hash that matches neither OpenSSH nor cloud providers.
-      </p>
-      <p>
-        The BitDark client-side parser executes the exact mathematical pipeline codified by OpenSSH:
-      </p>
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Extraction & Sanitization:</strong> The input string is trimmed of leading and trailing whitespace. The parser splits the string by whitespace delimiters, identifying the second field containing the Base64 payload.
-        </li>
-        <li>
-          <strong>Base64 In-Memory Binary Decoding:</strong> The Base64 string is decoded into an unsigned 8-bit typed array (<code>Uint8Array</code>). Trailing padding characters (<code>=</code>) are restored if omitted.
-        </li>
-        <li>
-          <strong>Internal Header Validation:</strong> The parser inspects the first 4 bytes of the binary array to unpack the big-endian uint32 length prefix, verifying that the embedded binary algorithm header matches the declared outer type.
-        </li>
-        <li>
-          <strong>SHA-256 Hash Computation:</strong> The complete binary blob is passed to the browser's native Web Crypto engine (<code>crypto.subtle.digest("SHA-256", bytes)</code>), producing a 32-byte (256-bit) raw digest.
-        </li>
-        <li>
-          <strong>OpenSSH Base64 String Encoding:</strong> The 32-byte digest is converted to standard Base64. Crucially, per OpenSSH convention (RFC 4716), all trailing Base64 padding characters (<code>=</code>) are <em>stripped</em>, and the string is prefixed with the case-sensitive protocol tag: <code>SHA256:</code>.
-        </li>
-        <li>
-          <strong>Legacy MD5 Octet Computation:</strong> For backwards compatibility with vintage networking hardware and legacy cloud logs, the binary blob is simultaneously hashed with MD5, generating 16 bytes. These 16 bytes are formatted as two-character lowercase hexadecimal octets separated by colons and prefixed with <code>MD5:</code>.
-        </li>
+        <li><strong>Paste a public key</strong> in OpenSSH format (<code>ssh-ed25519 AAAA… comment</code>), or load a sample.</li>
+        <li><strong>Read the fingerprints</strong> — SHA256 and MD5 — plus the detected key type.</li>
+        <li><strong>Compare</strong> against the fingerprint from a trusted source to confirm the key.</li>
+        <li><strong>Only paste public keys.</strong> Never paste a private key into any fingerprint tool.</li>
       </ol>
 
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Fingerprint Standard</th>
-              <th>Hash Primitive</th>
-              <th>Output Encoding</th>
-              <th>Example Output Representation</th>
-              <th>Operational Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Modern OpenSSH (Default)</strong></td>
-              <td>SHA-256</td>
-              <td>Base64 (Unpadded)</td>
-              <td><code>SHA256:IGo4kIuT0j8zW8YQYgL6dD3/3gN3QY4d5p4l1o7u8n9k</code></td>
-              <td><strong>Current Standard</strong> (Since OpenSSH 6.8+)</td>
-            </tr>
-            <tr>
-              <td><strong>Legacy OpenSSH (Historic)</strong></td>
-              <td>MD5</td>
-              <td>Colon-Separated Hex</td>
-              <td><code>MD5:4a:2b:8f:12:9e:34:c1:08:7d:65:bb:aa:99:32:11:e0</code></td>
-              <td>Deprecated (Retained for audit logs)</td>
-            </tr>
-            <tr>
-              <td><strong>Cloud Provider Hex (AWS/GCP)</strong></td>
-              <td>SHA-256</td>
-              <td>Raw Lowercase Hex</td>
-              <td><code>206b38908b93d23f335bc6106202fa743dfde2...</code></td>
-              <td>Used in Terraform & Cloud Consoles</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>How to Use the BitDark SSH Fingerprint Generator</h2>
-      <p>
-        Operating this utility requires zero command-line tools, Python dependencies, or OpenSSH binaries. All cryptographic calculations take place in real-time inside your browser's sandboxed memory:
-      </p>
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Step 1 — Obtain Your Public Key:</strong> Locate your public key on your local workstation. On Linux or macOS, run <code>cat ~/.ssh/id_ed25519.pub</code> or <code>cat ~/.ssh/id_rsa.pub</code>. On Windows, locate the key inside <code>C:\Users\&lt;Username&gt;\.ssh\id_ed25519.pub</code>.
-        </li>
-        <li>
-          <strong>Step 2 — Paste Into the Workspace:</strong> Paste the complete single-line string into the input area. You can also click "Sample Ed25519" or "Sample RSA" to inspect pre-configured test keys.
-        </li>
-        <li>
-          <strong>Step 3 — Instant Dynamic Parsing:</strong> As you type or paste, the heuristic engine verifies the key's internal wire structure, calculates the exact byte length, separates the host comment, and formats both SHA-256 and MD5 fingerprints.
-        </li>
-        <li>
-          <strong>Step 4 — Copy Verified Fingerprint:</strong> Click the "Copy" button adjacent to the SHA-256 or MD5 card to transfer the exact string to your clipboard for deployment verification or configuration file authoring.
-        </li>
+        <li><strong>Public keys only.</strong> The tool fingerprints whatever key text you give it; the private key never belongs here.</li>
+        <li><strong>A fingerprint isn't a trust decision by itself.</strong> It's only as good as the trusted value you compare it to.</li>
+        <li><strong>Prefer SHA256.</strong> Treat MD5 as compatibility output for older systems.</li>
+        <li><strong>Runs locally.</strong> The key is processed in your browser — nothing is uploaded.</li>
       </ul>
 
-      <h2>When to Use This Tool: Real-World Operational Scenarios</h2>
-      <p>
-        Verifying SSH public key fingerprints is an essential workflow across systems engineering, cybersecurity operations, and incident response:
-      </p>
-      <ul>
-        <li>
-          <strong>First-Time SSH Host Verification (TOFU Defense):</strong> When connecting to a brand-new cloud VPS (AWS EC2, DigitalOcean Droplet, Hetzner Cloud, or Linode), your SSH client intercepts the server's host key and warns:
-          <pre><code>The authenticity of host '198.51.100.42 (198.51.100.42)' can't be established.
-ED25519 key fingerprint is SHA256:7uGkL+...
-Are you sure you want to continue connecting (yes/no/[fingerprint])?</code></pre>
-          Rather than blindly pressing "yes", paste the server's public host key (retrieved from the cloud provider's web console serial log or provisioning template) into this tool to confirm that the presented fingerprint matches the genuine hardware before sending credentials.
-        </li>
-        <li>
-          <strong>Audit of <code>authorized_keys</code> Backdoors:</strong> During forensic incident response, attackers often inject unauthorized SSH keys into <code>~/.ssh/authorized_keys</code>. By parsing every line in the file with this tool, responders can extract the exact algorithm, binary length, and fingerprint to cross-reference against known employee keys or SIEM inventory lists.
-        </li>
-        <li>
-          <strong>Git Service Key Validation (GitHub / GitLab / Bitbucket):</strong> When managing developer teams, organizations enforce SSH signing or authentication keys. Security engineers can confirm that an engineer's uploaded public key matches their local machine by comparing the SHA-256 fingerprint shown on GitHub's settings page.
-        </li>
-        <li>
-          <strong>Terraform & Cloud-Init Provisioning:</strong> Infrastructure-as-Code (IaC) modules often require SSH fingerprints to validate imported key pairs. This tool generates the raw hex and OpenSSH SHA-256 representations needed for Terraform provider variables.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: SSH Key Algorithms Compared (RSA vs Ed25519 vs ECDSA)</h2>
-      <p>
-        Choosing the appropriate asymmetric algorithm for your SSH infrastructure directly impacts performance, side-channel resistance, and long-term cryptographic durability:
-      </p>
-
-      <h3>1. Ed25519 (Edwards-curve Digital Signature Algorithm)</h3>
-      <p>
-        Introduced in OpenSSH 6.5, Ed25519 utilizes the Twisted Edwards curve Curve25519 developed by Daniel J. Bernstein et al. It is universally considered the <strong>gold standard for modern SSH keys</strong>.
-      </p>
-      <ul>
-        <li><strong>Security Level:</strong> Provides roughly 128 bits of symmetric security equivalence with a compact 256-bit (32-byte) key length.</li>
-        <li><strong>Performance:</strong> Exceptionally fast key generation and signature verification. Immune to timing attacks and cache-collision attacks by mathematical design because operations execute in constant time without data-dependent branches.</li>
-        <li><strong>Collision & Bias Resistance:</strong> Signatures are deterministic (RFC 8032), eliminating the requirement for a cryptographically secure random number generator (CSPRNG) during signature generation.</li>
-      </ul>
-
-      <h3>2. RSA (Rivest–Shamir–Adleman)</h3>
-      <p>
-        RSA relies on the computational difficulty of factoring the product of two large prime numbers. While historically ubiquitous, RSA is falling out of favor in high-security environments.
-      </p>
-      <ul>
-        <li><strong>Key Size Vulnerability:</strong> RSA keys smaller than 2048 bits are fundamentally broken and rejected by modern OpenSSH clients. OpenSSH recommends at least 3072 or 4096 bits.</li>
-        <li><strong>SHA-1 Deprecation:</strong> OpenSSH 8.8 disabled the <code>ssh-rsa</code> signature algorithm by default due to catastrophic collision attacks against SHA-1. Modern RSA keys must use <code>rsa-sha2-256</code> or <code>rsa-sha2-512</code> signature schemes.</li>
-        <li><strong>Bloated Wire Size:</strong> A 4096-bit RSA public key produces an enormous wire blob, resulting in slower handshakes and larger footprint in embedded systems.</li>
-      </ul>
-
-      <h3>3. ECDSA (Elliptic Curve Digital Signature Algorithm)</h3>
-      <p>
-        Standardized by NIST across three prime curves (P-256, P-384, P-521), ECDSA offers smaller key sizes than RSA with comparable security levels.
-      </p>
-      <ul>
-        <li><strong>The Fatal Random Nonce Flaw:</strong> Unlike Ed25519, standard ECDSA requires a fresh, cryptographically secure random integer ($k$) for every single signature. If an RNG implementation fails or repeats a single value of $k$ across two distinct signatures, an adversary observing the network can algebraically compute the private key instantly (the exact vulnerability that allowed hackers to dump Sony PlayStation 3 root keys).</li>
-        <li><strong>Curve Skepticism:</strong> Continued cryptographic distrust surrounding the origin and seed constants of NIST curves leads many security teams to mandate Ed25519 exclusively.</li>
-      </ul>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Public Key Raw Size</th>
-              <th>Security Level (Bits)</th>
-              <th>Constant-Time Execution</th>
-              <th>Nonce Failure Risk</th>
-              <th>Recommended Deployment</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Ed25519</strong></td>
-              <td>32 Bytes</td>
-              <td>~128 bits</td>
-              <td>Yes (Native)</td>
-              <td>None (Deterministic)</td>
-              <td><strong>Universal Primary Choice</strong></td>
-            </tr>
-            <tr>
-              <td><strong>RSA-4096</strong></td>
-              <td>512 Bytes</td>
-              <td>~140 bits</td>
-              <td>No (Complex padding)</td>
-              <td>Low (Deterministic salt)</td>
-              <td>Legacy Compatibility Only</td>
-            </tr>
-            <tr>
-              <td><strong>RSA-2048</strong></td>
-              <td>256 Bytes</td>
-              <td>~112 bits</td>
-              <td>No</td>
-              <td>Low</td>
-              <td>Phase Out / Deprecate</td>
-            </tr>
-            <tr>
-              <td><strong>ECDSA P-256</strong></td>
-              <td>64 Bytes</td>
-              <td>~128 bits</td>
-              <td>Varies by library</td>
-              <td><strong>Catastrophic if CSPRNG fails</strong></td>
-              <td>Avoid if Ed25519 available</td>
-            </tr>
-            <tr>
-              <td><strong>DSA (DSS)</strong></td>
-              <td>128 Bytes</td>
-              <td>&lt; 80 bits</td>
-              <td>No</td>
-              <td>Severe</td>
-              <td><strong>Completely Insecure / Disabled</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>CLI Equivalents: Generating & Verifying Fingerprints on the Terminal</h2>
-      <p>
-        When working on headless servers or within automated CI/CD shell scripts, system administrators frequently verify fingerprints using native command-line utilities. Here is how the BitDark output maps to standard terminal commands:
-      </p>
-
-      <h3>1. Calculate Default SHA-256 Fingerprint from File</h3>
-      <pre><code>ssh-keygen -l -f ~/.ssh/id_ed25519.pub
-# Terminal Output:
-# 256 SHA256:IGo4kIuT0j8zW8YQYgL6dD3/3gN3QY4d5p4l1o7u8n9k user@workstation (ED25519)</code></pre>
-
-      <h3>2. Force Legacy MD5 Fingerprint Calculation</h3>
-      <pre><code>ssh-keygen -l -E md5 -f ~/.ssh/id_ed25519.pub
-# Terminal Output:
-# 256 MD5:4a:2b:8f:12:9e:34:c1:08:7d:65:bb:aa:99:32:11:e0 user@workstation (ED25519)</code></pre>
-
-      <h3>3. Fetch and Fingerprint a Remote Server's Host Keys Out-of-Band</h3>
-      <p>
-        To inspect a remote server's host key without completing an interactive login, use <code>ssh-keyscan</code> piped directly to <code>ssh-keygen</code>:
-      </p>
-      <pre><code>ssh-keyscan -t ed25519 bastion.example.com 2>/dev/null | ssh-keygen -l -f -
-# Terminal Output:
-# 256 SHA256:k7d0YQfL8x... bastion.example.com (ED25519)</code></pre>
-
-      <h3>4. Generate DNS SSHFP Records for Automated Host Verification</h3>
-      <p>
-        To eliminate TOFU prompt warnings entirely across enterprise infrastructure, administrators publish SSHFP (SSH Fingerprint) resource records into DNSSEC-secured zones:
-      </p>
-      <pre><code>ssh-keygen -r host.example.com. -f /etc/ssh/ssh_host_ed25519_key.pub
-# Terminal Output:
-# host.example.com. IN SSHFP 4 2 206b38908b93d23f335bc6106202fa743dfde2...</code></pre>
-      <p>
-        In this record, <code>4</code> designates the Ed25519 algorithm, and <code>2</code> designates a SHA-256 hash. When a client connects with <code>VerifyHostKeyDNS yes</code> configured, OpenSSH validates the server's fingerprint automatically against DNSSEC, defeating network-layer spoofing with zero human intervention.
-      </p>
-
-      <h2>Common Pitfalls and Forensic Misconceptions</h2>
-      <p>
-        When managing SSH keys and inspecting fingerprints, system administrators often fall prey to several common operational errors:
-      </p>
-      <ul>
-        <li>
-          <strong>Pasting Private Keys into Online Parsers:</strong> The most dangerous operational mistake is accidentally pasting <code>id_rsa</code> or <code>id_ed25519</code> (the private key) instead of the public file ending in <code>.pub</code>. BitDark includes defensive heuristic pattern checks that immediately halt execution and raise a security alert if the words <code>PRIVATE KEY</code> are detected.
-        </li>
-        <li>
-          <strong>Ignoring Cloud AWS Console Discrepancies:</strong> In Amazon Web Services (AWS EC2), keypair fingerprints behave differently depending on origin. If AWS generated the keypair, the console displays the SHA-1 digest of the private key's PKCS#8 PEM format. If the key was generated locally by the user and imported into AWS, the console displays an MD5 digest of the public key. This historical quirk often confuses engineers looking for an OpenSSH SHA-256 match.
-        </li>
-        <li>
-          <strong>Assuming Fingerprints Protect Private Keys:</strong> A fingerprint is a one-way hash of the <em>public</em> key. Knowing an entity's public key fingerprint does not give an attacker any mathematical advantage in cracking the private key, nor does it reveal private authorization passwords.
-        </li>
-        <li>
-          <strong>Failing to Clean <code>~/.ssh/known_hosts</code> After Host Reinstallation:</strong> When a remote server is re-imaged or provisioned anew, it generates fresh host keys. When connecting, your client alerts: <code>WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!</code>. If you verify out-of-band that the change was legitimate, remove the stale fingerprint entry using <code>ssh-keygen -R &lt;hostname_or_ip&gt;</code> before connecting.
-        </li>
-      </ul>
-
-      <!-- Interactive Accordion FAQ Section -->
+      <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between an SSH key and an SSH fingerprint?</div>
+          <div class="faq-question">Why are there two fingerprints for one key?</div>
           <div class="faq-answer">
-            An SSH key is the full mathematical object (either a private key used to sign challenges or a public key used by servers to verify signatures). An SSH fingerprint is a compact cryptographic hash (SHA-256 or MD5) calculated strictly over the public key's wire binary bytes, providing a short string that humans can easily read and verify.
+            They're the same key hashed two ways. SHA256 (Base64) is the modern OpenSSH default; MD5 (colon-separated hex) is the older format still seen in legacy tools and logs. Use SHA256, and only fall back to MD5 to match something that reports it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why did OpenSSH transition from MD5 to SHA-256 fingerprints?</div>
+          <div class="faq-question">Does this match ssh-keygen?</div>
           <div class="faq-answer">
-            MD5 suffered catastrophic collision attacks in the 2000s, where attackers demonstrated the ability to create two completely different binary payloads that produced identical MD5 hashes. To protect host verification from theoretical collision spoofing, OpenSSH 6.8 introduced SHA-256 Base64 digests as the default standard in 2015.
+            Yes. The fingerprints are computed the same way ssh-keygen computes them — a hash of the key's binary blob — so they match "ssh-keygen -lf" (SHA256) and "ssh-keygen -E md5 -lf" (MD5) for the same key.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does changing the comment at the end of a public key change its fingerprint?</div>
+          <div class="faq-question">Is it safe to share a key's fingerprint?</div>
           <div class="faq-answer">
-            No. Per RFC 4253, the fingerprint is computed exclusively over the binary key blob (the second field). The comment field (e.g., <code>admin@company.com</code>) is completely ignored during fingerprint computation and can be modified freely without altering the key's fingerprint.
+            Yes. A fingerprint is derived from the public key, which is already shareable, and it can't be reversed into the key. Publishing a server's SHA256 fingerprint is in fact how operators let users verify a first connection.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I calculate a private key's fingerprint directly from the private key file?</div>
+          <div class="faq-question">Is the MD5 fingerprint still trustworthy?</div>
           <div class="faq-answer">
-            Yes, because an OpenSSH private key file actually contains the public key mathematical parameters inside its internal structure. Running <code>ssh-keygen -l -f id_ed25519</code> extracts the embedded public curve point and hashes it. However, online tools should never request or accept private key files.
+            For simply recognising a key you already know, a matching MD5 fingerprint is a reasonable check. But MD5 is cryptographically broken, so don't rely on it where an attacker could deliberately craft a key with a colliding fingerprint. Prefer SHA256.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the "SHA256:" prefix and why does it lack trailing equals signs?</div>
+          <div class="faq-question">Can I paste my private key to fingerprint it?</div>
           <div class="faq-answer">
-            OpenSSH prefixes fingerprints with the hashing algorithm name (e.g., <code>SHA256:</code> or <code>MD5:</code>) to support algorithm agility. Trailing equals signs (<code>=</code>) in Base64 are padding characters indicating byte alignment. Because a SHA-256 hash is always exactly 32 bytes (256 bits), which translates into 43 Base64 characters plus one padding character, OpenSSH explicitly strips the redundant padding character to keep fingerprints concise.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Are my pasted keys stored on BitDark servers?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on a strict zero-network-egress security model. All parsing, base64 decoding, array slicing, and SHA-256 / MD5 hashing execute exclusively in your local browser's volatile RAM using the W3C Web Cryptography API. Zero bytes leave your device.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How can I view the raw hexadecimal format required by cloud APIs?</div>
-          <div class="faq-answer">
-            The third card in this tool outputs the "SHA-256 Raw Hexadecimal" format. Some infrastructure platforms, such as Terraform cloud state files, OpenStack, and custom Git hosting appliances, record fingerprints as 64-character lowercase hex strings rather than OpenSSH's Base64 convention.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is SSHFP and how does it relate to DNSSEC?</div>
-          <div class="faq-answer">
-            SSHFP is a standard DNS resource record type (RFC 4255) that stores the public key fingerprint of an SSH server inside DNS. When coupled with DNSSEC (Domain Name System Security Extensions), a connecting client can verify the server's fingerprint cryptographically through the DNS hierarchy, eliminating the Trust-On-First-Use (TOFU) prompt entirely.
+            No — paste only the public key (the .pub file or the authorized_keys line). Fingerprints are made from public keys, and a private key should never be entered into any online or third-party tool. This tool runs locally and uploads nothing, but the rule stands everywhere.
           </div>
         </div>
       </section>
