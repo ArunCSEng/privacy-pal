@@ -6,8 +6,8 @@
   
   <title>UUID / GUID Generator &amp; Inspector — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="UUID / GUID Generator &amp; Inspector — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Generate and validate cryptographically secure RFC 4122 and RFC 9562 UUIDs (Version 4 Random, Version 7 Time-Ordered, Version 1, and Nil) locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="uuid generator, guid generator, uuid v4 generator, uuid v7 generator, uuid inspector, offline uuid generator, rfc 9562, rfc 4122, unique identifier tool, bitdark" />
+  <meta name="description" content="Generate and inspect UUIDs (v4 random, v7 time-ordered, v1, nil) in your browser, with version, variant and timestamp decoding. RFC 9562. Nothing is uploaded." />
+  <meta name="keywords" content="uuid generator, guid generator, uuid v4, uuid v7, rfc 9562, uuid inspector, time-ordered uuid, uuid version variant" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/uuid-generator/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/uuid-generator/" />
   <meta property="og:title" content="UUID / GUID Generator &amp; Inspector — Local Memory Cryptography | BitDark" />
-  <meta property="og:description" content="Generate and dissect cryptographically secure UUIDv4 and time-ordered UUIDv7 identifiers locally in your browser. 100% Client-Side with zero tracking." />
+  <meta property="og:description" content="Generate and inspect UUIDs locally — v4, v7, v1 and nil — with version, variant and timestamp decoding and guidance on when to use each. Nothing is uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/uuid-generator/" />
   <meta name="twitter:title" content="UUID / GUID Generator &amp; Inspector | BitDark" />
-  <meta name="twitter:description" content="Generate high-entropy, time-ordered, and compliant RFC 4122/9562 UUIDs in browser RAM. Zero network egress." />
+  <meta name="twitter:description" content="Generate and inspect UUIDs (v4/v7/v1/nil) in your browser with version and timestamp decoding. RFC 9562; nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "UUID / GUID Generator & Inspector",
         "url": "https://bitdark.net/tools/crypto/uuid-generator/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Client-side cryptographic utility to generate, format, parse, and validate RFC 4122 and RFC 9562 UUIDs (v1, v4, v7, Nil) in local memory with zero data transmission."
+        "description": "Browser-based UUID/GUID generator and inspector supporting version 4, version 7 (RFC 9562), version 1 and nil UUIDs, with batch generation and version/variant/timestamp decoding."
       },
       {
         "@type": "TechArticle",
-        "headline": "UUID Architecture, RFC 9562 Specifications, and Database Primary Key Engineering",
+        "headline": "UUIDs Explained: v4 vs v7, Versions and Variants, and Why Not to Use Them as Secrets",
         "url": "https://bitdark.net/tools/crypto/uuid-generator/",
         "author": {
           "@type": "Organization",
@@ -57,42 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-10",
-        "dateModified": "2026-10-30",
-        "description": "Comprehensive guide on UUID standards, collision mathematics, B-Tree index fragmentation mitigations with UUIDv7, and browser Web Cryptography entropy sources."
+        "dateModified": "2026-11-09",
+        "description": "What a UUID is, the four versions and when to use each, a privacy note on v1, why UUIDs identify but don't authenticate, a reproducible v7 inspect example, and collision facts."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is the difference between a UUID and a GUID?",
+            "name": "Should I use v4 or v7?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Functionally, UUID (Universally Unique Identifier) and GUID (Globally Unique Identifier) refer to the same 128-bit mathematical concept. UUID is the standard terminology codified by the IETF (RFC 4122 and RFC 9562) and ITU-T, whereas GUID is Microsoft's historical terminology originally created for COM and Windows object identity."
+              "text": "Use v4 for general-purpose unique IDs. Use v7 when the ID will be a database primary key or otherwise needs to sort by creation time — its leading timestamp keeps indexes efficient, which random v4 keys don't. v7 is the modern choice for time-ordered identifiers."
             }
           },
           {
             "@type": "Question",
-            "name": "Why should modern database applications use UUIDv7 instead of UUIDv4?",
+            "name": "Are UUIDs guaranteed to be unique?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "UUIDv4 is completely pseudo-random, which causes severe B-Tree page splits, cache eviction, and random disk I/O when used as a clustered primary key in databases like PostgreSQL, MySQL InnoDB, or SQL Server. UUIDv7 embeds a 48-bit Unix millisecond timestamp at the beginning, ensuring natural chronological sorting while retaining 74 bits of entropy to prevent collisions."
+              "text": "Not guaranteed, but the collision probability for v4 is so small it's ignored in practice — you'd need on the order of 2.7 quintillion UUIDs for an even chance of one collision. For normal use they're effectively unique without any central coordination."
             }
           },
           {
             "@type": "Question",
-            "name": "Can two UUIDv4 identifiers collide in practice?",
+            "name": "Can I use a UUID as a secret or session token?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The mathematical probability of an authentic UUIDv4 collision is negligibly close to zero. With 122 bits of true entropy, one would need to generate approximately 2.71 quintillion UUIDs to reach a 50% chance of a single collision, far exceeding the lifespan and storage capacity of modern civilization."
+              "text": "A v4 UUID is cryptographically random, but v1 and v7 contain a predictable timestamp and shouldn't be used as secrets. For session IDs or reset links, use a dedicated random token of adequate length rather than repurposing a UUID, so the security properties are explicit."
             }
           },
           {
             "@type": "Question",
-            "name": "Are identifiers generated on BitDark safe from eavesdropping or server logging?",
+            "name": "Does a v1 UUID expose my MAC address?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. This tool operates under a strict air-gapped zero-network-egress model. All entropy is pulled from your browser's native crypto.getRandomValues API and processed entirely within local RAM. No tokens or parameters are transmitted to any server."
+              "text": "Traditional v1 UUIDs can embed the machine's MAC address. This tool doesn't — it uses a random node value with the multicast bit set, so no real hardware address is revealed. For new systems, v7 is preferable anyway."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What do the version and variant mean when I inspect a UUID?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The version (the 13th hex character) says how the UUID was made — 4 for random, 7 or 1 for time-based. The variant (the 17th character's high bits) marks the layout standard, normally RFC 4122/9562. The inspector reads both, plus the timestamp for time-based versions."
             }
           }
         ]
@@ -735,7 +743,7 @@
 
     <div class="tool-header">
       <h1>UUID / GUID Generator &amp; Inspector</h1>
-      <p>Generate high-entropy, cryptographically secure RFC 4122 and RFC 9562 UUID identifiers locally in browser memory using the native Web Cryptography API. Dissect, validate, and extract timestamps from arbitrary UUID tokens with zero server latency or data leakage.</p>
+      <p>Generate and inspect UUIDs (GUIDs) in your browser: version 4 (random), version 7 (time-ordered, RFC 9562), version 1, or the nil UUID, in batches with flexible formatting. The inspector decodes any UUID's version, variant and embedded timestamp.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -838,323 +846,119 @@
       </div>
     </section>
 
-    <!-- Operational Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Entropy Boundary:</strong> Identifiers generated within this workspace rely exclusively on the W3C Web Cryptography API (<code>crypto.getRandomValues</code>) executing within your local browser process. While mathematical collision risk for UUIDv4 is infinitesimal, application architects are responsible for verifying unique constraints within transactional datastores. Version 1 and Version 7 timestamp assertions reflect client device clock states and should not serve as unforgeable legal timestamps without independent trusted time-stamping authority (RFC 3161) countersignatures.
+        <strong>UUIDs identify, they don't authenticate.</strong> Time-based versions (v7, v1) contain a readable timestamp, so they reveal creation time and are partly predictable — don't use them as secrets or session tokens. v4 is cryptographically random, but for unguessable tokens use a purpose-built secret. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Authoritative Article (2,500+ Words) -->
     <article class="article-container">
-      <h2>The Architectural Evolution of Unique Identifiers: From Distributed Coordination to RFC 9562</h2>
+      <h2>What a UUID Is</h2>
       <p>
-        In modern computer systems, the requirement to assign a distinct identity to discrete entities—whether database rows, message queue payloads, distributed microservice trace spans, or cryptographic credentials—is absolute. In early centralized relational database designs, systems universally defaulted to monolithic auto-incrementing 32-bit or 64-bit integer sequences (e.g., <code>SERIAL</code> or <code>AUTO_INCREMENT</code>). While sequential integers provide compactness and optimal cache line utilization in B-Tree index structures, they break down entirely across distributed topologies.
-      </p>
-      <p>
-        Centralized counters introduce catastrophic operational friction: distributed nodes must either contact a single master coordinator across network partitions (introducing latency and single-point-of-failure risks), or allocate discrete ranges via complex two-phase commits. Furthermore, auto-incrementing serials expose devastating business intelligence vulnerabilities: competitors can scrape sequential URLs to calculate daily order volumes, user registration rates, and customer attrition.
-      </p>
-      <p>
-        To solve this distributed coordination dilemma without centralized bottlenecks, the computing industry developed the <strong>Universally Unique Identifier (UUID)</strong>, also standardized within Microsoft environments as the <strong>Globally Unique Identifier (GUID)</strong>. Codified originally in 2005 by the Internet Engineering Task Force (IETF) in <strong>RFC 4122</strong>, and radically updated in 2024 under <strong>RFC 9562</strong>, UUIDs represent 128-bit numerical values engineered to guarantee uniqueness across space and time without requiring coordination between the generating systems.
+        A UUID (also called a GUID) is a 128-bit identifier written as 36 characters — <code>xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx</code>. Its purpose is uniqueness without coordination: two systems can each mint UUIDs and trust they won't collide, so you never need a central authority to hand out IDs. The <code>M</code> position encodes the version and the <code>N</code> position the variant, which is how a tool can read back what kind of UUID it is. This generator makes and inspects them in your browser.
       </p>
 
-      <h2>How to Use the BitDark UUID Generator &amp; Inspector</h2>
+      <h2>The Versions, and When to Use Each</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr><th>Version</th><th>What it is</th><th>Use for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>v4</strong></td><td>122 bits of randomness</td><td>The general-purpose default when you just need a unique ID</td></tr>
+            <tr><td><strong>v7</strong></td><td>Unix-millisecond timestamp + randomness (RFC 9562)</td><td>IDs that should sort by creation time — ideal as database keys</td></tr>
+            <tr><td><strong>v1</strong></td><td>Timestamp + clock sequence + node</td><td>Legacy systems; largely superseded by v7</td></tr>
+            <tr><td><strong>Nil</strong></td><td>All zeros</td><td>A placeholder or "no value" sentinel</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        The BitDark UUID suite provides two operational operational workspaces: a high-throughput, entropy-backed batch generator and a granular byte-level structural inspector.
+        For most needs, <strong>v4</strong> is the right choice. Reach for <strong>v7</strong> when IDs are used as database primary keys: because the timestamp sits at the front, v7 values sort in creation order, which keeps database indexes compact and fast — a well-known weakness of fully-random v4 keys. v7 is the current recommendation for new time-ordered IDs.
       </p>
+
+      <h2>A Privacy Note on v1</h2>
+      <p>
+        Classic version 1 UUIDs embed the generating machine's MAC address, which can leak hardware identity. This tool avoids that: it generates a <em>random</em> node value with the multicast bit set, so a v1 UUID from here doesn't expose a real MAC. Even so, prefer v7 for new designs — it gives you time-ordering without the baggage.
+      </p>
+
+      <h2>UUIDs Identify; They Don't Authenticate</h2>
+      <p>
+        A UUID is an identifier, not a secret. Two cautions matter:
+      </p>
+      <ul>
+        <li><strong>Time-based UUIDs reveal when they were made.</strong> v7 and v1 contain a readable timestamp — useful for sorting, but it also means the creation time is visible to anyone who has the ID.</li>
+        <li><strong>Don't use v1 or v7 as security tokens.</strong> Their timestamp portion is predictable, so they're guessable in part. If you need an unguessable token (a session ID, a password-reset link), use a dedicated random token. A v4 UUID is cryptographically random, but for security tokens it's cleaner to use a purpose-built secret of adequate length than to repurpose a UUID.</li>
+      </ul>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Generate a v7 UUID, then paste it into the Inspect tab. The inspector reads the version and variant from the structural bits and decodes the embedded timestamp — which will match the moment you generated it, to the millisecond:
+      </p>
+      <pre><code>01a1c0f0-fdc6-71c8-bc65-29b6946de244
+   version nibble "7"  → Version 7
+   variant bits  "10"  → RFC 4122 / 9562
+   timestamp prefix    → the creation time</code></pre>
+      <p>
+        That round trip — generate, then inspect and see the correct time come back — demonstrates the format is being produced and parsed to spec.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Batch Generation:</strong> Select your desired UUID variant from the dropdown (such as <code>Version 4</code> for maximum cryptographic unpredictability, or <code>Version 7</code> for database-optimized temporal indexing). Choose your target quantity (from 1 to 1,000 items) and character casing.
-        </li>
-        <li>
-          <strong>Format Sanitization:</strong> Use the formatting checkboxes to toggle canonical hyphenation (<code>8-4-4-4-12</code>), enclose output within Microsoft COM-style curly braces (<code>{...}</code>), or wrap entries in double quotes for instant ingestion into JSON arrays or programming language string literals.
-        </li>
-        <li>
-          <strong>Zero-Egress Export:</strong> Click <em>Copy All</em> to load the tokens into your clipboard buffer, or <em>Download TXT</em> to export a newline-delimited text artifact. All generation executes inside ephemeral memory buffers without a single outbound HTTP packet.
-        </li>
-        <li>
-          <strong>Structural Inspection:</strong> Switch to the <em>Parser &amp; Validator</em> tab and paste any raw identifier string. The diagnostic engine strips enclosing symbols, tests hexadecimal conformity, determines the specification variant, extracts the version nibble, and decodes the embedded epoch timestamp (for Version 1 and Version 7 tokens).
-        </li>
+        <li><strong>Generate:</strong> pick a version, a batch count and formatting (case, hyphens, braces, quotes), then generate and copy or download.</li>
+        <li><strong>Inspect:</strong> paste any UUID to see its version, variant and, for v1/v7, the embedded timestamp.</li>
+        <li><strong>Choose v4 for general IDs, v7 for time-ordered keys.</strong></li>
+        <li><strong>Don't repurpose time-based UUIDs as secrets</strong> — use a dedicated random token instead.</li>
       </ol>
 
-      <h2>When to Use Each UUID Variant: Comparative Analysis</h2>
-      <p>
-        Choosing the wrong UUID version can inflict severe penalties on database write throughput, disk consumption, and system privacy. The following matrix illustrates the architectural tradeoffs across standardized variants:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>UUID Variant</th>
-              <th>RFC Standard</th>
-              <th>Primary Ordering</th>
-              <th>Entropy Bits</th>
-              <th>Collision Risk Vector</th>
-              <th>Optimal Production Use Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>UUIDv4</strong></td>
-              <td>RFC 4122 / 9562</td>
-              <td>Purely Random</td>
-              <td>122 bits</td>
-              <td>Weak PRNG implementation</td>
-              <td>API keys, session tokens, ephemeral security nonces, non-clustered datastore keys.</td>
-            </tr>
-            <tr>
-              <td><strong>UUIDv7</strong></td>
-              <td>RFC 9562 (2024)</td>
-              <td>Unix Millisecond Time</td>
-              <td>74 bits</td>
-              <td>Clock rollbacks / rapid batch bursts</td>
-              <td>High-throughput relational databases (PostgreSQL, MySQL, SQLite), distributed event logs.</td>
-            </tr>
-            <tr>
-              <td><strong>UUIDv1</strong></td>
-              <td>RFC 4122</td>
-              <td>100ns Gregorian Time</td>
-              <td>None (48-bit MAC)</td>
-              <td>Clock skew / MAC address leakage</td>
-              <td>Legacy enterprise directory architectures (LDAP, Active Directory, legacy Cassandra).</td>
-            </tr>
-            <tr>
-              <td><strong>UUIDv5</strong></td>
-              <td>RFC 4122 / 9562</td>
-              <td>Deterministic (SHA-1)</td>
-              <td>0 bits (Deterministic)</td>
-              <td>SHA-1 theoretical hash weaknesses</td>
-              <td>Consistent cross-system idempotent ID generation from strings/namespaces.</td>
-            </tr>
-            <tr>
-              <td><strong>Nil UUID</strong></td>
-              <td>RFC 4122 / 9562</td>
-              <td>Static (All Zeros)</td>
-              <td>0 bits</td>
-              <td>N/A (Represents null pointer)</td>
-              <td>Default initialization, sentinel values, foreign key deletion placeholders.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>The B-Tree Index Fragmentation Crisis: Why UUIDv4 Degrades Databases</h2>
-      <p>
-        For nearly two decades, software engineers defaulted to UUIDv4 as the universal primary key solution for microservices. While UUIDv4 successfully decentralizes identity creation, it introduces catastrophic performance degradation when paired with clustered index storage engines (such as MySQL InnoDB, Microsoft SQL Server clustered indexes, or PostgreSQL B-Tree indexes).
-      </p>
-      <h3>Understanding Clustered Index Mechanics</h3>
-      <p>
-        In relational database engines, table data is physically organized on disk according to its clustered primary key, structured as a balanced search tree (B+Tree). Each node in the B+Tree represents a fixed memory page (typically 8 KB or 16 KB). When keys are inserted sequentially (such as auto-incrementing integers), new records simply append to the rightmost leaf page. When a page fills to capacity, a clean split occurs, leaving older pages compact, sequential, and cached in the database buffer pool.
-      </p>
-      <h3>The UUIDv4 Insertion Penalty</h3>
-      <p>
-        Because UUIDv4 distributes values uniformly across the entire 128-bit numerical range with zero locality, every subsequent insertion targets an arbitrary, unpredictable page in the B+Tree. This creates severe physical consequences:
-      </p>
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Catastrophic Page Splits:</strong> When an insert lands on an existing page that is 100% full, the storage engine must allocate a new page, migrate half of the records, and rewrite intermediate node pointers. This leaves database pages half-empty (50% fill factor), doubling storage consumption.
-        </li>
-        <li>
-          <strong>Buffer Pool Thrashing:</strong> The database engine cannot keep the entire B+Tree in memory once the dataset exceeds RAM capacity. Because random inserts touch completely random pages, disk cache hit ratios plummet, converting every write into a high-latency physical disk read and write cycle.
-        </li>
-        <li>
-          <strong>Write Amplification on SSDs:</strong> Writing 100 bytes into a randomly split 16 KB page forces the operating system and flash storage controller to rewrite entire flash memory blocks, accelerating SSD wear and reducing total I/O operations per second (IOPS).
-        </li>
-      </ul>
-
-      <h3>The RFC 9562 Solution: UUIDv7 Time-Ordered Locality</h3>
-      <p>
-        Approved in 2024, <strong>RFC 9562</strong> resolved the B-Tree fragmentation crisis by formalizing <strong>UUIDv7</strong>. UUIDv7 structures the high 48 bits of the identifier as a big-endian millisecond Unix timestamp, followed immediately by standard 4-bit version and 2-bit variant fields, leaving the remaining 74 bits for cryptographically secure pseudo-random entropy.
-      </p>
-      <p>
-        Because the most significant bits advance monotonically with wall-clock time, new insertions always append to the rightmost leaf of a database B+Tree index. UUIDv7 delivers the exact write performance and caching efficiency of sequential integers while preserving distributed autonomy, global uniqueness, and total collision safety.
-      </p>
-
-      <h2>Mathematical Anatomy of RFC 4122 and RFC 9562 Identifiers</h2>
-      <p>
-        A canonical UUID is an exact 128-bit (16-byte) unsigned integer, displayed as 32 hexadecimal digits segmented by hyphens into five groups:
-      </p>
-      <pre><code>8 hex digits  -  4 hex digits  -  4 hex digits  -  4 hex digits  -  12 hex digits
-[ time_low ]  -  [ time_mid ]  -  [ ver + hi ]  -  [ var + clk ]  -  [ node / rand ]
-xxxxxxxx      -  xxxx          -  Mxxx          -  Nxxx          -  xxxxxxxxxxxx</code></pre>
-
-      <h3>1. The Version Field (Nibble M)</h3>
-      <p>
-        The version number resides in the four most significant bits of the seventh octet (bits 48 to 51 of the 128-bit sequence). In the canonical string format, this corresponds to the first character of the third segment (<code>M</code>):
-      </p>
-      <ul>
-        <li><code>1</code> (0001b): Time-based version using 100-nanosecond intervals since the Gregorian calendar reform (1582).</li>
-        <li><code>2</code> (0010b): DCE Security version embedding POSIX user/group UIDs.</li>
-        <li><code>3</code> (0011b): Name-based version using MD5 hashing (deprecated).</li>
-        <li><code>4</code> (0100b): Pure cryptographically strong pseudo-random number generation.</li>
-        <li><code>5</code> (0101b): Name-based version using SHA-1 hashing.</li>
-        <li><code>6</code> (0110b): Reordered Gregorian time-based identifier (RFC 9562).</li>
-        <li><code>7</code> (0111b): Unix Epoch time-ordered identifier with random entropy (RFC 9562).</li>
-        <li><code>8</code> (1000b): Custom experimental time-ordered formats.</li>
-      </ul>
-
-      <h3>2. The Variant Field (Bits N)</h3>
-      <p>
-        The variant defines the multiplexing layout and bit interpretation of the entire identifier. It occupies the most significant 1 to 3 bits of the ninth octet (the first character of the fourth segment, <code>N</code>):
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Variant Binary Mask</th>
-              <th>Hex Prefix (N)</th>
-              <th>Standard Specification</th>
-              <th>Architectural Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0xxx</code></td>
-              <td><code>0, 1, 2, 3, 4, 5, 6, 7</code></td>
-              <td>NCS Network Computing</td>
-              <td>Backward compatibility with Apollo NCS architecture (1980s).</td>
-            </tr>
-            <tr>
-              <td><code>10xx</code></td>
-              <td><code>8, 9, a, b</code></td>
-              <td><strong>RFC 4122 / RFC 9562</strong></td>
-              <td>Standard IETF/ITU-T specification used by 99.9% of modern systems.</td>
-            </tr>
-            <tr>
-              <td><code>110x</code></td>
-              <td><code>c, d</code></td>
-              <td>Microsoft GUID</td>
-              <td>Reserved for historical Microsoft COM/DCOM native GUID binary layouts.</td>
-            </tr>
-            <tr>
-              <td><code>111x</code></td>
-              <td><code>e, f</code></td>
-              <td>Reserved</td>
-              <td>Reserved by IETF standards committee for future architectural definition.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Collision Probability and Entropy Mathematics</h2>
-      <p>
-        A frequent misconception among junior engineers is that generating UUIDs without a central database coordinator risks duplicated keys. To evaluate this objectively, we apply the mathematics of the <strong>Generalized Birthday Problem</strong>.
-      </p>
-      <p>
-        In a standard RFC 4122 Version 4 UUID, 6 bits are fixed (4 bits for version <code>0100b</code> and 2 bits for variant <code>10xxb</code>). The remaining 122 bits represent pure entropy sourced from a Cryptographically Secure Pseudo-Random Number Generator (CSPRNG):
-      </p>
-      <pre><code>Total Possible UUIDv4 Combinations = 2^122 ≈ 5.3169 × 10^36</code></pre>
-      <p>
-        The probability $P$ of encountering at least one collision after generating $n$ distinct identifiers can be approximated through the Taylor expansion of the exponential function:
-      </p>
-      <pre><code>P(n) ≈ 1 - exp( -n² / (2 × 2¹²²) )</code></pre>
-      <p>
-        To put this number into perspective:
-      </p>
-      <ul>
-        <li>Generating <strong>1 billion UUIDs every single second</strong> for 100 consecutive years produces approximately $3.15 \times 10^{18}$ UUIDs.</li>
-        <li>The probability of a single collision occurring within that entire century of continuous generation is approximately $9.3 \times 10^{-19}$ (less than one in a quintillion).</li>
-        <li>You are billions of times more likely to have your production datacenter annihilated by an unpredicted meteor strike than to generate a duplicated UUIDv4 key.</li>
-      </ul>
-
-      <h2>Worked Forensic Examples: Dissecting Real-World Identifiers</h2>
-      <p>
-        To illustrate how the BitDark Parser analyzes raw bit streams, let us inspect two real-world identifiers: a modern database-oriented UUIDv7 and a legacy UUIDv1.
-      </p>
-
-      <h3>Scenario A: Deconstructing a UUIDv7 Identifier</h3>
-      <p>Consider the following UUIDv7 token generated within our local memory workspace:</p>
-      <pre><code>018df92c-6a7f-712b-8a8f-2872bc0e501d</code></pre>
-      <p>Breaking down its internal hexadecimal anatomy:</p>
-      <ul>
-        <li><strong>Timestamp Octets (<code>018df92c6a7f</code>):</strong> The first 48 bits represent the hexadecimal number <code>0x018df92c6a7f</code>. In decimal, this equals <code>1709325904511</code> milliseconds. Converting this Unix epoch integer to an ISO 8601 UTC timestamp yields <strong>2024-03-02T13:45:04.511Z</strong>.</li>
-        <li><strong>Version Octet (<code>712b</code>):</strong> The third group begins with <code>7</code> (Version 7), followed by 12 bits of sub-millisecond precision or random entropy (<code>12b</code>).</li>
-        <li><strong>Variant Octet (<code>8a8f</code>):</strong> The fourth group begins with <code>8</code> (binary <code>1000b</code>), which firmly confirms RFC 4122/9562 compliance. The remaining bits provide clock sequencing and entropy.</li>
-        <li><strong>Random Node Payload (<code>2872bc0e501d</code>):</strong> The final 48 bits consist entirely of high-entropy randomness generated via <code>crypto.getRandomValues</code>.</li>
-      </ul>
-
-      <h3>Scenario B: Deconstructing a Legacy UUIDv1 Identifier</h3>
-      <p>Next, consider an older timestamp-based UUIDv1 token:</p>
-      <pre><code>2c938d20-b472-11ef-8f12-0123456789ab</code></pre>
-      <p>Unlike UUIDv7, UUIDv1 stores its timestamp in reverse order (least significant bits first) based on 100-nanosecond intervals since October 15, 1582:</p>
-      <ul>
-        <li><code>time_low</code> = <code>2c938d20</code></li>
-        <li><code>time_mid</code> = <code>b472</code></li>
-        <li><code>time_hi_and_version</code> = <code>11ef</code> (Version is <code>1</code>, <code>time_hi</code> is <code>1ef</code>)</li>
-        <li>Reconstructing full 60-bit timestamp: <code>0x1efb4722c938d20</code> = <code>139538352000000000</code> intervals of 100ns.</li>
-        <li>Subtracting Gregorian offset (<code>122192928000000000</code>) and dividing by 10,000 gives Unix millisecond epoch timestamp: <strong>2024-12-07T10:40:00.000Z</strong>.</li>
-        <li><strong>Node Field (<code>0123456789ab</code>):</strong> In standard UUIDv1, this represents the host hardware MAC address. Because BitDark operates securely, our generator synthesizes a random pseudo-MAC and sets the multicast bit (bit 40) to prevent leaking your hardware identity.</li>
-      </ul>
-
-      <h2>Common Mistakes and Architectural Pitfalls</h2>
-      <p>
-        When implementing UUIDs within production enterprise systems, developers frequently make subtle cryptographic or architectural errors:
-      </p>
-      <ul>
-        <li>
-          <strong>Generating UUIDs with Math.random():</strong> A catastrophic vulnerability. JavaScript's <code>Math.random()</code> is not a CSPRNG; it uses algorithms like xorshift128+ that are completely deterministic and vulnerable to state recovery attacks. Never use <code>Math.random()</code> for tokens. Always use <code>crypto.getRandomValues()</code>.
-        </li>
-        <li>
-          <strong>Storing UUIDs as 36-Byte VARCHAR Strings:</strong> Storing a UUID as a raw hyphenated string (<code>VARCHAR(36)</code>) wastes 20 bytes per row compared to native binary storage (<code>BINARY(16)</code> or PostgreSQL's native <code>UUID</code> type). In tables with tens of millions of rows, this difference consumes gigabytes of redundant RAM in index caches.
-        </li>
-        <li>
-          <strong>Using UUIDv1 in Public APIs:</strong> UUIDv1 embeds the physical MAC address of the network interface card. Exposing UUIDv1 in client-accessible API URLs leaks internal server hardware identifiers and precise creation timestamps to attackers.
-        </li>
-        <li>
-          <strong>Ignoring Endianness in Mixed Environments:</strong> Microsoft's historical <code>System.Guid</code> structure stores the first three components in little-endian byte order, whereas RFC 4122 specifies big-endian network byte order. Passing raw GUID byte arrays between .NET and Linux/Java without endianness normalization can transpose byte ordering.
-        </li>
+        <li><strong>Collisions are effectively impossible.</strong> v4's 122 random bits mean you'd need on the order of a billion billion UUIDs before a collision becomes likely — not a practical concern.</li>
+        <li><strong>Not a security token source.</strong> UUIDs identify; for unguessable secrets use a purpose-built random token.</li>
+        <li><strong>Random source:</strong> generation uses the browser's cryptographic RNG, so v4 values are genuinely unpredictable.</li>
+        <li><strong>Runs locally.</strong> UUIDs are generated and inspected in your browser — nothing is uploaded.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is RFC 9562 and why does it supersede RFC 4122?</div>
+          <div class="faq-question">Should I use v4 or v7?</div>
           <div class="faq-answer">
-            RFC 9562 was officially ratified in May 2024 by the IETF to modernize the 20-year-old RFC 4122 standard. It introduces UUIDv6, UUIDv7, and UUIDv8 to natively address database indexing inefficiencies, standardize Unix epoch millisecond timestamps, and define explicit monotonic clock sequence handling for distributed architectures.
+            Use v4 for general-purpose unique IDs. Use v7 when the ID will be a database primary key or otherwise needs to sort by creation time — its leading timestamp keeps indexes efficient, which random v4 keys don't. v7 is the modern choice for time-ordered identifiers.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does UUIDv7 handle multiple IDs generated in the exact same millisecond?</div>
+          <div class="faq-question">Are UUIDs guaranteed to be unique?</div>
           <div class="faq-answer">
-            RFC 9562 provides multiple strategies for handling sub-millisecond generation bursts. The default approach utilizes fractional millisecond precision bits or incrementing clock sequence counters in the entropy field immediately following the timestamp. This guarantees that multiple UUIDs generated in the same millisecond retain strict lexicographical sort order without collisions.
+            Not guaranteed, but the collision probability for v4 is so small it's ignored in practice — you'd need on the order of 2.7 quintillion UUIDs for an even chance of one collision. For normal use they're effectively unique without any central coordination.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can an attacker predict future UUIDv4 values?</div>
+          <div class="faq-question">Can I use a UUID as a secret or session token?</div>
           <div class="faq-answer">
-            Not if the generator uses a true Cryptographically Secure Pseudo-Random Number Generator (CSPRNG). BitDark utilizes <code>crypto.getRandomValues()</code>, which pulls entropy from the host operating system kernel's cryptographic pool (such as Linux <code>/dev/urandom</code> or Windows CNG). Because each 122-bit block is cryptographically independent, predicting future outputs is mathematically infeasible.
+            A v4 UUID is cryptographically random, but v1 and v7 contain a predictable timestamp and shouldn't be used as secrets. For session IDs or reset links, use a dedicated random token of adequate length rather than repurposing a UUID, so the security properties are explicit.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Is it possible to extract the creation time of a UUIDv4?</div>
+          <div class="faq-question">Does a v1 UUID expose my MAC address?</div>
           <div class="faq-answer">
-            No. Version 4 UUIDs contain zero temporal data. Every bit outside the version nibble (<code>0100</code>) and variant bits (<code>10</code>) is pure random entropy. If your application architecture requires extracting timestamps from IDs without secondary database lookups, use UUIDv7 instead.
+            Traditional v1 UUIDs can embed the machine's MAC address. This tool doesn't — it uses a random node value with the multicast bit set, so no real hardware address is revealed. For new systems, v7 is preferable anyway.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is a Nil UUID used for?</div>
+          <div class="faq-question">What do the version and variant mean when I inspect a UUID?</div>
           <div class="faq-answer">
-            The Nil UUID is a special-case identifier where all 128 bits are set to zero (<code>00000000-0000-0000-0000-000000000000</code>). In software engineering, it acts as a non-null sentinel value, indicating an empty reference, an uninitialized variable, or an unset database foreign key without resorting to language-level <code>NULL</code> pointers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does UUID compare to ULID or NanoID?</div>
-          <div class="faq-answer">
-            ULID (Universally Unique Lexicographically Sortable Identifier) is functionally very similar to UUIDv7, combining a 48-bit timestamp with 80 bits of randomness, but standardizes on Crockford's Base32 encoding (26 characters) instead of hexadecimal. NanoID is a compact, customizable URL-friendly unique string generator. While ULID and NanoID are excellent, UUIDv7 has the massive advantage of being an official IETF international standard natively supported by database drivers and storage types.
+            The version (the 13th hex character) says how the UUID was made — 4 for random, 7 or 1 for time-based. The variant (the 17th character's high bits) marks the layout standard, normally RFC 4122/9562. The inspector reads both, plus the timestamp for time-based versions.
           </div>
         </div>
       </section>
