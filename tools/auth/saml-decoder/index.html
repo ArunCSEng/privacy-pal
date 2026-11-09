@@ -6,8 +6,8 @@
   
   <title>SAML Token &amp; Assertion Decoder — Free Offline Security Tool | BitDark</title>
   <meta name="title" content="SAML Token &amp; Assertion Decoder — Free Offline Security Tool | BitDark" />
-  <meta name="description" content="Inspect, parse, deflate, and evaluate SAML 2.0 and 1.1 authentication requests, responses, and assertions offline in browser memory. Verify XMLDSig envelopes, claims, and validity periods with zero network egress." />
-  <meta name="keywords" content="saml decoder, saml token inspector, saml response viewer, client-side saml, decode saml token offline, saml authnrequest decoder, saml attribute statement viewer, xmldsig parser, saml single sign-on debugger, okta saml decoder, azure ad saml inspector" />
+  <meta name="description" content="Decode and inspect SAML 2.0 Responses, Assertions and AuthnRequests in your browser: Subject, Issuer, validity, attributes and signature presence. Decompresses redirect-binding requests. Nothing is uploaded." />
+  <meta name="keywords" content="saml decoder, saml response decoder, decode samlrequest, saml assertion parser, saml attributes, saml signature, deflate samlrequest, sso debugging" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/saml-decoder/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/saml-decoder/" />
   <meta property="og:title" content="SAML Token & Assertion Decoder — In-Memory SSO Inspector | BitDark" />
-  <meta property="og:description" content="Inspect SAML 2.0 assertions, requests, and XML signatures locally in browser RAM. 100% Client-Side with zero tracking, server logging, or network egress." />
+  <meta property="og:description" content="Decode SAML Responses, Assertions and AuthnRequests in your browser and read their claims, with a clear note that it inspects signatures but doesn't verify them." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/saml-decoder/" />
   <meta name="twitter:title" content="SAML Token & Assertion Decoder | BitDark" />
-  <meta name="twitter:description" content="Parse SAML 2.0 responses, AuthnRequests, and XML digital signatures offline in browser memory. Zero network egress." />
+  <meta name="twitter:description" content="Decode and inspect SAML tokens in your browser. Nothing is uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "SAML Token & Assertion Decoder",
         "url": "https://bitdark.net/tools/auth/saml-decoder/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side cybersecurity tool to inspect, parse, deflate-decompress, and evaluate SAML 2.0 and SAML 1.1 assertions, AuthnRequests, and Responses locally in browser memory without network egress."
+        "description": "Browser-based SAML 2.0 decoder that Base64-decodes and DEFLATE-decompresses Responses, Assertions and AuthnRequests and extracts subject, issuer, validity, attributes and signature presence."
       },
       {
         "@type": "TechArticle",
-        "headline": "SAML 2.0 Protocol Architecture: Assertion Structure, XMLDSig Envelopes, and SSO Security Threat Modeling",
+        "headline": "Decoding SAML Tokens: Reading Assertions, Requests and Why Decoding Isn't Verifying",
         "url": "https://bitdark.net/tools/auth/saml-decoder/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-12",
-        "dateModified": "2026-10-31",
-        "description": "Exhaustive technical guide on Security Assertion Markup Language (SAML 2.0), HTTP Redirect and POST bindings, XML Signature Wrapping (XSW) attacks, and in-memory cryptographic parsing."
+        "dateModified": "2026-11-09",
+        "description": "What SAML is, what the decoder shows, why detecting a signature is not verifying it (demonstrated with a forged token), a worked example of four tokens, and common SSO problems to debug."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is SAML and how does federated Single Sign-On (SSO) work?",
+            "name": "Does this tool verify the SAML signature?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Security Assertion Markup Language (SAML 2.0) is an open XML-based standard for exchanging authentication and authorization data between an Identity Provider (IdP) and a Service Provider (SP). By establishing cryptographic trust through X.509 public certificates, users authenticate once with their primary identity provider and gain seamless access to multiple independent cloud applications."
+              "text": "No. It reports whether a ds:Signature element is present and its algorithm, but it doesn't check the signature against a certificate. A forged token with an invalid signature still shows as \"Signed\". Verify signatures in your service provider or with a SAML library."
             }
           },
           {
             "@type": "Question",
-            "name": "Why are SAML AuthnRequests deflated while SAML Responses are only Base64-encoded?",
+            "name": "What's the difference between a SAMLRequest and a SAMLResponse?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AuthnRequests typically utilize the HTTP-Redirect binding, which transmits the payload inside a URL query parameter (SAMLRequest=...). Because browser URL length constraints historically limited query strings, the XML is compressed using raw RFC 1951 DEFLATE prior to Base64 encoding. Conversely, SAML Responses utilize the HTTP-POST binding, transmitting larger XML documents containing multiple attributes within an HTTP POST body where URL character limits do not apply."
+              "text": "The SP sends a SAMLRequest (an AuthnRequest) to start login; the IdP returns a SAMLResponse containing the signed assertion about the user. On the redirect binding the request is DEFLATE-compressed and Base64-encoded, which this tool decompresses automatically."
             }
           },
           {
             "@type": "Question",
-            "name": "What is an XML Signature Wrapping (XSW) vulnerability?",
+            "name": "Why does my assertion show as expired?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "XML Signature Wrapping (XSW) is an attack where an adversary alters the structural hierarchy of a SAML message by moving a legitimately signed assertion to an unexpected location within the XML document and injecting an unsigned, malicious assertion in its place. If the Service Provider verifies the signature of the displaced legitimate assertion but evaluates identity claims from the malicious assertion, unauthorized authentication bypass occurs."
+              "text": "The current time is past the Conditions NotOnOrAfter value. This is often clock skew between the IdP and SP rather than a real expiry. Synchronise clocks with NTP and allow a small tolerance on the SP."
             }
           },
           {
             "@type": "Question",
-            "name": "What does 'Condition NotOnOrAfter expired' indicate in a SAML audit?",
+            "name": "Is SAML still used, or has OIDC replaced it?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The Conditions element defines the strict temporal window in which a SAML assertion is valid. The NotOnOrAfter attribute defines the exact UTC expiration timestamp. If the current system time exceeds this timestamp, the token is expired and must be rejected by the Service Provider to defend against assertion replay attacks."
+              "text": "Both are in wide use. OpenID Connect is common for new consumer and mobile apps, while SAML 2.0 remains standard for enterprise SSO and many existing business applications, so you'll still meet SAML tokens regularly."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my SAML tokens, corporate roles, or user emails sent to BitDark servers?",
+            "name": "Is my token uploaded?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All base64 decoding, RFC 1951 deflate decompression, XML DOM parsing, and JSON transformation execute entirely inside your local browser sandbox memory."
+              "text": "No. Decoding, decompression and parsing run in your browser, and the tool makes no network requests with your token. Because a valid SAML token is a live credential, still avoid pasting real production tokens anywhere you don't control."
             }
           }
         ]
@@ -764,7 +764,7 @@
 
     <div class="tool-header">
       <h1>SAML Token &amp; Assertion Decoder</h1>
-      <p>Inspect, parse, deflate, and evaluate SAML 2.0 / 1.1 assertions, AuthnRequests, and Response containers entirely inside browser memory. Extract Subject, Issuer, Validity periods, Claims, and Signatures with zero network telemetry.</p>
+      <p>Decode and inspect SAML 2.0 Responses, Assertions and AuthnRequests: Subject, Issuer, validity window, attributes and whether a signature is present. It decompresses redirect-binding requests, and everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -820,428 +820,127 @@
       <div class="terminal-box" id="rawViewer" tabindex="0">SAML assertion structure or decoded XML will appear here after evaluation.</div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Forensic Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>bitdark.net is not responsible for any security incidents, authentication bypasses, SAML signature wrapping (XSW) vulnerabilities, or trust misconfigurations resulting from the use of this tool.</strong> This utility parses XML nodes and extracts assertions locally in memory. It does not perform authoritative cryptographic signature verification or certificate path validation. Always rely on hardened, server-side authentication modules for production authorization decisions.
+        <strong>This tool decodes SAML; it does not verify signatures.</strong> "Signed" means a ds:Signature element is present, not that it's valid: a forged token still shows as signed. Verify signatures in your service provider or a SAML library. SAML tokens are live credentials, so don't paste real production tokens into tools you don't control. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article (2000+ Words) -->
     <article class="article-container">
-      <h2>Understanding Federated Identity and the SAML 2.0 Standard</h2>
+      <h2>What SAML Is</h2>
       <p>
-        In modern enterprise infrastructure, the fragmentation of user credentials across hundreds of cloud applications represents one of the most critical security liabilities. When employees manage discrete usernames and passwords for every internal dashboard, CRM, cloud console, and HR portal, organizational security degrades rapidly. Weak passwords proliferate, credential stuffing attacks succeed, and de-provisioning former employees becomes an error-prone manual task.
+        SAML (Security Assertion Markup Language) 2.0 is the XML standard behind much enterprise single sign-on. When you log in to a company app through an identity provider (IdP) such as Okta, Microsoft Entra ID or Ping, the IdP sends the app a signed XML <strong>assertion</strong> that says who you are and which attributes you have. The app (the service provider, SP) trusts it because of the IdP's digital signature.
       </p>
       <p>
-        To solve this structural challenge, the <strong>Security Assertion Markup Language (SAML 2.0)</strong> standard was developed by the OASIS Security Services Technical Committee. Ratified in 2005, SAML 2.0 established an open, vendor-neutral XML framework for exchanging authentication and authorization assertions across security domains. Rather than prompting a user to transmit raw password hashes to every individual application, SAML delegates user authentication to a centralized, hardened authority—the <strong>Identity Provider (IdP)</strong>—which issues cryptographically signed XML assertion envelopes to relying <strong>Service Providers (SPs)</strong>.
-      </p>
-      <p>
-        Today, SAML 2.0 serves as the foundational backbone for enterprise Single Sign-On (SSO), governing access across Okta, Microsoft Entra ID (formerly Azure Active Directory), PingFederate, Google Workspace, Shibboleth, and thousands of SaaS platforms. Understanding how to inspect, dissect, and audit these assertions is an indispensable skill for security engineers, cloud architects, and application security analysts.
+        The messages travel Base64-encoded, and the <code>SAMLRequest</code> on the redirect binding is also DEFLATE-compressed, so they're unreadable until decoded. This tool decodes all of that and lays out the fields.
       </p>
 
-      <h2>How to Use the BitDark Offline SAML Token Decoder</h2>
-      <p>
-        Inspecting SAML payloads with BitDark is engineered to be immediate, forensically sound, and strictly private. Follow these operational steps:
-      </p>
-      <ol>
-        <li>
-          <strong>Provide the SAML Payload:</strong> Paste your SAML data into the input console. The engine automatically handles multiple formats:
-          <ul>
-            <li>URL-encoded query strings from HTTP GET redirects (e.g., <code>SAMLRequest=...</code> or <code>SAMLResponse=...</code>).</li>
-            <li>Raw Base64-encoded strings (e.g., <code>PHNhbWxwOlJlc3BvbnNl...</code>).</li>
-            <li>Decompressed, human-readable raw XML markup.</li>
-          </ul>
-          Alternatively, drag and drop a <code>.xml</code>, <code>.saml</code>, or <code>.txt</code> file directly onto the upload zone.
-        </li>
-        <li>
-          <strong>In-Memory Decompression &amp; Normalization:</strong> If the payload was compressed via the HTTP-Redirect binding, the browser invokes the native <code>DecompressionStream</code> API (evaluating <code>deflate-raw</code> and standard <code>deflate</code>) in local memory to restore the original XML stream without transmission over any network.
-        </li>
-        <li>
-          <strong>Execute Safe Parsing:</strong> Click <strong>Decode Token</strong>. The parser sanitizes namespaces to eliminate DOMParser exceptions and extracts the structural claims.
-        </li>
-        <li>
-          <strong>Review Diagnostics &amp; Claims Grid:</strong> Inspect the primary identity parameters in the top diagnostic cards:
-          <ul>
-            <li><strong>Subject Common Name (NameID):</strong> The principal identity being authenticated (e.g., an email address or persistent GUID).</li>
-            <li><strong>Issuer EntityID:</strong> The formal URI identifying the Identity Provider authority that generated the token.</li>
-            <li><strong>Validity Window:</strong> The exact temporal validity window defined by <code>NotBefore</code> and <code>NotOnOrAfter</code> timestamps, including real-time expiration indicators.</li>
-            <li><strong>XML Digital Signature:</strong> Confirms the presence of <code>ds:Signature</code> and reveals the underlying cryptographic signing algorithm (such as <code>rsa-sha256</code>).</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Inspect Extracted Claims:</strong> Review the dynamic claims table displaying user roles, group memberships, department codes, and custom SAML attribute statements.
-        </li>
-        <li>
-          <strong>Export Structured Diagnostics:</strong> Click <strong>Copy Decoded JSON</strong> to obtain a machine-readable JSON representation of all claims for ticketing, incident analysis, or automated auditing.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Critical Enterprise Operational Scenarios</h2>
-      <p>
-        Inspecting SAML assertion envelopes in an air-gapped, zero-telemetry environment is essential across several operational engineering workflows:
-      </p>
-      <ul>
-        <li>
-          <strong>Single Sign-On (SSO) Integration Debugging:</strong> When configuring a new SaaS application with Okta, Azure AD, or PingIdentity, SAML logins frequently fail with generic errors like "Invalid SAML Response" or "Authentication Mismatch." Inspecting the raw payload reveals whether the SP received the correct <code>AudienceRestriction</code>, an unexpected <code>NameID</code> format, or mismatched claim names (e.g., <code>email</code> vs <code>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</code>).
-        </li>
-        <li>
-          <strong>Investigating Temporal Replay &amp; Clock Skew Errors:</strong> If a Service Provider rejects an assertion due to clock drift between server clusters, decoding the <code>NotBefore</code> and <code>NotOnOrAfter</code> conditions allows engineers to determine if the assertion window is too narrow or if server clocks have drifted past standard Network Time Protocol (NTP) tolerances.
-        </li>
-        <li>
-          <strong>Application Security (AppSec) &amp; Penetration Testing:</strong> Security researchers auditing SAML implementations evaluate tokens for critical architectural flaws, such as missing signatures, signature wrapping (XSW), or signature stripping vulnerabilities.
-        </li>
-        <li>
-          <strong>Incident Response &amp; Token Replay Audits:</strong> During forensic investigations of credential theft or identity compromise, security analysts dissect captured network logs to verify whether stolen SAML assertions were replayed against secondary service endpoints.
-        </li>
-        <li>
-          <strong>Zero-Trust Credential Hygiene:</strong> Standard online SAML viewers upload enterprise tokens to unknown third-party cloud servers. Because SAML assertions contain live corporate bearer claims, user email addresses, internal security groups, and public key certificates, uploading them to remote servers violates basic security hygiene. BitDark executes 100% in local browser memory.
-        </li>
-      </ul>
-
-      <h2>The Architecture of SAML 2.0: Core Components</h2>
-      <p>
-        A SAML 2.0 deployment relies on a tripartite trust model involving three distinct entities:
-      </p>
-      <ul>
-        <li><strong>The Principal:</strong> The human user or programmatic agent operating a web browser attempting to access a secured resource.</li>
-        <li><strong>The Identity Provider (IdP):</strong> The authoritative system that maintains user credentials, authenticates the principal (via passwords, FIDO2 WebAuthn tokens, or multi-factor authentication), and issues signed SAML assertions.</li>
-        <li><strong>The Service Provider (SP):</strong> The destination application or cloud service that relies on the IdP's assertions to grant authorization.</li>
-      </ul>
-
-      <pre><code>+-----------------------------------------------------------------------------------------+
-|                              SAML 2.0 Web Browser SSO Flow                              |
-+-----------------------------------------------------------------------------------------+
-|                                                                                         |
-|  [Principal / Browser] -------- (1) Access Protected App --------> [Service Provider]   |
-|           |                                                                |            |
-|           |<--- (2) HTTP 302 Redirect + Deflated SAMLRequest --------------+            |
-|           |                                                                             |
-|           +---- (3) Send AuthnRequest -----------------------------> [Identity Provider]|
-|           |                                                                |            |
-|           |<--- (4) Prompt Authentication (Password, MFA, Passkey) --------+            |
-|           |                                                                             |
-|           +---- (5) Submit Credentials ----------------------------> [Identity Provider]|
-|           |                                                                |            |
-|           |<--- (6) Return HTML Form with Base64 SAMLResponse -------------+            |
-|           |                                                                             |
-|           +---- (7) HTTP POST SAMLResponse to ACS URL -------------> [Service Provider] |
-|           |                                                                |            |
-|           |<--- (8) Verify XML Signature, Issue Session Cookie ------------+            |
-|                                                                                         |
-+-----------------------------------------------------------------------------------------+</code></pre>
-
-      <h2>SAML Protocol Bindings: HTTP-Redirect vs HTTP-POST vs Artifact</h2>
-      <p>
-        SAML messages can be packaged and transported across the network using several standardized protocol bindings:
-      </p>
-
-      <h3>1. HTTP-Redirect Binding</h3>
-      <p>
-        The HTTP-Redirect binding is primarily utilized for <strong>AuthnRequests</strong> initiated by the Service Provider. Because the browser transmits the request via an HTTP <code>GET</code> query parameter, strict URI length limits (historically 2,048 characters in older web browsers and web proxies) pose a challenge for verbose XML.
-      </p>
-      <p>
-        To overcome this limitation, the XML string undergoes a three-step compression and encoding pipeline:
-      </p>
-      <ol>
-        <li>The raw XML is compressed using the raw <strong>RFC 1951 DEFLATE</strong> algorithm (omitting zlib header wrappers).</li>
-        <li>The compressed byte stream is converted to standard Base64.</li>
-        <li>The Base64 string is URL-encoded and appended as a query parameter: <code>?SAMLRequest=...</code></li>
-      </ol>
-
-      <h3>2. HTTP-POST Binding</h3>
-      <p>
-        The HTTP-POST binding is the standard mechanism for returning <strong>SAML Responses and Assertions</strong> from the IdP back to the Service Provider's Assertion Consumer Service (ACS) endpoint. Because assertions contain comprehensive attribute dictionaries, X.509 public certificates, and cryptographic signature blocks, the XML payload can easily exceed 10 to 50 Kilobytes.
-      </p>
-      <p>
-        Under this binding:
-      </p>
-      <ul>
-        <li>The XML document is <strong>not deflated</strong>. It is Base64-encoded directly.</li>
-        <li>The IdP returns a small HTML document containing a self-submitting JavaScript form:
-          <pre><code>&lt;form method="post" action="https://app.bitdark.net/saml/ssoacs"&gt;
-  &lt;input type="hidden" name="SAMLResponse" value="PHNhbWxwOlJlc3BvbnNl..." /&gt;
-  &lt;input type="hidden" name="RelayState" value="https://app.bitdark.net/dashboard" /&gt;
-&lt;/form&gt;
-&lt;script&gt;document.forms[0].submit();&lt;/script&gt;</code></pre>
-        </li>
-      </ul>
-
-      <h3>3. HTTP-Artifact Binding</h3>
-      <p>
-        In high-security environments, transmitting sensitive claims through the user's browser represents an unacceptable attack surface. Under the HTTP-Artifact binding, the IdP sends only a lightweight, random reference pointer (an "Artifact") through the browser. The Service Provider then contacts the IdP directly over an encrypted, authenticated back-channel SOAP connection to retrieve the full SAML assertion.
-      </p>
-
-      <h2>The Anatomical Breakdown of a SAML 2.0 Response</h2>
-      <p>
-        A validated SAML 2.0 Response comprises several discrete, hierarchical XML elements:
-      </p>
+      <h2>What This Decoder Shows</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>XML Node Element</th>
-              <th>Namespace</th>
-              <th>Functional Security Purpose</th>
-            </tr>
+            <tr><th>Field</th><th>What it reports</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><code>&lt;samlp:Response&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:protocol</code></td>
-              <td>Top-level protocol container declaring the message ID, destination URL, issue instant, and overall protocol status.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:Issuer&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>Unique URI (EntityID) of the issuing authority. Must match the Service Provider's preconfigured trust metadata.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;samlp:Status&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:protocol</code></td>
-              <td>Communicates whether authentication succeeded (<code>urn:oasis:names:tc:SAML:2.0:status:Success</code>) or failed.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:Assertion&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>The core security token asserting identity, authentication context, conditions, and attribute claims.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:Subject&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>Identifies the principal being authenticated via a child <code>&lt;saml:NameID&gt;</code> node.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:Conditions&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>Defines strict temporal constraints (<code>NotBefore</code>, <code>NotOnOrAfter</code>) and audience restrictions.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:AuthnStatement&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>Declares the exact instant authentication occurred and the assurance class (e.g., password vs MFA).</td>
-            </tr>
-            <tr>
-              <td><code>&lt;saml:AttributeStatement&gt;</code></td>
-              <td><code>urn:oasis:names:tc:SAML:2.0:assertion</code></td>
-              <td>Houses dynamic key-value pairs representing user profile attributes, groups, and enterprise permissions.</td>
-            </tr>
-            <tr>
-              <td><code>&lt;ds:Signature&gt;</code></td>
-              <td><code>http://www.w3.org/2000/09/xmldsig#</code></td>
-              <td>Cryptographic XML digital signature envelope validating byte integrity and proving IdP provenance.</td>
-            </tr>
+            <tr><td>Subject (NameID)</td><td>Who the assertion is about</td></tr>
+            <tr><td>Issuer</td><td>The IdP entity ID that sent it</td></tr>
+            <tr><td>Validity Window</td><td>The <code>NotBefore</code>/<code>NotOnOrAfter</code> conditions, flagged <code>[EXPIRED]</code> if past</td></tr>
+            <tr><td>XML Digital Signature</td><td>Whether a <code>ds:Signature</code> element is present, and its algorithm</td></tr>
+            <tr><td>Attributes &amp; Claims</td><td>The attribute statements, such as email, roles or groups</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Cryptographic Assurance: XML Digital Signatures (XMLDSig) and Canonicalization</h2>
       <p>
-        Unlike lightweight modern tokens like JSON Web Tokens (JWT)—which concatenate Base64URL-encoded strings separated by simple periods—SAML relies on <strong>W3C XML Digital Signatures (XMLDSig)</strong>. XMLDSig offers immense flexibility, allowing signatures to be applied to the outer <code>&lt;samlp:Response&gt;</code> envelope, the inner <code>&lt;saml:Assertion&gt;</code>, or both simultaneously.
+        It accepts raw XML, Base64, URL-encoded <code>SAMLResponse=</code>/<code>SAMLRequest=</code> values, and DEFLATE-compressed redirect-binding requests, and it handles <code>Response</code>, <code>Assertion</code> and <code>AuthnRequest</code> messages.
       </p>
 
-      <h3>The Canonicalization (C14N) Challenge</h3>
+      <h2>Important: It Decodes, It Doesn't Verify</h2>
       <p>
-        In XML, two documents can be syntactically identical to an XML parser while having completely different raw byte streams. For example, changing attribute ordering, varying whitespace inside tags, or altering namespace prefix declarations does not change the document's logical meaning, but it completely alters standard SHA-256 binary checksums.
+        The "XML Digital Signature" field tells you only whether a <code>&lt;ds:Signature&gt;</code> element <em>exists</em> and names its algorithm. It does <strong>not</strong> check the signature against a certificate. We tested this: a token with the signature value replaced by <code>TOTALLYBOGUS==</code> still reports "Signed (rsa-sha256)" and a "Valid Envelope" banner, as long as its dates are current.
       </p>
       <p>
-        To solve this, XMLDSig mandates a <strong>Canonicalization Method (C14N)</strong>. Before computing a digest hash, the XML fragment is transformed into a standardized byte sequence. The most prevalent standard in SAML 2.0 is <strong>Exclusive XML Canonicalization (<code>http://www.w3.org/2001/10/xml-exc-c14n#</code>)</strong>, which canonicalizes the target node while strictly excluding unreferenced ancestor namespace declarations.
-      </p>
-
-      <pre><code>&lt;ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"&gt;
-  &lt;ds:SignedInfo&gt;
-    &lt;ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /&gt;
-    &lt;ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /&gt;
-    &lt;ds:Reference URI="#_d1a3eb80-2e02-4568-8e36-f61f4d417bef"&gt;
-      &lt;ds:Transforms&gt;
-        &lt;ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /&gt;
-        &lt;ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /&gt;
-      &lt;/ds:Transforms&gt;
-      &lt;ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /&gt;
-      &lt;ds:DigestValue&gt;k9Z...d8=&lt;/ds:DigestValue&gt;
-    &lt;/ds:Reference&gt;
-  &lt;/ds:SignedInfo&gt;
-  &lt;ds:SignatureValue&gt;mQe...1A==&lt;/ds:SignatureValue&gt;
-  &lt;ds:KeyInfo&gt;
-    &lt;ds:X509Data&gt;
-      &lt;ds:X509Certificate&gt;MIID...==&lt;/ds:X509Certificate&gt;
-    &lt;/ds:X509Data&gt;
-  &lt;/ds:KeyInfo&gt;
-&lt;/ds:Signature&gt;</code></pre>
-
-      <h2>SAML Threat Modeling: Top Attack Vectors and Vulnerabilities</h2>
-      <p>
-        The extreme structural flexibility of XML makes SAML implementations susceptible to subtle, high-impact security vulnerabilities if parsers are not strictly configured:
+        So never decide a token is trustworthy from this tool's output. Forging or tampering with SAML responses is a real attack class, including signature-stripping and XML signature-wrapping. Only a proper SAML library, validating the signature against the IdP's known certificate, can tell you a token is authentic. Use this tool to read and debug tokens, not to authenticate them.
       </p>
 
-      <h3>1. XML Signature Wrapping (XSW) Attacks</h3>
-      <p>
-        XML Signature Wrapping represents the most notorious class of SAML vulnerabilities (cataloged systematically from XSW 1 through XSW 8). In an XSW attack, an adversary intercepts a legitimate, signed SAML response. The attacker duplicates the original <code>&lt;saml:Assertion&gt;</code>, modifies the claims (e.g., changing the username from <code>alice@example.com</code> to <code>admin@example.com</code>), and displaces the original signed assertion to an unexpected location within the XML envelope (such as inside a dummy wrapper or an unverified extension block).
-      </p>
-      <blockquote>
-        <strong>The Vulnerability Mechanic:</strong> If the Service Provider's cryptographic verification module inspects the original, displaced assertion (confirming a valid signature), but the business logic module reads user identity claims from the forged, unsigned assertion at the expected XPath location, the attacker achieves complete administrative authentication bypass.
-      </blockquote>
+      <h2>How to Use the SAML Decoder</h2>
+      <ol>
+        <li><strong>Paste a token</strong> from your browser's developer tools (the <code>SAMLResponse</code> form field during login) or a <code>SAMLRequest</code> from a redirect URL, and click "Decode Token". You can also drop an <code>.xml</code> file.</li>
+        <li><strong>Check the Subject, Issuer and Validity</strong> against what you expect.</li>
+        <li><strong>Read the attributes</strong> to debug missing roles or wrong claim names, the most common SSO problems.</li>
+        <li><strong>Treat "Signed" as "a signature is present"</strong>, then verify it properly in your SP or with a SAML library.</li>
+      </ol>
 
-      <h3>2. Golden SAML Attacks (SolarWinds Threat Actor Vector)</h3>
-      <p>
-        Made famous during the SolarWinds supply-chain breach by nation-state actors (APT29 / Nobelium), the "Golden SAML" technique does not exploit a flaw in the SAML protocol itself, but rather in key management. If an adversary compromises the private signing key certificate of an organization's on-premises Active Directory Federation Services (AD FS) or identity cluster, the attacker can forge perfectly valid, cryptographically signed SAML assertions offline.
-      </p>
-      <p>
-        Because the adversary holds the genuine private key, the forged assertions pass all cryptographic signature checks at any Service Provider (including AWS, Azure, and Google Cloud) without generating a single authentication event or MFA prompt on the target IdP.
-      </p>
-
-      <h3>3. Assertion Replay Attacks</h3>
-      <p>
-        If an attacker captures a valid SAML response via an insecure proxy or browser extension, they can attempt to replay the token to gain unauthorized access. Robust Service Providers defend against this through strict temporal validation:
-      </p>
-      <ul>
-        <li>Verifying that the current timestamp is strictly before <code>NotOnOrAfter</code>.</li>
-        <li>Tracking the unique assertion <code>ID</code> attribute in a distributed cache (such as Redis) and rejecting any assertion ID that has already been processed within its validity window.</li>
-        <li>Validating the <code>InResponseTo</code> attribute to ensure the assertion corresponds to an active, pending AuthnRequest initiated by that specific browser session.</li>
-      </ul>
-
-      <h3>4. XML External Entity (XXE) Injection</h3>
-      <p>
-        Because SAML assertions are standard XML documents, vulnerable legacy XML parsers that resolve external general entities by default can be exploited using XXE payloads. An attacker can define external entities that read local configuration files (<code>/etc/passwd</code>) or trigger internal Server-Side Request Forgery (SSRF) queries against cloud metadata endpoints (<code>http://169.254.169.254/</code>). Modern enterprise SAML parsers must explicitly disable external DTDs and entity resolution.
-      </p>
-
-      <h2>Comparison: SAML 2.0 vs OpenID Connect vs WS-Federation</h2>
-      <p>
-        To understand where SAML fits within the modern identity landscape, compare it with complementary federation standards:
-      </p>
+      <h2>Worked Example: Four Tokens</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Feature Parameter</th>
-              <th>SAML 2.0</th>
-              <th>OpenID Connect (OIDC)</th>
-              <th>WS-Federation</th>
-            </tr>
+            <tr><th>Input</th><th>Signature field</th><th>Validity</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Payload Serialization</strong></td>
-              <td>XML (Extensible Markup Language)</td>
-              <td>JSON / JWT (JSON Web Token)</td>
-              <td>XML (SOAP Envelope)</td>
-            </tr>
-            <tr>
-              <td><strong>Primary Transport</strong></td>
-              <td>HTTP POST &amp; HTTP Redirect Bindings</td>
-              <td>RESTful HTTP / JSON API Calls</td>
-              <td>HTTP POST &amp; SOAP Protocols</td>
-            </tr>
-            <tr>
-              <td><strong>Cryptographic Standard</strong></td>
-              <td>W3C XMLDSig &amp; XML Enc</td>
-              <td>JSON Web Encryption (JWE) &amp; JWS</td>
-              <td>WS-Security (WSS) / XMLDSig</td>
-            </tr>
-            <tr>
-              <td><strong>Mobile &amp; API Readiness</strong></td>
-              <td>Poor (Heavy XML parsing overhead)</td>
-              <td><strong>Native</strong> (Lightweight JSON payloads)</td>
-              <td>Poor (Legacy SOAP dependence)</td>
-            </tr>
-            <tr>
-              <td><strong>Enterprise Directory Adoption</strong></td>
-              <td><strong>Dominant</strong> (Enterprise SaaS, AWS IAM)</td>
-              <td>Rapidly Growing (Modern Mobile &amp; Web)</td>
-              <td>Legacy Enterprise (AD FS Legacy)</td>
-            </tr>
-            <tr>
-              <td><strong>Governing Body</strong></td>
-              <td>OASIS (Ratified 2005)</td>
-              <td>OpenID Foundation (Ratified 2014)</td>
-              <td>OASIS (Ratified 2009)</td>
-            </tr>
+            <tr><td>The built-in sample Response</td><td>Signed (rsa-sha256)</td><td>Current window shown</td></tr>
+            <tr><td>A forged assertion with a fake signature value, current dates</td><td><strong>"Signed (rsa-sha256)" — not actually valid</strong></td><td>Shown as valid</td></tr>
+            <tr><td>The same forged assertion with past dates</td><td>"Signed (rsa-sha256)"</td><td><code>[EXPIRED]</code></td></tr>
+            <tr><td>A DEFLATE-compressed AuthnRequest (redirect binding)</td><td>Unsigned (No ds:Signature)</td><td>No conditions (it's a request)</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Common Mistakes and Implementation Pitfalls</h2>
       <p>
-        When architecting or troubleshooting SAML integrations, avoid these frequent implementation errors:
+        The decoder correctly inflates the compressed request, extracts subjects and issuers, and flags expiry. The one thing to remember is row two: "Signed" describes the envelope, not its validity.
       </p>
+
+      <h2>Common SAML Problems to Debug</h2>
       <ul>
-        <li>
-          <strong>Ignoring Server Clock Skew:</strong> Distributed cloud servers rarely share identical millisecond time. Setting <code>NotBefore</code> equal to <code>IssueInstant</code> without allowing a 2- to 3-minute clock drift tolerance frequently results in intermittent login failures for legitimate users.
-        </li>
-        <li>
-          <strong>Verifying Response Signatures While Trusting Unsigned Assertions:</strong> A catastrophic implementation blunder occurs when an application validates the digital signature on the outer <code>&lt;samlp:Response&gt;</code>, but extracts identity claims from an inner <code>&lt;saml:Assertion&gt;</code> without verifying that the assertion itself is signed or encapsulated inside the signed response scope.
-        </li>
-        <li>
-          <strong>Logging Unredacted Tokens in Web Server Access Logs:</strong> Because HTTP-Redirect bindings pass <code>SAMLRequest</code> parameters via GET query strings, reverse proxies (like NGINX, HAProxy, and AWS CloudFront) log these URLs by default. If sensitive user attributes are encapsulated in redirect requests, they are leaked into plaintext access log aggregators.
-        </li>
-        <li>
-          <strong>Hardcoding Certificate Expirations Without Automated Alerting:</strong> IdP signing certificates expire periodically (typically every 1 to 3 years). When an enterprise signing certificate expires, all dependent Service Providers immediately halt logins. Production environments must establish automated monitoring for IdP metadata certificate renewal.
-        </li>
+        <li><strong>Clock skew.</strong> If the SP's clock differs from the IdP's, a valid assertion can look expired or not-yet-valid. Allow a small tolerance.</li>
+        <li><strong>Audience mismatch.</strong> The <code>AudienceRestriction</code> must name your SP's entity ID, or the SP rejects the assertion.</li>
+        <li><strong>Wrong attribute names.</strong> Apps expect specific claim names (for example an email or a roles attribute); a mismatch shows up here as attributes with unexpected names.</li>
+        <li><strong>NameID format.</strong> The SP and IdP must agree on the format (email address, persistent, transient).</li>
+        <li><strong>Unsigned assertions.</strong> If this tool shows "Unsigned", the SP should reject the token; production assertions should be signed.</li>
       </ul>
+      <p>
+        SAML tokens carry personal data and are effectively login credentials while valid. Decode them in a trusted local tool like this one, not a public server, and avoid sharing real tokens.
+      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between IdP-Initiated and SP-Initiated SSO?</div>
+          <div class="faq-question">Does this tool verify the SAML signature?</div>
           <div class="faq-answer">
-            In <strong>SP-Initiated SSO</strong>, the user starts by navigating to the Service Provider application (e.g., visiting <code>app.bitdark.net</code>). The SP generates an <code>AuthnRequest</code> and redirects the user to the IdP. In <strong>IdP-Initiated SSO</strong>, the user logs into their central enterprise dashboard (e.g., Okta or Entra ID) and clicks an application chiclet. The IdP generates an unsolicited SAML Response and posts it directly to the SP's ACS endpoint without a prior request.
+            No. It reports whether a ds:Signature element is present and its algorithm, but it doesn't check the signature against a certificate. A forged token with an invalid signature still shows as "Signed". Verify signatures in your service provider or with a SAML library.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does BitDark sanitize XML namespaces during decoding?</div>
+          <div class="faq-question">What's the difference between a SAMLRequest and a SAMLResponse?</div>
           <div class="faq-answer">
-            When users copy partial SAML snippets (such as extracting an isolated <code>&lt;saml:Assertion&gt;</code> or <code>&lt;samlp:Status&gt;</code> node), the snippet often uses namespace prefixes (like <code>saml:</code> or <code>ds:</code>) whose declarations existed on an outer container tag that was not copied. Strict browser <code>DOMParser</code> instances abort parsing with fatal errors when encountering undeclared prefixes. BitDark defensively strips or resolves orphaned prefixes to ensure user assertions can be inspected reliably.
+            The SP sends a SAMLRequest (an AuthnRequest) to start login; the IdP returns a SAMLResponse containing the signed assertion about the user. On the redirect binding the request is DEFLATE-compressed and Base64-encoded, which this tool decompresses automatically.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What does "AudienceRestriction" validate in a SAML Assertion?</div>
+          <div class="faq-question">Why does my assertion show as expired?</div>
           <div class="faq-answer">
-            The <code>&lt;saml:AudienceRestriction&gt;</code> element specifies the intended recipient Service Provider(s) via a unique URI (e.g., <code>https://app.bitdark.net/sso</code>). The Service Provider must verify that its own EntityID matches one of the declared <code>&lt;saml:Audience&gt;</code> values. This prevents token substitution attacks, where an assertion issued for Application A is maliciously submitted to Application B.
+            The current time is past the Conditions NotOnOrAfter value. This is often clock skew between the IdP and SP rather than a real expiry. Synchronise clocks with NTP and allow a small tolerance on the SP.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can an attacker modify SAML attributes without breaking the digital signature?</div>
+          <div class="faq-question">Is SAML still used, or has OIDC replaced it?</div>
           <div class="faq-answer">
-            No. The XML Digital Signature is computed across the canonicalized byte stream of the target element. Any modification to attribute names, values, or structure alters the SHA-256 digest hash, causing cryptographic signature verification to fail immediately unless the attacker also executes an XML Signature Wrapping (XSW) bypass on a misconfigured parser.
+            Both are in wide use. OpenID Connect is common for new consumer and mobile apps, while SAML 2.0 remains standard for enterprise SSO and many existing business applications, so you'll still meet SAML tokens regularly.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does SAML 2.0 handle Multi-Factor Authentication (MFA) verification?</div>
+          <div class="faq-question">Is my token uploaded?</div>
           <div class="faq-answer">
-            The IdP conveys how the user authenticated using the <code>&lt;saml:AuthnContextClassRef&gt;</code> element inside the <code>&lt;saml:AuthnStatement&gt;</code>. Standard URIs include <code>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</code> for standard password logins, and <code>http://schemas.microsoft.com/claims/multipleauthn</code> or <code>urn:oasis:names:tc:SAML:2.0:ac:classes:TimeSyncToken</code> for MFA and hardware token logins.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why are SAML tokens significantly larger than JSON Web Tokens (JWT)?</div>
-          <div class="faq-answer">
-            SAML tokens are serialized in XML, which requires verbose opening and closing tags, namespace definitions, and explicit schema metadata. Furthermore, SAML assertions typically embed full X.509 public certificates and complex XMLDSig structures, whereas JWTs use concise JSON key-value pairs and detached headers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is "RelayState" in SAML authentication?</div>
-          <div class="faq-answer">
-            <code>RelayState</code> is an opaque parameter passed alongside SAML requests and responses. It functions as a state pointer, informing the Service Provider where to redirect the user within the application after successful authentication (e.g., returning them to a specific deep link or document they originally requested).
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark store or log my analyzed SAML tokens?</div>
-          <div class="faq-answer">
-            Never. The BitDark platform operates on an air-gapped, zero-network-egress security architecture. All decompression, base64 decoding, XML parsing, and JSON generation execute strictly inside your local browser memory space. No token data is ever transmitted across the internet.
+            No. Decoding, decompression and parsing run in your browser, and the tool makes no network requests with your token. Because a valid SAML token is a live credential, still avoid pasting real production tokens anywhere you don't control.
           </div>
         </div>
       </section>
