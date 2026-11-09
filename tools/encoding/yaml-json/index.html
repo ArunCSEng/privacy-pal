@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>YAML ↔ JSON Converter — Free In-Memory Client-Side Parser | BitDark</title>
-  <meta name="title" content="YAML ↔ JSON Converter — Free In-Memory Client-Side Parser | BitDark" />
-  <meta name="description" content="Convert YAML to JSON and JSON to YAML entirely offline in browser memory. Local AST parsing, schema validation, zero telemetry, and zero network egress." />
-  <meta name="keywords" content="yaml to json, json to yaml, offline yaml parser, client side yaml converter, secure json formatter, zero log data converter, kubernetes yaml validator, cloudformation to json, yaml indentation fix" />
+  <title>YAML to JSON Converter — Free In-Browser js-yaml Codec | BitDark</title>
+  <meta name="title" content="YAML to JSON Converter — Free In-Browser js-yaml Codec | BitDark" />
+  <meta name="description" content="Convert YAML to JSON and JSON to YAML in your browser. YAML 1.2 core schema, anchor and merge-key expansion, 2 or 4 space indent. Nothing is uploaded." />
+  <meta name="keywords" content="yaml to json, json to yaml, yaml converter, js-yaml, yaml 1.2, kubernetes yaml to json, yaml indentation, offline yaml parser" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/encoding/yaml-json/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/encoding/yaml-json/" />
-  <meta property="og:title" content="YAML ↔ JSON Converter — In-Memory Client-Side Parser | BitDark" />
-  <meta property="og:description" content="Convert YAML and JSON configurations natively in local browser RAM. Zero telemetry, zero cloud egress, and complete spec compliance." />
+  <meta property="og:title" content="YAML to JSON Converter — In-Browser js-yaml Codec | BitDark" />
+  <meta property="og:description" content="Convert YAML and JSON both ways in your browser, with a reproducible worked example. YAML 1.2 core schema. Nothing is uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/encoding/yaml-json/" />
-  <meta name="twitter:title" content="YAML ↔ JSON Converter | BitDark" />
-  <meta name="twitter:description" content="Convert YAML to JSON and JSON to YAML in browser RAM. 100% Client-Side with zero network egress." />
+  <meta name="twitter:title" content="YAML to JSON Converter | BitDark" />
+  <meta name="twitter:description" content="Convert YAML to JSON and JSON to YAML in your browser. YAML 1.2 core schema, runs locally, nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,20 +31,20 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "YAML ↔ JSON In-Memory Converter",
+        "name": "YAML to JSON Converter",
         "url": "https://bitdark.net/tools/encoding/yaml-json/",
         "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Private client-side configuration parser and bidirectional converter for YAML 1.2 and RFC 8259 JSON operating strictly within volatile browser memory with zero network egress."
+        "description": "Browser-based bidirectional converter between YAML and JSON, built on the js-yaml library, using the YAML 1.2 core schema with anchor and merge-key expansion."
       },
       {
         "@type": "TechArticle",
-        "headline": "YAML vs JSON Engineering Guide: Serialization Topology, Lexical Ambiguities, and Zero-Egress Translation",
+        "headline": "Converting Between YAML and JSON: The Core Schema, Anchors, and What Does Not Round-Trip",
         "url": "https://bitdark.net/tools/encoding/yaml-json/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-10-31",
-        "description": "Comprehensive technical analysis of YAML 1.2 and JSON serialization formats, grammar divergence, anchor dereferencing, the Norway problem, and secure client-side parsing."
+        "dateModified": "2026-11-10",
+        "description": "How this converter maps YAML to JSON and back: the YAML 1.2 core schema and the Norway problem, anchor and merge-key expansion, a reproducible worked example, and the constructs that do not survive a round trip."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why is client-side in-memory conversion critical for YAML and JSON configuration files?",
+            "name": "Does this converter parse NO, yes and on as booleans?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Production YAML and JSON files frequently contain sensitive infrastructure data, such as Kubernetes environment secrets, database connection strings, cloud API keys, and internal IP subnets. Transmitting these payloads to remote cloud converters exposes private credentials to server logging, man-in-the-middle sniffing, and third-party data collection. Local in-memory parsing ensures that zero bytes leave your device."
+              "text": "No. It uses js-yaml with the YAML 1.2 core schema, where only true and false (and their capitalised forms) are booleans. Unquoted NO, yes, on and off stay strings, so a country code like NO is not silently turned into false."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the 'Norway Problem' in YAML parsing and how does it affect JSON conversion?",
+            "name": "What happens to YAML anchors and merge keys when I convert to JSON?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In YAML 1.1 specifications, unquoted two-letter country codes like 'NO' (Norway) are parsed as boolean false rather than strings. When converted to JSON without strict YAML 1.2 compliance, keys or values representing Norway turn into false instead of 'NO'. BitDark uses strict YAML 1.2 specification parsers to prevent accidental boolean coercion."
+              "text": "They are expanded. JSON has no anchors or references, so an anchored node (&name) referenced by an alias (*name) is inlined wherever it is used, and a merge key (<<) copies the referenced mapping's entries into the surrounding map. The JSON output contains the fully expanded data."
             }
           },
           {
             "@type": "Question",
-            "name": "Can YAML anchors and aliases be fully converted into standard JSON?",
+            "name": "Can I convert a multi-document YAML file?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. While JSON does not natively support pointers or reference anchors (& and *), the conversion engine dereferences and deep-clones anchored objects during Abstract Syntax Tree (AST) evaluation, producing fully expanded, valid RFC 8259 JSON structures."
+              "text": "Not in one pass. This tool loads a single YAML document, so a file that uses --- to separate several documents raises a parse error. Convert each document on its own, or remove the separators first. JSON itself has no multi-document concept."
             }
           },
           {
             "@type": "Question",
-            "name": "Why do tabs cause syntax errors in YAML while spaces work cleanly?",
+            "name": "Why do tabs cause an error in my YAML?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The official YAML specification strictly forbids the use of ASCII tab characters (\\t) for indentation because different text editors and terminal environments render tab stops with varying character widths (2, 4, or 8 spaces). YAML mandates uniform space indentation to guarantee deterministic visual scoping."
+              "text": "YAML does not allow tab characters for indentation, because tab width varies between editors and would make the structure ambiguous. Use spaces. The editor's Tab key inserts spaces for you, matching the indent size you selected."
             }
           },
           {
             "@type": "Question",
-            "name": "Does BitDark store or transmit my configuration code to any external backend?",
+            "name": "Is my input uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All lexical analysis, indentation formatting, minification, and conversion happen exclusively inside your browser's local JavaScript V8/SpiderMonkey engine. Memory allocations are reclaimed upon clearing the editor or navigating away from the page."
+              "text": "No. Parsing and conversion run in your browser with the js-yaml library, and the text you paste is not sent to a server. The library file itself is loaded once from a CDN when the page opens; after that the conversion needs no network."
             }
           }
         ]
@@ -767,7 +767,7 @@
     <div class="nav-inner">
       <a href="/" class="brand">Bit<span>Dark</span>.net</a>
       <div class="nav-center-badge">
-        <span class="pulse-dot"></span> 100% Client-Side • Zero Network Egress
+        <span class="pulse-dot"></span> 100% Client-Side &bull; Zero Network Egress
       </div>
     </div>
   </header>
@@ -777,14 +777,14 @@
     <nav class="breadcrumb-nav" aria-label="Breadcrumb Navigation">
       <a href="/">Home</a>
       <span class="sep">/</span>
-      <a href="/tools/encoding/">Encoding & Formats</a>
+      <a href="/tools/encoding/">Encoding &amp; Formats</a>
       <span class="sep">/</span>
-      <span class="current">YAML ↔ JSON Converter</span>
+      <span class="current">YAML &harr; JSON Converter</span>
     </nav>
 
     <div class="tool-header">
-      <h1>YAML ↔ JSON Converter</h1>
-      <p>Convert and format structured YAML and JSON specifications natively in-browser with real-time error tracking, Abstract Syntax Tree validation, and 0-byte network egress.</p>
+      <h1>YAML &harr; JSON Converter</h1>
+      <p>Convert YAML to JSON and JSON back to YAML in your browser. It uses the YAML 1.2 core schema, expands anchors and merge keys, and lets you pick 2- or 4-space indentation. Everything runs locally and nothing you paste is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -885,113 +885,44 @@
       </div>
     </div>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Configuration translations between YAML 1.2 and RFC 8259 JSON carry distinct semantic constraints.</strong> Extended YAML constructs—including multi-document stream separators (<code>---</code>), explicit custom type tags (e.g., <code>!binary</code>, <code>!timestamp</code>), cyclical pointer graphs, and untyped scalar maps—do not map identically to single strict JSON root objects without data coercion or flattening. Furthermore, whitespace mismatches or unquoted string keys can introduce silent runtime type mutations in production infrastructure (such as Kubernetes Helm templates or AWS CloudFormation stacks). Always validate translated schemas in sandboxed staging pipelines prior to production deployment.
+        <strong>YAML and JSON do not express exactly the same things, so some constructs change on conversion.</strong> When YAML becomes JSON, comments are dropped and multi-line block scalars become single strings with <code>\n</code> escapes. YAML anchors and merge keys are expanded, so shared data is duplicated rather than referenced. This tool reads a <strong>single</strong> YAML document, so a file that uses <code>---</code> to separate several documents raises a parse error; convert each document on its own. Everything runs in your browser and the text you paste is not uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them, so validate converted configuration before deploying it.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Structural Evolution: Deconstructing YAML 1.2 and RFC 8259 JSON</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        Modern cloud computing, continuous integration/continuous delivery (CI/CD) pipelines, container orchestration engines, and distributed microservices rely fundamentally on declarative data serialization. At the foundation of this infrastructure sit two ubiquitous standards: <strong>JavaScript Object Notation (JSON)</strong> and <strong>YAML Ain't Markup Language (YAML)</strong>.
+        YAML and JSON describe the same kinds of data &mdash; maps, lists, strings, numbers, booleans and null &mdash; in two different styles. JSON (<a href="https://datatracker.ietf.org/doc/html/rfc8259" rel="noopener" target="_blank" style="color:var(--atom-cyan);">RFC 8259</a>) uses explicit braces, brackets and quotes; YAML uses indentation and is easier to read and comment. Teams routinely author Kubernetes manifests, CI pipelines and API specs in YAML, then need JSON for a tool that only speaks JSON &mdash; or the reverse. This converter does that translation in your browser.
       </p>
       <p>
-        Standardized under <strong>RFC 8259</strong> (and ECMA-404), JSON was conceived by Douglas Crockford in the early 2000s as a lightweight, text-based data interchange subset of JavaScript. Its design prioritizes absolute syntactic rigidity, deterministic parsing speed, and universal programmatic interoperability. With only six basic primitive structures—strings, numbers, booleans, null, arrays, and associative maps—JSON eliminated parsing ambiguity across diverse runtime environments.
-      </p>
-      <p>
-        Conversely, YAML was designed specifically to maximize human readability and authoring comfort for software configuration files. While JSON requires explicit delimiter enclosing characters (brackets <code>[]</code>, braces <code>{}</code>, and mandatory double quotes for string keys), YAML utilizes <em>significant whitespace</em>, Python-style indentation scoping, and an expressive superset of data types. However, this human-centric expressiveness introduces subtle grammatical complexities: multi-line folded text blocks, type-inference coercion matrices, relational pointers (anchors and aliases), and distinct specification revisions (YAML 1.1 vs. YAML 1.2).
-      </p>
-      <p>
-        When software engineers translate configuration definitions between cloud orchestration engines (such as Kubernetes manifests written in YAML) and RESTful API endpoints (which communicate in strict JSON), translation fidelity is critical. A single misplaced space or an unintended boolean coercion can lead to catastrophic cluster misconfigurations, authorization failures, or service crashes.
+        It is built on the <a href="https://github.com/nodeca/js-yaml" rel="noopener" target="_blank" style="color:var(--atom-cyan);">js-yaml</a> library. YAML&nbsp;&rarr;&nbsp;JSON parses your YAML and serialises the result with the browser's own <code>JSON.stringify</code>; JSON&nbsp;&rarr;&nbsp;YAML parses your JSON and emits YAML. You can switch direction, swap the panes, choose 2- or 4-space indentation, and format or minify JSON. Nothing you type is sent anywhere; the only network request is the one-time load of the js-yaml file when the page opens.
       </p>
 
-      <h2>How to Use the BitDark YAML ↔ JSON Conversion Suite</h2>
+      <h2>The Core Schema and the Norway Problem</h2>
       <p>
-        The BitDark converter executes entirely in volatile local browser memory with zero network latency, zero remote telemetry, and zero packet egress:
+        The best-known YAML trap is the <strong>Norway problem</strong>. Older YAML&nbsp;1.1 parsers treated many bare words as booleans: <code>yes</code>, <code>no</code>, <code>on</code>, <code>off</code>, <code>y</code> and <code>n</code>, in several capitalisations. So a list of ISO country codes that included an unquoted <code>NO</code> (Norway) would come out as <code>false</code>:
       </p>
-      <ol>
-        <li>
-          <strong>Select Conversion Direction:</strong> Click <strong>YAML → JSON</strong> to convert declarative YAML manifests into formatted RFC 8259 JSON, or click <strong>JSON → YAML</strong> to translate structured JSON payloads into concise, readable YAML.
-        </li>
-        <li>
-          <strong>Ingest Source Data:</strong> Paste your source payload directly into the left editor pane, drag and drop an existing configuration file onto the textarea, or click "Upload" to select a file from disk. You can also click "Sample" to load an audited Kubernetes deployment manifest.
-        </li>
-        <li>
-          <strong>Configure Indentation Spacing:</strong> Use the "Indent Size" selector in the top toolbar to choose between standard 2-space indentation (standard for Kubernetes and CloudFormation) or 4-space indentation (standard for Python configurations and corporate styling guides).
-        </li>
-        <li>
-          <strong>Execute or Auto-Convert:</strong> By default, the engine executes real-time parsing upon input modification. You can also explicitly trigger re-parsing by clicking "⚡ Convert" or clicking "Format" on the target pane to re-beautify the output.
-        </li>
-        <li>
-          <strong>Export or Swap:</strong> Export the target output immediately to disk using "Download", copy it to the system clipboard via "Copy", or click "⇄ Swap" to invert the pipeline direction and inspect round-trip conversion integrity.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Operational & DevOps Scenarios</h2>
-      <p>
-        Bidirectional YAML/JSON translation is an indispensable daily requirement across cloud engineering, application security, and systems administration:
-      </p>
-      <ul>
-        <li>
-          <strong>Kubernetes & Helm Infrastructure Auditing:</strong> Kubernetes APIs natively communicate and store resource objects in JSON within <code>etcd</code>, yet developers interact with manifests almost exclusively in YAML. Converting manifests to JSON allows infrastructure teams to query clusters via <code>jq</code>, execute JSON Schema validation, or programmatically inspect pod configurations.
-        </li>
-        <li>
-          <strong>CloudFormation & Terraform State Transcoding:</strong> AWS CloudFormation supports both YAML and JSON templates. Translating monolithic legacy JSON templates into modern YAML improves code maintainability, reduces file size by 30% to 40%, and enables native inline commenting.
-        </li>
-        <li>
-          <strong>OpenAPI / Swagger API Schema Development:</strong> Modern API contracts are authored in YAML for readability during code reviews, but must be compiled into compact, unquoted JSON files for client SDK generators, API gateways, and web application firewalls (WAFs).
-        </li>
-        <li>
-          <strong>Zero-Egress Secrets Scrubbing:</strong> Sanitizing configuration files that contain embedded API tokens, database passwords, or PGP private keys. Using public cloud converters introduces severe data breach risks; BitDark's air-gapped memory architecture guarantees sensitive keys never touch a remote server.
-        </li>
-        <li>
-          <strong>CI/CD Pipeline Linting:</strong> GitHub Actions, GitLab CI, CircleCI, and Azure DevOps execute workflow definitions via YAML. Debugging complex matrix jobs or step parameters by converting them into JSON exposes structural parsing errors prior to git commits.
-        </li>
-      </ul>
-
-      <h2>The "Norway Problem" and Type Coercion Hazards</h2>
-      <p>
-        One of the most notorious pitfalls in modern software engineering is the <strong>Norway Problem</strong>, stemming from the legacy YAML 1.1 specification:
-      </p>
-      <pre><code># The Infamous YAML 1.1 Boolean Trap
+      <pre><code># The YAML 1.1 boolean trap
 countries:
   - US
   - GB
-  - DE
-  - NO  # <-- Intended: ISO country code for Norway</code></pre>
+  - NO   # intended: Norway</code></pre>
       <p>
-        Under the YAML 1.1 specification, the parser evaluates <code>y</code>, <code>Y</code>, <code>yes</code>, <code>Yes</code>, <code>YES</code>, <code>true</code>, <code>True</code>, <code>TRUE</code>, <code>on</code>, <code>On</code>, <code>ON</code> as boolean <code>true</code>. Conversely, <code>n</code>, <code>N</code>, <code>no</code>, <code>No</code>, <code>NO</code>, <code>false</code>, <code>False</code>, <code>FALSE</code>, <code>off</code>, <code>Off</code>, <code>OFF</code> are parsed as boolean <code>false</code>.
-      </p>
-      <p>
-        When an unquoted <code>NO</code> is converted to JSON by a 1.1-compliant engine, it produces:
-      </p>
-      <pre><code>{
-  "countries": [
-    "US",
-    "GB",
-    "DE",
-    false  // Disastrous type corruption: Norway is now boolean false!
-  ]
-}</code></pre>
-      <p>
-        This silent coercion has crashed production routing systems, misconfigured geographic firewalls, and corrupted databases worldwide. The YAML 1.2 specification resolved this by restricting boolean literals strictly to <code>true</code> and <code>false</code>. The BitDark conversion engine adheres to the <strong>YAML 1.2 Core Schema</strong>, ensuring unquoted identifiers like <code>NO</code>, <code>yes</code>, and <code>off</code> are parsed safely as strings unless explicitly cast.
+        Under YAML&nbsp;1.1 that last entry parses as boolean <code>false</code>. This tool uses js-yaml's default <strong>YAML&nbsp;1.2 core schema</strong>, where only <code>true</code> and <code>false</code> (and <code>True</code>/<code>False</code>/<code>TRUE</code>/<code>FALSE</code>) are booleans. Everything else &mdash; <code>NO</code>, <code>yes</code>, <code>on</code>, <code>off</code> &mdash; stays a string. You can confirm it: paste the list above and convert, and the JSON keeps <code>"NO"</code> as text. If you actually want a boolean, write <code>true</code> or <code>false</code>; if you want the literal word, you are already safe.
       </p>
 
-      <h2>Worked Technical Example: Kubernetes Deployment Manifest Translation</h2>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        To examine how structural elements map between formats, consider this production Kubernetes deployment manifest demonstrating scalar mappings, array sequences, boolean flags, and nested objects:
+        Here is a small Kubernetes deployment, covering nested maps, a list, numbers and booleans. Paste the YAML into the left pane with YAML&nbsp;&rarr;&nbsp;JSON selected and 2-space indent:
       </p>
-
-      <h3>1. Input YAML Configuration</h3>
+      <h3>1. Input YAML</h3>
       <pre><code>apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1022,8 +953,7 @@ spec:
           env:
             - name: ENABLE_TLS_STRICT
               value: "true"</code></pre>
-
-      <h3>2. Converted RFC 8259 JSON Output</h3>
+      <h3>2. JSON Output</h3>
       <pre><code>{
   "apiVersion": "apps/v1",
   "kind": "Deployment",
@@ -1075,73 +1005,15 @@ spec:
     }
   }
 }</code></pre>
-
-      <h2>Detailed Spec Comparison: YAML 1.2 vs RFC 8259 JSON</h2>
       <p>
-        The table below outlines the core structural, grammatical, and architectural differences between both data serialization languages:
+        Two details are worth noticing. <code>replicas: 2</code> and <code>runAsUser: 10001</code> become JSON numbers, while <code>value: "true"</code> stays the string <code>"true"</code> because it was quoted in the YAML &mdash; it is an environment-variable value, not a boolean. Unquoting it would make it the boolean <code>true</code>, which Kubernetes would reject for that field. That quote-or-not distinction is the single most common source of surprise when moving between the two formats.
       </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Feature Parameter</th>
-              <th>YAML (YAML 1.2 Specification)</th>
-              <th>JSON (RFC 8259 / ECMA-404)</th>
-              <th>Conversion Impact</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Scoping Syntax</strong></td>
-              <td>Significant indentation (spaces only)</td>
-              <td>Explicit delimiters (<code>{}</code> and <code>[]</code>)</td>
-              <td>YAML indentation errors cause fatal parse crashes.</td>
-            </tr>
-            <tr>
-              <td><strong>Comment Support</strong></td>
-              <td>Native comments (<code># Inline comment</code>)</td>
-              <td><strong>None</strong> (Strictly forbidden by RFC 8259)</td>
-              <td>Comments are discarded when translating YAML to JSON.</td>
-            </tr>
-            <tr>
-              <td><strong>Key Quoting</strong></td>
-              <td>Optional for alphanumeric identifiers</td>
-              <td><strong>Mandatory</strong> (Must use double quotes <code>"key"</code>)</td>
-              <td>Parser automatically wraps unquoted YAML keys in double quotes.</td>
-            </tr>
-            <tr>
-              <td><strong>Multi-Line Strings</strong></td>
-              <td>Literal (<code>|</code>) and Folded (<code>&gt;</code>) blocks</td>
-              <td>Single-line with explicit <code>\n</code> escape sequences</td>
-              <td>YAML blocks are converted to escaped single-line strings.</td>
-            </tr>
-            <tr>
-              <td><strong>Relational Pointers</strong></td>
-              <td>Native Anchors (<code>&amp;anchor</code>) &amp; Aliases (<code>*alias</code>)</td>
-              <td>None (No cyclical or shared pointer mechanism)</td>
-              <td>Anchors are dereferenced and cloned inline during export.</td>
-            </tr>
-            <tr>
-              <td><strong>Multi-Document Streams</strong></td>
-              <td>Supported via triple-dash (<code>---</code>) boundaries</td>
-              <td>None (Only single root value allowed per file)</td>
-              <td>Requires splitting stream into an array of JSON objects.</td>
-            </tr>
-            <tr>
-              <td><strong>Parsing Performance</strong></td>
-              <td>Complex ($O(N)$ with high state machine overhead)</td>
-              <td>Extremely Fast ($O(N)$ native C++ browser parser)</td>
-              <td>JSON parses 10x–50x faster in high-throughput engines.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <h2>YAML Anchors and the "Billion Laughs" Vulnerability</h2>
+      <h2>Anchors and Merge Keys</h2>
       <p>
-        One of YAML's most powerful features is node referencing via <strong>Anchors (<code>&amp;</code>)</strong> and <strong>Aliases (<code>*</code>)</strong>, accompanied by the merge key operator (<code>&lt;&lt;: *alias</code>). While highly effective for eliminating duplication across complex configurations, this mechanism introduces serious security risks if parsed carelessly.
+        YAML can name a node with an <strong>anchor</strong> (<code>&amp;name</code>) and reuse it through an <strong>alias</strong> (<code>*name</code>), and the <strong>merge key</strong> (<code>&lt;&lt;</code>) folds a referenced map's entries into another map. JSON has none of this, so on conversion the references are expanded &mdash; the shared data is written out in full at each place it is used:
       </p>
-      <pre><code># Safe Anchor & Merge Example
+      <pre><code># YAML with an anchor and a merge key
 default_limits: &amp;resources
   cpu: "500m"
   memory: "512Mi"
@@ -1149,124 +1021,144 @@ default_limits: &amp;resources
 services:
   api:
     name: "catalog-service"
-    &lt;&lt;: *resources  # Inlines cpu and memory attributes cleanly</code></pre>
+    &lt;&lt;: *resources</code></pre>
+      <p>Converting that YAML produces this JSON, with <code>cpu</code> and <code>memory</code> merged into the <code>api</code> map:</p>
+      <pre><code>{
+  "default_limits": {
+    "cpu": "500m",
+    "memory": "512Mi"
+  },
+  "services": {
+    "api": {
+      "name": "catalog-service",
+      "cpu": "500m",
+      "memory": "512Mi"
+    }
+  }
+}</code></pre>
       <p>
-        However, adversaries can exploit nested aliases to execute an <strong>Entity Expansion Attack (YAML Billion Laughs / Anchor Bomb)</strong>. By defining self-referencing or exponential trees of aliases, a 2-kilobyte YAML file can expand into tens of gigabytes in system RAM upon parsing, freezing the operating system or crashing microservice nodes.
+        The expansion is correct, but it is one-way: going back from this JSON to YAML gives you the fully written-out version, not the original anchor and merge key. If the compactness of anchors matters to you, keep the YAML source rather than regenerating it from JSON.
       </p>
-      <blockquote>
-        <strong>BitDark Sandbox Defense:</strong> The BitDark in-memory engine enforces strict AST depth and reference boundary validation. Maliciously recursive anchors are caught within browser memory sandboxes and aborted before excessive RAM consumption occurs.
-      </blockquote>
 
-      <h2>Common Mistakes in YAML & JSON Formatting</h2>
+      <h2>What Does Not Round-Trip</h2>
       <p>
-        Avoid these frequent syntax errors when writing, editing, or converting configuration schemas:
+        Converting YAML to JSON and back will not always return the exact original file, because some YAML features have no JSON equivalent:
       </p>
-      <ul>
-        <li>
-          <strong>Using Tabs Instead of Spaces:</strong> The official YAML specification forbids the tab character (<code>\t</code>) for indentation. If a developer uses a tab, parsers throw immediate syntax errors like <code>bad indentation of a mapping entry</code>. Use the BitDark editor's Tab-key handler, which automatically injects soft spaces.
-        </li>
-        <li>
-          <strong>Trailing Commas in JSON:</strong> While modern JavaScript and YAML permit trailing commas after the last element of an array or object, standard RFC 8259 JSON strictly forbids them. A trailing comma in JSON causes an immediate <code>JSON.parse</code> fatal crash.
-        </li>
-        <li>
-          <strong>Unquoted Numeric String Keys:</strong> When configuration keys contain only numbers (e.g., HTTP status codes like <code>200: "OK"</code>), YAML treats the key as an integer. When converted to JSON, the key must be coerced to a string (<code>"200": "OK"</code>), as JSON object keys must always be strings.
-        </li>
-        <li>
-          <strong>Accidental Multi-Document Data Loss:</strong> When converting a multi-document YAML file separated by <code>---</code>, legacy tools often parse only the first document and discard the rest. Ensure that multi-document streams are segmented properly.
-        </li>
-        <li>
-          <strong>Loss of Floating-Point Precision:</strong> Very large numbers (such as 64-bit integer snowflake IDs) can suffer from truncation when parsed into generic JSON numeric types. In such cases, encapsulate large identifiers in double quotes.
-        </li>
-      </ul>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>YAML feature</th>
+              <th>On conversion to JSON</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Comments</strong> (<code># ...</code>)</td>
+              <td>Dropped &mdash; JSON has no comment syntax.</td>
+            </tr>
+            <tr>
+              <td><strong>Anchors &amp; merge keys</strong> (<code>&amp;</code>, <code>*</code>, <code>&lt;&lt;</code>)</td>
+              <td>Expanded inline; the shared reference is lost.</td>
+            </tr>
+            <tr>
+              <td><strong>Block scalars</strong> (<code>|</code> literal, <code>&gt;</code> folded)</td>
+              <td>Become ordinary strings with <code>\n</code> escapes.</td>
+            </tr>
+            <tr>
+              <td><strong>Multiple documents</strong> (<code>---</code>)</td>
+              <td>Not supported &mdash; a single document is expected, so this raises a parse error.</td>
+            </tr>
+            <tr>
+              <td><strong>Key ordering &amp; quoting style</strong></td>
+              <td>Re-serialised by the formatter; original spacing and quote choices are not preserved.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        For most configuration work these are fine &mdash; the <em>data</em> is identical, only the presentation changes. Keep them in mind when a file's exact formatting matters, such as a checked-in manifest you intend to diff against the original.
+      </p>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Pick a direction</strong> &mdash; <strong>YAML &rarr; JSON</strong> or <strong>JSON &rarr; YAML</strong>.</li>
+        <li><strong>Add your source</strong> &mdash; paste it into the left pane, drag a file onto it, or use Upload. <strong>Sample</strong> loads a small Kubernetes manifest to start from.</li>
+        <li><strong>Set the indent</strong> &mdash; 2 spaces (common for Kubernetes) or 4.</li>
+        <li><strong>Convert</strong> &mdash; conversion runs as you type; <strong>Convert</strong> re-runs it, and on the JSON pane <strong>Format</strong> and <strong>Minify</strong> reshape the output.</li>
+        <li><strong>Take the result</strong> &mdash; <strong>Copy</strong> or <strong>Download</strong> the target, or <strong>Swap</strong> to send the output back through the other direction.</li>
+      </ol>
+      <p>
+        If a conversion fails, the banner shows the parser's message with a line and column for YAML errors. The usual causes are a tab used for indentation (YAML needs spaces), inconsistent indentation, or a trailing comma in JSON, which RFC&nbsp;8259 does not allow.
+      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does BitDark execute all YAML and JSON conversions client-side?</div>
+          <div class="faq-question">Does this converter parse NO, yes and on as booleans?</div>
           <div class="faq-answer">
-            Configuration manifests frequently contain confidential infrastructure topology, API secrets, database passwords, and internal IP addresses. Online converters that process payloads on remote web servers expose this sensitive data to server logging, network interception, and third-party storage. BitDark processes all data exclusively within your browser's private RAM with zero network egress.
+            No. It uses js-yaml with the YAML 1.2 core schema, where only <code>true</code> and <code>false</code> (and their capitalised forms) are booleans. Unquoted <code>NO</code>, <code>yes</code>, <code>on</code> and <code>off</code> stay strings, so a country code like <code>NO</code> is not silently turned into <code>false</code>.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between literal (|) and folded (>) string blocks in YAML?</div>
+          <div class="faq-question">What happens to YAML anchors and merge keys when I convert to JSON?</div>
           <div class="faq-answer">
-            The literal block scalar (<code>|</code>) preserves all newlines and trailing whitespace exactly as formatted in the source text. The folded block scalar (<code>&gt;</code>) converts line breaks within paragraphs into single space characters, preserving newlines only between blank lines. Both convert into standard escaped single-line strings in JSON.
+            They are expanded. JSON has no anchors or references, so an anchored node (<code>&amp;name</code>) referenced by an alias (<code>*name</code>) is inlined wherever it is used, and a merge key (<code>&lt;&lt;</code>) copies the referenced mapping's entries into the surrounding map. The JSON output contains the fully expanded data.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I convert multi-document YAML files into JSON?</div>
+          <div class="faq-question">Can I convert a multi-document YAML file?</div>
           <div class="faq-answer">
-            Standard RFC 8259 JSON requires a single root value (an object or an array). When a YAML file contains multiple documents separated by <code>---</code>, the standard approach is to parse each document independently and bundle them into a root JSON array: <code>[doc1, doc2, doc3]</code>.
+            Not in one pass. This tool loads a single YAML document, so a file that uses <code>---</code> to separate several documents raises a parse error. Convert each document on its own, or remove the separators first. JSON itself has no multi-document concept.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why did my comments disappear when converting YAML to JSON?</div>
+          <div class="faq-question">Why do tabs cause an error in my YAML?</div>
           <div class="faq-answer">
-            RFC 8259 JSON does not support comments of any kind (neither <code>//</code> nor <code>/* */</code> nor <code>#</code>). When converting YAML to JSON, all inline and block comments are intentionally stripped by the Abstract Syntax Tree parser to produce fully spec-compliant JSON.
+            YAML does not allow tab characters for indentation, because tab width varies between editors and would make the structure ambiguous. Use spaces. The editor's Tab key inserts spaces for you, matching the indent size you selected.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does BitDark handle unquoted dates and timestamps in YAML?</div>
+          <div class="faq-question">Is my input uploaded anywhere?</div>
           <div class="faq-answer">
-            Under the YAML 1.2 specification, unquoted ISO-8601 timestamps (e.g., <code>2026-11-05T12:00:00Z</code>) are recognized as formal timestamp scalars. When converting to JSON, the engine serializes them as ISO-8601 UTC string literals.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What should I do if my YAML produces an "end of the stream or a document separator is expected" error?</div>
-          <div class="faq-answer">
-            This error almost always indicates an indentation mismatch or an illegal tab character. In YAML, child keys must be indented strictly deeper than their parent keys using spaces. Check for accidental tabs or misaligned list dashes (<code>-</code>).
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can I use this tool completely offline or in an air-gapped environment?</div>
-          <div class="faq-answer">
-            Yes. Once the page is loaded into your web browser, the entire script bundle resides in local browser cache. You can disconnect your network connection, toggle Airplane Mode, or run the tool in an isolated corporate environment; all features continue to operate with 100% functionality.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does JSON minification reduce bandwidth consumption?</div>
-          <div class="faq-answer">
-            JSON minification strips all non-essential formatting whitespace, tabs, and newline characters from the document. For large JSON payloads (such as API responses or database backups), minification routinely reduces payload size by 20% to 35%, decreasing network transfer latency and cloud egress costs.
+            No. Parsing and conversion run in your browser with the js-yaml library, and the text you paste is not sent to a server. The library file itself is loaded once from a CDN when the page opens; after that the conversion needs no network.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Encoding, Serialization & Security Tooling</h3>
+        <h3>Related Encoding, Serialization &amp; Security Tooling</h3>
         <div class="related-grid">
           <a href="/tools/encoding/base-suite/" class="related-card">
-            <div class="related-card-title"><span>[🔢]</span> Base64 / Base32 Suite</div>
-            <div class="related-card-desc">Encode and decode raw byte buffers across common Radix systems with local TypedArrays.</div>
+            <div class="related-card-title"><span>[&#128290;]</span> Base64 / Base32 Suite</div>
+            <div class="related-card-desc">Encode and decode raw byte buffers across common radix systems, entirely in your browser.</div>
           </a>
           <a href="/tools/encoding/html-entities/" class="related-card">
-            <div class="related-card-title"><span>[&amp;]</span> HTML Entity Multi-Escaper</div>
-            <div class="related-card-desc">Transform text blocks into named, decimal, or hexadecimal entity blocks securely.</div>
+            <div class="related-card-title"><span>[&amp;]</span> HTML Entity Escaper</div>
+            <div class="related-card-desc">Convert text to and from named, decimal, or hexadecimal HTML entities.</div>
           </a>
           <a href="/tools/encoding/url-codec/" class="related-card">
-            <div class="related-card-title"><span>[%]</span> Percent & URL Decoder</div>
-            <div class="related-card-desc">Encode or resolve double-percent encoded parameter bypass strings in browser memory.</div>
+            <div class="related-card-title"><span>[%]</span> URL Encoder &amp; Decoder</div>
+            <div class="related-card-desc">Percent-encode and decode URLs and query values, with a URL structure inspector.</div>
           </a>
           <a href="/tools/auth/jwt-debugger/" class="related-card">
-            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
-            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking bearer tokens to external servers.</div>
+            <div class="related-card-title"><span>[&#128273;]</span> Offline JWT Debugger</div>
+            <div class="related-card-desc">Decode and inspect JSON Web Tokens locally, without sending tokens to a server.</div>
           </a>
           <a href="/tools/crypto/aes-gcm/" class="related-card">
-            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
+            <div class="related-card-title"><span>[&#128272;]</span> AES-GCM Vault</div>
             <div class="related-card-desc">Client-side authenticated encryption and decryption for sensitive configuration files.</div>
           </a>
           <a href="/tools/ai/zero-width-detector/" class="related-card">
             <div class="related-card-title"><span>[0w]</span> Zero-Width Detector</div>
-            <div class="related-card-desc">Scan, inspect, and sanitize invisible unicode steganography hidden inside configuration code.</div>
+            <div class="related-card-desc">Find and strip invisible Unicode characters hidden inside text and configuration code.</div>
           </a>
         </div>
       </section>
@@ -1297,7 +1189,7 @@ services:
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
