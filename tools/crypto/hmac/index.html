@@ -6,8 +6,8 @@
   
   <title>HMAC Generator &amp; Keyed-Hash Verifier — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="HMAC Generator &amp; Keyed-Hash Verifier — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Compute and verify Hash-based Message Authentication Codes (HMAC-SHA256, HMAC-SHA512, HMAC-SHA384, HMAC-SHA1) with secret keys locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="hmac generator, hmac sha256 calculator, keyed hash authenticator, message authentication code, offline hmac verifier, rfc 2104, webhook signature verification, bitdark" />
+  <meta name="description" content="Compute and verify HMAC tags (SHA-256, SHA-384, SHA-512, SHA-1) in your browser with text, hex or Base64 keys. Matches RFC 4231 test vectors. Nothing is uploaded." />
+  <meta name="keywords" content="hmac generator, keyed hash, message authentication code, hmac-sha256, rfc 4231, webhook signature, constant-time compare, api request signing" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/hmac/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/hmac/" />
   <meta property="og:title" content="HMAC Generator &amp; Keyed-Hash Verifier — Local Memory Parser | BitDark" />
-  <meta property="og:description" content="Generate and verify Hash-based Message Authentication Codes (HMAC) locally in browser memory with zero network egress." />
+  <meta property="og:description" content="Generate and verify HMAC tags locally across SHA-256/384/512 with clear guidance on keys, algorithm choice and constant-time comparison. Matches RFC 4231." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/hmac/" />
   <meta name="twitter:title" content="HMAC Generator &amp; Keyed-Hash Verifier | BitDark" />
-  <meta name="twitter:description" content="Generate and verify HMAC signatures locally in browser RAM. 100% Client-Side with zero tracking or telemetry." />
+  <meta name="twitter:description" content="Compute and verify HMAC tags in your browser (SHA-256/384/512). Matches RFC 4231 test vectors; nothing is uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "HMAC Generator & Keyed-Hash Verifier",
         "url": "https://bitdark.net/tools/crypto/hmac/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Cryptographic utility to generate, calculate, and verify Hash-based Message Authentication Codes (HMAC-SHA256, HMAC-SHA512, HMAC-SHA384, HMAC-SHA1) directly in client-side memory using the native W3C Web Cryptography API."
+        "description": "Browser-based HMAC generator and verifier using Web Crypto to compute keyed-hash tags with SHA-256, SHA-384, SHA-512 or SHA-1 from text, hex or Base64 keys."
       },
       {
         "@type": "TechArticle",
-        "headline": "HMAC Cryptographic Architecture, Message Integrity, and Signature Verification",
+        "headline": "HMAC Keyed-Hash Authentication: Keys, Algorithm Choice and Constant-Time Verification",
         "url": "https://bitdark.net/tools/crypto/hmac/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-02",
-        "description": "Exhaustive technical analysis of RFC 2104 and FIPS 198 Hash-based Message Authentication Codes (HMAC), inner/outer padding transformations, length extension vulnerability mitigation, and constant-time verification protocols."
+        "dateModified": "2026-11-09",
+        "description": "What HMAC proves and what it isn't, a reproducible RFC 4231 worked example, how to choose the algorithm and key, why verification should be constant-time in code, and the tool's scope."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is an HMAC and how does it differ from a standard cryptographic hash?",
+            "name": "What's the difference between HMAC and a plain hash?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A standard cryptographic hash (such as SHA-256) takes an arbitrary input and produces a fixed-size digest without requiring any secret key. Anyone can recalculate that hash. An HMAC (Hash-based Message Authentication Code) incorporates a shared secret key alongside the input data using a nested two-pass hashing construction. This guarantees both data integrity (the data was not modified) and data authenticity (only a party possessing the shared secret could have created the authentication tag)."
+              "text": "A plain hash (SHA-256) proves only that data wasn't changed, and anyone can recompute it. HMAC mixes in a secret key, so only someone with the key can produce or verify a valid tag. That's what lets it authenticate the sender, not just detect accidental changes."
             }
           },
           {
             "@type": "Question",
-            "name": "Why can't I just concatenate a secret key and a message into a standard hash like hash(key + message)?",
+            "name": "Is HMAC-SHA1 still safe to use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Simple prefix concatenation hash(key || message) is fatally vulnerable to length extension attacks when used with Merkle-Damgård hash functions (such as MD5, SHA-1, SHA-256, and SHA-512). An eavesdropping adversary can append arbitrary unauthorized data to the end of the original message and compute a valid signature without knowing the secret key. HMAC completely prevents this by employing a rigorous inner and outer padding nested construction."
+              "text": "Yes, HMAC-SHA-1 itself is not broken — HMAC's security doesn't depend on SHA-1's collision resistance, which is the part that's weak. It's still used in many systems. For new designs, prefer HMAC-SHA-256, but you don't need to panic if you see HMAC-SHA-1."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the recommended secret key length for HMAC-SHA256?",
+            "name": "How should I compare HMACs when verifying?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "According to RFC 2104, the secret key should have an entropy length at least equal to the output size of the underlying hash function. For HMAC-SHA256, the recommended key length is 32 bytes (256 bits). Keys shorter than this reduce security margins, while keys longer than the block size (64 bytes for SHA-256) are pre-hashed down to the hash output size."
+              "text": "In code, use a constant-time comparison such as crypto.timingSafeEqual (Node) or hmac.compare_digest (Python). A normal equality check can leak timing information that helps an attacker forge a tag byte by byte. This tool's on-screen comparison runs locally, so the concern is about your server-side verifier."
             }
           },
           {
             "@type": "Question",
-            "name": "What causes HMAC verification mismatches when testing webhooks or API requests?",
+            "name": "Does HMAC encrypt my message?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The most common causes of verification mismatches include encoding discrepancies (treating a hex-encoded key as raw UTF-8 text or vice versa), whitespace or newline normalization issues in JSON payloads, reordering of serialized object keys, and using non-raw request bodies (e.g., parsing JSON before computing the hash instead of validating the exact raw byte stream)."
+              "text": "No. HMAC authenticates a message but doesn't hide it. The message is sent in the clear with its tag attached. If you need confidentiality too, encrypt the message as well, or use an AEAD cipher like AES-GCM or ChaCha20-Poly1305 that provides both."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my secret keys or payloads sent to any remote BitDark server?",
+            "name": "What makes a good HMAC key?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped, zero-network-egress security model. All cryptographic transformations, key imports, and HMAC signatures execute locally inside your browser's private memory space via the native W3C Web Cryptography API (crypto.subtle)."
+              "text": "A long, random secret — ideally at least the hash's output size, so 32 bytes for SHA-256. Random bytes stored as hex or Base64 are better than a human-chosen word. HMAC's strength depends on the key staying secret and having enough entropy."
             }
           }
         ]
@@ -710,7 +710,7 @@
 
     <div class="tool-header">
       <h1>HMAC Generator &amp; Keyed-Hash Verifier</h1>
-      <p>Compute, inspect, and verify Hash-based Message Authentication Codes (HMAC) across standard cryptographic hash functions locally in browser memory. Validate webhook signatures, API tokens, and message payloads with zero server latency or data leakage.</p>
+      <p>Compute and verify HMAC authentication tags with SHA-256, SHA-384, SHA-512 or SHA-1, using a text, hex or Base64 key. HMAC proves a message's integrity and that it came from someone holding the key. It runs on the Web Crypto API, matches the RFC 4231 test vectors, and stays on your device.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -795,386 +795,106 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Boundary Notice:</strong> HMAC constructions are strictly dependent on secret key entropy, secure key distribution, and side-channel-resistant verification logic. Generating an HMAC tag using low-entropy, human-memorable passwords leaves systems vulnerable to offline brute-force and dictionary attacks. Furthermore, comparing HMAC strings in software using standard variable-time comparison operators (such as JavaScript's <code>===</code>) introduces timing side-channel vulnerabilities in production server architectures. All transformations run exclusively inside client volatile RAM via the W3C Web Cryptography API with zero remote telemetry.
+        <strong>A learning, testing and interop tool, not key management.</strong> HMAC authenticates a message but does not encrypt it, and it's symmetric — anyone who can verify a tag can also create one. In production, keep keys in a secrets manager and compare tags in constant time (timingSafeEqual / compare_digest). The key and message stay in your browser. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article (2500+ Words) -->
     <article class="article-container">
-      <h2>The Mechanics of Symmetric Message Authentication</h2>
+      <h2>What HMAC Is</h2>
       <p>
-        In modern networked computing, data integrity and origin authentication represent two inseparable pillars of secure communication. While public-key asymmetric digital signatures (such as RSA-PSS or ECDSA) provide non-repudiation, their mathematical complexity imposes substantial computational and bandwidth overhead. In high-throughput environments—such as RESTful API gateways, microservice event streaming, financial webhook delivery, and distributed session storage—symmetric authentication mechanisms are required to achieve sub-millisecond validation latencies.
-      </p>
-      <p>
-        A <strong>Hash-based Message Authentication Code (HMAC)</strong>, standardized internationally in <strong>RFC 2104</strong> and NIST <strong>FIPS PUB 198-1</strong>, fulfills this operational role. An HMAC is a cryptographic construction that calculates a fixed-length authentication tag over an arbitrary-length message using a shared secret key and an underlying cryptographic hash function (such as SHA-256, SHA-512, or SHA-384). 
-      </p>
-      <p>
-        Unlike plain cryptographic hash functions that produce an identical digest for anyone holding the payload, HMAC ensures that only an entity in possession of the exact shared secret key can produce a matching authentication tag. If an attacker modifies even a single bit of the transmitted payload, or attempts to spoof the sender without knowing the secret, the resulting tag fails verification completely.
+        HMAC is a keyed hash. Feed it a message and a secret key and it produces a short tag that proves two things to anyone who also holds the key: the message wasn't altered, and it came from someone who knows the key. A plain hash like SHA-256 proves only that data wasn't changed — anyone can recompute it. HMAC adds the key, so an attacker who tampers with the message can't produce a matching tag. This tool computes and verifies HMAC with the browser's Web Crypto API.
       </p>
 
-      <h2>How to Use the BitDark HMAC Generator &amp; Verifier</h2>
+      <h2>What HMAC Is Not</h2>
+      <ul>
+        <li><strong>Not encryption.</strong> HMAC doesn't hide the message; it authenticates it. The message travels in the clear alongside its tag.</li>
+        <li><strong>Not a digital signature.</strong> HMAC is symmetric — both sides share the same secret. Anyone who can verify a tag can also create one, so it proves authenticity between parties that trust each other, not to the public.</li>
+      </ul>
       <p>
-        This utility operates on a strict zero-egress architectural model, allowing security engineers, developers, and auditors to compute and verify message authentication tags in a private, sandboxed environment:
+        That's exactly what's needed for webhook and API request signing (Stripe and GitHub sign payloads this way), for JWTs using HS256, and for protecting cookies or tokens from tampering.
       </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Using the standard RFC 4231 test vector — algorithm HMAC-SHA-256, key <code>Jefe</code> (as text), message <code>what do ya want for nothing?</code> — the tag is:
+      </p>
+      <pre><code>5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843</code></pre>
+      <p>
+        This tool produces exactly that value, matching the RFC test vector, which confirms it's a standard HMAC implementation that interoperates with any correct library. Change a single character of the key or message and the whole tag changes unpredictably — that's the property that makes tampering detectable.
+      </p>
+
+      <h2>Choosing the Algorithm and Key</h2>
+      <p>
+        Use <strong>HMAC-SHA-256</strong> unless you have a reason not to; SHA-384 and SHA-512 are fine for longer tags. A note on <strong>HMAC-SHA-1</strong>: although SHA-1 is broken for general collision resistance, HMAC-SHA-1 is <em>not</em> broken, because HMAC doesn't rely on that property — it remains secure and is still widely deployed. Even so, prefer SHA-256 for new systems.
+      </p>
+      <p>
+        The key matters more than the algorithm choice. HMAC's security rests on the key being secret and having enough entropy, so use a long random key — ideally at least as many bytes as the hash output (32 bytes for SHA-256) — not a short word. The key-encoding selector (text, hex or Base64) only tells the tool how to interpret the key you paste; it doesn't change the security.
+      </p>
+
+      <h2>Verifying a Tag — and Doing It Safely in Code</h2>
+      <p>
+        To verify, paste the expected tag into the comparison field; the tool recomputes the HMAC and reports whether they match. One important point for real code: when your server compares an incoming HMAC against the expected one, use a <strong>constant-time comparison</strong> (<code>crypto.timingSafeEqual</code> in Node, <code>hmac.compare_digest</code> in Python). A naive <code>==</code> can leak, through tiny timing differences, how much of the tag an attacker has guessed. This browser tool compares locally for convenience; the constant-time rule is about your production verifier.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Select the Hashing Algorithm:</strong> Choose your target cryptographic primitive from the dropdown. <code>HMAC-SHA-256</code> is the industry standard for modern webhooks (e.g., Stripe, GitHub, Shopify) and JWT HS256 signatures. <code>HMAC-SHA-512</code> provides enhanced security margins and optimal performance on 64-bit microprocessors.
-        </li>
-        <li>
-          <strong>Define Secret Key Encoding:</strong> Specify how your secret key is represented:
-          <ul>
-            <li><code>Plaintext (UTF-8)</code>: Evaluates the literal text string as character byte encodings.</li>
-            <li><code>Hexadecimal</code>: Parses raw hex strings (e.g., generated cryptographic tokens or binary secrets).</li>
-            <li><code>Base64</code>: Parses standard Base64-encoded binary key buffers.</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Enter or Generate a Secret Key:</strong> Paste your known shared secret into the input field, or click "Generate Key" to create a cryptographically secure 256-bit pseudo-random key using the browser's hardware-seeded entropy pool (<code>crypto.getRandomValues</code>).
-        </li>
-        <li>
-          <strong>Input the Message Payload:</strong> Paste the exact string or byte sequence to authenticate. Note that whitespace, trailing newlines, and character encoding directly alter the cryptographic output.
-        </li>
-        <li>
-          <strong>Optional Verification Matching:</strong> If you are debugging an incoming webhook or validating an external system's signature, paste the expected digest (in Hex or Base64) into the verification input. The tool dynamically performs an automated comparator check and outputs an affirmative or negative match verdict.
-        </li>
-        <li>
-          <strong>Export the Signature Package:</strong> Inspect the structured JSON output displaying hexadecimal and Base64 digests, bit-lengths, and byte sizes, or click "Copy Output" for clipboard ingestion.
-        </li>
+        <li><strong>Pick the hash algorithm</strong> (SHA-256 is the default choice).</li>
+        <li><strong>Enter the secret key</strong> and set its encoding (text, hex or Base64) to match how the key is stored.</li>
+        <li><strong>Enter the message</strong> to compute the HMAC tag in hex and Base64.</li>
+        <li><strong>Verify</strong> by pasting an expected tag; the tool reports a match or mismatch.</li>
       </ol>
 
-      <h2>When to Use HMAC: Real-World Engineering Scenarios</h2>
-      <p>
-        HMAC constructions are ubiquitously embedded across modern software architectures, serving as the frontline defense against tampering and unauthorized command injection:
-      </p>
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Third-Party Webhook Verification:</strong> Payment gateways and developer platforms (including Stripe, GitHub, Slack, and PayPal) deliver automated JSON event notifications across the public internet. To ensure an incoming HTTP POST request actually originated from the payment gateway and was not forged by a malicious actor, the sender computes an HMAC-SHA256 signature of the raw request payload using a shared webhook secret and transmits it in an HTTP header (e.g., <code>Stripe-Signature</code> or <code>X-Hub-Signature-256</code>).
-        </li>
-        <li>
-          <strong>Cloud API Request Signing:</strong> Cloud service providers, most notably Amazon Web Services with <strong>AWS Signature Version 4 (SigV4)</strong>, do not transmit long-lived secret access keys over the wire. Instead, API clients generate a canonical request string (including HTTP method, URI, query parameters, headers, and payload hash) and sign it using a multi-stage HMAC-SHA256 derivation tree anchored to the secret access key.
-        </li>
-        <li>
-          <strong>JSON Web Tokens (JWT / JWS):</strong> In RFC 7519 authentication architectures, the <code>HS256</code> (HMAC using SHA-256) signature algorithm binds the token header and claims payload to a symmetric server secret, preventing client-side privilege escalation (such as modifying <code>"role": "user"</code> to <code>"role": "admin"</code>).
-        </li>
-        <li>
-          <strong>Stateful Anti-CSRF Tokens:</strong> Web application frameworks bind user session identifiers, timestamps, and route paths using HMAC tokens to block cross-site request forgery attacks without requiring excessive server-side database lookups.
-        </li>
-        <li>
-          <strong>Secure Cookies &amp; Session Serialization:</strong> Frameworks like Ruby on Rails, Express.js, and Django sign serialized session cookies using HMAC to prevent clients from tampering with session data stored client-side.
-        </li>
+        <li><strong>A learning, testing and interop tool.</strong> Useful for checking that two systems compute the same tag, or understanding a signing scheme — not for managing production secrets.</li>
+        <li><strong>Not key management.</strong> The key is visible on screen; real systems keep signing keys in a secrets manager and rotate them.</li>
+        <li><strong>Authenticity, not confidentiality.</strong> If you also need the message hidden, combine HMAC with encryption, or use an AEAD cipher that does both.</li>
+        <li><strong>Runs locally.</strong> The key and message stay in your browser — nothing is uploaded — so it's safe to test with real values.</li>
       </ul>
-
-      <h2>Deep Dive: The RFC 2104 Nested Hash Construction</h2>
-      <p>
-        To understand why HMAC is engineered in its specific format, one must first explore why intuitive, naive hashing constructions fail.
-      </p>
-
-      <h3>The Length Extension Attack on Naive Constructions</h3>
-      <p>
-        When early software engineers sought to authenticate messages, the obvious intuitive solution was to prepend a secret key to the message and hash the concatenated string:
-      </p>
-      <pre><code>Tag = Hash(SecretKey || Message)  /* DANGEROUS: DO NOT USE IN PRODUCTION */</code></pre>
-      <p>
-        While this appears secure at first glance, it is fundamentally broken against an attacker who understands the internal mathematics of the <strong>Merkle-Damgård construction</strong>. 
-      </p>
-      <p>
-        Iterative hash functions like MD5, SHA-1, SHA-256, and SHA-512 process input data in sequential, fixed-size blocks (e.g., 64 bytes for SHA-256). The internal state of the hash function after processing block $i$ serves as the initialization vector ($IV$) for processing block $i+1$. When the hashing finishes, the final internal state is emitted directly as the digest.
-      </p>
-      <p>
-        In a <strong>Length Extension Attack</strong>, an eavesdropping adversary intercepts the authentic message $M$ and its naive signature $S = \text{Hash}(K \parallel M)$. Although the adversary does not know the secret key $K$, they know the exact digest $S$. Because $S$ represents the internal register state of the hash engine after consuming $K \parallel M$, the attacker can initialize a local hash engine with state $S$, append additional malicious data $M_{\text{evil}}$, apply proper Merkle-Damgård padding, and compute:
-      </p>
-      <pre><code>S' = Hash(K || M || Padding || M_evil)</code></pre>
-      <p>
-        The resulting digest $S'$ is a 100% mathematically valid signature for the extended message, and the receiving server will accept the forged payload without error!
-      </p>
-
-      <h3>The Mathematical Formulation of HMAC</h3>
-      <p>
-        To permanently defeat length extension attacks without redesigning underlying hash primitives, Mihir Bellare, Ran Canetti, and Hugo Krawczyk published the nested HMAC construction in 1996. RFC 2104 defines HMAC using two constant byte paddings:
-      </p>
-      <ul>
-        <li><strong>Inner Pad ($ipad$):</strong> The byte <code>0x36</code> repeated $B$ times (where $B$ is the block size of the hash function in bytes).</li>
-        <li><strong>Outer Pad ($opad$):</strong> The byte <code>0x5C</code> repeated $B$ times.</li>
-      </ul>
-      <p>
-        The formal mathematical equation for HMAC over a key $K$ and message $m$ is:
-      </p>
-      <p>$$\text{HMAC}(K, m) = H\Bigl((K' \oplus opad) \parallel H\bigl((K' \oplus ipad) \parallel m\bigr)\Bigr)$$</p>
-      <p>Where:</p>
-      <ul>
-        <li>$H$ is the underlying cryptographic hash function (e.g., SHA-256).</li>
-        <li>$B$ is the block byte-length of $H$ ($B = 64$ for SHA-256; $B = 128$ for SHA-512).</li>
-        <li>$L$ is the output byte-length of $H$ ($L = 32$ for SHA-256; $L = 64$ for SHA-512).</li>
-        <li>$K'$ is the normalized key derived from $K$:
-          <ul>
-            <li>If $\text{length}(K) > B$, then $K' = H(K)$ padded with trailing zeros to length $B$.</li>
-            <li>If $\text{length}(K) \le B$, then $K'$ is $K$ padded with trailing zeros to length $B$.</li>
-          </ul>
-        </li>
-        <li>$\oplus$ denotes the bitwise XOR operation.</li>
-        <li>$\parallel$ denotes byte-level concatenation.</li>
-      </ul>
-
-      <pre><code>+-------------------------------------------------------------------------------+
-|                            HMAC ARCHITECTURE FLOW                             |
-+-------------------------------------------------------------------------------+
-|                                                                               |
-|   Secret Key (K) ---> [ Length > B ? ] ---> Yes: H(K) \                       |
-|                             |                           +-> Zero-Pad to B -> K'
-|                             +-------------> No:   K   /                       |
-|                                                                               |
-|   K' (+) ipad (0x36) ---------> Inner Key Pad (K_in)                          |
-|                                      |                                        |
-|   Message (m) -----------------------+---> [ Concatenate & Hash ]             |
-|                                                    |                          |
-|                                            Inner Digest (H_in)                |
-|                                                    |                          |
-|   K' (+) opad (0x5C) ---------> Outer Key Pad (K_out)                         |
-|                                      |             |                          |
-|                                      +-------------+---> [ Hash ]             |
-|                                                            |                  |
-|                                                    Final HMAC Tag             |
-+-------------------------------------------------------------------------------+</code></pre>
-      <p>
-        Because the inner digest $H_{\text{in}}$ is completely re-hashed inside the outer pass with a distinct key $K' \oplus opad$, an attacker who intercepts the final output cannot inspect or extend the inner hash state. The outer hash functions as an impenetrable cryptographic barrier.
-      </p>
-
-      <h2>Cryptographic Parameters &amp; Hash Specifications</h2>
-      <p>
-        Different hashing primitives impose specific internal block sizes, output dimensions, and collision resistance thresholds. The table below details standard HMAC parameters:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Block Size ($B$)</th>
-              <th>Output Digest ($L$)</th>
-              <th>Security Level (Collision)</th>
-              <th>Primary Production Use Cases</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>HMAC-SHA-256</strong></td>
-              <td>64 bytes (512 bits)</td>
-              <td>32 bytes (256 bits)</td>
-              <td>128 bits</td>
-              <td>Stripe webhooks, GitHub API, AWS SigV4, JWT HS256, OAuth 2.0</td>
-            </tr>
-            <tr>
-              <td><strong>HMAC-SHA-512</strong></td>
-              <td>128 bytes (1024 bits)</td>
-              <td>64 bytes (512 bits)</td>
-              <td>256 bits</td>
-              <td>High-security financial ledgers, JWT HS512, Linux crypt(3)</td>
-            </tr>
-            <tr>
-              <td><strong>HMAC-SHA-384</strong></td>
-              <td>128 bytes (1024 bits)</td>
-              <td>48 bytes (384 bits)</td>
-              <td>192 bits</td>
-              <td>NSA Suite B, US Government Top Secret compliance, TLS 1.3</td>
-            </tr>
-            <tr>
-              <td><strong>HMAC-SHA-1</strong></td>
-              <td>64 bytes (512 bits)</td>
-              <td>20 bytes (160 bits)</td>
-              <td>Legacy (&lt; 80 bits)</td>
-              <td>Legacy Git commits, older AWS requests, TOTP / HOTP RFC 4226</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Step-by-Step Worked Example: RFC 4231 Test Vector</h2>
-      <p>
-        To illustrate the exact operational transformation, consider Test Vector 2 from <strong>RFC 4231</strong>, which defines standard HMAC-SHA256 test vectors:
-      </p>
-      <h4>1. Input Parameters</h4>
-      <ul>
-        <li><strong>Secret Key:</strong> <code>"Jefe"</code> (4 ASCII bytes: <code>0x4A 0x65 0x66 0x65</code>)</li>
-        <li><strong>Message:</strong> <code>"what do ya want for nothing?"</code> (28 ASCII bytes)</li>
-      </ul>
-
-      <h4>2. Step 1: Key Normalization to Block Size ($B = 64$)</h4>
-      <p>
-        Since the key <code>"Jefe"</code> is 4 bytes (less than 64 bytes), it is padded with 60 bytes of binary zeros (<code>0x00</code>):
-      </p>
-      <pre><code>K' = 4a65666500000000000000000000000000000000000000000000000000000000
-     0000000000000000000000000000000000000000000000000000000000000000</code></pre>
-
-      <h4>3. Step 2: Inner Key Pad XOR ($K' \oplus ipad$)</h4>
-      <p>
-        Every byte of $K'$ is XORed with <code>0x36</code>. For the first four bytes:
-      </p>
-      <ul>
-        <li><code>0x4A ^ 0x36 = 0x7C</code></li>
-        <li><code>0x65 ^ 0x36 = 0x53</code></li>
-        <li><code>0x66 ^ 0x36 = 0x50</code></li>
-        <li><code>0x65 ^ 0x36 = 0x53</code></li>
-      </ul>
-      <p>The remaining 60 zero bytes XORed with <code>0x36</code> become <code>0x36</code> repeated 60 times.</p>
-
-      <h4>4. Step 3: Inner Hash Computation</h4>
-      <p>
-        The inner pad is concatenated with the message string and passed to SHA-256:
-      </p>
-      <pre><code>Inner_Digest = SHA256((K' ^ ipad) || "what do ya want for nothing?")</code></pre>
-
-      <h4>5. Step 4: Outer Key Pad XOR ($K' \oplus opad$)</h4>
-      <p>
-        Every byte of $K'$ is XORed with <code>0x5C</code>:
-      </p>
-      <ul>
-        <li><code>0x4A ^ 0x5C = 0x16</code></li>
-        <li><code>0x65 ^ 0x5C = 0x39</code></li>
-        <li><code>0x66 ^ 0x5C = 0x3A</code></li>
-        <li><code>0x65 ^ 0x5C = 0x39</code></li>
-      </ul>
-      <p>The remaining 60 zero bytes XORed with <code>0x5C</code> become <code>0x5C</code> repeated 60 times.</p>
-
-      <h4>6. Step 5: Final Outer Hash Computation</h4>
-      <p>
-        The outer pad is concatenated with the 32-byte <code>Inner_Digest</code> and hashed via SHA-256 to produce the final tag:
-      </p>
-      <pre><code>HMAC-SHA256 = 5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843</code></pre>
-      <p>
-        Entering the key <code>Jefe</code> and payload <code>what do ya want for nothing?</code> into the BitDark tool above confirms this exact hexadecimal output instantaneously.
-      </p>
-
-      <h2>Cryptographic Comparison: HMAC vs. Other MACs and Signatures</h2>
-      <p>
-        Authentication primitives vary substantially across their operational attributes, key agreements, and mathematical designs:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Scheme</th>
-              <th>Underlying Primitive</th>
-              <th>Key Architecture</th>
-              <th>Non-Repudiation</th>
-              <th>Vulnerability to Timing Attacks</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>HMAC</strong></td>
-              <td>Iterative Cryptographic Hash (SHA-2 / SHA-3)</td>
-              <td>Symmetric (Shared Secret)</td>
-              <td>No (Both parties hold the key)</td>
-              <td>High if verified with standard string equals</td>
-            </tr>
-            <tr>
-              <td><strong>CMAC (AES-CMAC)</strong></td>
-              <td>Symmetric Block Cipher (AES)</td>
-              <td>Symmetric (Shared Secret)</td>
-              <td>No</td>
-              <td>High if string compared</td>
-            </tr>
-            <tr>
-              <td><strong>GMAC / Poly1305</strong></td>
-              <td>Universal Hashing (Galois Field / Prime Field)</td>
-              <td>Symmetric (Requires Unique Nonce)</td>
-              <td>No</td>
-              <td>Catastrophic failure if nonces repeat</td>
-            </tr>
-            <tr>
-              <td><strong>Ed25519 / ECDSA</strong></td>
-              <td>Elliptic Curve Discrete Logarithm</td>
-              <td>Asymmetric (Private / Public Key)</td>
-              <td><strong>Yes</strong> (Only sender holds private key)</td>
-              <td>High if scalar multiplication leaks timing</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Critical Implementation Vulnerabilities &amp; Best Practices</h2>
-      <p>
-        While HMAC itself has demonstrated remarkable mathematical resilience against cryptanalysis for over three decades, real-world systems frequently suffer from catastrophic implementation flaws:
-      </p>
-
-      <h3>1. Timing Side-Channel Attacks during Verification</h3>
-      <p>
-        The most pervasive software vulnerability in HMAC verification is variable-time comparison. In high-level languages like JavaScript, Python, PHP, or Java, standard string comparison operators (such as <code>a === b</code> or <code>strcmp()</code>) terminate execution at the very first byte that does not match:
-      </p>
-      <pre><code>/* VULNERABLE CODE - LEAKS TIMING INFORMATION */
-function verifyWebhook(userHmac, expectedHmac) {
-  return userHmac === expectedHmac; /* DO NOT DO THIS ON A PRODUCTION SERVER */
-}</code></pre>
-      <p>
-        An attacker monitoring network round-trip times with high-precision statistical sampling can determine byte-by-byte which characters match. If byte 0 is correct, the server takes slightly longer to reject the payload than if byte 0 is incorrect. By measuring tens of thousands of requests, adversaries can forge valid HMAC signatures without knowing the secret key.
-      </p>
-      <p>
-        <strong>Defensive Remedy:</strong> Always use a <strong>constant-time comparator</strong> function that checks all bytes regardless of mismatches, such as Node.js's <code>crypto.timingSafeEqual()</code> or Python's <code>hmac.compare_digest()</code>:
-      </p>
-      <pre><code>/* SECURE IMPLEMENTATION (NODE.JS) */
-const crypto = require('crypto');
-function verifyWebhookSecure(userBuffer, expectedBuffer) {
-  if (userBuffer.length !== expectedBuffer.length) return false;
-  return crypto.timingSafeEqual(userBuffer, expectedBuffer);
-}</code></pre>
-
-      <h3>2. Payload Ingestion &amp; Serialization Discrepancies</h3>
-      <p>
-        When verifying webhooks in frameworks like Express.js or FastAPI, developers often parse the HTTP request body into a native object (via <code>bodyParser.json()</code>) and then re-serialize it (via <code>JSON.stringify()</code>) before passing it to HMAC. 
-      </p>
-      <p>
-        This almost always fails verification in production. JSON key orders, spacing around delimiters (<code>{"key": "val"}</code> vs <code>{"key":"val"}</code>), and unicode escape characters differ between sender and receiver. <strong>Always calculate HMAC over the exact, unparsed, raw binary buffer of the incoming HTTP request.</strong>
-      </p>
-
-      <h3>3. Low-Entropy and Hardcoded Secret Keys</h3>
-      <p>
-        Because HMAC can be calculated millions of times per second on modern GPUs, using short, dictionary-based secrets (such as <code>"password123"</code> or <code>"my-api-secret"</code>) allows attackers to capture an authentic tag from a public webhook and crack the key offline in minutes. Ensure all production HMAC keys are generated from cryptographically secure pseudo-random number generators (CSPRNG) with at least 256 bits of raw entropy.
-      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Can an HMAC be decrypted to reveal the original message or key?</div>
+          <div class="faq-question">What's the difference between HMAC and a plain hash?</div>
           <div class="faq-answer">
-            No. An HMAC is a one-way cryptographic function, not an encryption algorithm. It produces a fixed-size irreversible digest. It is mathematically impossible to "decrypt" an HMAC tag back into the secret key or plaintext payload.
+            A plain hash (SHA-256) proves only that data wasn't changed, and anyone can recompute it. HMAC mixes in a secret key, so only someone with the key can produce or verify a valid tag. That's what lets it authenticate the sender, not just detect accidental changes.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does HMAC-SHA1 still appear in modern authentication libraries?</div>
+          <div class="faq-question">Is HMAC-SHA1 still safe to use?</div>
           <div class="faq-answer">
-            While plain SHA-1 is vulnerable to collision attacks (demonstrated by the SHAttered project in 2017), HMAC-SHA1 remains mathematically unbroken against practical forgery attacks because collision attacks do not directly compromise the nested HMAC outer-pass construction. However, regulatory frameworks (such as NIST and PCI-DSS) mandate migrating to HMAC-SHA256 or HMAC-SHA512.
+            Yes, HMAC-SHA-1 itself is not broken — HMAC's security doesn't depend on SHA-1's collision resistance, which is the part that's weak. It's still used in many systems. For new designs, prefer HMAC-SHA-256, but you don't need to panic if you see HMAC-SHA-1.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between HMAC-SHA256 and AES-GCM?</div>
+          <div class="faq-question">How should I compare HMACs when verifying?</div>
           <div class="faq-answer">
-            HMAC provides authentication and data integrity, but zero confidentiality—the message itself remains unencrypted and publicly readable. AES-GCM is an Authenticated Encryption with Associated Data (AEAD) cipher that encrypts the message (providing confidentiality) while simultaneously calculating a 128-bit authentication tag (providing integrity).
+            In code, use a constant-time comparison such as crypto.timingSafeEqual (Node) or hmac.compare_digest (Python). A normal equality check can leak timing information that helps an attacker forge a tag byte by byte. This tool's on-screen comparison runs locally, so the concern is about your server-side verifier.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does HMAC handle keys that are longer than the block size?</div>
+          <div class="faq-question">Does HMAC encrypt my message?</div>
           <div class="faq-answer">
-            According to RFC 2104, if a secret key's length exceeds the block size of the hash function (e.g., more than 64 bytes for SHA-256), the key is first hashed using the same hash function: <code>K' = SHA256(Key)</code>. The resulting 32-byte digest is then zero-padded to 64 bytes to serve as the effective key.
+            No. HMAC authenticates a message but doesn't hide it. The message is sent in the clear with its tag attached. If you need confidentiality too, encrypt the message as well, or use an AEAD cipher like AES-GCM or ChaCha20-Poly1305 that provides both.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does this tool run entirely in browser memory?</div>
+          <div class="faq-question">What makes a good HMAC key?</div>
           <div class="faq-answer">
-            Transmitting secret authentication keys or sensitive webhook payloads over the network to a third-party server exposes systems to interception, logging, and unauthorized access. BitDark executes all key generation, hashing, and verification strictly inside your browser's private Web Crypto memory space with zero network egress.
+            A long, random secret — ideally at least the hash's output size, so 32 bytes for SHA-256. Random bytes stored as hex or Base64 are better than a human-chosen word. HMAC's strength depends on the key staying secret and having enough entropy.
           </div>
         </div>
       </section>
