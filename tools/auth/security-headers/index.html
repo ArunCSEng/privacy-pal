@@ -6,8 +6,8 @@
   
   <title>HTTP Security Headers Analyzer — Free Offline Web Defense Inspector | BitDark</title>
   <meta name="title" content="HTTP Security Headers Analyzer — Free Offline Web Defense Inspector | BitDark" />
-  <meta name="description" content="Audit, evaluate, and inspect raw HTTP response headers (HSTS, CSP, X-Frame-Options, Permissions-Policy, COOP, COEP) locally in browser RAM. Zero tracking, zero network egress." />
-  <meta name="keywords" content="security headers analyzer, http response headers audit, hsts validator, csp inspector, x-frame-options checker, permissions-policy generator, web application hardening, coop coep corp headers, bitdark" />
+  <meta name="description" content="Check HTTP security headers (HSTS, CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy) and get a posture rating, in your browser. Includes a baseline to copy. Nothing is uploaded." />
+  <meta name="keywords" content="http security headers checker, hsts checker, content-security-policy header, x-frame-options, referrer-policy, permissions-policy, security headers analyzer, secure headers baseline" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/security-headers/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/security-headers/" />
   <meta property="og:title" content="HTTP Security Headers Analyzer — Local Browser Memory Audit | BitDark" />
-  <meta property="og:description" content="Inspect, audit, and harden HTTP response headers offline in volatile memory. 100% Client-Side with zero tracking, telemetry, or server egress." />
+  <meta property="og:description" content="Paste your HTTP response headers to grade HSTS, CSP, X-Frame-Options and more, with a baseline to copy and honest notes on what the rating covers. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/security-headers/" />
   <meta name="twitter:title" content="HTTP Security Headers Analyzer | BitDark" />
-  <meta name="twitter:description" content="Audit HTTP response headers (HSTS, CSP, Permissions-Policy) locally in memory. Zero network egress." />
+  <meta name="twitter:description" content="Grade your HTTP security headers in your browser and get a baseline to copy." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "HTTP Security Headers Analyzer",
         "url": "https://bitdark.net/tools/auth/security-headers/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side cybersecurity tool to inspect, evaluate, and validate HTTP response security headers (HSTS, CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) directly in browser memory without network egress."
+        "description": "Browser-based HTTP security header analyzer that grades HSTS, CSP presence, X-Content-Type-Options, clickjacking protection, Referrer-Policy, Permissions-Policy and information-leak headers."
       },
       {
         "@type": "TechArticle",
-        "headline": "Modern HTTP Security Headers: Defensive Architecture, Directive Hardening, and Production Deployment Standards",
+        "headline": "Checking HTTP Security Headers: HSTS, CSP, Clickjacking Protection and a Baseline to Copy",
         "url": "https://bitdark.net/tools/auth/security-headers/",
         "author": {
           "@type": "Organization",
@@ -57,74 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-12",
-        "dateModified": "2026-10-31",
-        "description": "Comprehensive engineering guide to HTTP response security headers, browser enforcement mechanisms, TLS transport hardening, Cross-Origin Isolation (COOP/COEP/CORP), and zero-egress audit methodologies."
+        "dateModified": "2026-11-09",
+        "description": "What HTTP security headers do, each header the analyzer grades and how, a worked example of hardened versus vulnerable stacks, and a solid baseline configuration."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What are HTTP security response headers and why are they critical?",
+            "name": "Does a \"Strong / Compliant\" rating mean my site is fully secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "HTTP security response headers are metadata instructions sent by a web server to a client browser. They instruct the browser's security sandbox on how to restrict resource execution, control framing, enforce transport encryption, isolate cross-origin execution contexts, and manage sensitive hardware APIs. Correctly deployed headers mitigate major attack vectors including Cross-Site Scripting (XSS), Clickjacking, MIME-sniffing, and SSL-stripping."
+              "text": "No. It means no high or medium header issues were found. The tool still reports low items like information-leak headers without lowering the grade, it only checks that CSP exists rather than whether it's strong, and headers are just one layer. Keep hardening beyond a passing rating."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is testing security headers locally more secure than using public online scanners?",
+            "name": "Does this tool check my live website?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Public web scanners require your server URL, logging internal domain names, staging endpoints, origin IP addresses, and server banner versions into third-party databases. BitDark runs 100% locally in your browser memory, enabling security engineers to audit staging servers, localhost dev instances, internal corporate networks, and production responses without generating external telemetry."
+              "text": "No. It analyses the header text you paste, entirely in your browser, and makes no network request to your site. Fetch your headers with curl or the Network tab and paste them in."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the recommended configuration for HTTP Strict Transport Security (HSTS)?",
+            "name": "What's the most important header to add first?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The industry best-practice HSTS header is: 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'. This forces browsers to communicate strictly over encrypted HTTPS for a minimum of one year, applies the policy to all subdomains, and qualifies the domain for inclusion in browser preloaded HSTS lists."
+              "text": "If you're on HTTPS, HSTS and a Content-Security-Policy give the most protection, against downgrade attacks and XSS respectively. X-Content-Type-Options: nosniff is a trivial, high-value addition too."
             }
           },
           {
             "@type": "Question",
-            "name": "Does Content-Security-Policy (CSP) replace X-Frame-Options?",
+            "name": "Why does it flag my Server header?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, the CSP 'frame-ancestors' directive supersedes X-Frame-Options by providing granular, multi-origin control over which domains may frame a page. However, keeping 'X-Frame-Options: DENY' or 'SAMEORIGIN' remains recommended for backward compatibility with legacy user agents that do not support CSP Level 2."
+              "text": "Headers like Server and X-Powered-By reveal your software and version, which helps an attacker target known vulnerabilities. It's a low-severity finding: remove or generalise them where you can, but it won't make or break your rating."
             }
           },
           {
             "@type": "Question",
-            "name": "Why should the X-XSS-Protection header be disabled or omitted in modern web applications?",
+            "name": "Is the HSTS max-age threshold here the recommended value?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The legacy X-XSS-Protection header implemented a client-side heuristic auditor that frequently introduced severe side-channel vulnerabilities, allowing attackers to leak sensitive tokens or selectively disable legitimate scripts. Modern standards mandate setting 'X-XSS-Protection: 0' and relying entirely on Content-Security-Policy (CSP) for robust XSS defense."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What is the difference between COOP, COEP, and CORP headers?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Cross-Origin Opener Policy (COOP) isolates your browsing context group from cross-origin popups. Cross-Origin Embedder Policy (COEP) prevents a document from loading cross-origin subresources that do not explicitly grant permission. Cross-Origin Resource Policy (CORP) protects your own backend media and data files from being embedded by external origins. Together, they enable crossOriginIsolated state required for high-resolution timers and SharedArrayBuffer."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Why is 'X-Content-Type-Options: nosniff' essential even when servers return valid MIME types?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Without 'nosniff', browsers may ignore the server's declared Content-Type header and execute MIME-type sniffing on the payload. If an application allows users to upload avatars or text files containing hidden script tags, a browser sniffing executable JavaScript could execute the file in the application's origin context, leading to stored Cross-Site Scripting."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Are raw headers pasted into this tool transmitted to external servers?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. BitDark operates on a strict air-gapped, zero-network-egress security model. All parsing, regular expression evaluation, and abstract syntax tree construction take place exclusively inside your browser's local JavaScript heap. No network packets are transmitted."
+              "text": "The tool warns only when max-age is under about 120 days, but the recommended production value is at least one year (31536000 seconds). Use the longer value, and includeSubDomains, for full protection even though a shorter one may still pass."
             }
           }
         ]
@@ -783,7 +759,7 @@
 
     <div class="tool-header">
       <h1>HTTP Security Headers Analyzer</h1>
-      <p>Audit, inspect, and evaluate raw HTTP response headers against modern web defense standards entirely inside your browser memory. Inspect HSTS, CSP, X-Frame-Options, Permissions-Policy, and COOP/COEP directives with zero server latency and zero data leakage.</p>
+      <p>Paste your HTTP response headers to check HSTS, Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Referrer-Policy and Permissions-Policy, and get a posture rating. It analyses text in your browser and doesn't fetch your site.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -845,457 +821,119 @@ Content-Security-Policy: default-src 'self';" spellcheck="false"></textarea>
       </div>
     </div>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Static Header Evaluation Scope:</strong> Static HTTP response header inspection evaluates structural directives, recognized baseline headers, and known defense standards; it does not test server-side dynamic nonce generation, runtime route variations, origin validation logic, or transport layer cipher negotiation. Always verify production deployments across diverse browser engines and standard automated compliance suites. All parsing runs exclusively in your local browser runtime without network transmission.
+        <strong>A passing rating isn't a full security review.</strong> The tool checks that CSP exists, not whether it's strong, and reports information-leak headers as low without lowering the grade. Headers are one layer of defence. Verify your live headers after deploying, since a CDN or proxy can change them. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Critical Role of HTTP Security Headers in Modern Web Defense</h2>
+      <h2>What Security Headers Do</h2>
       <p>
-        When a web browser requests an application resource over the internet, the interaction is governed by the <strong>Hypertext Transfer Protocol (HTTP)</strong>. While developers devote significant time to securing server-side databases, API routes, and container orchestration clusters, client-side browser execution remains the most volatile attack surface in software security.
-      </p>
-      <p>
-        Modern browsers are complex operating environments that execute untrusted code from heterogeneous sources: third-party scripts, advertising iframes, style sheets, and user-generated media. Without strict constraints, a single Cross-Site Scripting (XSS) vulnerability or clickjacking frame can compromise administrative sessions, exfiltrate session cookies, and hijack browser APIs.
-      </p>
-      <p>
-        <strong>HTTP Security Headers</strong> are declarative response directives sent by the web server to the client browser. They establish the foundational boundaries of the browser's execution sandbox, governing:
-      </p>
-      <ul>
-        <li><strong>Transport Layer Encryption (HSTS):</strong> Enforcing strict HTTPS transport to eliminate man-in-the-middle SSL stripping attacks.</li>
-        <li><strong>Code Execution Boundaries (CSP):</strong> Restricting the origins from which scripts, styles, images, and fonts may be loaded and executed.</li>
-        <li><strong>UI Framing &amp; Redressing (X-Frame-Options / frame-ancestors):</strong> Halting clickjacking attacks that embed application interfaces within malicious parent frames.</li>
-        <li><strong>MIME-Type Sniffing Protection (X-Content-Type-Options):</strong> Halting attacks that disguise executable scripts as benign media files or plain text.</li>
-        <li><strong>Hardware &amp; API Sandboxing (Permissions-Policy):</strong> Granularly disabling access to sensitive device hardware (webcams, microphones, geolocation, payment APIs).</li>
-        <li><strong>Cross-Origin Process Isolation (COOP / COEP / CORP):</strong> Mitigating speculative execution side-channel attacks (Spectre) and cross-origin resource leaks.</li>
-      </ul>
-
-      <h2>How to Use the BitDark Security Headers Analyzer</h2>
-      <p>
-        Auditing security headers using the BitDark engine is instantaneous, non-destructive, and strictly confined to your device's private volatile RAM:
-      </p>
-      <ol>
-        <li>
-          <strong>Obtain Your Raw Response Headers:</strong> You can capture raw headers using your browser Developer Tools (Network tab &gt; select the initial document request &gt; view "Raw Response Headers") or via a terminal command:
-          <pre><code>curl -s -D - https://example.com -o /dev/null</code></pre>
-        </li>
-        <li>
-          <strong>Paste Headers into the Diagnostic Terminal:</strong> Paste the complete block of raw HTTP response headers into the textarea. The parser supports standard <code>Key: Value</code> format, ignores whitespace, and gracefully ignores comment strings.
-        </li>
-        <li>
-          <strong>Explore Testing Presets:</strong> If testing the engine, click <strong>Hardened Production Stack</strong> to inspect an enterprise-grade defense configuration, or <strong>Vulnerable / Incomplete Stack</strong> to observe common security deficiencies.
-        </li>
-        <li>
-          <strong>Execute In-Memory Evaluation:</strong> Click <strong>Analyze Headers</strong>. The parser normalizes header keys, validates directive syntax against modern RFC specifications, and cross-references your configuration against security benchmarks.
-        </li>
-        <li>
-          <strong>Review Hardening Recommendations:</strong> Examine the color-coded severity findings (High, Medium, Low, and Pass). Review the Normalized Headers AST dictionary for automated pipeline integration or configuration auditing.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Operational Scenarios &amp; Compliance</h2>
-      <p>
-        Regular security header audits are essential across the entire software development lifecycle (SDLC) and regulatory compliance frameworks:
-      </p>
-      <ul>
-        <li>
-          <strong>Zero-Egress Pre-Production &amp; Staging Audits:</strong> Public header scanning sites require public internet accessibility. BitDark operates 100% in-browser, allowing security teams to audit internal development environments (<code>localhost</code>, Docker containers, private VPN staging clusters) without exposing unreleased endpoints to public search engine indexes.
-        </li>
-        <li>
-          <strong>Regulatory Compliance Auditing:</strong>
-          <ul>
-            <li><strong>PCI-DSS v4.0 (Requirement 6.4.3):</strong> Mandates strict authorization, integrity verification, and inventory of all scripts executing in the consumer's browser, achievable via robust Content-Security-Policy configurations.</li>
-            <li><strong>HIPAA Security Rule (45 CFR § 164.312):</strong> Requires technical transmission security controls, making HSTS and Referrer-Policy mandatory to prevent PHI exposure via URL query strings.</li>
-            <li><strong>SOC 2 Type II Audits:</strong> Auditors inspect security header baselines to confirm defensive controls over data transport and application isolation.</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Post-Deployment Smoke Testing:</strong> Following reverse proxy updates (Nginx, Traefik, HAProxy, Cloudflare Workers), engineers verify that headers were not stripped or overwritten during upstream forwarding.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Deconstructing Core Security Headers</h2>
-
-      <h3>1. Strict-Transport-Security (HSTS, RFC 6797)</h3>
-      <p>
-        Even if a server redirects HTTP traffic to HTTPS via a <code>301 Moved Permanently</code>, an active adversary on an unencrypted Wi-Fi network can intercept the initial HTTP request before the redirect executes. Using tools like <em>sslstrip</em>, the attacker establishes an unencrypted connection to the client while maintaining an encrypted connection to the server, silently intercepting session cookies and credentials.
-      </p>
-      <p>
-        The <strong>Strict-Transport-Security (HSTS)</strong> header eliminates this vulnerability by instructing the browser to communicate exclusively over HTTPS for a specified duration:
-      </p>
-      <pre><code>Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></pre>
-      <ul>
-        <li><code>max-age=31536000</code>: Instructs the browser to remember the HTTPS-only policy for one full year (31,536,000 seconds).</li>
-        <li><code>includeSubDomains</code>: Extends the HTTPS requirement to all current and future subdomains (e.g., <code>api.example.com</code>, <code>staging.example.com</code>).</li>
-        <li><code>preload</code>: Confirms authorization for inclusion in the Chrome/Firefox/Safari <strong>HSTS Preload List</strong>, ensuring browsers never make even the first insecure connection to the domain.</li>
-      </ul>
-
-      <h3>2. Content-Security-Policy (CSP Level 3)</h3>
-      <p>
-        Content-Security-Policy is the single most powerful defense against Cross-Site Scripting (XSS), data exfiltration, and UI redressing. CSP restricts the origins from which assets can be loaded, preventing malicious injected scripts from executing:
-      </p>
-      <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-rAnd0m123'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';</code></pre>
-      <ul>
-        <li><code>default-src 'self'</code>: Disallows asset loading from any third-party origin unless explicitly overridden.</li>
-        <li><code>script-src 'self' 'nonce-...'</code>: Enforces cryptographic nonce verification for script execution, completely neutralizing inline script injection attacks.</li>
-        <li><code>object-src 'none'</code>: Halts dangerous legacy browser plugins (Flash, Java Applets, ActiveX).</li>
-        <li><code>base-uri 'self'</code>: Halts base-tag injection attacks that manipulate relative URL resolution paths.</li>
-      </ul>
-
-      <h3>3. X-Content-Type-Options</h3>
-      <p>
-        Historically, when a web server served an asset with an incorrect or ambiguous <code>Content-Type</code> header, browsers attempted to inspect the file's raw byte stream to determine its format. This practice, known as <strong>MIME-type sniffing</strong>, created severe attack vectors: an attacker could upload an image containing malicious JavaScript code, and the browser would execute it as an HTML/script document.
-      </p>
-      <p>
-        Setting this header instructs the browser to strictly adhere to the declared MIME type:
-      </p>
-      <pre><code>X-Content-Type-Options: nosniff</code></pre>
-
-      <h3>4. X-Frame-Options &amp; CSP frame-ancestors</h3>
-      <p>
-        Clickjacking (UI redressing) occurs when an attacker loads a target website inside a transparent <code>&lt;iframe&gt;</code> overlaid on top of a decoy page. When the user clicks an enticing button on the decoy page, they inadvertently click an administrative button (e.g., "Delete Account" or "Confirm Transfer") inside the hidden iframe.
-      </p>
-      <p>
-        While modern standards utilize CSP's <code>frame-ancestors</code> directive, maintaining the legacy <code>X-Frame-Options</code> header ensures protection across legacy user agents:
-      </p>
-      <pre><code>X-Frame-Options: DENY</code></pre>
-      <p>
-        Valid directives are <code>DENY</code> (completely prevents framing) and <code>SAMEORIGIN</code> (allows framing only by pages on the exact same origin). The obsolete <code>ALLOW-FROM</code> directive is deprecated and ignored by modern browsers.
+        HTTP response headers let a server tell the browser how to behave: force HTTPS, block framing, stop MIME sniffing, limit what the referrer reveals, and more. They're a cheap, high-value layer of defence, and most are a one-line change in your web server or app. This tool checks a set of headers you paste and rates how well they're configured. It analyses text only; it doesn't fetch your site.
       </p>
 
-      <h3>5. Referrer-Policy</h3>
-      <p>
-        When a user clicks an outbound link or a page requests a subresource, the browser sends an HTTP <code>Referer</code> header containing the URL of the referring page. If application URLs contain sensitive information—such as user IDs, password reset tokens, or tenant names—this data leaks to external third-party servers.
-      </p>
-      <p>
-        The hardened modern default standard is:
-      </p>
-      <pre><code>Referrer-Policy: strict-origin-when-cross-origin</code></pre>
-      <p>
-        This policy sends the full URL path when navigating within the same origin, but truncates the referrer to the bare origin (e.g., <code>https://example.com/</code>) when making cross-origin requests, while sending zero referrer data when downgrading from HTTPS to HTTP.
-      </p>
-
-      <h3>6. Permissions-Policy</h3>
-      <p>
-        The <code>Permissions-Policy</code> header (the standardized successor to <code>Feature-Policy</code>) allows site operators to explicitly disable or restrict powerful browser APIs and hardware capabilities across their application and any embedded third-party iframes:
-      </p>
-      <pre><code>Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()</code></pre>
-      <p>
-        Setting an empty parameter list <code>()</code> completely denies access to the feature for all browsing contexts, guaranteeing that compromised dependencies or third-party ads cannot activate the user's webcam or track physical location.
-      </p>
-
-      <h3>7. Cross-Origin Isolation: COOP, COEP, and CORP</h3>
-      <p>
-        Following the discovery of microarchitectural speculative execution vulnerabilities (Spectre, Meltdown), modern browser engines introduced strict process isolation boundaries. To prevent malicious cross-origin documents from reading confidential memory through cache timing attacks, browsers restrict high-performance APIs (such as <code>SharedArrayBuffer</code> and <code>performance.now()</code> with microsecond precision) unless a page is <strong>cross-origin isolated</strong>.
-      </p>
-      <p>
-        Achieving cross-origin isolation requires deploying three complementary headers:
-      </p>
-      <ul>
-        <li><strong>Cross-Origin-Opener-Policy (COOP):</strong> <code>Cross-Origin-Opener-Policy: same-origin</code> isolates top-level windows from cross-origin popups, severing direct DOM window references.</li>
-        <li><strong>Cross-Origin-Embedder-Policy (COEP):</strong> <code>Cross-Origin-Embedder-Policy: require-corp</code> ensures that a document can only load subresources that have explicitly declared permission to be loaded cross-origin.</li>
-        <li><strong>Cross-Origin-Resource-Policy (CORP):</strong> <code>Cross-Origin-Resource-Policy: same-origin</code> prevents third-party origins from reading backend API responses or media files via <code>&lt;script&gt;</code> or <code>&lt;img&gt;</code> tags.</li>
-      </ul>
-
-      <h2>Comprehensive Security Headers Comparison Matrix</h2>
+      <h2>What This Analyzer Checks</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Security Header</th>
-              <th>Hardened Standard Directive</th>
-              <th>Target Attack Vector</th>
-              <th>Risk Severity if Omitted</th>
-              <th>Browser Support</th>
-            </tr>
+            <tr><th>Header</th><th>Protects against</th><th>How it's graded</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Strict-Transport-Security</strong></td>
-              <td><code>max-age=31536000; includeSubDomains; preload</code></td>
-              <td>Man-in-the-Middle, SSL Stripping</td>
-              <td><strong>High (Critical)</strong></td>
-              <td>All Modern Browsers (98%+)</td>
-            </tr>
-            <tr>
-              <td><strong>Content-Security-Policy</strong></td>
-              <td><code>default-src 'self'; script-src 'self' 'nonce-...'</code></td>
-              <td>Cross-Site Scripting (XSS), Data Injection</td>
-              <td><strong>High (Critical)</strong></td>
-              <td>All Modern Browsers</td>
-            </tr>
-            <tr>
-              <td><strong>X-Content-Type-Options</strong></td>
-              <td><code>nosniff</code></td>
-              <td>MIME Confusion, Executable Sniffing</td>
-              <td><strong>High</strong></td>
-              <td>Universal (100%)</td>
-            </tr>
-            <tr>
-              <td><strong>X-Frame-Options</strong></td>
-              <td><code>DENY</code> or <code>SAMEORIGIN</code></td>
-              <td>Clickjacking, UI Redressing</td>
-              <td><strong>Medium-High</strong></td>
-              <td>Universal (Legacy &amp; Modern)</td>
-            </tr>
-            <tr>
-              <td><strong>Referrer-Policy</strong></td>
-              <td><code>strict-origin-when-cross-origin</code></td>
-              <td>Token Leakage via URL Referrer</td>
-              <td><strong>Medium</strong></td>
-              <td>Universal (98%+)</td>
-            </tr>
-            <tr>
-              <td><strong>Permissions-Policy</strong></td>
-              <td><code>geolocation=(), camera=(), microphone=()</code></td>
-              <td>Unauthorized Hardware API Access</td>
-              <td><strong>Medium</strong></td>
-              <td>Chromium, Safari 16.4+, Firefox</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Origin-Opener-Policy</strong></td>
-              <td><code>same-origin</code></td>
-              <td>Spectre Side-Channel, Window Hijacking</td>
-              <td><strong>Medium</strong></td>
-              <td>All Modern Browsers</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Origin-Embedder-Policy</strong></td>
-              <td><code>require-corp</code></td>
-              <td>Cross-Origin Data Leakage</td>
-              <td><strong>Low-Medium</strong></td>
-              <td>All Modern Browsers</td>
-            </tr>
-            <tr>
-              <td><strong>Cross-Origin-Resource-Policy</strong></td>
-              <td><code>same-origin</code></td>
-              <td>Cross-Origin Resource Inclusion (CORI)</td>
-              <td><strong>Medium</strong></td>
-              <td>All Modern Browsers</td>
-            </tr>
+            <tr><td><code>Strict-Transport-Security</code> (HSTS)</td><td>SSL stripping, HTTP downgrade</td><td>High if missing; medium if <code>max-age</code> is under ~120 days or <code>includeSubDomains</code> is absent</td></tr>
+            <tr><td><code>Content-Security-Policy</code></td><td>XSS, injection</td><td>High if missing; pass if present (presence only)</td></tr>
+            <tr><td><code>X-Content-Type-Options</code></td><td>MIME sniffing</td><td>High unless set to <code>nosniff</code></td></tr>
+            <tr><td><code>X-Frame-Options</code> or CSP <code>frame-ancestors</code></td><td>Clickjacking</td><td>Medium if neither is present; <code>ALLOW-FROM</code> flagged as obsolete</td></tr>
+            <tr><td><code>Referrer-Policy</code></td><td>URL/token leakage</td><td>Medium if missing or weak (<code>unsafe-url</code>)</td></tr>
+            <tr><td><code>Permissions-Policy</code></td><td>Unwanted camera/mic/geolocation</td><td>Low if missing</td></tr>
+            <tr><td><code>Server</code>, <code>X-Powered-By</code>, <code>X-AspNet-Version</code></td><td>Version fingerprinting</td><td>Low if present (information leak)</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Production Deployment Blueprints: Web Server Configurations</h2>
       <p>
-        Deploying hardened security headers requires appending configuration blocks to your web server or edge reverse proxy. Below are authoritative, copy-paste production templates:
+        The overall rating is driven by the worst finding: any high issue makes it "Poor / High Risk", any medium makes it "Moderate Hardening", and otherwise it's "Strong / Compliant". Low-severity items, such as an exposed <code>Server</code> header or a missing <code>Permissions-Policy</code>, are reported but don't lower the top rating, so "Strong" still leaves a little room to tighten.
       </p>
 
-      <h3>1. Nginx Production Configuration</h3>
-      <pre><code># /etc/nginx/conf.d/security-headers.conf
-server {
-    listen 443 ssl http2;
-    server_name example.com;
+      <h2>How to Use the Analyzer</h2>
+      <ol>
+        <li><strong>Get your headers.</strong> Run <code>curl -I https://yoursite.com</code>, or copy the response headers from your browser's Network tab.</li>
+        <li><strong>Paste them and click "Analyze Headers"</strong>, or load a sample to compare.</li>
+        <li><strong>Fix high findings first</strong>, then medium, then the low information-leak items.</li>
+        <li><strong>Re-check after deploying</strong>, since a proxy or CDN can add or strip headers.</li>
+      </ol>
 
-    # Transport Hardening (HSTS)
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-
-    # MIME Sniffing Protection
-    add_header X-Content-Type-Options "nosniff" always;
-
-    # Frame Redressing Mitigation
-    add_header X-Frame-Options "DENY" always;
-
-    # Privacy & Referrer Truncation
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # Hardware API Restrictions
-    add_header Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=(), usb=()" always;
-
-    # Cross-Origin Process Isolation
-    add_header Cross-Origin-Opener-Policy "same-origin" always;
-    add_header Cross-Origin-Resource-Policy "same-origin" always;
-
-    # Remove Fingerprinting Headers
-    server_tokens off;
-}</code></pre>
-
-      <h3>2. Apache (.htaccess or httpd.conf)</h3>
-      <pre><code>&lt;IfModule mod_headers.c&gt;
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-Frame-Options "DENY"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
-    Header always set Cross-Origin-Opener-Policy "same-origin"
-    Header always set Cross-Origin-Resource-Policy "same-origin"
-    Header unset X-Powered-By
-    Header unset Server
-&lt;/IfModule&gt;
-ServerSignature Off
-ServerTokens Prod</code></pre>
-
-      <h3>3. Cloudflare Workers (Edge Response Mutation)</h3>
-      <pre><code>export default {
-  async fetch(request, env, ctx) {
-    const response = await fetch(request);
-    const newHeaders = new Headers(response.headers);
-
-    newHeaders.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-    newHeaders.set("X-Content-Type-Options", "nosniff");
-    newHeaders.set("X-Frame-Options", "DENY");
-    newHeaders.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    newHeaders.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-    newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
-    
-    // Scrub backend fingerprinting
-    newHeaders.delete("Server");
-    newHeaders.delete("X-Powered-By");
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders
-    });
-  }
-};</code></pre>
-
-      <h3>4. Next.js (next.config.js)</h3>
-      <pre><code>// next.config.js
-module.exports = {
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' }
-        ]
-      }
-    ];
-  }
-};</code></pre>
-
-      <h2>Worked Audit Example: Deconstructing Incomplete vs Hardened Responses</h2>
+      <h2>Worked Example: Hardened vs Vulnerable</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr><th>Headers</th><th>Rating</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Full set: HSTS with <code>includeSubDomains; preload</code>, CSP, nosniff, DENY, Referrer-Policy, Permissions-Policy</td><td>Strong / Compliant</td><td>All checks pass</td></tr>
+            <tr><td>HTTP with no security headers and a <code>Server</code> banner</td><td>Poor / High Risk</td><td>Missing HSTS, CSP and nosniff (all high)</td></tr>
+            <tr><td>Same as the hardened set but HSTS without <code>includeSubDomains</code></td><td>Moderate Hardening</td><td>One medium finding</td></tr>
+            <tr><td>Hardened set plus <code>Server</code> and <code>X-Powered-By</code></td><td>Strong / Compliant</td><td>Info leak reported as low, rating unchanged</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        To illustrate how the BitDark analyzer evaluates posture, consider the contrast between a typical misconfigured legacy stack and a hardened production response:
+        These are the results the tool gave in testing. Note the third row: HSTS protects the main host but not subdomains without <code>includeSubDomains</code>, which the tool correctly flags.
       </p>
 
-      <h3>Scenario A: Legacy / Vulnerable Response Stack</h3>
-      <pre><code>HTTP/1.1 200 OK
-Date: Tue, 03 Nov 2026 12:00:00 GMT
-Server: Apache/2.4.41 (Ubuntu)
-X-Powered-By: PHP/7.4.3
-X-Frame-Options: ALLOW-FROM https://partner.example.com
-Referrer-Policy: unsafe-url
-Content-Type: text/html; charset=UTF-8</code></pre>
-      <p>
-        <strong>Diagnostic Analysis:</strong>
-      </p>
-      <ul>
-        <li><strong>Missing HSTS:</strong> Unencrypted HTTP connections are permitted, enabling SSL stripping.</li>
-        <li><strong>Missing CSP:</strong> No browser-level protection against Cross-Site Scripting or unauthorized script injection.</li>
-        <li><strong>Missing X-Content-Type-Options:</strong> Browsers may attempt MIME sniffing on uploaded media.</li>
-        <li><strong>Deprecated Directive:</strong> <code>ALLOW-FROM</code> is ignored by modern browsers, leaving the site vulnerable to clickjacking.</li>
-        <li><strong>Dangerous Referrer-Policy:</strong> <code>unsafe-url</code> sends complete URL query strings (including sensitive tokens) to third-party endpoints.</li>
-        <li><strong>Server Fingerprinting:</strong> Explicitly advertises <code>Apache/2.4.41</code> and <code>PHP/7.4.3</code>, allowing automated exploit scanners to identify unpatched CVEs.</li>
-      </ul>
-
-      <h3>Scenario B: Fully Hardened Enterprise Stack</h3>
-      <pre><code>HTTP/1.1 200 OK
-Date: Tue, 03 Nov 2026 12:00:00 GMT
-Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-random123'; object-src 'none'; base-uri 'self';
-X-Frame-Options: DENY
+      <h2>A Solid Baseline</h2>
+      <pre><code>Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Content-Security-Policy: default-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'none'
 X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
-Permissions-Policy: geolocation=(), camera=(), microphone=()
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Resource-Policy: same-origin
-Content-Type: text/html; charset=UTF-8</code></pre>
-      <p>
-        <strong>Diagnostic Analysis:</strong> The BitDark analyzer returns an <strong>Excellent Security Header Posture (Fully Hardened)</strong> rating. Transport is locked to TLS, MIME types are strictly enforced, clickjacking is mitigated across all user agents, hardware sensors are sandboxed, and server banners are completely redacted.
-      </p>
-
-      <h2>Common Implementation Pitfalls &amp; High-Risk Blunders</h2>
-      <p>
-        Even experienced engineering teams frequently make critical mistakes when rolling out security headers:
-      </p>
+Permissions-Policy: geolocation=(), camera=(), microphone=()</code></pre>
       <ul>
-        <li>
-          <strong>Enabling HSTS <code>preload</code> Prematurely:</strong> Once a domain is submitted and merged into the browser HSTS Preload List, removal can take months across vendor release cycles. If an internal subdomain lacks an active SSL/TLS certificate, users will experience permanent connection blockages. Always test with <code>max-age=300</code> (5 minutes) before scaling to one year.
-        </li>
-        <li>
-          <strong>Overwriting Headers in Reverse Proxies:</strong> In Nginx, child blocks that contain an <code>add_header</code> directive will completely overwrite all <code>add_header</code> directives defined in parent blocks. Operators often add an application header in a <code>location</code> block, accidentally stripping their global HSTS and CSP headers across that route.
-        </li>
-        <li>
-          <strong>Relying on Deprecated <code>X-XSS-Protection</code>:</strong> Setting <code>X-XSS-Protection: 1; mode=block</code> activates legacy browser XSS filters that introduced side-channel vulnerabilities, allowing attackers to leak sensitive tokens. Modern defense requires setting <code>X-XSS-Protection: 0</code> and enforcing a strict Content-Security-Policy.
-        </li>
-        <li>
-          <strong>Ignoring Cross-Origin Isolation Side Effects:</strong> Enforcing <code>Cross-Origin-Embedder-Policy: require-corp</code> will cause the browser to block any third-party images, fonts, or scripts (e.g., analytics, CDNs, social widgets) that do not return a valid <code>Cross-Origin-Resource-Policy</code> header.
-        </li>
+        <li><strong>Only add <code>preload</code></strong> once you're sure every subdomain works over HTTPS; preload is hard to undo.</li>
+        <li><strong>CSP presence isn't CSP quality.</strong> This tool only checks that CSP exists. A policy with <code>'unsafe-inline'</code> or wildcards can still be weak, so evaluate the policy itself separately.</li>
+        <li><strong>You don't need <code>X-XSS-Protection</code>.</strong> It's deprecated and best set to <code>0</code> or omitted; modern defence comes from CSP. This tool correctly doesn't ask for it.</li>
+        <li><strong><code>frame-ancestors</code> supersedes <code>X-Frame-Options</code></strong>, but keeping X-Frame-Options helps older browsers; the tool accepts either.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What are HTTP security response headers and why are they critical?</div>
+          <div class="faq-question">Does a "Strong / Compliant" rating mean my site is fully secure?</div>
           <div class="faq-answer">
-            HTTP security response headers are metadata instructions sent by a web server to a client browser. They instruct the browser's security sandbox on how to restrict resource execution, control framing, enforce transport encryption, isolate cross-origin execution contexts, and manage sensitive hardware APIs. Correctly deployed headers mitigate major attack vectors including Cross-Site Scripting (XSS), Clickjacking, MIME-sniffing, and SSL-stripping.
+            No. It means no high or medium header issues were found. The tool still reports low items like information-leak headers without lowering the grade, it only checks that CSP exists rather than whether it's strong, and headers are just one layer. Keep hardening beyond a passing rating.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why is testing security headers locally more secure than using public online scanners?</div>
+          <div class="faq-question">Does this tool check my live website?</div>
           <div class="faq-answer">
-            Public web scanners require your server URL, logging internal domain names, staging endpoints, origin IP addresses, and server banner versions into third-party databases. BitDark runs 100% locally in your browser memory, enabling security engineers to audit staging servers, localhost dev instances, internal corporate networks, and production responses without generating external telemetry.
+            No. It analyses the header text you paste, entirely in your browser, and makes no network request to your site. Fetch your headers with curl or the Network tab and paste them in.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the recommended configuration for HTTP Strict Transport Security (HSTS)?</div>
+          <div class="faq-question">What's the most important header to add first?</div>
           <div class="faq-answer">
-            The industry best-practice HSTS header is: <code>Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code>. This forces browsers to communicate strictly over encrypted HTTPS for a minimum of one year, applies the policy to all subdomains, and qualifies the domain for inclusion in browser preloaded HSTS lists.
+            If you're on HTTPS, HSTS and a Content-Security-Policy give the most protection, against downgrade attacks and XSS respectively. X-Content-Type-Options: nosniff is a trivial, high-value addition too.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does Content-Security-Policy (CSP) replace X-Frame-Options?</div>
+          <div class="faq-question">Why does it flag my Server header?</div>
           <div class="faq-answer">
-            Yes, the CSP <code>frame-ancestors</code> directive supersedes X-Frame-Options by providing granular, multi-origin control over which domains may frame a page. However, keeping <code>X-Frame-Options: DENY</code> or <code>SAMEORIGIN</code> remains recommended for backward compatibility with legacy user agents that do not support CSP Level 2.
+            Headers like Server and X-Powered-By reveal your software and version, which helps an attacker target known vulnerabilities. It's a low-severity finding: remove or generalise them where you can, but it won't make or break your rating.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why should the X-XSS-Protection header be disabled or omitted in modern web applications?</div>
+          <div class="faq-question">Is the HSTS max-age threshold here the recommended value?</div>
           <div class="faq-answer">
-            The legacy X-XSS-Protection header implemented a client-side heuristic auditor that frequently introduced severe side-channel vulnerabilities, allowing attackers to leak sensitive tokens or selectively disable legitimate scripts. Modern standards mandate setting <code>X-XSS-Protection: 0</code> and relying entirely on Content-Security-Policy (CSP) for robust XSS defense.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is the difference between COOP, COEP, and CORP headers?</div>
-          <div class="faq-answer">
-            Cross-Origin Opener Policy (COOP) isolates your browsing context group from cross-origin popups. Cross-Origin Embedder Policy (COEP) prevents a document from loading cross-origin subresources that do not explicitly grant permission. Cross-Origin Resource Policy (CORP) protects your own backend media and data files from being embedded by external origins. Together, they enable crossOriginIsolated state required for high-resolution timers and SharedArrayBuffer.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why is "X-Content-Type-Options: nosniff" essential even when servers return valid MIME types?</div>
-          <div class="faq-answer">
-            Without <code>nosniff</code>, browsers may ignore the server's declared Content-Type header and execute MIME-type sniffing on the payload. If an application allows users to upload avatars or text files containing hidden script tags, a browser sniffing executable JavaScript could execute the file in the application's origin context, leading to stored Cross-Site Scripting.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Are raw headers pasted into this tool transmitted to external servers?</div>
-          <div class="faq-answer">
-            No. BitDark operates on a strict air-gapped, zero-network-egress security model. All parsing, regular expression evaluation, and abstract syntax tree construction take place exclusively inside your browser's local JavaScript heap. No network packets are transmitted.
+            The tool warns only when max-age is under about 120 days, but the recommended production value is at least one year (31536000 seconds). Use the longer value, and includeSubDomains, for full protection even though a shorter one may still pass.
           </div>
         </div>
       </section>
