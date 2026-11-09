@@ -6,8 +6,8 @@
   
   <title>ChaCha20-Poly1305 AEAD Encryption &amp; Decryption — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="ChaCha20-Poly1305 AEAD Encryption &amp; Decryption — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Encrypt and decrypt payloads locally using RFC 8439 ChaCha20 stream cipher with Poly1305 AEAD authentication. 100% client-side memory execution, zero network egress." />
-  <meta name="keywords" content="chacha20 poly1305 online, chacha20 encrypt decrypt, rfc 8439 aead, client side stream cipher, poly1305 mac tag generator, bitdark cryptography, wireguard cipher, timing attack resistant cipher" />
+  <meta name="description" content="Encrypt and decrypt with ChaCha20-Poly1305 AEAD (RFC 8439) in your browser: 256-bit key, 96-bit nonce, AAD and a 128-bit tag. Matches the RFC test vector. Nothing is uploaded." />
+  <meta name="keywords" content="chacha20-poly1305, aead, rfc 8439, authenticated encryption, poly1305 tag, 96-bit nonce, nonce reuse, aes-gcm alternative" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/chacha20/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/chacha20/" />
   <meta property="og:title" content="ChaCha20-Poly1305 AEAD Cryptographic Suite — Local Memory Execution | BitDark" />
-  <meta property="og:description" content="Encrypt and authenticate payloads using IETF RFC 8439 ChaCha20-Poly1305 locally in browser memory. 100% Client-Side with zero tracking or telemetry." />
+  <meta property="og:description" content="Run standard ChaCha20-Poly1305 (RFC 8439) encrypt/decrypt locally, with the nonce rule explained and a matching test vector. Interoperable with libsodium and OpenSSL." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/chacha20/" />
   <meta name="twitter:title" content="ChaCha20-Poly1305 AEAD Cryptographic Suite | BitDark" />
-  <meta name="twitter:description" content="High-speed, constant-time RFC 8439 ChaCha20-Poly1305 stream cipher engine. 100% client-side memory execution with zero network telemetry." />
+  <meta name="twitter:description" content="ChaCha20-Poly1305 AEAD encrypt/decrypt in your browser — RFC 8439, unique nonces, 128-bit tag. Matches the spec test vector." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "ChaCha20-Poly1305 AEAD Cryptographic Suite",
         "url": "https://bitdark.net/tools/crypto/chacha20/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side cryptographic utility to encrypt, decrypt, and authenticate payloads using the IETF RFC 8439 ChaCha20 stream cipher and Poly1305 MAC authenticator entirely in volatile browser memory."
+        "description": "Browser-based ChaCha20-Poly1305 (RFC 8439) engine that encrypts and decrypts with a 256-bit key, a 96-bit nonce, optional AAD and a 128-bit Poly1305 tag, matching the specification's test vector."
       },
       {
         "@type": "TechArticle",
-        "headline": "ChaCha20-Poly1305 Architecture: ARX Design, Finite Field Authenticator, and Constant-Time Implementation",
+        "headline": "ChaCha20-Poly1305 AEAD: Nonces, Poly1305 Authentication and an RFC 8439 Worked Example",
         "url": "https://bitdark.net/tools/crypto/chacha20/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-18",
-        "dateModified": "2026-11-03",
-        "description": "Exhaustive technical treatise on RFC 8439 ChaCha20 stream cipher, ARX quarter-round matrix transformations, Poly1305 modulo 2^130-5 one-time authentication, and constant-time security against cache-timing side channels."
+        "dateModified": "2026-11-09",
+        "description": "What ChaCha20-Poly1305 provides, what each input is for, why a nonce must never repeat, how the Poly1305 authentication is built, a reproducible RFC 8439 worked example, and the tool's scope."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What makes ChaCha20 more secure against cache-timing attacks than AES?",
+            "name": "ChaCha20-Poly1305 or AES-GCM — which should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Standard software implementations of AES rely on lookup tables (S-Boxes) in memory. When CPU cache lines are loaded based on secret key-dependent indices, adversaries on shared hardware can measure memory access latency to deduce cryptographic keys. In contrast, ChaCha20 uses only simple ARX operations (Addition, Rotation, XOR) that execute in strictly fixed clock cycles across all modern processor architectures, eliminating cache-timing side channels."
+              "text": "Both are strong modern AEADs. AES-GCM is usually faster where the CPU has AES hardware; ChaCha20-Poly1305 is faster in pure software and on mobile, and runs in constant time. TLS 1.3 negotiates whichever fits. For new software without guaranteed AES acceleration, ChaCha20-Poly1305 is a safe default."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the consequence of reusing a Nonce with the same 256-bit key in ChaCha20?",
+            "name": "Why must the nonce be unique for each message?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Nonce reuse in ChaCha20 is catastrophic. Because it is a stream cipher, identical key and nonce pairs generate the exact same keystream. XORing two ciphertexts encrypted with the same keystream cancels the keystream entirely, leaving the XOR of the plaintexts. Even worse, reusing a nonce with Poly1305 allows an attacker to solve a system of linear equations modulo 2^130 - 5 to extract the one-time authentication key (r), enabling arbitrary ciphertext forgeries."
+              "text": "Reusing a key-and-nonce pair repeats the keystream, which leaks the XOR of the two plaintexts and weakens the authentication. The nonce isn't secret, but it must never repeat under the same key. This tool generates a fresh random 96-bit nonce each time for that reason."
             }
           },
           {
             "@type": "Question",
-            "name": "How does Poly1305 authenticate data without a separate HMAC key?",
+            "name": "What's the difference between AAD and plaintext?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Under RFC 8439 AEAD construction, the ChaCha20 block function is executed once with block counter = 0 using the secret key and packet nonce. The first 32 bytes of this initial keystream block are used as the Poly1305 one-time authentication key (r, s), after which the block counter increments to 1 for payload encryption. This guarantees a mathematically unique authentication key for every packet."
+              "text": "Plaintext is encrypted and authenticated. Associated data is authenticated but left in the clear — for context like a header or message ID you want bound to the ciphertext so it can't be swapped. Decryption fails if the AAD doesn't match."
             }
           },
           {
             "@type": "Question",
-            "name": "What is Associated Authenticated Data (AAD) in AEAD encryption?",
+            "name": "What does an authentication failure on decryption mean?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Associated Authenticated Data (AAD) consists of cleartext metadata—such as network packet headers, IP addresses, protocol versions, or sequence numbers—that must remain unencrypted for routing purposes, but must be cryptographically protected against tampering. Poly1305 incorporates the AAD into its polynomial evaluation before the ciphertext bytes."
+              "text": "The Poly1305 tag didn't verify, so no plaintext is returned. The cause is a wrong key, wrong or mismatched nonce, mismatched AAD, or altered ciphertext. It's working as intended — tampered or mis-keyed data is rejected rather than silently decrypted."
             }
           },
           {
             "@type": "Question",
-            "name": "Are secret keys, nonces, or plaintexts transmitted to any external server?",
+            "name": "Is this interoperable with other libraries?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security architecture. All byte transformations, ARX quarter rounds, BigInt prime field operations, and keystream evaluations execute 100% locally inside volatile browser RAM. Zero network requests are made."
+              "text": "Yes. It implements RFC 8439 and matches the specification's test vector exactly, so its ciphertext and tag interoperate with libsodium, OpenSSL and other correct implementations given the same key, nonce and AAD."
             }
           }
         ]
@@ -755,7 +755,7 @@
 
     <div class="tool-header">
       <h1>ChaCha20-Poly1305 AEAD Cryptographic Suite</h1>
-      <p>Encrypt and decrypt payloads locally using the IETF RFC 8439 ChaCha20 stream cipher combined with Poly1305 authenticated encryption with associated data (AEAD). High-speed, constant-time execution with guaranteed zero remote telemetry or server round-trips.</p>
+      <p>Encrypt and decrypt data with ChaCha20-Poly1305 authenticated encryption (RFC 8439): a 256-bit key, a fresh 96-bit nonce, optional associated data and a 128-bit tag. It implements the standard directly, matches the RFC test vector, and runs entirely on your device.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -833,355 +833,74 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Catastrophic Nonce-Reuse Warning:</strong> ChaCha20 is a synchronous stream cipher. You must strictly <strong>never</strong> reuse the same 96-bit nonce with the same 256-bit secret key. Reusing a nonce under ChaCha20 completely destroys confidentiality by allowing adversaries to XOR ciphertexts and recover plaintext keystreams. Furthermore, under Poly1305, reusing a nonce exposes the internal evaluation key $r$, allowing attackers to forge arbitrary authentication tags across the entire session. All operations execute strictly client-side within volatile browser RAM without persistent storage or external logging.
+        <strong>A learning, testing and interop tool, not key management.</strong> ChaCha20-Poly1305 is only secure with a unique nonce per message under a key — never reuse a key-and-nonce pair. The key is shown on screen; real systems use a KDF and a secrets manager. AAD is authenticated but not encrypted. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>Understanding Modern Stream Ciphers and Authenticated Encryption (AEAD)</h2>
+      <h2>What ChaCha20-Poly1305 Is</h2>
       <p>
-        For decades, symmetric block ciphers such as the Data Encryption Standard (DES) and the Advanced Encryption Standard (AES / Rijndael) dominated digital cryptography. While AES remains the gold standard in enterprise security—bolstered by dedicated hardware instruction sets like Intel AES-NI and ARMv8 Cryptographic Extensions—its reliance on fixed 128-bit blocks and complex substitution-permutation networks introduces significant architectural challenges in environments lacking hardware acceleration.
-      </p>
-      <p>
-        When executed on low-power IoT microcontrollers, mobile devices, embedded routers, or virtualized multi-tenant cloud environments without dedicated hardware instructions, software implementations of AES must rely on memory lookup tables (S-Boxes). These table lookups create severe vulnerabilities to <strong>cache-timing side-channel attacks</strong>: an adversary running a concurrent process on the same physical CPU cache can measure microarchitectural latency differences during table lookups to accurately extract the private encryption key.
-      </p>
-      <p>
-        To eliminate table-driven side channels and provide exceptional performance across both high-end servers and budget hardware, Daniel J. Bernstein designed the <strong>Salsa20</strong> family of ciphers in 2005, subsequently refining it into <strong>ChaCha20</strong> in 2008. Standardized by the Internet Engineering Task Force (IETF) in <strong>RFC 8439</strong> (replacing RFC 7539), ChaCha20 combined with the <strong>Poly1305</strong> universal hash message authentication code forms one of modern computing's most resilient Authenticated Encryption with Associated Data (AEAD) algorithms.
+        ChaCha20-Poly1305 is an authenticated encryption cipher (AEAD): it encrypts data with the ChaCha20 stream cipher and authenticates it with the Poly1305 MAC, so the output is both confidential and tamper-evident. It's the IETF construction from RFC 8439, and it's what TLS 1.3, WireGuard and modern SSH use as a fast alternative to AES-GCM — especially on devices without AES hardware acceleration, where ChaCha20 stays quick and runs in constant time. This tool implements RFC 8439 directly in your browser.
       </p>
 
-      <h2>How to Use the BitDark ChaCha20-Poly1305 Suite</h2>
-      <p>
-        The BitDark ChaCha20-Poly1305 engine operates entirely in your browser's private volatile memory space. Follow these steps to encrypt or authenticate payloads:
-      </p>
-      <ol>
-        <li>
-          <strong>Select Operation Mode:</strong> Use the <strong>Encrypt Payload</strong> tab to generate ciphertext and an authentication tag, or switch to <strong>Decrypt &amp; Authenticate</strong> to verify and recover original plaintexts.
-        </li>
-        <li>
-          <strong>Define the 256-Bit Secret Key:</strong> Enter a 64-character hexadecimal key, or click <em>Generate Key</em> to generate 32 bytes of cryptographically secure random entropy using the browser's hardware-backed Web Crypto API (<code>crypto.getRandomValues</code>).
-        </li>
-        <li>
-          <strong>Set the 96-Bit Nonce / IV:</strong> Provide a unique 24-character hexadecimal initialization vector (IV), or click <em>Generate Nonce</em>. Never reuse a nonce with the same key.
-        </li>
-        <li>
-          <strong>Include Associated Authenticated Data (AAD):</strong> (Optional) Enter cleartext metadata, network headers, or sequence numbers. The AAD is authenticated by Poly1305 against tampering, but is not encrypted.
-        </li>
-        <li>
-          <strong>Input Payload:</strong> In encryption mode, type your plaintext message. In decryption mode, enter the hex-encoded ciphertext and provide the 32-hex-character Poly1305 authentication tag.
-        </li>
-        <li>
-          <strong>Execute:</strong> Click <strong>Encrypt Payload</strong> or <strong>Decrypt &amp; Authenticate</strong>. The results panel will display the cryptographic status, timing diagnostics, and JSON-formatted ciphertext or decrypted plaintext.
-        </li>
-      </ol>
-
-      <h2>Operational Use Cases and Real-World Protocol Implementations</h2>
-      <p>
-        Because ChaCha20-Poly1305 combines constant-time execution with exceptional throughput on general-purpose hardware, it has become the default or preferred cipher in top-tier security standards:
-      </p>
-      <ul>
-        <li>
-          <strong>WireGuard VPN:</strong> WireGuard explicitly rejects algorithmic agility to avoid negotiation downgrade attacks. It mandates ChaCha20-Poly1305 (with a 96-bit nonce or extended 192-bit XChaCha20) for all data plane encapsulation, achieving dramatically higher speeds and lower CPU battery consumption on mobile devices than IPsec or OpenVPN using AES-CBC.
-        </li>
-        <li>
-          <strong>Transport Layer Security (TLS 1.3 - RFC 8446):</strong> TLS 1.3 deprecated all non-AEAD ciphers (removing CBC mode and RC4). ChaCha20-Poly1305 (<code>TLS_CHACHA20_POLY1305_SHA256</code>) is mandated alongside AES-GCM, serving as the default cipher suite whenever client devices lack AES-NI hardware.
-        </li>
-        <li>
-          <strong>OpenSSH:</strong> Modern SSH implementations use <code>chacha20-poly1305@openssh.com</code> as the default transport cipher, encrypting packet lengths separately to defend against traffic analysis and packet boundary probing.
-        </li>
-        <li>
-          <strong>The Noise Protocol Framework:</strong> Used by Signal, WhatsApp, and Lightning Network, Noise utilizes ChaCha20-Poly1305 as a core stateful cipher primitive for end-to-end authenticated messaging channels.
-        </li>
-        <li>
-          <strong>Linux Kernel Crypto API:</strong> The Linux kernel utilizes ChaCha20 to drive its internal non-blocking CSPRNG (<code>/dev/urandom</code>), replacing legacy SHA-1 accumulators with high-speed keystream extraction.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Mathematical Architecture and State Matrix Mechanics</h2>
-      <p>
-        Unlike block ciphers that process data in fixed 128-bit blocks through iterative rounds of substitution and mixing, ChaCha20 is a <strong>stream cipher</strong> that generates an infinite sequence of pseudorandom keystream blocks. Each keystream block is exactly 64 bytes (512 bits) long and is XORed directly with the plaintext.
-      </p>
-
-      <h3>1. The 4x4 State Matrix</h3>
-      <p>
-        The internal state of ChaCha20 consists of sixteen 32-bit unsigned integers arranged in a $4 \times 4$ matrix, totaling 512 bits:
-      </p>
-      <pre><code>+-----------------+-----------------+-----------------+-----------------+
-|   c0 = 0x61707865|   c1 = 0x3320646e|   c2 = 0x79622d32|   c3 = 0x6b206574| (Constants: "expand 32-byte k")
-+-----------------+-----------------+-----------------+-----------------+
-|   k0 = Key[0..3] |   k1 = Key[4..7] |   k2 = Key[8..11]|   k3 = Key[12..15|
-+-----------------+-----------------+-----------------+-----------------+
-|   k4 = Key[16..19|   k5 = Key[20..23|   k6 = Key[24..27|   k7 = Key[28..31|
-+-----------------+-----------------+-----------------+-----------------+
-|   b0 = Counter  |   n0 = Nonce[0..3|   n1 = Nonce[4..7|   n2 = Nonce[8..11| (96-Bit Nonce per RFC 8439)
-+-----------------+-----------------+-----------------+-----------------+</code></pre>
-
-      <p>
-        The state words are organized as follows:
-      </p>
-      <ul>
-        <li><strong>Constants ($0..3$):</strong> Four fixed 32-bit words representing the ASCII string <code>"expand 32-byte k"</code> in little-endian order. These constants prevent symmetry attacks and ensure that the key and nonce cannot generate all-zero states.</li>
-        <li><strong>Secret Key ($4..11$):</strong> Eight 32-bit words containing the 256-bit secret key.</li>
-        <li><strong>Block Counter ($12$):</strong> A single 32-bit integer that starts at 0 or 1 and increments sequentially for every 64-byte block encrypted, allowing arbitrary random access into gigabyte-sized files.</li>
-        <li><strong>Nonce / IV ($13..15$):</strong> Three 32-bit words containing the 96-bit initialization vector.</li>
-      </ul>
-
-      <h3>2. The ARX Quarter-Round Function</h3>
-      <p>
-        The foundational computational primitive of ChaCha20 is the <strong>Quarter-Round (QR)</strong> function. It takes four 32-bit words $(a, b, c, d)$ and updates them using only three primitive operations: Addition modulo $2^{32}$ ($\boxplus$), Bitwise XOR ($\oplus$), and Cyclic Left Bit Rotation ($\lll$):
-      </p>
-      <pre><code>QuarterRound(a, b, c, d):
-  a = (a + b) mod 2^32;  d = (d ^ a) <<< 16;
-  c = (c + d) mod 2^32;  b = (b ^ c) <<< 12;
-  a = (a + b) mod 2^32;  d = (d ^ a) <<< 8;
-  c = (c + d) mod 2^32;  b = (b ^ c) <<< 7;</code></pre>
-      <p>
-        Notice that every operation in the Quarter-Round runs in <strong>strictly constant clock cycles</strong> on modern CPUs. There are zero conditional branches, zero data-dependent memory accesses, and zero table lookups.
-      </p>
-
-      <h3>3. The 20-Round Iterative Transformation</h3>
-      <p>
-        A complete ChaCha20 block generation executes 20 rounds (organized as 10 double-rounds). Each double-round consists of:
-      </p>
-      <ol>
-        <li>
-          <strong>Column Round:</strong> Four Quarter-Rounds executed simultaneously on the vertical columns of the matrix:
-          <pre><code>QR(0, 4, 8, 12);  QR(1, 5, 9, 13);  QR(2, 6, 10, 14);  QR(3, 7, 11, 15);</code></pre>
-        </li>
-        <li>
-          <strong>Diagonal Round:</strong> Four Quarter-Rounds executed on the diagonals:
-          <pre><code>QR(0, 5, 10, 15); QR(1, 6, 11, 12); QR(2, 7, 8, 13);  QR(3, 4, 9, 14);</code></pre>
-        </li>
-      </ol>
-      <p>
-        After 20 rounds, the working state is added word-by-word to the original initial state (feed-forward addition). This prevents inverting the transformation to recover key material. The resulting 64 bytes are serialized in little-endian order to form the keystream block.
-      </p>
-
-      <h2>Poly1305 Universal Hash MAC: Prime Field Arithmetic &amp; Clamping</h2>
-      <p>
-        Encryption alone provides confidentiality, but zero authenticity. If an attacker tampers with a bit in a stream cipher's ciphertext, that exact same bit flips in the decrypted plaintext upon delivery. To prevent bit-flipping attacks, RFC 8439 couples ChaCha20 with <strong>Poly1305</strong>.
-      </p>
-      <p>
-        Poly1305 is an authenticator designed by Daniel J. Bernstein that processes input messages in 16-byte blocks as coefficients of a polynomial evaluated at a secret point $r$ modulo the prime number:
-      </p>
-      <blockquote>
-        $$p = 2^{130} - 5$$
-      </blockquote>
-
-      <h3>1. One-Time Key Derivation</h3>
-      <p>
-        Before encrypting payload bytes, ChaCha20 runs a block calculation with <strong>Block Counter = 0</strong>. The first 32 bytes of this output block serve as the one-time Poly1305 key:
-      </p>
-      <ul>
-        <li>Bytes 0 to 15: The evaluation point $r$ (clamped).</li>
-        <li>Bytes 16 to 31: The secret masking offset $s$.</li>
-      </ul>
-
-      <h3>2. Key Clamping</h3>
-      <p>
-        To ensure that polynomial evaluation remains strictly constant-time and to prevent timing attacks during modular reduction, the 16-byte key $r$ is mathematically "clamped" by clearing specific bits:
-      </p>
-      <pre><code>r[3], r[7], r[11], r[15] &= 0x0F;   // Clear top 4 bits of every 4th byte
-r[4], r[8], r[12]       &= 0xFC;   // Clear bottom 2 bits of selected bytes</code></pre>
-      <p>
-        This limits the value of $r$, guaranteeing that intermediate multiplications fit cleanly within standard CPU register accumulation without unpredictable overflow.
-      </p>
-
-      <h3>3. Polynomial Tag Computation</h3>
-      <p>
-        The padded message chunks are accumulated into a running accumulator $a$ modulo $2^{130}-5$:
-      </p>
-      <blockquote>
-        $$a_i = \Big( (a_{i-1} + m_i) \times r \Big) \pmod{2^{130} - 5}$$
-      </blockquote>
-      <p>
-        Finally, the accumulator is masked with the secret integer $s$:
-      </p>
-      <blockquote>
-        $$\text{Tag} = (a + s) \pmod{2^{128}}$$
-      </blockquote>
-      <p>
-        This produces a cryptographically unforgeable 128-bit (16-byte) authentication tag.
-      </p>
-
-      <h2>AEAD Packet Framing: Construction of the Poly1305 Input Stream</h2>
-      <p>
-        Under IETF RFC 8439, the input buffer submitted to Poly1305 is strictly structured to bind associated data, ciphertext, and their respective byte lengths into an unambiguous bitstream:
-      </p>
-      <pre><code>+-------------------------------------------------------------+
-| Associated Authenticated Data (AAD)                         | (Variable length)
-+-------------------------------------------------------------+
-| Zero Padding (0 to 15 bytes to round AAD to 16-byte boundary)|
-+-------------------------------------------------------------+
-| Ciphertext                                                  | (Variable length)
-+-------------------------------------------------------------+
-| Zero Padding (0 to 15 bytes to round Ciphertext to 16 bytes)|
-+-------------------------------------------------------------+
-| Length of AAD (64-bit Little-Endian Integer)                | (8 bytes)
-+-------------------------------------------------------------+
-| Length of Ciphertext (64-bit Little-Endian Integer)         | (8 bytes)
-+-------------------------------------------------------------+</code></pre>
-      <p>
-        This rigid framing prevents canonicalization attacks where an adversary might shift bytes between AAD and ciphertext to generate colliding tags.
-      </p>
-
-      <h2>Worked Example: Step-by-Step Cryptographic Walkthrough</h2>
-      <p>
-        Let us trace a concrete RFC 8439 test vector to verify how plaintext transforms into authenticated ciphertext.
-      </p>
-      <h3>1. Parameters</h3>
-      <ul>
-        <li><strong>Secret Key (256 bits):</strong> <code>808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f</code></li>
-        <li><strong>Nonce (96 bits):</strong> <code>070000004041424344454647</code></li>
-        <li><strong>AAD:</strong> <code>50515253c0c1c2c3c4c5c6c7</code> (12 bytes)</li>
-        <li><strong>Plaintext:</strong> <code>"Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the future, sunscreen would be it."</code></li>
-      </ul>
-
-      <h3>2. Keystream Generation (Counter = 1)</h3>
-      <p>
-        The first 64 bytes of plaintext are XORed with ChaCha20 block 1. The remaining 50 bytes are XORed with the first 50 bytes of block 2. The block counter increments automatically after each 64-byte boundary.
-      </p>
-
-      <h3>3. Output Verification</h3>
+      <h2>The Inputs</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Component</th>
-              <th>Encoding</th>
-              <th>Hexadecimal Byte Representation</th>
-            </tr>
+            <tr><th>Field</th><th>Meaning</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>First 16 Bytes Ciphertext</strong></td>
-              <td>Hex</td>
-              <td><code>d31a8d34648e60db7b86afbc53ef7ec2</code></td>
-            </tr>
-            <tr>
-              <td><strong>Poly1305 MAC Tag</strong></td>
-              <td>16 Bytes Hex</td>
-              <td><code>1ae10b594f09e26a7e902ecbd0600691</code></td>
-            </tr>
-            <tr>
-              <td><strong>Combined Payload</strong></td>
-              <td>Cipher:Tag</td>
-              <td><code>[Ciphertext_Hex]:1ae10b594f09e26a7e902ecbd0600691</code></td>
-            </tr>
+            <tr><td><strong>Key</strong></td><td>256-bit (32-byte) secret. The only secret; both sides need the same one</td></tr>
+            <tr><td><strong>Nonce</strong></td><td>96-bit (12-byte) value per message. Not secret, but must be unique for a given key</td></tr>
+            <tr><td><strong>AAD</strong></td><td>Associated data that is authenticated but <em>not</em> encrypted — e.g. a header or version</td></tr>
+            <tr><td><strong>Tag</strong></td><td>The 128-bit Poly1305 tag that proves the ciphertext and AAD weren't altered</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>The Nonce-Reuse Catastrophe: Two-Time Pad Vulnerability</h2>
       <p>
-        Because ChaCha20 is a stream cipher, encrypting two different messages $M_1$ and $M_2$ with the exact same Key $K$ and Nonce $N$ creates identical keystreams $KS$:
-      </p>
-      <blockquote>
-        $$C_1 = M_1 \oplus KS \quad \text{and} \quad C_2 = M_2 \oplus KS$$
-      </blockquote>
-      <p>
-        An eavesdropper who intercepts both ciphertexts calculates:
-      </p>
-      <blockquote>
-        $$C_1 \oplus C_2 = (M_1 \oplus KS) \oplus (M_2 \oplus KS) = M_1 \oplus M_2$$
-      </blockquote>
-      <p>
-        The keystream completely cancels out! Through automated frequency analysis, natural language crib-dragging, or known-plaintext attacks, both messages can be decrypted without ever knowing the secret key.
-      </p>
-      <p>
-        Even worse, <strong>Poly1305 nonce reuse completely breaks integrity</strong>. If two packets share the same Poly1305 key $(r, s)$, an attacker can subtract the two tags:
-      </p>
-      <blockquote>
-        $$T_1 - T_2 = \big( P_1(r) + s \big) - \big( P_2(r) + s \big) = P_1(r) - P_2(r) \pmod{2^{130}-5}$$
-      </blockquote>
-      <p>
-        The secret masking value $s$ is eliminated. The attacker is left with a polynomial equation where $r$ is the root. Finding the roots of a polynomial over the finite field $\text{GF}(2^{130}-5)$ takes mere milliseconds. Once $r$ is known, the attacker can forge valid authentication tags for any message.
+        On encryption the tool returns the ciphertext and a separate 128-bit tag; on decryption it recomputes the tag and only returns plaintext if it matches, so a wrong key, wrong nonce, mismatched AAD or altered ciphertext fails cleanly.
       </p>
 
-      <h2>Comprehensive Cipher Comparison</h2>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Cipher Suite</th>
-              <th>Primitive Type</th>
-              <th>Hardware Dependency</th>
-              <th>Timing Side-Channel Risk</th>
-              <th>Nonce Size</th>
-              <th>Primary Use Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>ChaCha20-Poly1305</strong></td>
-              <td>Stream (ARX) + Poly MAC</td>
-              <td><strong>None</strong> (Fast on general CPU)</td>
-              <td><strong>Zero</strong> (Constant-time ARX)</td>
-              <td>96 Bits (RFC 8439)</td>
-              <td>WireGuard, TLS 1.3, Mobile VPNs</td>
-            </tr>
-            <tr>
-              <td><strong>AES-256-GCM</strong></td>
-              <td>Block (SPN) + GHASH</td>
-              <td>Requires AES-NI &amp; CLMUL</td>
-              <td>High if software S-box fallback</td>
-              <td>96 Bits</td>
-              <td>TLS 1.3 Enterprise, IPsec, Disk</td>
-            </tr>
-            <tr>
-              <td><strong>AES-256-CBC + HMAC</strong></td>
-              <td>Block + MAC-then-Encrypt</td>
-              <td>Requires AES-NI</td>
-              <td>Severe (Padding Oracle risk)</td>
-              <td>128 Bits</td>
-              <td>Legacy OpenVPN, TLS 1.2</td>
-            </tr>
-            <tr>
-              <td><strong>XChaCha20-Poly1305</strong></td>
-              <td>Stream (HChaCha20 derivation)</td>
-              <td><strong>None</strong></td>
-              <td><strong>Zero</strong></td>
-              <td><strong>192 Bits</strong> (Safe for random nonces)</td>
-              <td>File Encryption, Sodium / Libsodium</td>
-            </tr>
-            <tr>
-              <td><strong>Salsa20</strong></td>
-              <td>Stream (ARX Ancestor)</td>
-              <td><strong>None</strong></td>
-              <td><strong>Zero</strong></td>
-              <td>64 Bits</td>
-              <td>Legacy cryptography, eSTREAM</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Implementation Pitfalls and Operational Vulnerabilities</h2>
+      <h2>The One Rule That Matters Most: Never Reuse a Nonce</h2>
       <p>
-        Avoid these standard security flaws when deploying ChaCha20-Poly1305:
+        Like every AEAD built on a stream cipher, ChaCha20-Poly1305 is only secure if each message under a given key uses a unique nonce. Reusing the same key-and-nonce pair for two messages produces the same keystream, which leaks the XOR of the two plaintexts and undermines the Poly1305 authentication. The nonce isn't secret — you can send it with the ciphertext — but it must never repeat under the same key. That's why this tool generates a fresh random 96-bit nonce for each encryption.
       </p>
+
+      <h2>How the Authentication Works</h2>
+      <p>
+        The Poly1305 one-time key is derived by running ChaCha20 once with the counter set to zero and taking the first 32 bytes of keystream; encryption of the message then starts from counter one. The tag is computed over the AAD and the ciphertext, each padded to a 16-byte boundary, followed by their lengths. This binds the tag to both the data and the context, which is what makes AEAD stronger than encrypt-then-hope.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        RFC 8439 publishes a test vector, which is the right thing to check an implementation against. With key <code>80 81 … 9f</code>, nonce <code>070000004041424344454647</code>, the AAD <code>50 51 52 53 c0 c1 … c7</code> and the plaintext that begins "Ladies and Gentlemen of the class of '99…", the result is:
+      </p>
+      <pre><code>ciphertext (start):  d31a8d34648e60db7b86afbc53ef7ec2 …
+Poly1305 tag:        1ae10b594f09e26a7e902ecbd0600691</code></pre>
+      <p>
+        This tool reproduces that ciphertext and tag exactly, which confirms it's a correct, interoperable RFC 8439 implementation rather than an approximation.
+      </p>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Encrypt:</strong> generate or paste a 32-byte key, let the tool generate a fresh nonce, add optional AAD, enter your plaintext, and run. Keep the key, nonce and tag together to decrypt later.</li>
+        <li><strong>Decrypt:</strong> switch to decrypt, supply the hex ciphertext, the matching key, nonce, AAD and the 16-byte tag. A failed tag check reports an authentication error instead of returning wrong plaintext.</li>
+        <li><strong>Experiment with AAD</strong> to see that changing it — on either side — makes verification fail, which is the point of associated data.</li>
+      </ol>
+
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Generating Random 96-Bit Nonces:</strong> In RFC 8439, the nonce is 96 bits (12 bytes). Under the Birthday Paradox, if you generate purely random 96-bit nonces, the probability of a collision reaches $50\%$ after approximately $2^{48}$ messages. For high-throughput systems, using random nonces with a 96-bit space is dangerous. Use a sequential 64-bit or 96-bit counter, or upgrade to <strong>XChaCha20</strong> (192-bit nonce), where random nonces will never collide in human history.
-        </li>
-        <li>
-          <strong>Failing to Authenticate Cleartext Headers:</strong> Developers often leave packet headers unencrypted without adding them to the AAD parameter. An active adversary can alter routing headers or sequence numbers in transit. Always pass all associated cleartext through the AAD input.
-        </li>
-        <li>
-          <strong>Decryption Without Tag Verification:</strong> Never process, display, or parse decrypted plaintext before the Poly1305 authentication tag is verified. Doing so creates Chosen-Ciphertext Attack (CCA) vectors and parsing vulnerabilities.
-        </li>
-        <li>
-          <strong>Variable-Time Tag Comparison:</strong> When comparing the calculated Poly1305 tag with the expected tag, standard string or byte comparison loops that exit on the first mismatch leak timing information. Verification must execute in strictly constant time.
-        </li>
+        <li><strong>A learning, testing and interop tool.</strong> Good for understanding the cipher or confirming two systems agree — not for managing production secrets.</li>
+        <li><strong>Not key management.</strong> The key is shown in hex on screen; real systems derive keys with a KDF and store them in a secrets manager.</li>
+        <li><strong>AAD is authenticated, not hidden.</strong> Don't put secrets in it; use it for context you want bound to the ciphertext.</li>
+        <li><strong>Runs locally.</strong> Keys, plaintext and ciphertext stay in your browser — nothing is uploaded — so it's safe to use with real values for testing.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
@@ -1189,58 +908,37 @@ r[4], r[8], r[12]       &= 0xFC;   // Clear bottom 2 bits of selected bytes</cod
         <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does ChaCha20 run faster than AES on smartphones?</div>
+          <div class="faq-question">ChaCha20-Poly1305 or AES-GCM — which should I use?</div>
           <div class="faq-answer">
-            Many mobile devices and entry-level ARM processors either lack dedicated hardware encryption engines (ARMv8 Cryptographic Extensions) or throttle hardware engines to conserve battery power. AES in pure software requires extensive table lookups that suffer from cache penalties. ChaCha20 relies solely on basic 32-bit addition, rotation, and XOR instructions that every mobile processor executes in single clock cycles.
+            Both are strong modern AEADs. AES-GCM is usually faster where the CPU has AES hardware; ChaCha20-Poly1305 is faster in pure software and on mobile, and runs in constant time. TLS 1.3 negotiates whichever fits. For new software without guaranteed AES acceleration, ChaCha20-Poly1305 is a safe default.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between IETF ChaCha20 and Bernstein's original ChaCha20?</div>
+          <div class="faq-question">Why must the nonce be unique for each message?</div>
           <div class="faq-answer">
-            Bernstein's original specification defined a 64-bit block counter and a 64-bit nonce. The IETF RFC 8439 standard adapted the matrix to feature a 32-bit counter and a larger 96-bit nonce. A 32-bit counter supports individual stream lengths up to $2^{32} \times 64\text{ bytes} = 256\text{ Gigabytes}$ per key/nonce pair, while the 96-bit nonce accommodates standard network protocols like TLS and IPsec.
+            Reusing a key-and-nonce pair repeats the keystream, which leaks the XOR of the two plaintexts and weakens the authentication. The nonce isn't secret, but it must never repeat under the same key. This tool generates a fresh random 96-bit nonce each time for that reason.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is XChaCha20 and when should I use it instead?</div>
+          <div class="faq-question">What's the difference between AAD and plaintext?</div>
           <div class="faq-answer">
-            XChaCha20 extends the nonce size from 96 bits to 192 bits using an intermediate derivation function called HChaCha20. With a 192-bit nonce, you can safely generate nonces using a CSPRNG at random without any statistical risk of collisions, making it ideal for distributed file storage and stateless architectures.
+            Plaintext is encrypted and authenticated. Associated data is authenticated but left in the clear — for context like a header or message ID you want bound to the ciphertext so it can't be swapped. Decryption fails if the AAD doesn't match.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can Poly1305 detect intentional bit manipulation?</div>
+          <div class="faq-question">What does an authentication failure on decryption mean?</div>
           <div class="faq-answer">
-            Yes. Poly1305 produces a 128-bit authentication tag. The mathematical probability of an attacker forging a valid tag for altered ciphertext without knowing the one-time key $r$ is bounded by $\lceil L/16 \rceil / 2^{106}$, which is cryptographically negligible. Any modified bit causes the verification to fail.
+            The Poly1305 tag didn't verify, so no plaintext is returned. The cause is a wrong key, wrong or mismatched nonce, mismatched AAD, or altered ciphertext. It's working as intended — tampered or mis-keyed data is rejected rather than silently decrypted.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does BitDark store or log my secret keys and messages?</div>
+          <div class="faq-question">Is this interoperable with other libraries?</div>
           <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All state matrix calculations, quarter rounds, and polynomial reductions execute strictly client-side inside your browser's private JavaScript memory space. Zero bytes are transferred over any network interface.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does the tool require a 64-character hexadecimal key?</div>
-          <div class="faq-answer">
-            ChaCha20 requires a 256-bit secret key. In hexadecimal encoding, each character represents 4 bits (half a byte). Therefore, exactly 64 hexadecimal characters are required to represent 256 bits (32 bytes).
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What happens if Associated Authenticated Data (AAD) is modified in transit?</div>
-          <div class="faq-answer">
-            Because the AAD is incorporated into the Poly1305 polynomial evaluation, modifying even a single byte or character of the AAD will result in a completely different calculated tag. The receiver's decryption engine will immediately reject the message with a verification error.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can quantum computers break ChaCha20?</div>
-          <div class="faq-answer">
-            ChaCha20 uses a 256-bit key. Grover's algorithm running on a hypothetically fault-tolerant quantum computer could reduce the effective security search space from 256 bits to 128 bits. A 128-bit post-quantum security margin remains completely impregnable against brute-force attacks under the known laws of physics.
+            Yes. It implements RFC 8439 and matches the specification's test vector exactly, so its ciphertext and tag interoperate with libsodium, OpenSSL and other correct implementations given the same key, nonce and AAD.
           </div>
         </div>
       </section>
