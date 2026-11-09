@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark</title>
-  <meta name="title" content="Windows Registry Hive Viewer — Free Offline Forensic Tool | BitDark" />
-  <meta name="description" content="Inspect, parse, and analyze Windows Registry hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache) and .reg files locally in browser RAM. Zero network egress, zero tracking." />
-  <meta name="keywords" content="windows registry viewer, offline registry parser, ntuser.dat viewer, amcache viewer, regf forensic parser, windows forensics, client-side registry analyzer, sam hive inspect, system hive parser, dfir registry triage, reg binary decoder" />
+  <title>Windows Registry Hive Viewer — Free In-Browser REGF &amp; .reg Parser | BitDark</title>
+  <meta name="title" content="Windows Registry Hive Viewer — Free In-Browser REGF &amp; .reg Parser | BitDark" />
+  <meta name="description" content="Open a Windows Registry hive (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) or a .reg export in your browser, browse the key tree, read values, filter and export to JSON/CSV. Nothing uploaded." />
+  <meta name="keywords" content="windows registry viewer, regf parser, ntuser.dat viewer, reg file viewer, registry hive browser, registry keys values, offline registry parser, registry to json csv" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/forensics/registry-viewer/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/forensics/registry-viewer/" />
-  <meta property="og:title" content="Windows Registry Hive Viewer — Local Memory Parser | BitDark" />
-  <meta property="og:description" content="Inspect, parse, and triage raw Windows Registry hives (REGF) and .reg text files in browser memory. 100% Client-Side with zero network telemetry." />
+  <meta property="og:title" content="Windows Registry Hive Viewer — In-Browser REGF &amp; .reg Parser | BitDark" />
+  <meta property="og:description" content="Browse a Windows Registry hive or .reg export in your browser: key tree, values, filters, JSON/CSV export. Runs locally; nothing uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/forensics/registry-viewer/" />
   <meta name="twitter:title" content="Windows Registry Hive Viewer | BitDark" />
-  <meta name="twitter:description" content="Client-side Windows Registry hive parser. Parse NTUSER.DAT, SYSTEM, SOFTWARE, and SAM hives directly in local memory." />
+  <meta name="twitter:description" content="Open a REGF hive or .reg file in your browser, browse keys and values, export JSON/CSV. Nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,81 +34,69 @@
         "name": "Windows Registry Hive Viewer",
         "url": "https://bitdark.net/tools/forensics/registry-viewer/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive cybersecurity and digital forensics utility to parse and inspect raw Windows Registry binary hives (REGF containers) and .reg script exports directly in local browser RAM without network egress."
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based viewer for Windows Registry binary hives (REGF) and .reg text exports: it walks the key tree, decodes value types, computes a SHA-256 hash, offers triage filters and search, and exports to JSON or CSV, all locally."
       },
       {
         "@type": "TechArticle",
-        "headline": "Windows Registry Binary Hive Architecture: REGF Headers, HBIN Allocation Cells, and Incident Response Triage",
+        "headline": "Reading a Windows Registry Hive in the Browser: REGF Structure, Value Types, and What This Viewer Shows",
         "url": "https://bitdark.net/tools/forensics/registry-viewer/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
         "datePublished": "2024-04-18",
-        "dateModified": "2026-11-06",
-        "description": "Exhaustive digital forensics and incident response (DFIR) technical guide to Windows Registry internal structures, REGF headers, HBIN allocation blocks, cell structures (nk, vk, lf, lh, ri), FILETIME timestamp conversion, and persistent threat triage."
+        "dateModified": "2026-11-10",
+        "description": "How a Windows Registry hive is structured, how this browser tool walks keys and decodes value types, what it reads from .reg exports, and the limits of a static in-browser parser."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Can this browser tool parse live Windows Registry files locked by the OS?",
+            "name": "What files can this tool open?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. While the operating system is booted, the Windows kernel maintains exclusive byte-range locks on active hives (SYSTEM, SOFTWARE, SAM, NTUSER.DAT), preventing direct file copying via standard File Explorer dialogs. To inspect these files, examiners must either export keys via reg.exe, mount an offline disk image (E01/VHD), extract the files using Volume Shadow Copies (VSS), or copy them using raw NTFS disk forensic utilities like FTK Imager or RawCopy."
+              "text": "Binary Registry hives in the REGF format \u2014 NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve and the like \u2014 and .reg text exports from regedit. It detects the format from the file's contents, not its name, so a hive with any filename is read as a hive."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between an unallocated cell and a slack space in a hive bin?",
+            "name": "Can it open a hive that is in use on a running Windows PC?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In the Windows Registry REGF architecture, an unallocated cell is a discrete, previously freed cell marked with a positive 32-bit integer indicating its byte size. Slack space refers to unused bytes between the end of the last cell in an HBIN chunk and the 4096-byte chunk boundary. Both unallocated cells and slack space frequently contain residual historical key names, deleted values, and malformed strings valuable for timeline reconstruction."
+              "text": "Not directly. Windows keeps the active hives locked, so you cannot simply copy them in Explorer. Work from a copy obtained another way \u2014 an offline disk image, a Volume Shadow Copy, a tool like FTK Imager, or reg.exe save \u2014 and open that copy here. The tool reads whatever bytes you give it."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the tool calculate the modification date of a registry key?",
+            "name": "Does it show the last-modified time of every key?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Every Named Key (nk) cell in a Windows Registry hive contains an 8-byte (64-bit) Windows FILETIME timestamp at offset 0x04. This value measures the count of 100-nanosecond intervals elapsed since midnight on January 1, 1601 UTC. The BitDark parser reads this BigInt, converts it to Unix Epoch milliseconds, and displays the corresponding human-readable UTC timestamp."
+              "text": "It shows the hive's own last-written timestamp from the REGF header (a Windows FILETIME, converted to UTC), not a separate time for each individual key. Every key cell does carry its own timestamp, but this viewer reports the hive-level one; for per-key timeline work use a dedicated registry forensics tool."
             }
           },
           {
             "@type": "Question",
-            "name": "Why are my sensitive credentials and SAM hashes safe when using this tool?",
+            "name": "What value types does it decode?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "BitDark operates under a strict air-gapped zero-network-egress security model. All file buffers are ingested directly into volatile browser RAM via native JavaScript ArrayBuffer and DataView constructs. No network requests, API calls, telemetry packets, or tracking tokens are transmitted across the network."
+              "text": "REG_SZ and REG_EXPAND_SZ strings, REG_DWORD and REG_QWORD numbers, REG_MULTI_SZ lists, and REG_BINARY (shown as a hex preview). Other types are labelled by their type number. REG_SZ is a plain string; REG_EXPAND_SZ holds unexpanded variables like %SystemRoot%; REG_MULTI_SZ is a null-separated list."
             }
           },
           {
             "@type": "Question",
-            "name": "What are .LOG1 and .LOG2 files and why does a 'dirty' hive need transaction recovery?",
+            "name": "Does it recover deleted keys or read transaction logs?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Windows uses the Common Log File System (CLFS) transaction logs (.LOG1 and .LOG2) to maintain hive consistency during power outages or system crashes. When changes are written to the registry, they are committed to transaction logs before updating the primary hive file. If a hive is acquired from a live system while dirty (indicated by mismatched sequence numbers in the REGF header), uncommitted keys in .LOG1 and .LOG2 will not appear in the primary hive until rolled forward."
+              "text": "No. It parses the allocated cells of the primary hive. It does not carve unallocated space or slack for deleted keys, and it does not replay the .LOG1/.LOG2 transaction logs that a \"dirty\" hive needs to be made current. If the hive tree is damaged it falls back to a simple scan for key-name cells, which is a best effort, not full recovery."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between REG_SZ, REG_EXPAND_SZ, and REG_MULTI_SZ?",
+            "name": "Is my hive uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "REG_SZ represents a fixed null-terminated string (UTF-16LE in modern Windows). REG_EXPAND_SZ is a string that contains unexpanded system environment variables (such as %SystemRoot% or %TEMP%) intended to be dynamically resolved by an application at runtime. REG_MULTI_SZ is a sequence of null-delimited strings terminated by a double null character, frequently used to store lists such as network interface bindings or device services."
+              "text": "No. The file is read into memory in your browser, and the parsing, the SHA-256 hash and the JSON/CSV exports all run there. Nothing you open is sent to a server; the page makes no network request for your file."
             }
           }
         ]
@@ -233,7 +221,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -874,7 +862,7 @@
 
     <div class="tool-header">
       <h1>Windows Registry Hive Viewer</h1>
-      <p>Inspect, parse, and analyze raw Windows Registry binary hives (NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve) and .reg text exports directly in local browser RAM. Complete B-Tree traversal with zero network telemetry.</p>
+      <p>Open a Windows Registry hive (NTUSER.DAT, SYSTEM, SOFTWARE, SAM) or a <code>.reg</code> export in your browser: browse the key tree, read values, filter by common triage areas, and export to JSON or CSV. It reads bytes only, nothing is executed, and nothing you open is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -964,486 +952,152 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Dead-box parsing of uncommitted transaction logs:</strong> Binary hive parsing executed in-browser operates purely on the primary hive container. Live acquisitions frequently leave hives in a "dirty" state where uncommitted modifications reside in <code>.LOG1</code> and <code>.LOG2</code> transaction journals. Unallocated cell carving in client-side memory does not reconstruct fragmented or wiped B-tree structures. Always verify critical forensic findings using court-admissible workstation suites (such as Eric Zimmerman's Registry Explorer or Volatility) with formal chain-of-custody documentation.
+        <strong>This viewer reads a hive; it is not a full forensic suite.</strong> It walks the allocated keys and values of a REGF hive (or a <code>.reg</code> export) and shows them, with triage filters, search and JSON/CSV export. It does not carve deleted keys from unallocated space, replay the <code>.LOG1</code>/<code>.LOG2</code> transaction logs that a "dirty" hive needs, decrypt SAM password hashes, or give a per-key timeline &mdash; it reports the hive's own header timestamp, not one per key. If the key tree is damaged it falls back to a simple name scan, which is a best effort. Everything runs in your browser and nothing you open is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them, so confirm important findings with a dedicated tool such as Registry Explorer.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Forensic Imperative: Windows Registry as a Digital Black Box</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        Across modern enterprise Windows environments, virtually every user interaction, software execution, peripheral hardware attachment, network configuration change, and malware persistence mechanism leaves a durable cryptographic or structural imprint in the Windows Registry. For digital forensics and incident response (DFIR) practitioners, malware analysts, and security auditors, the registry serves as the ultimate operating system ledger—a centralized, hierarchical binary database that records the historical timeline and configuration state of a workstation or server.
+        The Windows Registry stores configuration as a tree of <strong>keys</strong>, each holding named <strong>values</strong>. On disk it lives in several <strong>hive</strong> files &mdash; <code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code> and each user's <code>NTUSER.DAT</code> &mdash; in a binary format called REGF. This tool opens a hive (or a <code>.reg</code> text export) in your browser, walks its key tree, decodes the values, and lets you search, filter and export to JSON or CSV. It reads bytes only; nothing is executed and nothing you open is uploaded.
       </p>
       <p>
-        However, analyzing registry artifacts on a live, potentially compromised endpoint introduces severe operational risks:
-      </p>
-      <ul>
-        <li><strong>Volatile State Contamination:</strong> Launching native utilities like <code>regedit.exe</code> or executing PowerShell/WMI queries alters hundreds of volatile timestamps (FILETIME), mutates Most Recently Used (MRU) lists, and overwrites volatile kernel cache buffers.</li>
-        <li><strong>Kernel Hooking and Rootkit Masking:</strong> Modern rootkits and advanced persistent threats (APTs) routinely hook low-level Windows Native API calls (such as <code>NtEnumerateKey</code> and <code>NtQueryValueKey</code>), rendering malicious keys invisible to live user-mode investigative tools.</li>
-        <li><strong>Exclusive Kernel Locks:</strong> During system operation, the Windows Configuration Manager maintains exclusive byte-range locks on active hives, preventing standard copy routines and risking partial or torn writes.</li>
-      </ul>
-      <p>
-        To preserve evidentiary integrity and bypass attacker-controlled API layers, professional incident responders rely on <strong>dead-box offline triage</strong>. By carving raw hive binaries directly from unallocated disk space, volume shadow copies (VSS), or cold disk images, examiners can reconstruct an attacker's actions with mathematical precision. The BitDark Windows Registry Hive Viewer delivers this capability directly in your browser, parsing raw binary structures with zero external dependencies and zero network egress.
+        It is built for a quick look and for triage, not to replace a full registry-forensics tool. What it does well is let you browse a hive's structure and pull out values without installing anything or sending the file anywhere.
       </p>
 
-      <h2>How to Use the BitDark Windows Registry Hive Viewer</h2>
+      <h2>How a Hive Is Structured</h2>
       <p>
-        Operating the BitDark Registry Viewer is designed to be forensically sound, instantaneous, and strictly confined to your device's private volatile RAM:
+        A REGF hive begins with a 4-byte signature, <code>regf</code>, and a header that includes the hive's last-written time as a Windows <strong>FILETIME</strong> &mdash; a 64-bit count of 100-nanosecond intervals since 1 January 1601 UTC, which the tool converts to a readable date. The actual data starts at offset <code>0x1000</code> and is organised into bins and cells. The cells that matter for browsing are the <strong>named keys</strong> (<code>nk</code>), the <strong>values</strong> (<code>vk</code>), and the index cells (<code>lf</code>, <code>lh</code>, <code>ri</code>, <code>li</code>) that link a key to its subkeys. Starting from the root key, the tool follows those indexes down the tree, reading each key's name and its list of values.
       </p>
+
+      <h2>Value Types It Decodes</h2>
+      <p>
+        Registry values are typed, and the tool renders the common ones in a readable form:
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead><tr><th>Type</th><th>Shown as</th></tr></thead>
+          <tbody>
+            <tr><td><code>REG_SZ</code></td><td>A plain text string.</td></tr>
+            <tr><td><code>REG_EXPAND_SZ</code></td><td>A string with unexpanded variables such as <code>%SystemRoot%</code>.</td></tr>
+            <tr><td><code>REG_DWORD</code> / <code>REG_QWORD</code></td><td>A 32- or 64-bit number, in hex and decimal.</td></tr>
+            <tr><td><code>REG_MULTI_SZ</code></td><td>A null-separated list, joined for display.</td></tr>
+            <tr><td><code>REG_BINARY</code></td><td>A hex preview of the first bytes, with the total length.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Other types are labelled by their type number. For a <code>.reg</code> export the tool reads the same information from the text form: <code>dword:</code>, <code>hex:</code> and quoted-string values under each <code>[key path]</code> heading.
+      </p>
+
+      <h2>Triage Filters and Search</h2>
+      <p>
+        Alongside free-text search over key paths, value names and data, the tool offers quick filters that match keys commonly looked at first in an investigation: <strong>Run / Startup</strong> (autostart and services), <strong>User Activity</strong> (UserAssist, TypedURLs, RecentDocs and similar), <strong>USB / Storage</strong> (USBSTOR and mounted devices), and <strong>Network</strong> (interfaces, TCP/IP, DNS). These are keyword filters on the key path &mdash; a fast way to jump to the interesting areas, not a guarantee that every relevant key matches.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        You do not need a full hive to try it. In regedit, export a small key to a <code>.reg</code> file &mdash; for example right-click <code>HKEY_CURRENT_USER\Software</code> and choose Export &mdash; then drop that file here. You will see the exported keys appear in the tree on the left; selecting one lists its values with their types and data on the right, and the summary shows the file's SHA-256 and the key/value counts. To try a real binary hive, copy your own <code>NTUSER.DAT</code> from a backup or disk image (it is locked while you are logged in) and open that; the tool reports it as a REGF hive, shows the header's last-written time, and walks the tree.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Select Your Target Hive:</strong> Drag and drop a raw Windows binary hive file (such as <code>NTUSER.DAT</code>, <code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code>, or <code>Amcache.hve</code>) or a plain text <code>.reg</code> script export onto the dropzone.
-        </li>
-        <li>
-          <strong>In-Memory Cryptographic Ingestion:</strong> The browser reads the file into a sandboxed <code>ArrayBuffer</code>. The native W3C Web Crypto API immediately computes a hardware-accelerated SHA-256 hash across the raw byte stream, establishing an indisputable cryptographic baseline for your chain of custody.
-        </li>
-        <li>
-          <strong>Structural Header Validation &amp; B-Tree Traversal:</strong> The engine inspects the initial 4,096-byte header for the <code>regf</code> magic signature, extracts the 64-bit Windows FILETIME last-written timestamp, and parses the root cell pointer to recursively map subkeys (<code>nk</code>) and value lists (<code>vk</code>) across the hive's <code>hbin</code> allocations.
-        </li>
-        <li>
-          <strong>Triage and Filter Key Artifacts:</strong> Utilize the quick-triage filter tags (<strong>Run / Startup</strong>, <strong>User Activity</strong>, <strong>USB / Storage</strong>, or <strong>Network</strong>) or input arbitrary regex/text into the search bar to locate suspect executables, GUIDs, IP addresses, or user accounts.
-        </li>
-        <li>
-          <strong>Export Forensics:</strong> Click "Export Registry JSON" or "Export CSV" to download the complete parsed key/value tree for ingest into external SIEM platforms, timeline generators (like Plaso / log2timeline), or case management folders.
-        </li>
+        <li><strong>Open a file</strong> &mdash; drag a hive or <code>.reg</code> export onto the dropzone, or click to browse.</li>
+        <li><strong>Browse the tree</strong> &mdash; keys appear on the left; click one to see its values on the right.</li>
+        <li><strong>Narrow it down</strong> &mdash; type in the search box, or use a triage filter to jump to startup, user-activity, USB or network keys.</li>
+        <li><strong>Export</strong> &mdash; save everything parsed as JSON or CSV, or clear and open another file.</li>
       </ol>
 
-      <h2>When to Use This Tool: Incident Response Threat Scenarios</h2>
-      <p>
-        Offline registry triage provides decisive forensic intelligence across several high-impact operational scenarios:
-      </p>
+      <h2>Where This Is Useful</h2>
       <ul>
-        <li>
-          <strong>Malware Persistence Hunting:</strong> Threat actors establish persistence by modifying startup keys, hijacking component object model (COM) registrations, registering unauthorized services, or weaponizing accessibility shortcuts (Sticky Keys).
-        </li>
-        <li>
-          <strong>User Attribution &amp; Evidence of Execution:</strong> When investigating insider threats, unauthorized data exfiltration, or compromised credentials, user-specific hives (<code>NTUSER.DAT</code> and <code>UsrClass.dat</code>) reveal executed programs, opened files, search queries, and GUI folder interactions.
-        </li>
-        <li>
-          <strong>USB &amp; External Storage Device Forensics:</strong> When physical data theft is suspected, the <code>SYSTEM</code> hive preserves an unalterable hardware record of every USB mass storage device connected to the machine, including vendor IDs, product IDs, unique serial numbers, and mounting drive letters.
-        </li>
-        <li>
-          <strong>Lateral Movement &amp; Network Configuration Analysis:</strong> Correlating network interfaces, Wi-Fi SSID profiles, remote desktop client connection histories (Terminal Server Client MRU), and WinRM configurations allows examiners to track an adversary's pivot paths through an enterprise subnet.
-        </li>
-        <li>
-          <strong>Air-Gapped &amp; Red-Team Security Auditing:</strong> Security researchers auditing sensitive workstation images can analyze registry hives on classified or air-gapped systems without risking data leakage or violating strict compliance boundaries.
-        </li>
-      </ul>
-
-      <h2>The Low-Level Binary Architecture of REGF Hives</h2>
-      <p>
-        Unlike human-readable configuration formats (such as JSON, YAML, or XML), the Windows Registry stores configuration data in an optimized, binary, block-allocated database format originally designed for the Windows NT kernel. Understanding its byte-level architecture is essential for verifying tool accuracy and understanding parsing constraints.
-      </p>
-
-      <pre><code>+--------------------------------------------------------------------------+
-|                     Windows Registry Hive Structure                       |
-+--------------------------------------------------------------------------+
-|  Primary Base Block (Header) [Offset 0x0000 - 0x1000 (4,096 Bytes)]       |
-|   - Magic Bytes: 0x72 0x65 0x67 0x66 ("regf")                            |
-|   - Primary & Secondary Sequence Numbers (Dirty state detection)         |
-|   - Last Written Timestamp (64-bit Windows FILETIME)                     |
-|   - Major/Minor Version (e.g., 1.3 / 1.5)                                |
-|   - Root Cell Relative Offset (Pointer to root 'nk' cell)                |
-|   - Header XOR Checksum (First 508 bytes validation)                     |
-+--------------------------------------------------------------------------+
-|  Hive Bins (HBIN Chunks) [Offset 0x1000 to End-of-File]                  |
-|   +-- HBIN Chunk #1 (4,096-byte aligned)                                 |
-|   |    - Magic Bytes: 0x68 0x62 0x69 0x6E ("hbin")                       |
-|   |    - Relative Offset from Bin Start & Bin Size                       |
-|   |    - Cell Allocations:                                               |
-|   |       * Cell Size Prefix (Negative = Allocated, Positive = Freed)    |
-|   |       * Named Key Cell ('nk') -> Subkey lists & metadata             |
-|   |       * Value Key Cell ('vk') -> Data payload pointers               |
-|   |       * Subkey Index Lists ('lf', 'lh', 'ri', 'li')                  |
-|   |       * Key Security Cell ('sk') -> ACLs & Security Descriptors      |
-|   +-- HBIN Chunk #2 ...                                                  |
-+--------------------------------------------------------------------------+</code></pre>
-
-      <h3>1. The Primary Base Block (REGF Header)</h3>
-      <p>
-        The first 4,096 bytes (<code>0x1000</code>) of every binary hive contain the base block header. The critical fields parsed by the BitDark engine include:
-      </p>
-      <ul>
-        <li><code>0x00 - 0x03</code>: <strong>Signature:</strong> The 4-byte ASCII string <code>regf</code> (hex <code>0x72 0x65 0x67 0x66</code>). Any file lacking this exact prefix is rejected as an invalid binary hive.</li>
-        <li><code>0x04 - 0x0B</code>: <strong>Sequence Numbers:</strong> Two 32-bit integers updated during transaction commits. If the primary sequence number does not match the secondary sequence number, the hive is marked "dirty," indicating uncommitted transaction logs.</li>
-        <li><code>0x0C - 0x13</code>: <strong>Last Modified Timestamp:</strong> An 8-byte 64-bit Windows FILETIME representing the exact UTC moment the hive was last synchronized to disk.</li>
-        <li><code>0x24 - 0x27</code>: <strong>Root Cell Offset:</strong> A 32-bit unsigned integer pointing to the root Named Key (<code>nk</code>) cell. Crucially, this offset is <em>relative to the start of the hive bins</em> (i.e., absolute file offset = <code>0x1000 + rootCellOffset</code>).</li>
-        <li><code>0x1FC - 0x1FF</code>: <strong>Header Checksum:</strong> An XOR checksum of the first 508 bytes, used by the Windows bootloader to detect disk sector corruption.</li>
-      </ul>
-
-      <h3>2. Hive Bins (HBIN) and Cell Allocations</h3>
-      <p>
-        Following the 4 KB base block, registry data is organized into discrete <strong>Hive Bins (HBIN)</strong>, each aligned to 4,096-byte boundaries and prefixed with the ASCII magic bytes <code>hbin</code> (<code>0x68 0x62 0x69 0x6E</code>). Within each hive bin, space is carved into discrete <strong>cells</strong>.
-      </p>
-      <p>
-        Every cell begins with a signed 32-bit integer representing its size:
-      </p>
-      <blockquote>
-        $$\text{Cell Allocation Rule: } \begin{cases} \text{Size} < 0 & \implies \text{Allocated (In-Use, active registry data)} \\ \text{Size} > 0 & \implies \text{Unallocated (Freed/Deleted, contains historical slack)} \end{cases}$$
-      </blockquote>
-      <p>
-        Because allocated cells store their size as a negative integer (e.g., a 64-byte cell stores <code>-64</code>, or <code>0xFFFFFFC0</code>), parsers calculate actual memory consumption using absolute values: $\text{Actual Size} = |\text{rawCellSize}|$.
-      </p>
-
-      <h3>3. Cell Types and Traversal Logic</h3>
-      <p>
-        The registry represents hierarchical trees through interconnected cell records:
-      </p>
-      <ul>
-        <li><strong>Named Key Cell (<code>nk</code>):</strong> The fundamental node representing a registry key. It contains the key name, last modification timestamp, class name pointer, count of subkeys, offset to the subkey list, count of values, and offset to the value list.</li>
-        <li><strong>Value Key Cell (<code>vk</code>):</strong> Represents a named data value within a key. It contains the value name, data type (e.g., <code>REG_SZ</code>, <code>REG_DWORD</code>), data length, and either a pointer to a separate data cell or the data itself stored <em>inline</em>.</li>
-        <li><strong>Subkey Index Lists (<code>lf</code>, <code>lh</code>, <code>ri</code>, <code>li</code>):</strong> B-tree index structures that allow the operating system to perform $O(\log n)$ subkey lookups. <code>lf</code> (Fast Leaf) and <code>lh</code> (Hash Leaf) cells store 4-byte name hashes alongside subkey offsets to accelerate lookups.</li>
-      </ul>
-
-      <h2>Deep Dive: The Inline Data Storage Optimization</h2>
-      <p>
-        A frequent point of failure in amateur registry parsers is the handling of <strong>inline data</strong>. To maximize disk performance and minimize internal fragmentation, the Windows kernel optimizes values whose payload length is less than or equal to 4 bytes.
-      </p>
-      <p>
-        In the <code>vk</code> (Value Key) cell, the <code>data_length</code> field is a 32-bit unsigned integer at offset <code>0x08</code>:
-      </p>
-      <ul>
-        <li>If the most significant bit (MSB) of <code>data_length</code> is set (i.e., <code>data_length & 0x80000000 !== 0</code>), the data is stored <strong>inline</strong>.</li>
-        <li>The actual length of the payload is extracted via bitwise masking: $\text{Length} = \text{data\_length} \ \& \ \text{0x7FFFFFFF}$.</li>
-        <li>When inline, the 4-byte <code>data_offset</code> field (offset <code>0x0C</code>) does <em>not</em> contain a relative pointer to an external cell; instead, it contains the <strong>raw payload bytes directly</strong>.</li>
-      </ul>
-      <p>
-        For example, a <code>REG_DWORD</code> value of <code>1</code> is stored directly inside the offset field as <code>0x00000001</code> rather than allocating an entire 16-byte cell on disk. The BitDark parser natively decodes these bit-level packing optimizations.
-      </p>
-
-      <h2>Worked Forensic Example: Manual REGF Byte-Level Dissection</h2>
-      <p>
-        To understand the operations executed by the BitDark parser, let us dissect an authentic hexadecimal sequence from a <code>SOFTWARE</code> hive where a threat actor established persistence under the standard <code>Run</code> key:
-      </p>
-
-      <h3>1. Base Block Header Hex Snippet (Offset 0x0000)</h3>
-      <pre><code>00000000: 7265 6766 2A00 0000 2A00 0000 0014 8A32  regf*...*......2
-00000010: B965 DA01 0100 0000 0500 0000 0000 0000  .e..............
-00000020: 0100 0000 2000 0000 0010 0000 0100 0000  .... ...........</code></pre>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Byte Offset</th>
-              <th>Raw Hex Values</th>
-              <th>Interpretation</th>
-              <th>Forensic Significance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0x00 - 0x03</code></td>
-              <td><code>72 65 67 66</code></td>
-              <td>ASCII "regf"</td>
-              <td>Valid Windows Registry Hive Container confirmed.</td>
-            </tr>
-            <tr>
-              <td><code>0x04 - 0x0B</code></td>
-              <td><code>2A 00 00 00 2A 00 00 00</code></td>
-              <td>Seq 1: 42, Seq 2: 42</td>
-              <td>Sequence numbers match. Hive is in a <strong>Clean</strong> state (no uncommitted transactions).</td>
-            </tr>
-            <tr>
-              <td><code>0x0C - 0x13</code></td>
-              <td><code>00 14 8A 32 B9 65 DA 01</code></td>
-              <td>64-bit FILETIME</td>
-              <td>Little-endian: <code>0x01DA65B9328A1400</code>. Decodes to <strong>2024-02-23 14:10:05 UTC</strong>.</td>
-            </tr>
-            <tr>
-              <td><code>0x24 - 0x27</code></td>
-              <td><code>20 00 00 00</code></td>
-              <td>Offset 0x00000020</td>
-              <td>Root <code>nk</code> cell located at file offset: $0x1000 + 0x20 = \mathbf{0x1020}$.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>2. Decoding the 64-bit Windows FILETIME Timestamp</h3>
-      <p>
-        The raw timestamp bytes <code>00 14 8A 32 B9 65 DA 01</code> decode as follows:
-      </p>
-      <ol>
-        <li>Assemble little-endian 64-bit integer: $N = \text{0x01DA65B9328A1400} = 133,531,326,050,000,000$.</li>
-        <li>Divide by $10,000$ to convert 100-nanosecond intervals into milliseconds:
-          $$\text{Intervals (ms)} = \frac{133,531,326,050,000,000}{10,000} = 13,353,132,605,000 \text{ ms}$$
-        </li>
-        <li>Subtract the differential between Windows Epoch (Jan 1, 1601) and Unix Epoch (Jan 1, 1970), which is exactly $11,644,473,600,000$ milliseconds:
-          $$\text{Unix Epoch (ms)} = 13,353,132,605,000 - 11,644,473,600,000 = 1,708,659,005,000 \text{ ms}$$
-        </li>
-        <li>Converting $1,708,659,005$ seconds into an ISO 8601 string yields: <strong>2024-02-23T14:10:05.000Z</strong>.</li>
-      </ol>
-
-      <h3>3. Value Key (vk) Dissection for Malware Persistence</h3>
-      <p>
-        Navigating down to the <code>Run</code> key cell, we encounter a <code>vk</code> record for an unauthorized persistence entry:
-      </p>
-      <pre><code>00023400: F0FF FFFF 766B 0E00 2400 0000 8034 0200  ....vk..$...4...
-00023410: 0100 0000 0100 0000 5570 6461 7465 4167  ........UpdateAg
-00023420: 656E 7400                                 ent.            </code></pre>
-      <ul>
-        <li><code>F0 FF FF FF</code>: Cell size = $-16$ bytes (Allocated cell).</li>
-        <li><code>76 6B</code>: ASCII <code>vk</code> signature.</li>
-        <li><code>0E 00</code>: Name length = 14 bytes (ASCII <code>"UpdateAgent"</code>).</li>
-        <li><code>24 00 00 00</code>: Data length = 36 bytes (No MSB set; stored in external data cell).</li>
-        <li><code>80 34 02 00</code>: Pointer to data cell at relative offset <code>0x00023480</code>.</li>
-        <li><code>01 00 00 00</code>: Value Type = <code>0x0001</code> (<code>REG_SZ</code>).</li>
-        <li>Reading the data cell at <code>0x1000 + 0x00023480</code> recovers the malicious payload path: <code>C:\Users\Public\svchost_update.exe</code>.</li>
-      </ul>
-
-      <h2>Comprehensive Windows Registry Artifact Forensic Taxonomy</h2>
-      <p>
-        When performing rapid incident response triage, examiners must know exactly which hives and keys correspond to specific threat actor activities:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Triage Category</th>
-              <th>Target Hive</th>
-              <th>Registry Key Path</th>
-              <th>Forensic Intelligence Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Malware Persistence</strong></td>
-              <td><code>SOFTWARE</code> / <code>NTUSER.DAT</code></td>
-              <td><code>\Microsoft\Windows\CurrentVersion\Run[Once]</code></td>
-              <td>Standard persistence locations executed during user login or boot.</td>
-            </tr>
-            <tr>
-              <td><strong>Service Execution</strong></td>
-              <td><code>SYSTEM</code></td>
-              <td><code>\ControlSet001\Services\&lt;ServiceName&gt;</code></td>
-              <td>Backdoor drivers, unauthorized services, ImagePath parameters, and start types.</td>
-            </tr>
-            <tr>
-              <td><strong>Program Execution (UserAssist)</strong></td>
-              <td><code>NTUSER.DAT</code></td>
-              <td><code>\Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count</code></td>
-              <td>ROT13-encoded log of executed GUI binaries, execution counts, and last launch times.</td>
-            </tr>
-            <tr>
-              <td><strong>Recent File Activity</strong></td>
-              <td><code>NTUSER.DAT</code></td>
-              <td><code>\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs</code></td>
-              <td>Evidence of opened documents, staged zip files, and exfiltrated materials.</td>
-            </tr>
-            <tr>
-              <td><strong>Folder Navigation (Shellbags)</strong></td>
-              <td><code>UsrClass.dat</code></td>
-              <td><code>\Local Settings\Software\Microsoft\Windows\Shell\Bags</code></td>
-              <td>Proves an attacker browsed specific directories, even if the folder was subsequently deleted.</td>
-            </tr>
-            <tr>
-              <td><strong>USB Device Tracking</strong></td>
-              <td><code>SYSTEM</code></td>
-              <td><code>\ControlSet001\Enum\USBSTOR</code></td>
-              <td>Device serial numbers, firmware revisions, vendor names, and first/last connection times.</td>
-            </tr>
-            <tr>
-              <td><strong>Mounted Drive Letters</strong></td>
-              <td><code>SYSTEM</code></td>
-              <td><code>\MountedDevices</code></td>
-              <td>Maps drive letters (e.g., <code>E:</code>) to volume GUIDs and physical device signatures.</td>
-            </tr>
-            <tr>
-              <td><strong>Network Interface Profiles</strong></td>
-              <td><code>SOFTWARE</code></td>
-              <td><code>\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles</code></td>
-              <td>History of connected Wi-Fi networks, corporate subnets, and first/last connection dates.</td>
-            </tr>
-            <tr>
-              <td><strong>RDP Lateral Movement</strong></td>
-              <td><code>NTUSER.DAT</code></td>
-              <td><code>\Software\Microsoft\Terminal Server Client\Servers</code></td>
-              <td>IP addresses and usernames targeted during remote desktop lateral pivot attacks.</td>
-            </tr>
-            <tr>
-              <td><strong>Application Inventory (Amcache)</strong></td>
-              <td><code>Amcache.hve</code></td>
-              <td><code>\Root\File\{Volume GUID}\...</code></td>
-              <td>Full file paths, compilation timestamps, file sizes, and SHA-1 application hashes.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Comparative Analysis: Registry Hives vs. Alternative Windows DFIR Artifacts</h2>
-      <p>
-        No single forensic artifact provides complete coverage. Understanding where the Windows Registry fits relative to EVTX event logs, Prefetch, and filesystem journals is vital:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Forensic Artifact</th>
-              <th>Primary Data Structure</th>
-              <th>Temporal Resolution</th>
-              <th>Anti-Forensics Vulnerability</th>
-              <th>Ideal Investigative Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Windows Registry (REGF)</strong></td>
-              <td>Hierarchical B-Tree database</td>
-              <td>100-nanosecond (Key level only)</td>
-              <td>Medium (Timestomping possible via kernel drivers)</td>
-              <td>Configuration state, persistence, user habits, USB tracking.</td>
-            </tr>
-            <tr>
-              <td><strong>Event Logs (.EVTX)</strong></td>
-              <td>Chunk-based XML binary records</td>
-              <td>1-millisecond resolution</td>
-              <td>High (Can be cleared via <code>wevtutil</code> or disabled)</td>
-              <td>Discrete event timelines (Logon 4624, Process 4688, PowerShell 4104).</td>
-            </tr>
-            <tr>
-              <td><strong>Amcache (Amcache.hve)</strong></td>
-              <td>Dedicated REGF hive container</td>
-              <td>100-nanosecond resolution</td>
-              <td>Low (Rarely targeted by commercial malware)</td>
-              <td>Unexecuted binary discovery, SHA-1 file hashing, installation tracking.</td>
-            </tr>
-            <tr>
-              <td><strong>Prefetch (.pf)</strong></td>
-              <td>Compressed binary execution traces</td>
-              <td>1-second resolution (Up to 8 timestamps)</td>
-              <td>Medium (Can be deleted or disabled on SSDs)</td>
-              <td>Definitive proof of binary execution and loaded DLL dependencies.</td>
-            </tr>
-            <tr>
-              <td><strong>USN Change Journal ($UsnJrnl)</strong></td>
-              <td>Linear NTFS metadata stream</td>
-              <td>100-nanosecond resolution</td>
-              <td>Very Low (Rolling buffer; requires direct raw disk writes)</td>
-              <td>Proof of file creation, renaming, modification, and deletion.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Forensic Pitfalls &amp; Anti-Forensic Countermeasures</h2>
-      <p>
-        Investigators auditing registry hives must be vigilant against common traps and deceptive techniques:
-      </p>
-      <ul>
-        <li>
-          <strong>The "Parent Key Timestamp" Fallacy:</strong> In the REGF specification, only Named Key (<code>nk</code>) cells maintain a <code>last_written</code> timestamp; individual Value Key (<code>vk</code>) records do <em>not</em> carry timestamps. If an attacker modifies an existing value (e.g., editing a debugger path in an existing key), the parent key's timestamp updates. However, if multiple values exist under that key, you cannot mathematically determine which specific value was modified without secondary log correlation.
-        </li>
-        <li>
-          <strong>The WOW64 Redirection Trap:</strong> On 64-bit Windows systems, 32-bit applications are redirected to <code>HKLM\SOFTWARE\WOW6432Node</code>. Malware running as a 32-bit process may establish persistence under <code>WOW6432Node\Microsoft\Windows\CurrentVersion\Run</code> while security teams inspect only the native 64-bit key path. BitDark parses all subtrees completely, allowing full visibility across both native and redirected architectures.
-        </li>
-        <li>
-          <strong>Null-Embedded Key Names (Reptile Cloaking):</strong> Advanced kernel drivers can create registry keys containing embedded null bytes (<code>\0</code>). Because the Windows Native API (<code>ZwCreateKey</code>) accepts counted Unicode strings, it successfully writes the key; however, Win32 user-mode APIs (like <code>RegOpenKeyEx</code>) treat null bytes as string terminators, causing native administrative tools like <code>regedit</code> to crash or fail to display the subkeys. The BitDark raw binary parser reads length-prefixed bytes directly, completely bypassing Win32 API parsing limits.
-        </li>
-        <li>
-          <strong>Rot13 Decoding in UserAssist:</strong> The Windows Shell encodes program execution paths in the <code>UserAssist</code> key using basic Caesar-13 (ROT13) ciphering (e.g., <code>pyrnahet.rkr</code> for <code>cleanmgr.exe</code>). Never mistake these strings for encrypted malware; they are standard operating system obfuscation.
-        </li>
+        <li><strong>Reading a hive without tooling:</strong> glance at an exported hive or <code>.reg</code> file on any machine, without installing a registry editor or forensics suite.</li>
+        <li><strong>Sensitive files stay local:</strong> hives can contain account and system data, so keeping the file in your own browser rather than uploading it to a web service avoids handing it to a third party.</li>
+        <li><strong>Quick triage:</strong> the filters jump straight to the keys most often checked first, and search finds a value across the whole hive.</li>
+        <li><strong>Learning the format:</strong> browsing a hive you know, with the value types shown, is a direct way to see how the registry is laid out.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Can this browser tool parse live Windows Registry files locked by the OS?</div>
+          <div class="faq-question">What files can this tool open?</div>
           <div class="faq-answer">
-            No. When Windows is running, the kernel maintains exclusive byte-range locks on active hives (SYSTEM, SOFTWARE, SAM, NTUSER.DAT), preventing standard File Explorer copying. To triage these files, examiners must either export keys via <code>reg.exe</code>, mount an offline disk image (E01/VHD), extract the files using Volume Shadow Copies (VSS), or copy them using raw disk forensic tools like FTK Imager or RawCopy.
+            Binary Registry hives in the REGF format &mdash; NTUSER.DAT, SYSTEM, SOFTWARE, SAM, SECURITY, Amcache.hve and the like &mdash; and <code>.reg</code> text exports from regedit. It detects the format from the file's contents, not its name, so a hive with any filename is read as a hive.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between an unallocated cell and slack space?</div>
+          <div class="faq-question">Can it open a hive that is in use on a running Windows PC?</div>
           <div class="faq-answer">
-            In the REGF architecture, an unallocated cell is a discrete, previously freed cell marked with a positive 32-bit integer indicating its size. Slack space refers to unused padding bytes between the end of the last cell in an HBIN chunk and the 4096-byte chunk boundary. Both structures frequently harbor deleted keys, orphaned values, and fragments of historic malware configurations.
+            Not directly. Windows keeps the active hives locked, so you cannot simply copy them in Explorer. Work from a copy obtained another way &mdash; an offline disk image, a Volume Shadow Copy, a tool like FTK Imager, or <code>reg.exe save</code> &mdash; and open that copy here. The tool reads whatever bytes you give it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does BitDark calculate the modification date of a registry key?</div>
+          <div class="faq-question">Does it show the last-modified time of every key?</div>
           <div class="faq-answer">
-            Every Named Key (<code>nk</code>) cell contains an 8-byte (64-bit) Windows FILETIME timestamp at offset <code>0x04</code>. This value records the count of 100-nanosecond intervals elapsed since January 1, 1601 UTC. The BitDark parser extracts this integer via <code>DataView.getBigUint64()</code>, converts it to Unix Epoch milliseconds, and renders the corresponding ISO 8601 UTC timestamp.
+            It shows the hive's own last-written timestamp from the REGF header (a Windows FILETIME, converted to UTC), not a separate time for each individual key. Every key cell does carry its own timestamp, but this viewer reports the hive-level one; for per-key timeline work use a dedicated registry forensics tool.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Are my sensitive corporate credentials and SAM hashes safe when using this tool?</div>
+          <div class="faq-question">What value types does it decode?</div>
           <div class="faq-answer">
-            Yes, completely. BitDark operates on an air-gapped, zero-network-egress security model. All file ingestion, hashing, B-tree walking, and value decoding execute exclusively within your browser's private volatile JavaScript memory space. Zero bytes of data or telemetry are ever transmitted across the network.
+            REG_SZ and REG_EXPAND_SZ strings, REG_DWORD and REG_QWORD numbers, REG_MULTI_SZ lists, and REG_BINARY (shown as a hex preview). Other types are labelled by their type number. REG_SZ is a plain string; REG_EXPAND_SZ holds unexpanded variables like <code>%SystemRoot%</code>; REG_MULTI_SZ is a null-separated list.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What are .LOG1 and .LOG2 files and what does a "dirty" hive mean?</div>
+          <div class="faq-question">Does it recover deleted keys or read transaction logs?</div>
           <div class="faq-answer">
-            Windows uses transaction logs (<code>.LOG1</code> and <code>.LOG2</code>) to ensure data integrity during crashes. Modifications are written to transaction logs before committing to the primary hive file. A hive is marked "dirty" when its primary and secondary sequence numbers do not match. If acquired live without committing transactions, uncommitted keys remain in the log files and will not appear in the primary hive.
+            No. It parses the allocated cells of the primary hive. It does not carve unallocated space or slack for deleted keys, and it does not replay the <code>.LOG1</code>/<code>.LOG2</code> transaction logs that a "dirty" hive needs to be made current. If the hive tree is damaged it falls back to a simple scan for key-name cells, which is a best effort, not full recovery.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between REG_SZ, REG_EXPAND_SZ, and REG_MULTI_SZ?</div>
+          <div class="faq-question">Is my hive uploaded anywhere?</div>
           <div class="faq-answer">
-            <code>REG_SZ</code> represents a fixed null-terminated string. <code>REG_EXPAND_SZ</code> is a string containing unexpanded environment variables (such as <code>%SystemRoot%</code>) meant to be evaluated at runtime. <code>REG_MULTI_SZ</code> contains a list of multiple null-delimited strings terminated by a double null character, commonly used for service dependencies and network bindings.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does the parser show "(Default)" for certain registry value names?</div>
-          <div class="faq-answer">
-            In the Windows Registry, every key can possess an unnamed default value. In the underlying binary <code>vk</code> cell, an unnamed value has a name length of <code>0</code>. The parser renders this conventionally as <code>(Default)</code> to match standard administrative interfaces.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can I triage Windows .reg script exports with this tool?</div>
-          <div class="faq-answer">
-            Yes. The parser detects both raw binary REGF hives and text-based <code>.reg</code> exports (encoded in UTF-8 or UTF-16LE). It automatically parses bracketed key headers, string values, hex binary arrays, and DWORD integers into the interactive tree view.
+            No. The file is read into memory in your browser, and the parsing, the SHA-256 hash and the JSON/CSV exports all run there. Nothing you open is sent to a server; the page makes no network request for your file.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Cybersecurity &amp; Digital Forensic Utilities</h3>
+        <h3>Related Forensics &amp; Analysis Utilities</h3>
         <div class="related-grid">
-          <a href="/tools/forensics/sqlite-viewer/" class="related-card">
-            <div class="related-card-title"><span>[🗄️]</span> In-Memory SQLite Viewer</div>
-            <div class="related-card-desc">Inspect, query, and dissect local SQLite databases and forensic browser histories without server uploads.</div>
-          </a>
-          <a href="/tools/forensics/strings/" class="related-card">
-            <div class="related-card-title"><span>[🔍]</span> Binary Strings Extractor</div>
-            <div class="related-card-desc">Extract ASCII and UTF-16LE string payloads from binary executables, memory dumps, and firmware blobs.</div>
+          <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
+            <div class="related-card-title"><span>[&#9881;&#65039;]</span> PE &amp; ELF Header Viewer</div>
+            <div class="related-card-desc">Read Windows PE and Linux ELF headers and section tables statically, in your browser.</div>
           </a>
           <a href="/tools/forensics/magic-bytes/" class="related-card">
-            <div class="related-card-title"><span>[📑]</span> Magic Bytes Analyzer</div>
-            <div class="related-card-desc">Verify true MIME types and inspect file header magic numbers to identify spoofed extensions.</div>
+            <div class="related-card-title"><span>[&#128270;]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Identify a file from its header bytes and catch extension spoofing, in your browser.</div>
           </a>
-          <a href="/tools/privacy/steganography/" class="related-card">
-            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
-            <div class="related-card-desc">Embed or extract covert textual payloads inside pixel Least Significant Bits (LSB) entirely offline.</div>
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[&#128269;]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Pull readable ASCII and UTF-16 strings, URLs and indicators out of a binary locally.</div>
           </a>
-          <a href="/tools/ai/c2pa-inspector/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
-            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          <a href="/tools/forensics/pcap-visualizer/" class="related-card">
+            <div class="related-card-title"><span>[&#128225;]</span> PCAP Viewer</div>
+            <div class="related-card-desc">Open a libpcap capture and dissect Ethernet, IP, TCP/UDP and more in your browser.</div>
           </a>
-          <a href="/tools/auth/jwt-debugger/" class="related-card">
-            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
-            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#&#65039;&#8419;]</span> Multi-Hash Generator</div>
+            <div class="related-card-desc">Compute several file hashes at once, including SHA-256 and MD5, in local browser memory.</div>
+          </a>
+          <a href="/tools/encoding/hex-dumper/" class="related-card">
+            <div class="related-card-title"><span>[0x]</span> Hex Dumper</div>
+            <div class="related-card-desc">View the raw bytes, offsets and ASCII of any file, with basic header hints.</div>
           </a>
         </div>
       </section>
@@ -1455,7 +1109,6 @@
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1474,7 +1127,7 @@
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
