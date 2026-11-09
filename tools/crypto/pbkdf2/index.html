@@ -6,8 +6,8 @@
   
   <title>PBKDF2 Key Derivation &amp; Password Hasher — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="PBKDF2 Key Derivation &amp; Password Hasher — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Derive cryptographic keys and compute PBKDF2 hashes using HMAC-SHA-256, HMAC-SHA-512, and HMAC-SHA-1 with customizable iterations and salts locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="pbkdf2 generator, pbkdf2 calculator, password based key derivation function 2, rfc 8018 pbkdf2, pbkdf2 sha256, offline pbkdf2, client side cryptography, nist sp 800 63b, web crypto api pbkdf2" />
+  <meta name="description" content="Derive keys and hash passwords with PBKDF2 in your browser: HMAC-SHA-256/512/1, a random salt, tunable iterations (600,000 default) and key length. Matches RFC 6070. Nothing is uploaded." />
+  <meta name="keywords" content="pbkdf2 key derivation, password hashing, rfc 8018 pkcs5, hmac-sha256 pbkdf2, 600000 iterations owasp, salt, argon2 vs pbkdf2, rfc 6070" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/pbkdf2/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/pbkdf2/" />
   <meta property="og:title" content="PBKDF2 Key Derivation &amp; Password Hasher | BitDark" />
-  <meta property="og:description" content="Derive high-entropy cryptographic keys and compute PBKDF2 hashes offline via the W3C Web Cryptography API. Zero network egress." />
+  <meta property="og:description" content="Run standard PBKDF2 key derivation locally with tunable iterations and salt, plus an honest PBKDF2-vs-Argon2 comparison and a matching test vector." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/pbkdf2/" />
   <meta name="twitter:title" content="PBKDF2 Key Derivation &amp; Password Hasher | BitDark" />
-  <meta name="twitter:description" content="Offline PBKDF2 derivation playground for HMAC-SHA-256, HMAC-SHA-512, and HMAC-SHA-1. 100% Client-Side in browser memory." />
+  <meta name="twitter:description" content="Derive keys with PBKDF2 in your browser — HMAC-SHA-256, 600k iterations, salt. Matches RFC 6070 test vectors." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "PBKDF2 Key Derivation & Password Hasher",
         "url": "https://bitdark.net/tools/crypto/pbkdf2/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Cryptographic utility to derive symmetric keys and verify PBKDF2 (RFC 8018 / PKCS #5 v2.1) hashes locally in browser RAM using HMAC PRFs with zero telemetry or network calls."
+        "description": "Browser-based PBKDF2 key-derivation tool using Web Crypto to stretch a password and salt with HMAC-SHA-256/384/512/1 over a tunable iteration count into a derived key."
       },
       {
         "@type": "TechArticle",
-        "headline": "Password-Based Key Derivation (PBKDF2): Cryptographic Mechanics, Work Factor Sizing, and Brute-Force Resistance",
+        "headline": "PBKDF2 Key Derivation: Iterations, Salt, and When to Use It Instead of Argon2",
         "url": "https://bitdark.net/tools/crypto/pbkdf2/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-01",
-        "description": "Exhaustive technical analysis of Password-Based Key Derivation Function 2 (PBKDF2, RFC 8018 / RFC 2898), Pseudorandom Functions (PRF), work factor calibration, GPU cracking economics, and NIST/OWASP iteration standards."
+        "dateModified": "2026-11-09",
+        "description": "What PBKDF2 does, what each parameter is for, why the 600,000-iteration default is correct, an honest PBKDF2-vs-Argon2 comparison, a reproducible RFC 6070 worked example, and how to store the result."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is PBKDF2 and why is it used instead of raw hashing functions like SHA-256?",
+            "name": "How many iterations should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "General-purpose cryptographic hash functions like SHA-256 and SHA-512 were designed for high throughput, allowing modern GPUs and ASIC miners to compute tens of billions of hashes per second. PBKDF2 (Password-Based Key Derivation Function 2) introduces a computational cost factor by repeatedly iterating a keyed pseudorandom function (HMAC) over the passphrase and a cryptographic salt, drastically raising the financial and computational barrier for offline dictionary and brute-force attacks."
+              "text": "At least 600,000 for PBKDF2-HMAC-SHA256, which is OWASP's current recommendation and this tool's default. Tune it so one derivation takes a few hundred milliseconds on your hardware, and raise it over time as hardware gets faster."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the recommended iteration count for PBKDF2 in 2026?",
+            "name": "Should I use PBKDF2 or Argon2?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "According to the latest OWASP and NIST SP 800-63B guidance, the minimum baseline iteration count is 600,000 iterations for PBKDF2-HMAC-SHA-256 and 210,000 iterations for PBKDF2-HMAC-SHA-512. Higher work factors should be chosen based on target server response SLAs and client computational limits."
+              "text": "For new password storage, Argon2id is generally the better choice because it's memory-hard and resists GPU and ASIC attacks. Use PBKDF2 when you need FIPS-140 compliance or must interoperate with an existing system. PBKDF2 is still secure with a high iteration count."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is a cryptographic salt strictly necessary in PBKDF2?",
+            "name": "Does the salt need to be secret?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Salts prevent precomputed dictionary attacks, such as rainbow tables, and ensure that two users with the exact same passphrase produce entirely different derived keys. A cryptographically secure salt must be unique per credential, at least 128 bits (16 bytes) in length, and generated via a CSPRNG."
+              "text": "No. The salt just needs to be random and unique per password so that identical passwords don't produce identical keys and precomputed tables don't work. It's stored alongside the derived key and isn't secret. Use at least 16 random bytes."
             }
           },
           {
             "@type": "Question",
-            "name": "How does PBKDF2 differ from memory-hard functions like Argon2id or scrypt?",
+            "name": "Why does computing take a second or two?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "PBKDF2 is CPU-bound and requires virtually zero RAM, which means specialized hardware adversaries (ASICs and high-density GPUs) can parallelize cracking attempts with massive efficiency. In contrast, modern memory-hard functions like Argon2id and scrypt require designated blocks of RAM per computation, making hardware parallelization prohibitively expensive."
+              "text": "Because it's doing 600,000 HMAC iterations by design. That deliberate slowness is what protects against fast password guessing. A faster result would mean a weaker configuration, so the short wait is a feature, not a problem."
             }
           },
           {
             "@type": "Question",
-            "name": "Does this tool send my password or derived keys across the network?",
+            "name": "What do I need to store to verify a password later?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. All key derivation, salt generation, and encoding operations are executed purely client-side inside your browser's private V8/SpiderMonkey sandbox via the native W3C Web Cryptography API (crypto.subtle). Zero bytes leave your machine."
+              "text": "The derived key plus its parameters: the PRF (hash), the iteration count, the salt and the key length. PBKDF2's raw output isn't self-describing like Argon2's encoded string, so you must record those values yourself to recompute and compare."
             }
           }
         ]
@@ -708,7 +708,7 @@
 
     <div class="tool-header">
       <h1>PBKDF2 Key Derivation &amp; Password Hasher</h1>
-      <p>Derive high-entropy symmetric keys and compute password hashes using PBKDF2 (RFC 8018 / RFC 2898 / PKCS #5 v2.1) with HMAC-SHA-256, HMAC-SHA-512, HMAC-SHA-384, or HMAC-SHA-1 in local browser memory via the native W3C Web Cryptography API.</p>
+      <p>Derive a key or hash a password with PBKDF2: choose HMAC-SHA-256, 384, 512 or SHA-1, a random salt, an iteration count (600,000 by default) and a key length. It runs on the Web Crypto API, matches the RFC test vectors, and stays on your device.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -803,373 +803,116 @@
       </div>
     </section>
 
-    <!-- Operational Disclaimer Card -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Cryptographic Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Operational Limitations:</strong> PBKDF2 (RFC 8018 / RFC 2898) is a computationally intensive, CPU-bound key derivation function designed to slow down offline password cracking. However, because PBKDF2 requires virtually no memory ($O(1)$ space complexity), it remains susceptible to massive parallelization on dedicated Application-Specific Integrated Circuits (ASICs) and high-density GPU mining clusters. For modern password storage architectures, memory-hard algorithms such as Argon2id (RFC 9106) or scrypt (RFC 7914) provide vastly superior defense against hardware-accelerated adversaries. All operations on BitDark run exclusively in your browser's private memory space; no secret keys, passphrases, or cryptographic materials are ever transmitted over the network.
+        <strong>A learning, testing and interop tool, not key management.</strong> PBKDF2 is CPU-hard but not memory-hard, so for new password storage Argon2id is generally preferred; use PBKDF2 for FIPS compliance or interoperability. Keep at least the 600,000-iteration default and a unique 16+ byte salt. The password, salt and derived key stay in your browser. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Long-Form Authoritative SEO Documentation -->
     <article class="article-container">
-      <h2>The Cryptographic Foundations of Password-Based Key Derivation</h2>
+      <h2>What PBKDF2 Does</h2>
       <p>
-        In modern software architecture, security engineers routinely face a fundamental thermodynamic mismatch: human beings excel at remembering low-entropy passphrases, whereas modern symmetric ciphers (such as AES-256-GCM or ChaCha20-Poly1305) demand uniformly distributed, mathematically unpredictable 256-bit binary keys. A typical user-selected password of 10 to 14 characters contains at most 30 to 45 bits of Shannon entropy. Passing such a password directly into a symmetric cipher or storing its direct cryptographic hash in an authentication database opens the door to total system compromise.
-      </p>
-      <p>
-        A widespread architectural blunder in early internet applications was computing a simple, fast cryptographic hash of the passphrase—such as <code>MD5(password)</code>, <code>SHA-1(password)</code>, or even unsalted <code>SHA-256(password)</code>. General-purpose cryptographic hash functions were intentionally engineered for high-bandwidth data integrity verification; a modern desktop workstation equipped with consumer graphics processing units (GPUs) can compute over 10 billion SHA-256 evaluations per second. Against such throughput, an 8-character alphanumeric passphrase can be completely exhausted across the entire keyspace in minutes via brute-force or dictionary attacks.
-      </p>
-      <p>
-        To neutralize this structural vulnerability, cryptographic standards bodies introduced <strong>Key Derivation Functions (KDFs)</strong>. Specifically, <strong>Password-Based Key Derivation Function 2 (PBKDF2)</strong>, first formalized by RSA Laboratories in Public-Key Cryptography Standards (PKCS) #5 v2.0 and subsequently standardized by the IETF in <strong>RFC 2898</strong> and <strong>RFC 8018</strong>, provides a mathematically rigorous mechanism to "stretch" weak passphrases into high-entropy cryptographic keys while imposing a tunable computational work factor on prospective adversaries.
+        PBKDF2 turns a password and a salt into a fixed-length key by running them through a keyed hash (HMAC) many thousands of times. That repetition is the point: it makes each guess slow, so an attacker who steals the output can't test passwords at the speed a plain hash would allow. It's defined in RFC 8018 (PKCS #5) and used for two jobs — deriving an encryption key from a passphrase, and hashing passwords for storage. This tool runs PBKDF2 through the browser's Web Crypto API.
       </p>
 
-      <h2>Mathematical Anatomy of the PBKDF2 Algorithm</h2>
-      <p>
-        PBKDF2 operates by repeatedly applying a keyed <strong>Pseudorandom Function (PRF)</strong>—overwhelmingly an HMAC variant such as HMAC-SHA-256 or HMAC-SHA-512—to a passphrase and a cryptographic salt across an iteration count $c$.
-      </p>
-      
-      <h3>1. The Core Derivation Function</h3>
-      <p>
-        Formally, the derived key $DK$ of length $dkLen$ octets is defined by:
-      </p>
-      <pre><code>DK = PBKDF2(PRF, Password, Salt, c, dkLen)</code></pre>
-      <p>
-        Where:
-      </p>
-      <ul>
-        <li><code>PRF</code> is an underlying pseudorandom function of two arguments with an output length of $hLen$ octets (e.g., $hLen = 32$ bytes for HMAC-SHA-256).</li>
-        <li><code>Password</code> is the master secret passphrase string or byte array.</li>
-        <li><code>Salt</code> is a cryptographically secure random octet string (minimum 128 bits / 16 bytes recommended).</li>
-        <li><code>c</code> is a positive integer specifying the iteration work factor.</li>
-        <li><code>dkLen</code> is the intended octet length of the derived key.</li>
-      </ul>
-
-      <h3>2. Block Splitting and Expansion</h3>
-      <p>
-        Because the target key length $dkLen$ may exceed the native output size $hLen$ of the chosen PRF, PBKDF2 concatenates derived blocks $T_i$:
-      </p>
-      <pre><code>DK = T_1 || T_2 || ... || T_l<0..r-1></code></pre>
-      <p>
-        Here, $l = \lceil dkLen / hLen \rceil$ represents the total number of blocks necessary to satisfy the requested key length, and $r = dkLen - (l - 1) \times hLen$ is the number of octets in the final block. For instance, deriving a 256-bit (32-byte) key using HMAC-SHA-256 requires exactly $l = 1$ block ($32 / 32 = 1$). If one derives a 512-bit key using HMAC-SHA-256, $l = 2$ blocks must be computed sequentially, effectively doubling the required execution time.
-      </p>
-
-      <h3>3. The Iterative Block Function $F$</h3>
-      <p>
-        Each individual block $T_i$ is computed through the function $F$:
-      </p>
-      <pre><code>T_i = F(Password, Salt, c, i) = U_1 ^ U_2 ^ U_3 ^ ... ^ U_c</code></pre>
-      <p>
-        Where:
-      </p>
-      <pre><code>U_1 = PRF(Password, Salt || INT_32_BE(i))
-U_2 = PRF(Password, U_1)
-U_3 = PRF(Password, U_2)
-...
-U_c = PRF(Password, U_{c-1})</code></pre>
-      <p>
-        In this progression, <code>INT_32_BE(i)</code> represents the 4-octet big-endian integer encoding of the block index $i$. The initial step $U_1$ hashes the salt combined with the block index using the passphrase as the HMAC key. Each successive step $U_k$ feeds the previous HMAC output directly back through the HMAC engine as the message payload, while continuously reusing the passphrase as the key. Finally, all $c$ intermediate HMAC digests ($U_1$ through $U_c$) are combined via bitwise exclusive-OR (XOR, $\oplus$).
-      </p>
-
-      <pre><code>+-------------------------------------------------------------------------------+
-| PBKDF2 Iteration Mechanics for Block T_i                                      |
-|                                                                               |
-|   Salt || i  -----> [ HMAC(Password, ...) ] -----> U_1 -----------------+     |
-|                             |                                           |     |
-|                             v                                           v     |
-|                      [ HMAC(Password, ...) ] -----> U_2 -----------> ( XOR )  |
-|                             |                                           |     |
-|                             v                                           v     |
-|                      [ HMAC(Password, ...) ] -----> U_3 -----------> ( XOR )  |
-|                             |                                           |     |
-|                             :                                           :     |
-|                             v                                           v     |
-|                      [ HMAC(Password, ...) ] -----> U_c -----------> ( XOR )  |
-|                                                                         |     |
-|                                                                         v     |
-|                                                                Block Output T_i|
-+-------------------------------------------------------------------------------+</code></pre>
-
-      <h2>How to Use the BitDark PBKDF2 Playground</h2>
-      <p>
-        This diagnostic terminal allows engineers, auditors, and developers to calibrate key derivation parameters, generate cryptographically isolated symmetric keys, and inspect hash outputs locally without cloud dependencies:
-      </p>
-      <ol>
-        <li>
-          <strong>Select the HMAC PRF:</strong> Choose between <code>HMAC-SHA-256</code> (the prevailing industry baseline), <code>HMAC-SHA-512</code> (optimized for 64-bit architectures), <code>HMAC-SHA-384</code>, or legacy <code>HMAC-SHA-1</code>.
-        </li>
-        <li>
-          <strong>Define the Derived Key Length:</strong> Choose 256 bits (32 bytes) for standard AES-256 encryption, 128 bits for legacy AES-128, or 512 bits for master secret splitting and HMAC keys.
-        </li>
-        <li>
-          <strong>Configure the Work Factor (Iterations):</strong> Enter the target iteration count $c$. The default value of <code>600,000</code> reflects current NIST and OWASP production guidelines for SHA-256.
-        </li>
-        <li>
-          <strong>Provide or Generate a Salt:</strong> Enter an existing salt or click <strong>Generate Salt</strong> to generate a 16-byte (128-bit) cryptographically secure pseudorandom salt using <code>window.crypto.getRandomValues</code>. Specify whether the salt should be parsed as raw Hexadecimal bytes or a UTF-8 text string.
-        </li>
-        <li>
-          <strong>Enter Password &amp; Compute:</strong> Type your target passphrase and click <strong>Derive Key (Compute PBKDF2)</strong>. The browser's native WebCrypto engine processes the derivation and displays formatted Hexadecimal, Base64, and execution latency metrics in milliseconds.
-        </li>
-      </ol>
-
-      <h2>Operational Scenarios: When and Where to Use PBKDF2</h2>
-      <p>
-        PBKDF2 is an established cryptographic primitive deployed across mission-critical systems worldwide:
-      </p>
-      <ul>
-        <li>
-          <strong>Symmetric Key Generation for Client-Side Vaults:</strong> Web-based password managers and zero-knowledge storage engines (such as Bitwarden or 1Password) use PBKDF2 to stretch the user's master password into a 256-bit encryption key. This derived key directly encrypts data payloads via AES-256-GCM before any data is synchronized to a remote server.
-        </li>
-        <li>
-          <strong>Disk and Archive Encryption:</strong> Encrypted disk formats (such as LUKS v1) and secure archive software (including standard ZIP AES-256 and 7-Zip) historically rely on PBKDF2-HMAC-SHA-1 or SHA-256 to convert archive passwords into header keys.
-        </li>
-        <li>
-          <strong>Wi-Fi Protected Access (WPA2-PSK):</strong> The 802.11i wireless security standard derives the 256-bit Pairwise Master Key (PMK) by executing <code>PBKDF2(HMAC-SHA-1, Passphrase, SSID, 4096, 256)</code>. The 4,096-iteration count, chosen in 2004, is considered dangerously low today, which is why WPA3 migrated toward SAE (Simultaneous Authentication of Equals).
-        </li>
-        <li>
-          <strong>Cryptographic Seed Stretching (BIP-39):</strong> Cryptocurrency hardware wallets and deterministic seed generators utilize PBKDF2 with HMAC-SHA-512 and 2,048 iterations over the 12-to-24-word mnemonic sentence to compute the 512-bit master binary seed.
-        </li>
-        <li>
-          <strong>Legacy Web Application Password Authentication:</strong> Django, ASP.NET Core, and various enterprise Java frameworks implement PBKDF2-HMAC-SHA-256 as their default password storage hasher.
-        </li>
-      </ul>
-
-      <h2>Work Factor Calibration &amp; NIST / OWASP Standards</h2>
-      <p>
-        The security of PBKDF2 depends entirely on the iteration count $c$. Because hardware computational capabilities continuously expand in adherence to Moore's Law and GPU parallelism, iteration counts must be adjusted upward periodically.
-      </p>
+      <h2>The Parameters</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Standards Body / Year</th>
-              <th>Recommended PRF</th>
-              <th>Minimum Iterations ($c$)</th>
-              <th>Estimated Latency (Modern CPU)</th>
-              <th>Primary Threat Target</th>
-            </tr>
+            <tr><th>Parameter</th><th>What it's for</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>RFC 2898 (Year 2000)</strong></td>
-              <td>HMAC-SHA-1</td>
-              <td>1,000</td>
-              <td>&lt; 1 ms</td>
-              <td>Pentium III single-core CPUs</td>
-            </tr>
-            <tr>
-              <td><strong>NIST SP 800-132 (2010)</strong></td>
-              <td>HMAC-SHA-1 / SHA-256</td>
-              <td>10,000</td>
-              <td>~ 2 ms</td>
-              <td>Early GPU password cracking</td>
-            </tr>
-            <tr>
-              <td><strong>OWASP Baseline (2021)</strong></td>
-              <td>HMAC-SHA-256</td>
-              <td>310,000</td>
-              <td>~ 50 ms</td>
-              <td>Nvidia GTX 1080 / RTX 2080 clusters</td>
-            </tr>
-            <tr>
-              <td><strong>OWASP &amp; NIST (Current 2026)</strong></td>
-              <td>HMAC-SHA-256</td>
-              <td><strong>600,000</strong></td>
-              <td>~ 80–120 ms</td>
-              <td>RTX 4090 / Cloud FPGA / Hashcat</td>
-            </tr>
-            <tr>
-              <td><strong>OWASP &amp; NIST (Current 2026)</strong></td>
-              <td>HMAC-SHA-512</td>
-              <td><strong>210,000</strong></td>
-              <td>~ 70–110 ms</td>
-              <td>64-bit optimized compute pipelines</td>
-            </tr>
+            <tr><td><strong>PRF (hash)</strong></td><td>The HMAC hash inside PBKDF2. HMAC-SHA-256 is the standard default</td></tr>
+            <tr><td><strong>Salt</strong></td><td>Random, unique per password. Defeats precomputed tables; stored, not secret</td></tr>
+            <tr><td><strong>Iterations</strong></td><td>The work factor — the main security dial. More iterations, slower guessing</td></tr>
+            <tr><td><strong>Key length</strong></td><td>Output size, e.g. 256 bits for an AES-256 key</td></tr>
           </tbody>
         </table>
       </div>
       <p>
-        When selecting an iteration count for web applications, engineers must balance defense against server Denial-of-Service (DoS). If an authentication endpoint processes 500 concurrent logins per second, requiring 600,000 iterations of SHA-256 on the backend server will saturate all available CPU cores. In such architectures, offloading the initial PBKDF2 stretching pass to the client browser via WebCrypto or implementing rate-limiting reverse proxies is required.
+        This tool defaults to <strong>600,000 iterations</strong> with HMAC-SHA-256, which is exactly what OWASP currently recommends for PBKDF2 — so the default is production-grade, and the reason a derivation takes a noticeable moment is that it's doing real work. Pick the iteration count so one derivation takes roughly a few hundred milliseconds on your target hardware, and don't go below the default for password storage.
       </p>
 
-      <h2>Cryptographic Comparison: PBKDF2 vs. Modern KDFs</h2>
+      <h2>PBKDF2 or Argon2? An Honest Comparison</h2>
       <p>
-        While PBKDF2 remains an approved standard under NIST FIPS compliance frameworks, the broader cryptographic community recognizes that newer, memory-hard algorithms offer vastly superior protection against custom hardware adversaries.
+        PBKDF2 is only <em>CPU-hard</em>: it costs time, but not much memory, so attackers with GPUs or custom ASICs can parallelise it efficiently. Newer functions — <strong>Argon2id</strong>, and also scrypt and bcrypt — are <em>memory-hard</em>, which blunts that hardware advantage. For new password-storage systems, Argon2id is the preferred choice.
       </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Standard / RFC</th>
-              <th>Hardness Type</th>
-              <th>ASIC / GPU Resistance</th>
-              <th>FIPS 140-3 Approved</th>
-              <th>Primary Use Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>PBKDF2</strong></td>
-              <td>RFC 8018</td>
-              <td>CPU-Bound ($O(1)$ RAM)</td>
-              <td><strong>Low:</strong> Massive ASIC &amp; GPU parallelization</td>
-              <td>Yes</td>
-              <td>Enterprise compliance, key derivation, legacy systems</td>
-            </tr>
-            <tr>
-              <td><strong>Argon2id</strong></td>
-              <td>RFC 9106</td>
-              <td>Memory-Hard &amp; CPU-Hard</td>
-              <td><strong>Extreme:</strong> Prohibitive hardware cost per core</td>
-              <td>Pending / Case-by-Case</td>
-              <td>Modern server password hashing, zero-knowledge vaults</td>
-            </tr>
-            <tr>
-              <td><strong>scrypt</strong></td>
-              <td>RFC 7914</td>
-              <td>Memory-Hard &amp; CPU-Hard</td>
-              <td><strong>High:</strong> Sequential memory access</td>
-              <td>No</td>
-              <td>Cryptocurrency protocols, archive containers</td>
-            </tr>
-            <tr>
-              <td><strong>bcrypt</strong></td>
-              <td>OpenBSD Blowfish</td>
-              <td>Memory-Bound (4 KB Cache)</td>
-              <td><strong>Medium:</strong> Defeats early GPUs; vulnerable to FPGA</td>
-              <td>No</td>
-              <td>Traditional web application credential storage</td>
-            </tr>
-            <tr>
-              <td><strong>HKDF</strong></td>
-              <td>RFC 5869</td>
-              <td>Non-Iterative (Extract-and-Expand)</td>
-              <td><strong>None:</strong> Fast by design (Requires high-entropy input)</td>
-              <td>Yes</td>
-              <td>TLS 1.3, Noise protocol, session key derivation</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
       <p>
-        The critical limitation of PBKDF2 is its <strong>zero memory overhead</strong>. An adversary building a custom ASIC or FPGA array can deploy thousands of compact HMAC cores on a single silicon die. Because each PBKDF2 instance requires negligible internal register space, the attacker's hardware cost scales linearly with compute. In contrast, <strong>Argon2id</strong> allocates tens of megabytes of RAM per hash evaluation, forcing the adversary to provide massive memory bandwidth that quickly renders large-scale parallel cracking economically unfeasible.
+        PBKDF2 is still the right tool in two cases: when you need FIPS-140 compliance (PBKDF2 is approved; Argon2 generally isn't yet), and when you must interoperate with something that already uses it. It remains secure when configured with a high iteration count — it just asks more of the defender to match the attacker's hardware.
       </p>
 
-      <h2>Step-by-Step Worked Derivation Example</h2>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        To verify deterministic interoperability between BitDark and standard cryptographic test suites (such as RFC 6070 test vectors), consider the following reference parameter set:
+        PBKDF2 has published test vectors. Set the password to <code>password</code>, the salt to <code>salt</code> (text format), and the iteration count to <code>4096</code>:
       </p>
-      <pre><code>PRF: HMAC-SHA-256
-Password: "BitDarkSecret2026!" (UTF-8 bytes)
-Salt: "73616c74797365637265743132333435" (Hexadecimal: 16 bytes)
-Iterations: 100,000
-Derived Key Length: 256 bits (32 bytes)</code></pre>
-      
-      <h3>Execution Trace:</h3>
+      <pre><code>HMAC-SHA-1,   20 bytes → 4b007901b765489abead49d926f721d065a429c1
+HMAC-SHA-256, 32 bytes → c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a</code></pre>
+      <p>
+        The SHA-1 value is the RFC 6070 test vector, and both match <code>openssl</code> and language libraries given the same inputs — confirming the tool is a standard PBKDF2 implementation. (4096 iterations is used here only so the example matches the published vectors; use the 600,000 default for real work.)
+      </p>
+
+      <h2>Storing the Result</h2>
+      <p>
+        Unlike Argon2's self-describing output, PBKDF2 returns only raw key bytes. To verify a password later you must store the algorithm, iteration count, salt and key length yourself, alongside the derived key — the derived bytes alone aren't enough. When PBKDF2 is used to derive an encryption key, keep the same salt and iteration count so the key can be re-derived.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Key Import:</strong> The UTF-8 string <code>BitDarkSecret2026!</code> is converted into an 18-byte binary buffer. The Web Crypto API imports this raw buffer as a cryptographic key for the <code>PBKDF2</code> algorithm.
-        </li>
-        <li>
-          <strong>Salt Deserialization:</strong> The hex salt is decoded into 16 raw octets: <code>[0x73, 0x61, 0x6c, 0x74, 0x79, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x31, 0x32, 0x33, 0x34, 0x35]</code>.
-        </li>
-        <li>
-          <strong>Initial Block Computation ($U_1$):</strong> The salt is concatenated with the big-endian 32-bit integer <code>1</code> (<code>0x00, 0x00, 0x00, 0x01</code>). An HMAC-SHA-256 operation is executed using the imported key over these 20 bytes to generate the 32-byte intermediate hash $U_1$.
-        </li>
-        <li>
-          <strong>Chaining ($U_2$ through $U_{100000}$):</strong> The engine iteratively computes $U_2 = \text{HMAC}(K, U_1)$, $U_3 = \text{HMAC}(K, U_2)$, continuing through $U_{100000}$. In-flight XOR accumulation maintains running block state:
-          <br /><code>RunningBlock = U_1 ^ U_2 ^ ... ^ U_100000</code>.
-        </li>
-        <li>
-          <strong>Final Serialization:</strong> The resulting 32-byte buffer is formatted into standard Hexadecimal and RFC 4648 Base64 strings.
-        </li>
+        <li><strong>Enter a password</strong> and a salt (generate a random one, or paste a hex salt).</li>
+        <li><strong>Choose the PRF, iterations and key length</strong> — SHA-256 and the 600,000 default suit password storage.</li>
+        <li><strong>Compute</strong> to get the derived key in hex and Base64, with the elapsed time.</li>
+        <li><strong>Record the parameters</strong> (PRF, iterations, salt, length) so the key can be reproduced or the password verified.</li>
       </ol>
 
-      <h2>Common Mistakes and Security Pitfalls in PBKDF2 Implementations</h2>
-      <p>
-        Cryptographic vulnerabilities rarely stem from mathematical flaws in the underlying PRF; they overwhelmingly result from flawed implementation decisions:
-      </p>
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Using Static or Hardcoded Salts:</strong> A salt must never be reused across credentials. If multiple users share the same salt, an attacker cracking a leaked database can compute a single PBKDF2 chain and test it against all users simultaneously, entirely defeating the purpose of the salt.
-        </li>
-        <li>
-          <strong>Insufficient Iteration Counts:</strong> Retaining outdated defaults (such as 1,000 or 10,000 iterations) offers virtually zero resistance against modern GPU rigs running Hashcat. Iteration counts must be reviewed and upgraded annually.
-        </li>
-        <li>
-          <strong>Character Encoding Ambiguity (UTF-8 vs. ISO-8859-1):</strong> A passphrase containing non-ASCII characters (e.g., umlauts, accents, or emojis) produces completely different binary representations under different encodings. Applications must strictly standardize on UTF-8 normalization (e.g., Unicode NFKC or NFC) before feeding passphrases into PBKDF2.
-        </li>
-        <li>
-          <strong>Truncating Passwords:</strong> Some legacy implementations (such as early crypt libraries) truncated passwords at 72 bytes. While PBKDF2 handles arbitrary password lengths gracefully, any pre-hashing step (such as hashing the password with SHA-256 before passing it to PBKDF2) must be designed carefully to avoid introducing fixed-length collisions.
-        </li>
-        <li>
-          <strong>Confusing HKDF with PBKDF2:</strong> HKDF (RFC 5869) is designed to extract and expand high-entropy input keying material (such as Diffie-Hellman shared secrets). It is not computationally iterative and must <strong>never</strong> be used directly on low-entropy human passwords.
-        </li>
+        <li><strong>A learning, testing and interop tool.</strong> Good for understanding PBKDF2 or matching another system's output — not for managing production secrets.</li>
+        <li><strong>Prefer Argon2id for new password storage</strong>; use PBKDF2 for FIPS or interoperability needs.</li>
+        <li><strong>Salt must be unique and random</strong> per password, at least 16 bytes.</li>
+        <li><strong>Runs locally.</strong> The password, salt and derived key stay in your browser — nothing is uploaded.</li>
       </ul>
 
-      <!-- Interactive Accordion FAQs -->
+      <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why should I use HMAC-SHA-512 instead of HMAC-SHA-256 for PBKDF2?</div>
+          <div class="faq-question">How many iterations should I use?</div>
           <div class="faq-answer">
-            HMAC-SHA-512 operates natively on 64-bit integer words and uses larger internal state registers (80 rounds vs 64 rounds in SHA-256). On modern 64-bit server CPUs, SHA-512 is often faster per byte than SHA-256, yet it imposes a significantly heavier execution burden on 32-bit GPU shader cores used by attackers, offering improved defensive asymmetry.
+            At least 600,000 for PBKDF2-HMAC-SHA256, which is OWASP's current recommendation and this tool's default. Tune it so one derivation takes a few hundred milliseconds on your hardware, and raise it over time as hardware gets faster.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the minimum recommended salt length?</div>
+          <div class="faq-question">Should I use PBKDF2 or Argon2?</div>
           <div class="faq-answer">
-            NIST SP 800-132 and RFC 8018 mandate a minimum salt length of 128 bits (16 bytes). Using a 16-byte cryptographically secure random salt provides $2^{128}$ possible salt combinations, rendering global rainbow tables mathematically impossible.
+            For new password storage, Argon2id is generally the better choice because it's memory-hard and resists GPU and ASIC attacks. Use PBKDF2 when you need FIPS-140 compliance or must interoperate with an existing system. PBKDF2 is still secure with a high iteration count.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I use PBKDF2 to store user passwords in a relational database?</div>
+          <div class="faq-question">Does the salt need to be secret?</div>
           <div class="faq-answer">
-            Yes, PBKDF2 is an accepted standard (e.g., in Django and ASP.NET Core). However, the resulting storage string must encode the algorithm identifier, iteration count, salt, and hash output (for example, <code>pbkdf2_sha256$600000$salt$hash</code>) so that iteration counts can be upgraded transparently as hardware evolves. For new greenfield projects, Argon2id is strongly preferred.
+            No. The salt just needs to be random and unique per password so that identical passwords don't produce identical keys and precomputed tables don't work. It's stored alongside the derived key and isn't secret. Use at least 16 random bytes.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does high iteration count freeze the browser UI?</div>
+          <div class="faq-question">Why does computing take a second or two?</div>
           <div class="faq-answer">
-            Computing millions of HMAC cycles is CPU-intensive. If executed on the main UI thread, JavaScript execution blocks DOM rendering until the WebCrypto promise resolves. While the native W3C WebCrypto API processes derivations in a separate browser background thread, setting iteration counts into the tens of millions can still cause noticeable latency.
+            Because it's doing 600,000 HMAC iterations by design. That deliberate slowness is what protects against fast password guessing. A faster result would mean a weaker configuration, so the short wait is a feature, not a problem.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Is HMAC-SHA-1 still safe to use with PBKDF2?</div>
+          <div class="faq-question">What do I need to store to verify a password later?</div>
           <div class="faq-answer">
-            While collision attacks against raw SHA-1 are well-documented (e.g., the SHAttered attack), HMAC-SHA-1 does not rely on collision resistance; it relies on PRF pseudorandomness. Consequently, PBKDF2-HMAC-SHA-1 is not broken in the same way raw SHA-1 is. However, because NIST has deprecated SHA-1 across all federal systems, all modern deployments should use HMAC-SHA-256 or HMAC-SHA-512.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What does "Zero Network Egress" mean for this tool?</div>
-          <div class="faq-answer">
-            "Zero Network Egress" means that no data—not your passphrase, not your custom salt, not the generated symmetric key—is ever transmitted over an HTTP connection, WebSocket, or third-party tracking beacon. All derivation occurs in your local workstation's volatile RAM via <code>crypto.subtle.deriveBits</code>. You can disconnect your internet connection entirely and this tool will continue to function.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does PBKDF2 protect against rainbow table attacks?</div>
-          <div class="faq-answer">
-            Rainbow tables rely on precomputing hash values for millions of common passwords. Because PBKDF2 incorporates a unique, random salt for every user, an attacker would have to generate an entirely new multi-terabyte rainbow table for every individual user account, neutralizing the economic viability of precomputed lookups.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can I decrypt data if I forget the PBKDF2 iteration count or salt?</div>
-          <div class="faq-answer">
-            No. The mathematical beauty and brutality of cryptographic key derivation is that changing even a single bit of the salt, or altering the iteration count by 1, produces a completely unrecognizable, uncorrelated output bitstream. Without the exact salt, iteration count, and passphrase, data encrypted with the derived key is permanently unrecoverable.
+            The derived key plus its parameters: the PRF (hash), the iteration count, the salt and the key length. PBKDF2's raw output isn't self-describing like Argon2's encoded string, so you must record those values yourself to recompute and compare.
           </div>
         </div>
       </section>
