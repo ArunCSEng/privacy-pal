@@ -6,8 +6,8 @@
   
   <title>Shamir's Secret Sharing Scheme (SSSS) — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="Shamir's Secret Sharing Scheme (SSSS) — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Split sensitive passphrases, seed phrases, or cryptographic private keys into (k, n) threshold shares and reconstruct payloads offline in browser RAM using Shamir's Secret Sharing over Galois Field GF(256). Zero network egress." />
-  <meta name="keywords" content="shamir secret sharing, ssss online, threshold cryptography, split secret into shares, reconstruct shamir shares, gf256 polynomial secret sharing, lagrange interpolation cryptography, client side secret splitter, bitdark" />
+  <meta name="description" content="Split a secret into shares with Shamir's Secret Sharing (any k of n reconstruct, k-1 reveal nothing) and recombine them, all in your browser. Information-theoretic security. Nothing is uploaded." />
+  <meta name="keywords" content="shamir secret sharing, ssss, threshold cryptography, k of n shares, split master key, gf(256) secret sharing, recover seed, secret splitting" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/shamir/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/shamir/" />
   <meta property="og:title" content="Shamir's Secret Sharing Scheme (SSSS) — Offline Key Threshold Vault | BitDark" />
-  <meta property="og:description" content="Partition secrets into k-of-n threshold cryptographic shares and reconstruct original plaintexts locally in your browser memory. 100% Client-Side with zero tracking or network egress." />
+  <meta property="og:description" content="Split and recombine secrets with Shamir's Secret Sharing locally — any k of n shares reconstruct, fewer reveal nothing, with honest notes on thresholds and integrity." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/shamir/" />
   <meta name="twitter:title" content="Shamir's Secret Sharing Scheme (SSSS) | BitDark" />
-  <meta name="twitter:description" content="Generate and recombine Shamir's threshold cryptographic shares locally over Galois Field GF(256). Zero tracking, zero logging." />
+  <meta name="twitter:description" content="Split a secret into k-of-n shares with Shamir's Secret Sharing in your browser. Fewer than k reveal nothing; nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Shamir's Secret Sharing Scheme (SSSS) Tool",
         "url": "https://bitdark.net/tools/crypto/shamir/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Cryptographic utility to partition sensitive strings, seed phrases, or master encryption keys into k-of-n threshold shares and reconstruct them via Galois Field GF(256) polynomial interpolation directly in local browser RAM."
+        "description": "Browser-based Shamir's Secret Sharing tool that splits a secret into n GF(256) shares with a k-of-n threshold and reconstructs it from any k shares via Lagrange interpolation."
       },
       {
         "@type": "TechArticle",
-        "headline": "Shamir's Secret Sharing Architecture: Finite Field Arithmetic, Threshold Cryptography, and Operational Key Custody",
+        "headline": "Shamir's Secret Sharing: Thresholds, Information-Theoretic Security, and What Shares Don't Carry",
         "url": "https://bitdark.net/tools/crypto/shamir/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-03",
-        "description": "Comprehensive cryptographic guide on Shamir's Secret Sharing Scheme (SSSS), Galois Field GF(256) arithmetic, Lagrange basis polynomial interpolation, operational key escrow, and multi-custody disaster recovery architecture."
+        "dateModified": "2026-11-09",
+        "description": "What Shamir's Secret Sharing does, why fewer than k shares leak zero information, a reproducible k-of-n worked example, the two things shares don't carry (threshold and integrity), and safe use."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is Shamir's Secret Sharing Scheme (SSSS)?",
+            "name": "What do the threshold and total share numbers mean?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Shamir's Secret Sharing Scheme is an information-theoretically secure threshold cryptographic algorithm created by Adi Shamir in 1979. It splits a master secret into n distinct parts (shares) such that any k shares (the threshold) are sufficient to reconstruct the secret, while any subset of k - 1 or fewer shares reveals absolutely zero information about the secret."
+              "text": "Total (n) is how many shares you create; threshold (k) is how many are needed to reconstruct. \"3 of 5\" makes five shares, any three of which rebuild the secret while any two reveal nothing. Choose k for how much collusion you want to resist and n for redundancy against lost shares."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is arithmetic performed over Galois Field GF(256) rather than ordinary numbers?",
+            "name": "Is this more secure than encrypting the secret?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Using standard integer or floating-point arithmetic leaks order-of-magnitude bounds and introduces severe rounding inaccuracies. In a finite field such as GF(256), arithmetic is mathematically closed within 8-bit bytes (0 to 255). This guarantees uniform probability distributions, satisfying Claude Shannon's definition of perfect secrecy."
+              "text": "It's a different guarantee. With fewer than k shares, Shamir's scheme leaks zero information — mathematically, not just \"hard to break.\" Encryption protects a secret behind a single key; secret sharing removes the single point of failure by requiring a quorum. They're often combined."
             }
           },
           {
             "@type": "Question",
-            "name": "What happens if someone obtains k - 1 shares?",
+            "name": "What if I combine fewer shares than the threshold?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Mathematically, possessing k - 1 shares yields zero bits of advantage. Because every possible secret byte is equally likely to complete the polynomial over GF(256), brute-forcing the remaining share is equivalent to guessing the secret completely from scratch."
+              "text": "You get a wrong result, not the secret — and the tool can't warn you, because the threshold isn't stored in the shares. Always remember k and bring at least that many. Keeping a checksum of the real secret lets you confirm a reconstruction is correct."
             }
           },
           {
             "@type": "Question",
-            "name": "Can Shamir's Secret Sharing detect tampered or forged shares?",
+            "name": "Will it detect a corrupted or fake share?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Standard SSSS is not verifiable. If an attacker submits a corrupted or forged share during reconstruction, the mathematical interpolation will complete without error but will output pseudo-random, unusable garbage data. Verifiable Secret Sharing (VSS) schemes, such as Feldman's or Pedersen's schemes, add cryptographic commitments to detect corrupted shares."
+              "text": "No. This is plain Shamir sharing with no authentication, so a bad share just yields a wrong secret rather than an error. If you need to detect tampering, store a separate hash of the secret, or use a scheme that adds integrity checks to each share."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my secret keys or generated shares ever sent to a server?",
+            "name": "Are my secret and shares sent anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates under an uncompromising zero-network-egress model. All random entropy generation, polynomial evaluation, and Lagrange interpolation execute exclusively within your local browser's volatile memory."
+              "text": "No. All splitting and combining run in your browser with its cryptographic random generator, and nothing is uploaded. For a high-value secret, do it on an offline, trusted device and keep the shares physically separated."
             }
           }
         ]
@@ -740,7 +740,7 @@
 
     <div class="tool-header">
       <h1>Shamir's Secret Sharing Scheme (SSSS)</h1>
-      <p>Partition master keys, mnemonics, or confidential payloads into (k, n) threshold cryptographic shares and reconstruct original plaintexts locally in browser memory using polynomial interpolation over Galois Field GF(256). 100% client-side, zero tracking, zero network egress.</p>
+      <p>Split a secret into shares using Shamir's Secret Sharing: any k of the n shares reconstruct it, while any k-1 reveal nothing at all. Useful for splitting a master key or recovery seed across people or locations. It runs entirely in your browser using GF(256) arithmetic.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -825,306 +825,63 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Information-Theoretic Security &amp; Custody Bounds:</strong> Shamir's Secret Sharing Scheme guarantees that possessing fewer than <em>k</em> threshold shares mathematically reveals exactly zero bits of information regarding the underlying secret. However, any entity or colluding faction possessing <em>k</em> or more shares can reconstruct the plaintext with absolute fidelity. SSSS does not natively provide share authentication or cheater detection; submitting an altered or forged share during reconstruction will yield corrupted, unrecoverable output without warning. Distribute shares across geographically isolated, legally segregated custody domains. All polynomial calculations execute strictly client-side within volatile browser memory.
+        <strong>Shares are secret material, and the scheme has no built-in integrity check.</strong> Any k shares together are the secret, so store them apart and carefully. The threshold k isn't stored in the shares — remember it, and combining fewer than k returns a wrong result, not a warning. A corrupted or forged share yields a wrong secret; keep a separate checksum to verify. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Custodial Dilemma: Eliminating Single Points of Failure</h2>
+      <h2>What Shamir's Secret Sharing Does</h2>
       <p>
-        In modern digital security, root secrets govern everything: master Bitcoin seed phrases (BIP-39 mnemonics), root Certificate Authority signing keys, disk encryption master passwords, cloud infrastructure break-glass credentials, and confidential database keys. The fundamental challenge of secret management is the conflict between <strong>confidentiality</strong> and <strong>availability</strong>.
+        Shamir's Secret Sharing splits a secret into <em>n</em> shares so that any <em>k</em> of them reconstruct it, but any <em>k−1</em> reveal nothing at all. You pick the threshold: "3 of 5" means you hand out five shares, any three rebuild the secret, and any two are useless. That gives you both resilience — you can lose some shares and still recover — and security, since compromising fewer than the threshold tells an attacker nothing. This tool splits and recombines secrets entirely in your browser.
       </p>
+
+      <h2>Why It's Mathematically Secure, Not Just "Hard"</h2>
       <p>
-        If you store a master secret in a single secure location—such as an encrypted hardware enclave or a bank vault—you protect confidentiality, but you introduce a catastrophic single point of failure (SPOF). Physical destruction, disaster, sudden loss of access, or human mortality permanently destroys access to the underlying assets. Conversely, if you replicate the secret across multiple independent backups to guarantee availability, you multiply your attack surface linearly: compromising any single replica immediately compromises the entire system.
+        The scheme is built on a simple fact about polynomials: it takes exactly <em>k</em> points to define a degree-(k−1) curve. The secret is hidden as the constant term of a random polynomial of that degree; each share is one point on the curve. With <em>k</em> points you can interpolate the curve and read off the secret; with <em>k−1</em> points, every possible secret is still equally consistent with what you hold. That's <strong>information-theoretic</strong> security — fewer than <em>k</em> shares give zero information, not merely "computationally hard to crack." The arithmetic is done byte-by-byte in the GF(256) finite field (the same field AES uses), so any secret, text or binary, can be split.
       </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        Traditional naive approaches to splitting secrets, such as cutting a 64-character hex key into two 32-character halves, fail cryptographically. In an $M$-character key, giving half of it to Custodian A reduces the brute-force search space from $16^{64}$ to $16^{32}$ for Custodian A—a reduction of over 77 orders of magnitude. Custodian A now possesses enormous partial knowledge, completely violating the requirement for information-theoretic privacy.
-      </p>
-      <p>
-        In 1979, Israeli cryptographer Adi Shamir published his landmark paper, <em>"How to Share a Secret"</em>, introducing <strong>Shamir's Secret Sharing Scheme (SSSS)</strong>. SSSS is a $(k, n)$ threshold cryptography scheme that solves the custodial dilemma with mathematical perfection:
+        Set threshold 3, total shares 5, and a secret such as <code>Attack at dawn!</code>. Splitting produces five <code>XX-…</code> shares. Switch to Combine and:
       </p>
       <ul>
-        <li><strong>Threshold Quorum ($k$):</strong> Any $k$ shares chosen from the total pool of $n$ shares can immediately and deterministically reconstruct the master secret.</li>
-        <li><strong>Information-Theoretic Perfect Secrecy ($&lt; k$):</strong> Anyone possessing $k - 1$ or fewer shares learns <strong>strictly zero bits</strong> of information about the secret. Even an adversary possessing limitless, post-quantum supercomputing resources cannot distinguish the true secret from any other arbitrary payload of the same length.</li>
-        <li><strong>Fault Tolerance ($n - k$):</strong> Up to $n - k$ shares can be lost, burned, or permanently corrupted without compromising the ability to recover the secret.</li>
+        <li>Paste <strong>any three</strong> of the five shares → the original secret comes back exactly, including Unicode characters.</li>
+        <li>Paste <strong>only two</strong> → you do <em>not</em> get the secret; the result is unrelated bytes (often flagged as invalid text).</li>
       </ul>
-
-      <h2>Mathematical Foundation: Polynomial Interpolation over Galois Fields</h2>
       <p>
-        The elegance of Shamir's scheme stems from basic Euclidean coordinate geometry: <strong>two points uniquely define a line, three points define a parabola, and in general, $k$ distinct points uniquely define a polynomial of degree $k - 1$.</strong>
+        That difference between two and three shares is the whole point working in front of you — the threshold is a hard line, not a gradual reveal.
       </p>
 
-      <h3>1. The Geometric Intuition</h3>
+      <h2>Two Things the Shares Don't Carry</h2>
       <p>
-        Suppose you want to protect a secret value $S$ using a $(3, 5)$ threshold scheme. Because the threshold is $k = 3$, we construct a polynomial of degree $k - 1 = 2$ (a parabola):
-      </p>
-      <pre><code>f(x) = a0 + a1*x + a2*x^2</code></pre>
-      <p>
-        We embed our secret $S$ directly into the constant term: $a_0 = S$. Next, we generate random coefficients $a_1$ and $a_2$ from a cryptographically secure random number generator (CSPRNG).
-      </p>
-      <p>
-        To create $n = 5$ shares, we evaluate the polynomial at five distinct non-zero values of $x$ (for example, $x = 1, 2, 3, 4, 5$):
+        Worth understanding before you rely on it:
       </p>
       <ul>
-        <li>Share 1: $(1, f(1))$</li>
-        <li>Share 2: $(2, f(2))$</li>
-        <li>Share 3: $(3, f(3))$</li>
-        <li>Share 4: $(4, f(4))$</li>
-        <li>Share 5: $(5, f(5))$</li>
+        <li><strong>The threshold isn't stored in the shares.</strong> You have to remember <em>k</em> yourself. If you combine fewer than <em>k</em> shares, the tool can't know you're short — it interpolates what you gave it and returns a <em>wrong</em> secret (here, often an invalid-text error), not a "need more shares" message.</li>
+        <li><strong>There's no integrity check.</strong> A corrupted, mistyped or deliberately forged share won't be detected; it simply produces a wrong secret. If tampering is a concern, store a separate checksum of the real secret (or of each share) so you can confirm a correct reconstruction.</li>
       </ul>
-      <p>
-        If an investigator possesses only two points—say $(1, f(1))$ and $(2, f(2))$—an infinite number of distinct parabolic curves can pass through those two points. Each of those infinite parabolas intercepts the vertical axis ($x = 0$) at a different point $a_0 = f(0)$. Consequently, having two points gives zero mathematical hint as to which value represents $S$. Only when a third point is provided does the system collapse into a single, unambiguous parabolic curve, immediately revealing the intercept $f(0) = S$.
-      </p>
 
-      <h3>2. Why Real Numbers Fail: The Necessity of Galois Field $\text{GF}(256)$</h3>
-      <p>
-        In school geometry, polynomials are evaluated over real numbers ($\mathbb{R}$) or rational numbers ($\mathbb{Q}$). In digital cryptography, real numbers cannot be used for two critical reasons:
-      </p>
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li><strong>Information Leakage:</strong> Evaluating points over real numbers leaks order-of-magnitude bounds. For example, if $f(1) = 150$ and $f(2) = 280$, the secret $f(0)$ is bounded within a certain numerical range, meaning $k - 1$ shares provide partial information.</li>
-        <li><strong>Floating-Point Precision Loss:</strong> Computers approximate real numbers with floating-point representations (IEEE 754), resulting in rounding artifacts that destroy cryptographic precision during division.</li>
-      </ol>
-      <p>
-        To achieve perfect secrecy and exact arithmetic, Shamir's scheme operates over a <strong>Finite Field</strong>, also known as a <strong>Galois Field</strong> ($\text{GF}(p)$ or $\text{GF}(2^m)$). BitDark implements the industry-standard finite field <strong>$\text{GF}(2^8)$ (or $\text{GF}(256)$)</strong>, the exact mathematical field used by the Advanced Encryption Standard (AES / Rijndael, FIPS 197).
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Operation in $\text{GF}(256)$</th>
-              <th>Mathematical Mechanism</th>
-              <th>Hardware Implementation</th>
-              <th>Properties</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Addition ($\oplus$)</strong></td>
-              <td>Polynomial addition modulo 2</td>
-              <td>Bitwise XOR (<code>a ^ b</code>)</td>
-              <td>Commutative, associative, self-inverse ($a \oplus a = 0$).</td>
-            </tr>
-            <tr>
-              <td><strong>Subtraction ($\ominus$)</strong></td>
-              <td>Identical to Addition in characteristic 2</td>
-              <td>Bitwise XOR (<code>a ^ b</code>)</td>
-              <td>$a \ominus b \equiv a \oplus b$. No borrowing operations.</td>
-            </tr>
-            <tr>
-              <td><strong>Multiplication ($\otimes$)</strong></td>
-              <td>Polynomial multiplication modulo irreducible polynomial $P(x)$</td>
-              <td>Log / Antilog lookup tables (Generator $g = 3$)</td>
-              <td>Closed within byte space $[0, 255]$. Invertible for all non-zero elements.</td>
-            </tr>
-            <tr>
-              <td><strong>Division ($\oslash$)</strong></td>
-              <td>Multiplication by multiplicative inverse: $a \otimes b^{-1}$</td>
-              <td>Difference of logarithms modulo 255</td>
-              <td>Division by zero is strictly undefined and prohibited.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p>
-        The field $\text{GF}(256)$ is defined using Rijndael's irreducible reduction polynomial:
-      </p>
-      <pre><code>P(x) = x^8 + x^4 + x^3 + x + 1   (Hexadecimal: 0x11B, Binary: 100011011)</code></pre>
-      <p>
-        Because every element in $\text{GF}(256)$ fits into an 8-bit byte ($0 \text{ to } 255$), any arbitrary string, binary key, or text document can be split byte-by-byte independently. For a secret of length $L$ bytes, the engine executes $L$ independent polynomial generations.
-      </p>
-
-      <h2>Worked Example: Step-by-Step Mathematical Reconstruction</h2>
-      <p>
-        To understand the exact mechanics executed inside your browser memory, let us walk through a complete, verifiable $(2, 3)$ threshold example over $\text{GF}(256)$ for a single byte.
-      </p>
-      <p>
-        Suppose our secret byte is the ASCII character <code>'K'</code> (Decimal: 75, Hex: <code>0x4B</code>). We configure a threshold of $k = 2$ and total shares $n = 3$.
-      </p>
-
-      <h3>Step 1: Constructing the Polynomial</h3>
-      <p>
-        Since $k = 2$, our polynomial is degree $k - 1 = 1$ (a straight line in $\text{GF}(256)$):
-      </p>
-      <pre><code>f(x) = a0 ⊕ (a1 ⊗ x)</code></pre>
-      <p>
-        We set $a_0 = 75$ (the secret). The CSPRNG generates a random non-zero coefficient $a_1$, say $a_1 = 42$ (Hex: <code>0x2A</code>). The equation becomes:
-      </p>
-      <pre><code>f(x) = 75 ⊕ (42 ⊗ x)</code></pre>
-
-      <h3>Step 2: Evaluating the Shares</h3>
-      <p>
-        We calculate points for participants at coordinates $x = 1$, $x = 2$, and $x = 3$ using $\text{GF}(256)$ arithmetic:
-      </p>
-      <ul>
-        <li>
-          <strong>Share 1 ($x = 1$):</strong><br />
-          $f(1) = 75 \oplus (42 \otimes 1) = 75 \oplus 42 = 01001011_2 \oplus 00101010_2 = 01100001_2 = 97$ (Hex: <code>0x61</code>).<br />
-          Share 1 output format: <code>01-61</code>
-        </li>
-        <li>
-          <strong>Share 2 ($x = 2$):</strong><br />
-          In $\text{GF}(256)$, multiplying by $2$ corresponds to a left-shift by 1: $42 \ll 1 = 84$ (no reduction required since $84 &lt; 256$).<br />
-          $f(2) = 75 \oplus 84 = 01001011_2 \oplus 01010100_2 = 00011111_2 = 31$ (Hex: <code>0x1F</code>).<br />
-          Share 2 output format: <code>02-1f</code>
-        </li>
-        <li>
-          <strong>Share 3 ($x = 3$):</strong><br />
-          $42 \otimes 3 = (42 \otimes 2) \oplus (42 \otimes 1) = 84 \oplus 42 = 126$.<br />
-          $f(3) = 75 \oplus 126 = 01001011_2 \oplus 01111110_2 = 00110101_2 = 53$ (Hex: <code>0x35</code>).<br />
-          Share 3 output format: <code>03-35</code>
-        </li>
-      </ul>
-
-      <h3>Step 3: Lagrange Interpolation at $x = 0$</h3>
-      <p>
-        Now, assume Custodian 1 (holding <code>01-61</code>) and Custodian 3 (holding <code>03-35</code>) collaborate to recover the secret byte. They possess two points: $(x_1, y_1) = (1, 97)$ and $(x_2, y_2) = (3, 53)$.
-      </p>
-      <p>
-        According to Lagrange's Interpolation Formula, the value of the polynomial at $x = 0$ is:
-      </p>
-      <pre><code>S = f(0) = (y1 ⊗ L1(0)) ⊕ (y2 ⊗ L2(0))</code></pre>
-      <p>
-        Where the Lagrange basis polynomials evaluated at $x = 0$ are:
-      </p>
-      <pre><code>L1(0) = x2 ⊘ (x2 ⊕ x1) = 3 ⊘ (3 ⊕ 1) = 3 ⊘ 2
-L2(0) = x1 ⊘ (x1 ⊕ x2) = 1 ⊘ (1 ⊕ 3) = 1 ⊘ 2</code></pre>
-      <p>
-        Looking up values in the $\text{GF}(256)$ log/exp tables:
-      </p>
-      <ul>
-        <li>$3 \oslash 2 = 142$ (Hex: <code>0x8E</code>)</li>
-        <li>$1 \oslash 2 = 141$ (Hex: <code>0x8D</code>)</li>
-      </ul>
-      <p>
-        Now, multiply each share value by its respective basis weight and XOR the products:
-      </p>
-      <pre><code>Term 1 = y1 ⊗ L1(0) = 97 ⊗ 142 = 177 (Hex: 0xB1)
-Term 2 = y2 ⊗ L2(0) = 53 ⊗ 141 = 234 (Hex: 0xEA)
-
-S = Term 1 ⊕ Term 2 = 177 ⊕ 234 = 10110001_2 ⊕ 11101010_2 = 01001011_2 = 75</code></pre>
-      <p>
-        Decimal 75 in ASCII corresponds precisely to <code>'K'</code>. The original secret byte is recovered without rounding errors or numeric drift.
-      </p>
-
-      <h2>How to Use This Tool</h2>
-      <p>
-        The BitDark SSSS engine is designed for rapid, secure offline operation. Follow these instructions:
-      </p>
-      <ol>
-        <li>
-          <strong>Splitting a Master Key or Secret:</strong>
-          <ul>
-            <li>Ensure the <strong>Split Secret</strong> tab is active.</li>
-            <li>Define the <strong>Threshold Shares ($k$)</strong>: The minimum number of shares needed to reconstruct your secret (e.g., $3$).</li>
-            <li>Define the <strong>Total Shares ($n$)</strong>: The total number of shares to generate (e.g., $5$). Must be $\ge k$ and $\le 255$.</li>
-            <li>Enter your sensitive plaintext in the <strong>Secret Payload</strong> box (e.g., a 24-word BIP-39 seed phrase or private key).</li>
-            <li>Click <strong>Generate Shares</strong>. The tool generates $n$ lines formatted as <code>XX-HEXSTRING</code>, where <code>XX</code> is the 2-digit hex coordinate $x$ and the remaining string is the hex-encoded evaluation $y$.</li>
-            <li>Click <strong>Copy Output</strong> and securely distribute each share to a separate physical location or custodian.</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Reconstructing a Secret:</strong>
-          <ul>
-            <li>Select the <strong>Combine Shares</strong> tab.</li>
-            <li>Paste at least $k$ shares into the <strong>Shares Payload</strong> box (one per line, or as a JSON array of strings).</li>
-            <li>Click <strong>Reconstruct Secret</strong>.</li>
-            <li>The engine validates coordinate integrity, verifies share lengths, executes Lagrange interpolation across all byte positions, decodes the resulting UTF-8 buffer, and outputs the plaintext.</li>
-          </ul>
-        </li>
+        <li><strong>Split:</strong> choose the threshold and total share count, enter the secret, and generate the shares.</li>
+        <li><strong>Distribute</strong> the shares to separate people or locations, and record the threshold separately — you'll need it to recombine.</li>
+        <li><strong>Combine:</strong> paste at least <em>k</em> shares (one per line) and reconstruct the secret.</li>
+        <li><strong>Verify</strong> the result matches what you expect; with no built-in integrity check, a known checksum is the way to be sure.</li>
       </ol>
 
-      <h2>High-Security Operational Scenarios</h2>
-      <p>
-        Threshold cryptography is widely used across mission-critical security workflows:
-      </p>
+      <h2>Using It Safely</h2>
       <ul>
-        <li><strong>Cryptocurrency Master Seed Vaults:</strong> Splitting a 12-word or 24-word hardware wallet seed phrase into a 3-of-5 threshold. One share kept in a personal home safe, one in a bank safe deposit box, one with a legal representative, one with a trusted family member, and one hidden at a secondary property. Any three can recover the funds if disaster strikes, but no two colluding parties can steal them.</li>
-        <li><strong>Executive "Two-Man Rule" Key Escrow:</strong> Requiring an emergency database decryption key or infrastructure shutdown authorization to be co-signed by at least 2 of 4 executive officers (e.g., CISO, CTO, VP Engineering, CEO).</li>
-        <li><strong>Break-Glass Cloud Recovery:</strong> Cloud identity root credentials (e.g., AWS Organization root account) can be partitioned across geographically dispersed regional teams to prevent unilateral insider threats.</li>
-        <li><strong>Digital Estate Planning:</strong> Protecting passwords and master password vaults for heirs without granting premature access during the owner's lifetime.</li>
-      </ul>
-
-      <h2>Architectural Comparison: SSSS vs Multi-Sig vs MPC vs Timelock</h2>
-      <p>
-        It is critical to distinguish Shamir's Secret Sharing from adjacent threshold architectures:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Architecture</th>
-              <th>Underlying Mechanism</th>
-              <th>Assembly Requirement</th>
-              <th>Blockchain / Platform Dependency</th>
-              <th>Primary Threat Vector</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Shamir's Secret Sharing (SSSS)</strong></td>
-              <td>Polynomial interpolation over finite field $\text{GF}(256)$</td>
-              <td><strong>Centralized:</strong> Plaintext secret must be assembled in memory to execute operations.</td>
-              <td><strong>None:</strong> 100% agnostic. Works on any arbitrary text, file, or key.</td>
-              <td>Compromise of the machine where reconstruction occurs.</td>
-            </tr>
-            <tr>
-              <td><strong>Multi-Signature (Multi-Sig)</strong></td>
-              <td>Application-level smart contract logic (e.g., Bitcoin Script, Ethereum Safe)</td>
-              <td><strong>Decentralized:</strong> Each signer holds an independent private key; keys never combine.</td>
-              <td><strong>High:</strong> Tied directly to specific blockchain protocols.</td>
-              <td>Smart contract bugs, high transaction fees on every operation.</td>
-            </tr>
-            <tr>
-              <td><strong>Multi-Party Computation (MPC-TSS)</strong></td>
-              <td>Distributed threshold signatures (e.g., GG20, FROST, Schnorr/ECDSA)</td>
-              <td><strong>Decentralized:</strong> Signatures are generated collaboratively; master key never exists in one place.</td>
-              <td><strong>Low:</strong> Outputs standard single signatures compatible with existing chains.</td>
-              <td>High computational complexity, network roundtrip latency during signing.</td>
-            </tr>
-            <tr>
-              <td><strong>Timelock Encryption</strong></td>
-              <td>Verifiable Delay Functions (VDF) or sequential squaring puzzles</td>
-              <td><strong>Automated:</strong> Secret decrypts automatically after elapsed computational time.</td>
-              <td><strong>Medium:</strong> Requires specialized time-beacon networks.</td>
-              <td>Unpredictable hardware speedups cracking puzzles ahead of time.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Common Pitfalls and Operational Vulnerabilities</h2>
-      <p>
-        While Shamir's Secret Sharing Scheme is mathematically unbreakable, human and architectural implementations frequently introduce severe failure modes:
-      </p>
-      <ul>
-        <li>
-          <strong>The Reconstruction Compromise Point:</strong> The most significant vulnerability in classical SSSS is that <em>the secret must be assembled in a single location to be used</em>. If you reconstruct a master mnemonic on an internet-connected, malware-infected workstation, an attacker with a keylogger or memory dumper can steal the recovered secret immediately. Always perform reconstruction on an air-gapped machine running a live bootable OS.
-        </li>
-        <li>
-          <strong>Lack of Authenticity (Cheater Attack):</strong> Classical SSSS does not provide tamper detection. If three people meet to reconstruct a key, and Custodian 3 maliciously or accidentally submits an invalid share, the Lagrange interpolation will output pseudo-random noise. Neither Custodian 1 nor Custodian 2 can mathematically determine who provided the corrupt share without out-of-band verification.
-        </li>
-        <li>
-          <strong>Share Re-use Across Rotations:</strong> If you rotate or generate a new secret, you must discard all previous shares. Combining shares originating from two different splits of the same secret will corrupt the calculation.
-        </li>
-        <li>
-          <strong>Insecure Share Transmission:</strong> Emailing or messaging shares across standard communication channels (Slack, SMS, Discord) exposes them to surveillance. If two shares are transmitted through the same cloud account, that account becomes a consolidated point of failure.
-        </li>
-        <li>
-          <strong>Accidental Duplicate $x$-Coordinates:</strong> Each share must possess a strictly distinct evaluation coordinate $x_i$. If two shares share the same $x$ index, interpolation fails due to a division-by-zero error ($x_i \oplus x_j = 0$).
-        </li>
+        <li><strong>Shares are secret material.</strong> Together, <em>k</em> of them <em>are</em> the secret, so store and transmit them as carefully as the secret itself and keep them apart.</li>
+        <li><strong>Good for high-value keys</strong> — a master key, recovery seed or root credential split so no one person holds it alone. For those, generate and split on an offline, trusted device.</li>
+        <li><strong>Choose k and n deliberately.</strong> A higher threshold resists collusion; more total shares add redundancy against loss. Balance the two for your situation.</li>
+        <li><strong>Runs locally.</strong> Splitting and combining happen in your browser — nothing is uploaded — which is why it's safe for real secrets.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
@@ -1132,58 +889,37 @@ S = Term 1 ⊕ Term 2 = 177 ⊕ 234 = 10110001_2 ⊕ 11101010_2 = 01001011_2 = 7
         <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is Shamir's Secret Sharing Scheme (SSSS)?</div>
+          <div class="faq-question">What do the threshold and total share numbers mean?</div>
           <div class="faq-answer">
-            Shamir's Secret Sharing is an algorithm created by Adi Shamir in 1979 that splits a secret into $n$ unique shares. Any $k$ of these shares can reconstruct the original secret, while possessing fewer than $k$ shares reveals zero information about the secret.
+            Total (n) is how many shares you create; threshold (k) is how many are needed to reconstruct. "3 of 5" makes five shares, any three of which rebuild the secret while any two reveal nothing. Choose k for how much collusion you want to resist and n for redundancy against lost shares.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does SSSS achieve "Information-Theoretic Security"?</div>
+          <div class="faq-question">Is this more secure than encrypting the secret?</div>
           <div class="faq-answer">
-            Information-theoretic security means that the secrecy does not rely on unproven computational hardness assumptions (like factoring large primes in RSA). Because all calculations occur over the finite field $\text{GF}(256)$, any subset of $k - 1$ shares is mathematically compatible with every possible secret byte with exactly equal probability. Even a quantum computer with unlimited power cannot deduce a single bit.
+            It's a different guarantee. With fewer than k shares, Shamir's scheme leaks zero information — mathematically, not just "hard to break." Encryption protects a secret behind a single key; secret sharing removes the single point of failure by requiring a quorum. They're often combined.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why must the threshold k be greater than 1?</div>
+          <div class="faq-question">What if I combine fewer shares than the threshold?</div>
           <div class="faq-answer">
-            If $k = 1$, any single share would immediately equal the secret, completely eliminating the security of distribution. A threshold of at least $k = 2$ ensures that no individual can compromise or reconstruct the secret alone.
+            You get a wrong result, not the secret — and the tool can't warn you, because the threshold isn't stored in the shares. Always remember k and bring at least that many. Keeping a checksum of the real secret lets you confirm a reconstruction is correct.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the maximum number of shares I can create?</div>
+          <div class="faq-question">Will it detect a corrupted or fake share?</div>
           <div class="faq-answer">
-            In Galois Field $\text{GF}(256)$, evaluation coordinates are non-zero 8-bit integers. Since $x = 0$ is reserved for the secret itself ($f(0) = S$), the maximum number of distinct participant coordinates $x \in [1, 255]$ is 255 shares.
+            No. This is plain Shamir sharing with no authentication, so a bad share just yields a wrong secret rather than an error. If you need to detect tampering, store a separate hash of the secret, or use a scheme that adds integrity checks to each share.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I use this tool to back up a 12 or 24-word crypto seed phrase?</div>
+          <div class="faq-question">Are my secret and shares sent anywhere?</div>
           <div class="faq-answer">
-            Yes. Enter your seed phrase into the secret payload field, choose your threshold parameters (such as $3$-of-$5$), and generate shares. Each share can be written onto paper, stamped onto stainless steel plates, and distributed across distinct geographical locations.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does this tool save or log my secrets or shares?</div>
-          <div class="faq-answer">
-            Never. BitDark operates entirely client-side. The JavaScript and Web Crypto execution takes place in your local browser sandbox. No input, shares, or intermediate polynomial states are ever transmitted across any network connection. You can disconnect your internet connection or inspect browser DevTools to verify zero network requests.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What happens if I enter more than k shares during reconstruction?</div>
-          <div class="faq-answer">
-            The tool automatically handles supersets of shares. If you supply $k + 1$ or more valid shares from the same split, the interpolation engine verifies coordinate consistency and reconstructs the authentic secret seamlessly.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How are shares formatted in this tool?</div>
-          <div class="faq-answer">
-            Each share is exported in the standard hexadecimal format <code>XX-HEXSTRING</code>. The first two hex characters (<code>XX</code>) represent the 1-byte participant evaluation coordinate ($x \in [1, 255]$). The characters following the hyphen are the hex-encoded polynomial evaluations ($y$) corresponding to each byte of your secret payload.
+            No. All splitting and combining run in your browser with its cryptographic random generator, and nothing is uploaded. For a high-value secret, do it on an offline, trusted device and keep the shares physically separated.
           </div>
         </div>
       </section>
