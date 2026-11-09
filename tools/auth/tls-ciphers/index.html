@@ -6,8 +6,8 @@
   
   <title>SSL/TLS Cipher Suite Decoder & Analyzer — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="SSL/TLS Cipher Suite Decoder & Analyzer — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Decode, parse, and analyze IANA and OpenSSL TLS cipher suite hex codes and names locally in browser RAM. Inspect Key Exchange, Authentication, Bulk AEAD Ciphers, and PFS integrity with zero network egress." />
-  <meta name="keywords" content="tls cipher decoder, ssl cipher suite analyzer, iana tls cipher list, openssl cipher name converter, aead cipher audit, tls 1.3 ciphers, forward secrecy, ecdhe rsa gcm, sweet32 poodle detector, cryptanalysis" />
+  <meta name="description" content="Decode a TLS cipher suite by IANA name, OpenSSL name or hex code: key exchange, authentication, encryption, forward secrecy and a security grade. Covers TLS 1.2 and 1.3. Runs in your browser." />
+  <meta name="keywords" content="tls cipher suite decoder, cipher suite analyzer, iana openssl cipher name, forward secrecy, aead gcm chacha20, weak cipher check, tls 1.3 suites, ecdhe" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/tls-ciphers/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/tls-ciphers/" />
   <meta property="og:title" content="SSL/TLS Cipher Suite Decoder & Analyzer — BitDark" />
-  <meta property="og:description" content="Deconstruct, translate, and audit TLS 1.2 and TLS 1.3 cipher suite parameters in local memory. 100% Client-Side with zero tracking or telemetry." />
+  <meta property="og:description" content="Decode and grade TLS cipher suites across IANA, OpenSSL and hex forms, with clear notes on forward secrecy and AEAD. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/tls-ciphers/" />
   <meta name="twitter:title" content="SSL/TLS Cipher Suite Decoder & Analyzer | BitDark" />
-  <meta name="twitter:description" content="Audit cryptographic strength, Forward Secrecy, AEAD primitives, and wire bytes in browser RAM. 100% private." />
+  <meta name="twitter:description" content="Decode and grade TLS cipher suites in your browser. Covers TLS 1.2 and 1.3." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "SSL/TLS Cipher Suite Decoder & Analyzer",
         "url": "https://bitdark.net/tools/auth/tls-ciphers/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive cybersecurity utility to decode, translate, and evaluate IANA standard names, OpenSSL strings, and hexadecimal wire bytes of SSL/TLS cipher suites directly in volatile browser memory."
+        "description": "Browser-based TLS cipher suite decoder that maps IANA, OpenSSL and hex forms and grades suites by forward secrecy and AEAD use across TLS 1.2 and 1.3."
       },
       {
         "@type": "TechArticle",
-        "headline": "SSL/TLS Cipher Suite Architecture: Cryptographic Primitives, TLS 1.3 Redesign, and Protocol Hardening",
+        "headline": "Decoding TLS Cipher Suites: Key Exchange, AEAD, Forward Secrecy and Grading",
         "url": "https://bitdark.net/tools/auth/tls-ciphers/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-03-20",
-        "dateModified": "2026-11-03",
-        "description": "Comprehensive technical guide on Transport Layer Security (TLS) cipher suite mechanics, Ephemeral Diffie-Hellman forward secrecy, Authenticated Encryption with Associated Data (AEAD), and defensive handshake configuration."
+        "dateModified": "2026-11-09",
+        "description": "How to read a TLS cipher suite, how the tool grades suites by forward secrecy and AEAD, a worked example, how to choose suites for a server, and the tool's limits."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is an SSL/TLS cipher suite and what role does it serve?",
+            "name": "What is forward secrecy and why does it matter?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A TLS cipher suite is a standardized set of cryptographic algorithms that network peers negotiate during the TLS handshake. It coordinates four foundational operations: key exchange (how symmetric session keys are established), authentication (how server and client identities are verified via digital certificates), bulk encryption (how data packets are encrypted), and message integrity (how tampering is detected)."
+              "text": "Forward secrecy means each session uses a temporary key, so recording encrypted traffic today and stealing the server's private key later won't decrypt it. It needs an ephemeral key exchange (ECDHE or DHE). Suites using static RSA lack it, which is why they're graded F here."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the cipher suite structure differ between TLS 1.2 and TLS 1.3?",
+            "name": "Why is a static-RSA AES-GCM suite graded F when AES-GCM is strong?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In TLS 1.2, cipher suites define all four algorithms in a single monolithic string (such as TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256). In TLS 1.3 (RFC 8446), cipher suites specify only the symmetric bulk encryption algorithm and the HKDF PRF hash (such as TLS_AES_256_GCM_SHA384). Key exchange mechanisms and certificate signature algorithms are negotiated independently via TLS extensions."
+              "text": "The cipher is fine; the key exchange isn't. Static RSA provides no forward secrecy, so a later key compromise exposes past sessions. The grade reflects the whole suite, not just the bulk cipher."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is Perfect Forward Secrecy (PFS) mandatory for modern secure communications?",
+            "name": "What's the difference between AEAD and CBC suites?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Perfect Forward Secrecy ensures that compromise of a server's long-term private signing key does not retroactively compromise past session traffic. Suites using Ephemeral Diffie-Hellman (ECDHE or DHE) generate unique, transient keys for every single session that are discarded immediately after negotiation, preventing adversaries from passively recording encrypted sessions and decrypting them later."
+              "text": "AEAD modes (GCM, ChaCha20-Poly1305, CCM) combine encryption and integrity in one step and avoid the padding and timing problems that have affected CBC-with-HMAC suites. Prefer AEAD; CBC suites are graded as merely tolerated."
             }
           },
           {
             "@type": "Question",
-            "name": "Why are CBC (Cipher Block Chaining) cipher suites deprecated?",
+            "name": "How do I enter a cipher by its hex code?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "CBC mode ciphers in TLS require explicit padding, making implementations highly vulnerable to timing side-channel attacks and padding oracle exploits such as POODLE, Lucky Thirteen, and Goldendoodle. Modern configurations mandate AEAD (Authenticated Encryption with Associated Data) ciphers like AES-GCM and ChaCha20-Poly1305 that eliminate padding vulnerabilities."
+              "text": "Enter the two wire bytes as a pair, for example 0x00,0x9E or 0x13,0x01. That's the form the tool matches reliably. You can also use the full IANA or OpenSSL name."
             }
           },
           {
             "@type": "Question",
-            "name": "Does BitDark send my inspected cipher queries to remote servers?",
+            "name": "Does this tool check my server's TLS configuration?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped, zero-network-egress security model. All hexadecimal parsing, IANA/OpenSSL cross-referencing, and primitive security evaluations execute strictly inside your local browser memory space."
+              "text": "No. It decodes and grades a cipher suite you type, entirely in your browser, and makes no connection to any server. To see what your server actually offers and negotiates, run SSL Labs or testssl.sh against it."
             }
           }
         ]
@@ -741,7 +741,7 @@
 
     <div class="tool-header">
       <h1>SSL/TLS Cipher Suite Decoder & Analyzer</h1>
-      <p>Deconstruct, translate, and assess cryptographic parameters inside TLS 1.2 and TLS 1.3 cipher suites locally in browser memory. Inspect Key Exchange, Authentication, Bulk AEAD Encryption, and Forward Secrecy status across IANA and OpenSSL syntaxes.</p>
+      <p>Decode a TLS cipher suite into its parts (key exchange, authentication, encryption and integrity), see its forward-secrecy status and a security grade, and translate between IANA names, OpenSSL names and wire codes. Everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -826,407 +826,133 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Static cipher suite translation does not substitute for dynamic network vulnerability scanning.</strong> This offline analyzer assesses cryptographic parameters against established security baselines (such as RFC 8446, NIST SP 800-52r2, and PCI-DSS requirements). It does not audit live TLS handshake negotiations, server-side downgrade protections, cipher ordering priorities, TLS renegotiation vulnerabilities, or certificate trust chains. Always validate production endpoints using comprehensive auditing frameworks like OpenSSL CLI, <code>testssl.sh</code>, or Qualys SSL Labs.
+        <strong>This decodes a cipher suite you type; it doesn't test your server.</strong> It covers a curated set of common suites and parses unrecognised names heuristically, which can be approximate. To check what your server actually offers, run a scanner such as SSL Labs or testssl.sh. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>Understanding Transport Layer Security and Cipher Suite Mechanics</h2>
+      <h2>How to Read a Cipher Suite</h2>
       <p>
-        In contemporary network engineering, Transport Layer Security (TLS)—and its deprecated predecessor, Secure Sockets Layer (SSL)—constitutes the cryptographic bedrock of the internet. Whenever a client browser establishes a connection with a web server, connects to a microservice API, or initiates a database session over TLS, the two endpoints must coordinate four independent mathematical challenges:
-      </p>
-      <ol>
-        <li><strong>Key Exchange:</strong> How two parties establish a shared, secret symmetric encryption key across an insecure public channel without an eavesdropper deducing it.</li>
-        <li><strong>Authentication:</strong> How the client mathematically verifies that the server (and optionally the client in mTLS) actually owns the identity declared in its X.509 public-key certificate.</li>
-        <li><strong>Bulk Encryption:</strong> How application-layer payloads (HTTP requests, streaming audio, transactional data) are encrypted symmetrically to guarantee confidentiality.</li>
-        <li><strong>Integrity (MAC):</strong> How the receiving endpoint verifies that data was not intercepted, forged, truncated, or tampered with in flight.</li>
-      </ol>
-      <p>
-        A <strong>cipher suite</strong> is an exact, standardized specification that bundles these distinct mathematical primitives into a cohesive configuration profile. When a client sends a <code>ClientHello</code> packet during the initial TLS handshake, it transmits an ordered array of 2-byte hexadecimal integers representing every cipher suite it supports. The server responds in its <code>ServerHello</code> with the single suite it has selected based on its local configuration priorities.
-      </p>
-
-      <h2>How to Use the BitDark TLS Cipher Suite Decoder</h2>
-      <p>
-        Analyzing cryptographic parameters with this tool is designed to be frictionless, exhaustive, and entirely private:
-      </p>
-      <ol>
-        <li>
-          <strong>Input Cipher Identifier:</strong> Type or paste any representation of a cipher suite into the input field. The parser accepts:
-          <ul>
-            <li><strong>IANA Standard Names:</strong> e.g., <code>TLS_AES_256_GCM_SHA384</code> or <code>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</code></li>
-            <li><strong>OpenSSL Names:</strong> e.g., <code>ECDHE-RSA-AES128-GCM-SHA256</code> or <code>AES256-SHA256</code></li>
-            <li><strong>Hexadecimal Wire Bytes:</strong> e.g., <code>0x1301</code>, <code>1301</code>, <code>0xC02F</code>, or comma-separated wire byte notation <code>0x00,0x2F</code></li>
-          </ul>
-        </li>
-        <li>
-          <strong>Select Preset Quick Samples:</strong> For rapid reference, click any of the preset buttons above the input to evaluate standard TLS 1.3, recommended TLS 1.2 ECDHE, legacy CBC, or deprecated 3DES configurations.
-        </li>
-        <li>
-          <strong>Inspect Parameter Matrix:</strong> Review the generated metadata grid detailing the key exchange mechanism, authentication primitive, bulk cipher bit strength, MAC hashing algorithm, and forward secrecy rating.
-        </li>
-        <li>
-          <strong>Review Cryptographic Grade:</strong> Verify the operational security grade (A+ Secure, B Weak/Tolerated, or F Insecure/Deprecated) alongside compliance flags for modern hardening standards.
-        </li>
-        <li>
-          <strong>Export Structured JSON:</strong> Click "Export Parsed JSON" or "Copy JSON" to obtain structured metadata for documentation, DevSecOps pipelines, or security audit logs.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Operational Scenarios</h2>
-      <p>
-        Cryptographic configuration auditing is a mandatory discipline across multiple technical sectors:
-      </p>
-      <ul>
-        <li>
-          <strong>DevSecOps & Web Server Hardening:</strong> System administrators configuring Nginx (<code>ssl_ciphers</code>), Apache (<code>SSLCipherSuite</code>), Envoy, or HAProxy need to translate OpenSSL configuration strings into formal IANA standards and verify that no deprecated legacy ciphers remain active.
-        </li>
-        <li>
-          <strong>Regulatory Compliance Auditing (PCI-DSS & FIPS):</strong> Payment Card Industry Data Security Standard (PCI-DSS 4.0) strictly mandates the deprecation of early TLS versions and insecure ciphers (such as 3DES, RC4, static RSA, and CBC-mode ciphers). Security auditors use this tool to quickly verify whether a discovered suite meets compliance criteria.
-        </li>
-        <li>
-          <strong>Penetration Testing & Network Forensics:</strong> When inspecting Wireshark or PCAP packet captures, analysts encounter raw 2-byte hexadecimal identifiers in the <code>ClientHello</code> and <code>ServerHello</code> packets. Translating <code>0xC0,0x30</code> to its human-readable algorithm suite reveals the exact strength of the intercepted session.
-        </li>
-        <li>
-          <strong>Debugging Handshake Failures (SSL Handshake Errors):</strong> When legacy enterprise clients cannot communicate with modernized servers (or vice versa), developers inspect the intersecting cipher list to isolate algorithmic incompatibilities.
-        </li>
-        <li>
-          <strong>Post-Quantum Cryptography (PQC) Migration:</strong> As organizations prepare for hybrid post-quantum key exchanges (such as X25519MLKEM768), security architects must track the separation of key encapsulation mechanisms from bulk record encryption.
-        </li>
-      </ul>
-
-      <h2>Deconstructing Cipher Suite Naming Conventions</h2>
-      <p>
-        One of the most confusing aspects of SSL/TLS engineering is the discrepancy between <strong>IANA Standard Naming</strong> and <strong>OpenSSL Syntax</strong>. Understanding these structures is essential for systems engineering.
-      </p>
-
-      <h3>1. The TLS 1.2 Monolithic Naming Scheme</h3>
-      <p>
-        In TLS 1.0 through TLS 1.2, cipher suites followed a monolithic naming convention where every component of the cryptographic pipeline was explicitly concatenated into the name:
-      </p>
-      <pre><code>TLS_ [Key Exchange] _ [Authentication] _WITH_ [Bulk Encryption & Mode] _ [MAC Hash]
-
-Example: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-  * TLS         : Protocol context
-  * ECDHE       : Ephemeral Elliptic Curve Diffie-Hellman Key Exchange (Guarantees PFS)
-  * RSA         : Server certificate authentication signature mechanism
-  * AES_128_GCM : Advanced Encryption Standard with 128-bit key in Galois/Counter Mode (AEAD)
-  * SHA256      : Secure Hash Algorithm (256-bit) used for Pseudo-Random Function (PRF)</code></pre>
-
-      <p>
-        In contrast, OpenSSL historically abbreviated these names to save configuration space:
-      </p>
-      <pre><code>OpenSSL Equivalent: ECDHE-RSA-AES128-GCM-SHA256</code></pre>
-
-      <h3>2. The TLS 1.3 Architectural Redesign (RFC 8446)</h3>
-      <p>
-        TLS 1.3 revolutionized this architecture. In legacy TLS, combining all combinations of key exchange (RSA, DHE, ECDHE), authentication (RSA, ECDSA, Ed25519), and encryption led to a combinatorial explosion of over 300 registered cipher suites, many of which were dangerously insecure.
-      </p>
-      <p>
-        RFC 8446 decoupled key exchange and authentication from the cipher suite entirely:
-      </p>
-      <ul>
-        <li><strong>Key Exchange</strong> is negotiated independently through the <code>supported_groups</code> and <code>key_share</code> handshake extensions (e.g., X25519, secp256r1).</li>
-        <li><strong>Authentication</strong> is negotiated independently through the <code>signature_algorithms</code> extension (e.g., <code>ecdsa_secp256r1_sha256</code>, <code>rsa_pss_rsae_sha256</code>).</li>
-      </ul>
-      <p>
-        Consequently, TLS 1.3 defines only <strong>5 standardized cipher suites</strong>, each specifying exclusively the symmetric record cipher and the hash algorithm used for HKDF (HMAC-based Key Derivation Function):
+        A TLS 1.2 cipher suite name lists the algorithms a connection will use. Reading <code>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</code> left to right:
       </p>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Wire Hex</th>
-              <th>IANA Standard Name</th>
-              <th>Symmetric Cipher</th>
-              <th>Key Length</th>
-              <th>HKDF PRF Hash</th>
-            </tr>
+            <tr><th>Part</th><th>Role</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><code>0x13,0x01</code></td>
-              <td>TLS_AES_128_GCM_SHA256</td>
-              <td>AES-GCM (AEAD)</td>
-              <td>128 bits</td>
-              <td>SHA-256</td>
-            </tr>
-            <tr>
-              <td><code>0x13,0x02</code></td>
-              <td>TLS_AES_256_GCM_SHA384</td>
-              <td>AES-GCM (AEAD)</td>
-              <td>256 bits</td>
-              <td>SHA-384</td>
-            </tr>
-            <tr>
-              <td><code>0x13,0x03</code></td>
-              <td>TLS_CHACHA20_POLY1305_SHA256</td>
-              <td>ChaCha20-Poly1305 (AEAD)</td>
-              <td>256 bits</td>
-              <td>SHA-256</td>
-            </tr>
-            <tr>
-              <td><code>0x13,0x04</code></td>
-              <td>TLS_AES_128_CCM_SHA256</td>
-              <td>AES-CCM (AEAD)</td>
-              <td>128 bits</td>
-              <td>SHA-256</td>
-            </tr>
-            <tr>
-              <td><code>0x13,0x05</code></td>
-              <td>TLS_AES_128_CCM_8_SHA256</td>
-              <td>AES-CCM-8 (AEAD, 8-byte tag)</td>
-              <td>128 bits</td>
-              <td>SHA-256</td>
-            </tr>
+            <tr><td><code>ECDHE</code></td><td>Key exchange. The "E" means ephemeral, which gives forward secrecy</td></tr>
+            <tr><td><code>RSA</code></td><td>Authentication: the certificate type that proves the server's identity</td></tr>
+            <tr><td><code>AES_128_GCM</code></td><td>Bulk encryption. GCM is an AEAD mode (encryption plus built-in integrity)</td></tr>
+            <tr><td><code>SHA256</code></td><td>The hash used for the handshake (in AEAD suites, not a separate MAC)</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Cryptographic Primitives: The Four Pillars Evaluated</h2>
-      
-      <h3>1. Key Exchange & Perfect Forward Secrecy (PFS)</h3>
       <p>
-        The key exchange mechanism dictates how the master secret is derived:
-      </p>
-      <ul>
-        <li>
-          <strong>Static RSA Key Exchange (Severely Insecure / Broken):</strong> In legacy suites like <code>TLS_RSA_WITH_AES_128_CBC_SHA</code> (<code>0x00,0x2F</code>), the client encrypts a pre-master secret using the server's public RSA key. If an adversary passively records encrypted network traffic for years and subsequently steals or subpoenas the server's private key, they can decrypt <em>every single historical session</em> retroactively.
-        </li>
-        <li>
-          <strong>Ephemeral Diffie-Hellman (ECDHE / DHE) (Mandatory for Modern Security):</strong> Ephemeral key exchange generates temporary mathematical key pairs on both endpoints for each distinct connection. The private components are erased from volatile RAM immediately after the handshake completes. Even if the server's long-term certificate private key is subsequently leaked, past recorded traffic remains mathematically impossible to decrypt. This property is known as <strong>Perfect Forward Secrecy (PFS)</strong>.
-        </li>
-      </ul>
-
-      <h3>2. Authentication (Digital Signatures)</h3>
-      <p>
-        Authentication guarantees that the client is not conversing with a Man-in-the-Middle (MitM) attacker:
-      </p>
-      <ul>
-        <li><strong>RSA:</strong> The traditional industry standard. Certificates using 2048-bit or 4096-bit RSA keys sign handshake parameters using PKCS#1 v1.5 or RSA-PSS padding.</li>
-        <li><strong>ECDSA (Elliptic Curve Digital Signature Algorithm):</strong> Offers equivalent or superior cryptographic strength to RSA with dramatically smaller key sizes (e.g., a 256-bit ECC key equals a 3072-bit RSA key), reducing packet sizes and accelerating handshake processing.</li>
-        <li><strong>Anonymous Key Exchanges (aNULL / ADH):</strong> Ciphers without authentication provide zero MITM protection and are universally prohibited in production environments.</li>
-      </ul>
-
-      <h3>3. Symmetric Bulk Encryption: AEAD vs CBC Mode</h3>
-      <p>
-        Once keys are established, the symmetric bulk cipher encrypts actual application data:
-      </p>
-      <ul>
-        <li>
-          <strong>AEAD (Authenticated Encryption with Associated Data) (Modern Benchmark):</strong> Primitives such as AES-GCM (Galois/Counter Mode) and ChaCha20-Poly1305 perform encryption and authentication simultaneously in a single mathematical pass. They generate an unforgeable authentication tag over the ciphertext and optional header metadata. AEAD completely eliminates the concept of padding, rendering entire classes of side-channel attacks obsolete.
-        </li>
-        <li>
-          <strong>CBC (Cipher Block Chaining) Mode (Legacy / Deprecated):</strong> CBC ciphers require fixed block sizes (typically 16 bytes for AES). If plaintext does not evenly align with 16-byte blocks, PKCS#7 padding is appended. This padding mechanism introduces timing discrepancies when decrypting invalid padding, exposing servers to catastrophic padding oracle exploits.
-        </li>
-      </ul>
-
-      <h3>4. Message Authentication Code (MAC) & PRF Hash</h3>
-      <p>
-        In legacy non-AEAD suites, data integrity relies on an independent HMAC algorithm (e.g., HMAC-SHA1 or HMAC-SHA256). In modern AEAD suites, MAC integrity is integrated directly into the AEAD tag, and the declared hash (such as SHA-256 or SHA-384) governs the Pseudo-Random Function (PRF) and key derivation HKDF trees.
+        TLS 1.3 simplified this. Its five suites, such as <code>TLS_AES_128_GCM_SHA256</code>, name only the bulk cipher and hash, because TLS 1.3 always uses ephemeral key exchange and AEAD. This tool decodes both, and maps between IANA names, OpenSSL names and the two-byte wire codes.
       </p>
 
-      <h2>Historical Vulnerabilities That Shaped Modern TLS</h2>
-      <p>
-        The deprecation of legacy cipher suites was driven by a series of high-profile cryptographic exploits:
-      </p>
-
+      <h2>How the Tool Grades a Suite</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Attack Name</th>
-              <th>Target Primitive</th>
-              <th>Vulnerability Mechanism</th>
-              <th>Defensive Remediation</th>
-            </tr>
+            <tr><th>Grade</th><th>Meaning</th><th>Examples</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>POODLE (2014)</strong></td>
-              <td>SSL 3.0 / TLS CBC Mode</td>
-              <td>Padding Oracle On Downgraded Legacy Encryption exploits deterministic padding byte validation to decrypt session cookies byte-by-byte.</td>
-              <td>Completely disable SSL 3.0 and all CBC-mode cipher suites. Enforce AEAD.</td>
-            </tr>
-            <tr>
-              <td><strong>Lucky Thirteen (2013)</strong></td>
-              <td>TLS CBC HMAC Verification</td>
-              <td>Subtle microsecond differences in the time taken to check HMAC vs invalid padding enable timing side-channel plaintext recovery.</td>
-              <td>Migrate exclusively to AEAD suites (AES-GCM / ChaCha20-Poly1305).</td>
-            </tr>
-            <tr>
-              <td><strong>SWEET32 (2016)</strong></td>
-              <td>64-bit Block Ciphers (3DES, Blowfish)</td>
-              <td>Birthday attack on 64-bit block ciphers causes collision after $2^{32}$ blocks (~32 GB of data), enabling cookie extraction.</td>
-              <td>Disable <code>0x000A</code> (Triple-DES / 3DES) and enforce 128-bit or 256-bit block sizes.</td>
-            </tr>
-            <tr>
-              <td><strong>DROWN (2016)</strong></td>
-              <td>SSLv2 Export RSA Ciphers</td>
-              <td>Cross-protocol Bleichenbacher attack leveraging servers that share RSA keys across modern TLS and legacy SSLv2.</td>
-              <td>Disable SSLv2/SSLv3 at server root configuration; separate certificate keys.</td>
-            </tr>
-            <tr>
-              <td><strong>ROBOT (2017)</strong></td>
-              <td>Static RSA Key Exchange</td>
-              <td>Return Of Bleichenbacher's Oracle Threat allows adaptive chosen-ciphertext attacks against static RSA encryption.</td>
-              <td>Enforce Ephemeral Diffie-Hellman (ECDHE); disable static RSA key exchange.</td>
-            </tr>
-            <tr>
-              <td><strong>Logjam (2015)</strong></td>
-              <td>Export DHE (512/768-bit DH)</td>
-              <td>Pre-computation attacks on weak Diffie-Hellman prime groups shared across thousands of web servers.</td>
-              <td>Use ECDHE with Curve25519 or NIST P-256, or ensure DHE uses minimum 2048-bit primes.</td>
-            </tr>
+            <tr><td><strong>A+</strong></td><td>AEAD cipher with forward secrecy</td><td>All TLS 1.3 suites; ECDHE/DHE with GCM or ChaCha20-Poly1305</td></tr>
+            <tr><td><strong>B</strong></td><td>Forward secrecy, but older CBC mode with an HMAC</td><td>ECDHE-RSA-AES128-SHA, ECDHE-RSA-AES256-SHA256</td></tr>
+            <tr><td><strong>F</strong></td><td>No forward secrecy, or a broken primitive</td><td>Static-RSA suites, 3DES, RC4, NULL (no encryption)</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Worked Examples: Cryptographic Suite Walkthroughs</h2>
       <p>
-        Let us trace how the BitDark analyzer dissects specific real-world cipher suites.
+        Two things drive a low grade. <strong>No forward secrecy</strong>: a static-RSA suite like <code>TLS_RSA_WITH_AES_128_GCM_SHA256</code> is graded F even though AES-GCM itself is strong, because a future compromise of the server key would expose past recorded traffic. <strong>Broken primitives</strong>: RC4 and 3DES are retired, and NULL means no encryption at all.
       </p>
 
-      <h3>Worked Example 1: Modern Gold-Standard TLS 1.3 Suite (0x13,0x01)</h3>
+      <h2>Worked Example</h2>
       <p>
-        Entering <code>0x1301</code> or <code>TLS_AES_128_GCM_SHA256</code> produces the following structural breakdown:
+        Enter a few suites (use IANA or OpenSSL names, or the wire bytes as a pair like <code>0x00,0x9E</code>):
       </p>
-      <pre><code>{
-  "iana_name": "TLS_AES_128_GCM_SHA256",
-  "openssl_name": "TLS_AES_128_GCM_SHA256",
-  "hex_identifier": "0x1301",
-  "wire_bytes": "0x13,0x01",
-  "supported_protocol": "TLS 1.3",
-  "cryptographic_primitives": {
-    "key_exchange": "ECDHE / DHE (Negotiated via Extensions)",
-    "authentication": "Any TLS 1.3 Signature Scheme (ECDSA / RSA-PSS / Ed25519)",
-    "bulk_encryption": "AES-GCM (128-bit)",
-    "integrity_mac": "AEAD Integrated (SHA-256 HKDF PRF)",
-    "authenticated_encryption_aead": true,
-    "perfect_forward_secrecy": true
-  },
-  "security_evaluation": {
-    "grade": "SECURE",
-    "production_recommended": true,
-    "compliance_notes": "Optimal balance of hardware-accelerated throughput (AES-NI) and cryptographic strength."
-  }
-}</code></pre>
-
-      <h3>Worked Example 2: Legacy Broken Static RSA Suite (0x00,0x2F)</h3>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr><th>Input</th><th>Decoded</th><th>Grade</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>0x13,0x01</code></td><td>TLS_AES_128_GCM_SHA256 (TLS 1.3)</td><td>A+</td></tr>
+            <tr><td><code>ECDHE-RSA-AES128-GCM-SHA256</code></td><td>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</td><td>A+</td></tr>
+            <tr><td><code>ECDHE-RSA-AES128-SHA</code></td><td>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA</td><td>B (CBC)</td></tr>
+            <tr><td><code>0x00,0x9C</code></td><td>TLS_RSA_WITH_AES_128_GCM_SHA256 (static RSA)</td><td>F (no forward secrecy)</td></tr>
+            <tr><td><code>DES-CBC3-SHA</code></td><td>TLS_RSA_WITH_3DES_EDE_CBC_SHA</td><td>F (3DES)</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        Entering <code>0x002F</code>, <code>0x00,0x2F</code>, or <code>TLS_RSA_WITH_AES_128_CBC_SHA</code> reveals severe security liabilities:
-      </p>
-      <pre><code>{
-  "iana_name": "TLS_RSA_WITH_AES_128_CBC_SHA",
-  "openssl_name": "AES128-SHA",
-  "hex_identifier": "0x002F",
-  "wire_bytes": "0x00,0x2F",
-  "supported_protocol": "SSL 3.0 - TLS 1.2",
-  "cryptographic_primitives": {
-    "key_exchange": "Static RSA (Non-Ephemeral)",
-    "authentication": "RSA",
-    "bulk_encryption": "AES-CBC (128-bit)",
-    "integrity_mac": "HMAC-SHA1",
-    "authenticated_encryption_aead": false,
-    "perfect_forward_secrecy": false
-  },
-  "security_evaluation": {
-    "grade": "INSECURE",
-    "production_recommended": false,
-    "compliance_notes": "Fails Forward Secrecy; vulnerable to retroactive decryption and Lucky Thirteen side-channels."
-  }
-}</code></pre>
-
-      <h2>Recommended Production Cipher Configurations (2026 Baseline)</h2>
-      <p>
-        To align your web infrastructure with modern security benchmarks (Mozilla Modern Profile, NIST SP 800-52r2, and PCI-DSS 4.0), use the following configuration templates:
+        These are the results the tool gives. Enter wire codes as a byte pair (<code>0x00,0x9E</code>), which is the form the tool matches reliably.
       </p>
 
-      <h3>Nginx Hardened Configuration</h3>
-      <pre><code># Enforce TLS 1.2 and TLS 1.3 strictly
-ssl_protocols TLSv1.2 TLSv1.3;
+      <h2>How to Use the Analyzer</h2>
+      <ol>
+        <li><strong>Paste a cipher suite</strong> by IANA name, OpenSSL name, or two-byte code, or click a preset.</li>
+        <li><strong>Read the breakdown</strong>: key exchange, authentication, encryption, integrity, forward secrecy and protocol version.</li>
+        <li><strong>Use it to translate names</strong> between the IANA form (in RFCs and packet captures) and the OpenSSL form (in server configs).</li>
+        <li><strong>Prefer A+ suites</strong> and disable F ones in your server configuration.</li>
+      </ol>
 
-# TLS 1.3 Ciphersuites (Automatic in OpenSSL 1.1.1+, explicitly declare if needed)
-ssl_conf_command Ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256;
-
-# TLS 1.2 Intermediate Hardened Ciphers (Strictly ECDHE + AEAD)
-ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305';
-ssl_prefer_server_ciphers off;</code></pre>
-
-      <h3>Apache HTTPD Hardened Configuration</h3>
-      <pre><code># Disable all protocols prior to TLS 1.2
-SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
-
-# Enforce Modern AEAD Ciphers
-SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305
-SSLHonorCipherOrder off</code></pre>
+      <h2>Choosing Suites for a Server</h2>
+      <ul>
+        <li><strong>Enable TLS 1.3</strong> and, for TLS 1.2, keep only ECDHE suites with GCM or ChaCha20-Poly1305.</li>
+        <li><strong>Disable static RSA, CBC, 3DES, RC4 and NULL.</strong> Also disable SSL 3.0, TLS 1.0 and TLS 1.1.</li>
+        <li><strong>Follow a maintained baseline</strong> rather than hand-picking: the Mozilla SSL Configuration Generator produces current configs for common servers.</li>
+        <li><strong>Test the live server</strong> with a scanner such as SSL Labs or <code>testssl.sh</code>; this tool decodes a suite but doesn't connect to your server or see what it actually negotiates.</li>
+      </ul>
+      <p>
+        This reference covers a curated set of common suites. Names it doesn't recognise are parsed heuristically from the text, which can be approximate or wrong, so trust the decode only for suites it matches exactly, and verify your server with a dedicated scanner.
+      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does TLS 1.3 only have 5 cipher suites?</div>
+          <div class="faq-question">What is forward secrecy and why does it matter?</div>
           <div class="faq-answer">
-            TLS 1.3 removed all obsolete, insecure, and rarely used cryptographic algorithms (such as RC4, 3DES, static RSA, Diffie-Hellman with custom parameters, and CBC mode). By decoupling key exchange and authentication into independent handshake extensions, the standard eliminated the need for hundreds of redundant combinations. The 5 standardized suites cover 128-bit and 256-bit AES-GCM, ChaCha20-Poly1305, and AES-CCM.
+            Forward secrecy means each session uses a temporary key, so recording encrypted traffic today and stealing the server's private key later won't decrypt it. It needs an ephemeral key exchange (ECDHE or DHE). Suites using static RSA lack it, which is why they're graded F here.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between AES-GCM and ChaCha20-Poly1305?</div>
+          <div class="faq-question">Why is a static-RSA AES-GCM suite graded F when AES-GCM is strong?</div>
           <div class="faq-answer">
-            Both are state-of-the-art AEAD primitives. AES-GCM is exceptionally fast on modern processors (Intel, AMD, Apple Silicon, ARMv8+) that feature dedicated hardware instructions (AES-NI and CLMUL). ChaCha20-Poly1305 was designed by Daniel J. Bernstein for platforms lacking dedicated AES hardware (such as legacy mobile devices or microcontrollers), executing in constant time to prevent cache-timing attacks.
+            The cipher is fine; the key exchange isn't. Static RSA provides no forward secrecy, so a later key compromise exposes past sessions. The grade reflects the whole suite, not just the bulk cipher.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why should "ssl_prefer_server_ciphers" be turned OFF for TLS 1.3?</div>
+          <div class="faq-question">What's the difference between AEAD and CBC suites?</div>
           <div class="faq-answer">
-            In TLS 1.3, all supported cipher suites are cryptographically secure. The client typically has better knowledge of its own hardware capabilities (for example, whether its CPU supports hardware AES-NI or whether it benefits from ChaCha20). Allowing the client preference to dictate the cipher choice optimizes performance and battery consumption without sacrificing security.
+            AEAD modes (GCM, ChaCha20-Poly1305, CCM) combine encryption and integrity in one step and avoid the padding and timing problems that have affected CBC-with-HMAC suites. Prefer AEAD; CBC suites are graded as merely tolerated.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can an attacker force a client to negotiate a weaker cipher suite?</div>
+          <div class="faq-question">How do I enter a cipher by its hex code?</div>
           <div class="faq-answer">
-            In modern TLS implementations, downgrade attacks are mitigated by cryptographic mechanisms. In TLS 1.2 and TLS 1.3, the handshake concludes with a <code>Finished</code> message containing a verify_data hash over all preceding handshake messages. If an active attacker modified the cipher suite list in the <code>ClientHello</code>, the finished verification fails and the connection is aborted immediately.
+            Enter the two wire bytes as a pair, for example 0x00,0x9E or 0x13,0x01. That's the form the tool matches reliably. You can also use the full IANA or OpenSSL name.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does BitDark store or log my analyzed cipher queries?</div>
+          <div class="faq-question">Does this tool check my server's TLS configuration?</div>
           <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All hexadecimal conversions, regex matching, and database evaluations execute exclusively within your browser's private JavaScript memory space.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What does "wire bytes" mean in TLS ciphers?</div>
-          <div class="faq-answer">
-            During the network transmission of a TLS handshake, cipher suites are not transmitted as human-readable strings like "TLS_AES_128_GCM_SHA256". Instead, they are encoded as compact 2-byte (16-bit) unsigned integers. For example, <code>0x13, 0x01</code> represents <code>TLS_AES_128_GCM_SHA256</code> on the wire.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What makes Triple-DES (3DES / DES-CBC3-SHA) insecure?</div>
-          <div class="faq-answer">
-            3DES operates on an obsolete 64-bit block size. Due to the birthday bound, collisions in 64-bit block ciphers emerge after transmitting approximately $2^{32}$ blocks (~32 gigabytes of data). The SWEET32 attack demonstrated that an attacker monitoring long-lived HTTPS sessions can recover session cookies and sensitive tokens. Modern standards mandate a minimum 128-bit block size.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Is SHA-1 in cipher suites always a security risk?</div>
-          <div class="faq-answer">
-            While practical collision attacks (SHAttered) broke SHA-1 for digital certificate signatures, using HMAC-SHA1 in legacy cipher suites for record integrity does not directly suffer from collision attacks. However, because HMAC-SHA1 suites almost universally rely on legacy CBC encryption and lack AEAD, they are classified as weak or insecure under modern security baselines.
+            No. It decodes and grades a cipher suite you type, entirely in your browser, and makes no connection to any server. To see what your server actually offers and negotiates, run SSL Labs or testssl.sh against it.
           </div>
         </div>
       </section>
