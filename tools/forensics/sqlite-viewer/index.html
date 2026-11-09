@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Offline SQLite Database Viewer &amp; Inspector — Free Forensic Tool | BitDark</title>
-  <meta name="title" content="Offline SQLite Database Viewer &amp; Inspector — Free Forensic Tool | BitDark" />
-  <meta name="description" content="Open, query, and inspect SQLite (.db, .sqlite, .sqlite3) databases directly in your browser RAM. Zero uploads, zero telemetry, air-gapped WebAssembly engine." />
-  <meta name="keywords" content="sqlite viewer, sqlite online reader, client-side sqlite inspector, read sqlite browser offline, sqlite forensics tool, inspect sqlite schema, sqlite wasm viewer, browser history forensics, sql.js viewer, sqlite table export csv" />
+  <title>SQLite Database Viewer — Free In-Browser .db Inspector | BitDark</title>
+  <meta name="title" content="SQLite Database Viewer — Free In-Browser .db Inspector | BitDark" />
+  <meta name="description" content="Open a SQLite database (.db, .sqlite, .sqlite3) in your browser: browse tables, read the schema, run SQL and export CSV. Runs on sql.js (WebAssembly); your file is not uploaded." />
+  <meta name="keywords" content="sqlite viewer, open sqlite in browser, sql.js, sqlite inspector, browse sqlite tables, run sql on db file, sqlite schema viewer, sqlite to csv" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/forensics/sqlite-viewer/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/forensics/sqlite-viewer/" />
-  <meta property="og:title" content="Offline SQLite Database Viewer &amp; Inspector | BitDark" />
-  <meta property="og:description" content="Inspect schemas, browse tables, and execute SQL queries inside your browser WebAssembly sandbox. 100% private, zero network egress." />
+  <meta property="og:title" content="SQLite Database Viewer — In-Browser .db Inspector | BitDark" />
+  <meta property="og:description" content="Browse tables, read the schema and run SQL on a SQLite file in your browser with sql.js. Your database is not uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/forensics/sqlite-viewer/" />
-  <meta name="twitter:title" content="Offline SQLite Database Viewer | BitDark" />
-  <meta name="twitter:description" content="Client-side SQLite database reader and query inspector in WebAssembly. Zero uploads, zero tracking." />
+  <meta name="twitter:title" content="SQLite Database Viewer | BitDark" />
+  <meta name="twitter:description" content="Open a SQLite .db in your browser, browse tables, run SQL, export CSV. Your file is not uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,76 +31,64 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "Offline SQLite Database Viewer & Inspector",
+        "name": "SQLite Database Viewer",
         "url": "https://bitdark.net/tools/forensics/sqlite-viewer/",
-        "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Client-side forensic SQLite inspection and query utility running sql.js compiled to WebAssembly. Analyzes .db, .sqlite, and .sqlite3 files in volatile memory without server transfers."
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based SQLite viewer built on sql.js (SQLite compiled to WebAssembly): it opens a .db file in memory, lists tables and views, shows the schema, runs SQL and exports results to CSV, without uploading the database."
       },
       {
         "@type": "TechArticle",
-        "headline": "SQLite Binary Architecture, B-Tree Page Mechanics, Write-Ahead Logs, and Digital Forensics Triage",
+        "headline": "Opening a SQLite Database in the Browser: How It Works, What You Can Do, and the Limits",
         "url": "https://bitdark.net/tools/forensics/sqlite-viewer/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
         "datePublished": "2024-04-14",
-        "dateModified": "2026-11-06",
-        "description": "Comprehensive technical guide to the internal binary format of SQLite 3 database files, B-Tree structures, cell pointer arrays, freelists, WAL journal mechanics, and forensic data recovery."
+        "dateModified": "2026-11-10",
+        "description": "How this tool opens a SQLite file with sql.js in your browser, how to browse tables and run SQL safely against an in-memory copy, a worked example, and what it cannot do (deleted rows, WAL, encrypted databases)."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Are my database files uploaded to any server or cloud service?",
+            "name": "Is my database uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The BitDark SQLite Viewer runs entirely inside your browser's private WebAssembly memory sandbox using sql.js. The entire file is read into a local ArrayBuffer in RAM. Zero network packets, database rows, or metadata bytes are transmitted to any remote server."
+              "text": "No. Your database file is read into memory in your browser and never sent to a server. The one thing fetched over the network is the sql.js engine itself (its script and WebAssembly), loaded from a public CDN the first time the page runs; after that, opening and querying your file needs no network."
             }
           },
           {
             "@type": "Question",
-            "name": "Can executing SQL queries in this viewer corrupt or modify my original file on disk?",
+            "name": "Can running a query change my original file?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The browser operates strictly on an in-memory virtual image of the file. Any CREATE, DROP, UPDATE, or INSERT commands modify only the ephemeral WebAssembly memory buffer. Your original physical file stored on your hard drive remains completely read-only and untouched."
+              "text": "No. The tool works on an in-memory copy of the file. Even an UPDATE, INSERT, DROP or CREATE only changes that copy in the browser's memory; the file on your disk is not touched. Close or reload the page and the in-memory changes are gone."
             }
           },
           {
             "@type": "Question",
-            "name": "What causes the 'Missing SQLite format 3 header' error?",
+            "name": "Why does it say the file is not a valid SQLite database?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Every valid SQLite 3 database file begins with a mandatory 16-byte magic ASCII header: 'SQLite format 3\\0'. If a file has been encrypted (e.g., SQLCipher), corrupted, or saved as a plain SQL text script (.sql dump) rather than a compiled binary database, this header check will fail."
+              "text": "Every SQLite 3 file starts with the 16-byte header SQLite format 3\\0. If that is missing, the file is something else: a plain .sql text dump (open it as text, or import it), an encrypted database such as SQLCipher (sql.js cannot open it without the key), or a corrupted file. The tool checks this header before trying to open the database."
             }
           },
           {
             "@type": "Question",
-            "name": "How does SQLite store deleted records, and can they be viewed?",
+            "name": "Can it recover deleted rows?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "When a row is deleted in SQLite without PRAGMA secure_delete enabled, the database engine does not overwrite the data with zeros. Instead, it unlinks the cell from the B-Tree page and places the byte range onto a page-level freeblock chain or freelist page. The raw string and numeric data remain intact in the unallocated space until overwritten by new inserts or scrubbed via VACUUM."
+              "text": "No. This viewer runs normal SQL through sql.js, so it sees only live rows the database engine returns. Deleted rows can linger in a database's free space until overwritten, but reading them requires a carving tool that scans the raw pages; that is outside what this tool does."
             }
           },
           {
             "@type": "Question",
-            "name": "Why are Write-Ahead Log (-wal) files important when inspecting SQLite databases?",
+            "name": "Do I need the -wal and -shm files too?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In WAL mode, recent transactions are written to a companion -wal sidecar file rather than directly committed to the main .db file. If you inspect only the .db file without checking whether uncommitted transactions remain in the WAL journal, the database may appear out-of-date or missing recent evidence."
+              "text": "For a database in WAL mode, recent changes can live in a companion -wal file rather than in the main .db. This tool opens only the single .db file you give it, so if you open a .db whose recent writes are still in its -wal, you may see a slightly out-of-date picture. Checkpoint the database, or use a tool that reads the .db and -wal together, when that matters."
             }
           }
         ]
@@ -226,7 +214,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -855,7 +843,7 @@
 
     <div class="tool-header">
       <h1>Offline SQLite Database Viewer &amp; Inspector</h1>
-      <p>Inspect schemas, browse tables, and execute custom SQL queries locally inside your browser WebAssembly sandbox. Read SQLite (.db, .sqlite, .sqlite3) databases with zero network uploads, zero tracking, and complete forensic isolation.</p>
+      <p>Open a SQLite database (<code>.db</code>, <code>.sqlite</code>, <code>.sqlite3</code>) in your browser: browse tables, read the schema, run real SQL and export to CSV. It runs on sql.js (SQLite in WebAssembly) against an in-memory copy, so your original file is never changed and never uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -927,420 +915,130 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        All database operations execute strictly inside client-side memory using WebAssembly compiled binaries (sql.js). Users maintain sole responsibility for ensuring compliance with applicable data privacy, enterprise confidentiality, and forensic chain-of-custody protocols before opening or querying critical database files. When conducting legal forensics on evidentiary media, always verify digital hashes against write-blocked source disk images.
+        <strong>This opens and queries a live SQLite database; it is not a recovery or forensics suite.</strong> It reads the tables, views and schema that the database engine exposes and runs the SQL you type against an in-memory copy, so your original file is never changed. It does not recover deleted rows from free space, read the <code>-wal</code> write-ahead log alongside the <code>.db</code>, or open encrypted databases such as SQLCipher. The sql.js engine (script and WebAssembly) is fetched once from a public CDN, so the page needs the network to start; after that your file is handled only in your browser and is not uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them, and for evidentiary work verify hashes against a write-blocked source image.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article (2500+ Words) -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Ubiquity of SQLite in Modern Digital Forensics</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        SQLite is the most widely deployed software module in the history of computer science. Designed in the spring of 2000 by D. Richard Hipp for the United States Navy's guided missile destroyers, SQLite was engineered around a radical requirement: absolute reliability without a database administrator, without server daemon processes, and without external network configuration. Today, SQLite databases reside silently inside billions of smartphones, desktop web browsers, smart televisions, automotive telemetry modules, IoT controllers, and cloud orchestration layers.
+        SQLite packs an entire relational database &mdash; tables, indexes and data &mdash; into a single file, which is why it turns up everywhere: phone apps, browsers, and desktop software all store data in <code>.db</code>, <code>.sqlite</code> or <code>.sqlite3</code> files. This tool opens one in your browser so you can browse its tables, read the schema and run SQL against it, then export results to CSV. It is handy for a quick look at a database without installing anything, and for keeping a sensitive file on your own machine rather than uploading it to an online viewer.
       </p>
       <p>
-        In modern <strong>Digital Forensics and Incident Response (DFIR)</strong>, SQLite files represent the single most information-dense evidentiary artifacts available to an investigator. Every web navigation event in Google Chrome or Mozilla Firefox, every SMS and encrypted messaging chat log in Signal or WhatsApp (before local encryption), every geolocation track point in Apple iOS Health and Maps, and every system event log in modern Linux distributions is written directly to a binary SQLite container.
-      </p>
-      <p>
-        However, analyzing these files in corporate or intelligence environments presents a severe operational security dilemma: traditional desktop GUI viewers require administrative installation privileges, while online database converters transmit proprietary customer data, employee passwords, or evidentiary records across third-party cloud infrastructure. The BitDark Offline SQLite Viewer eliminates this threat vector entirely by compiling the entire SQLite C virtual machine into WebAssembly (Wasm), executing 100% of schema inspections and SQL queries inside your browser's private volatile RAM.
+        It runs on <a href="https://sql.js.org/" rel="noopener" target="_blank" style="color:var(--atom-cyan);">sql.js</a> &mdash; the real SQLite engine compiled to WebAssembly &mdash; so the SQL it runs is genuine SQLite. The engine loads from a CDN the first time the page opens; your database itself is read locally and never sent anywhere.
       </p>
 
-      <h2>How to Use the BitDark Offline SQLite Viewer</h2>
+      <h2>How It Works, Safely</h2>
       <p>
-        Conducting forensic analysis or schema diagnostics with the BitDark SQLite Viewer is intuitive, fast, and completely private:
+        When you open a file, the tool first checks the 16-byte header every SQLite 3 file begins with (<code>SQLite format 3\0</code>); if it is absent, the file is not a SQLite binary and the tool says so. It then loads the whole file into an <strong>in-memory copy</strong> inside the WebAssembly engine and lists the tables and views from <code>sqlite_master</code>. Every query you run &mdash; including ones that change data &mdash; acts on that in-memory copy only. The file on your disk stays exactly as it was, so you can experiment freely; reloading the page simply discards the working copy.
       </p>
+
+      <h2>Browsing, Querying and Exporting</h2>
+      <p>
+        Pick a table to see its rows, or write your own SQL &mdash; a filtered <code>SELECT</code>, a join, an aggregate &mdash; and run it. The schema view shows how each table is defined, and any result set can be exported to CSV. Because it is full SQLite, the usual tools are available: <code>PRAGMA table_info('t')</code> for columns, <code>SELECT sql FROM sqlite_master</code> for the full schema, and so on.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        You can make a tiny database to try it. With the <code>sqlite3</code> command line:
+      </p>
+      <pre><code>sqlite3 demo.db "CREATE TABLE users(id INTEGER PRIMARY KEY, name TEXT);
+INSERT INTO users(name) VALUES ('alice'), ('bob');"</code></pre>
+      <p>
+        Open <code>demo.db</code> here and the <code>users</code> table appears in the list; selecting it shows the two rows. Run <code>SELECT name FROM users WHERE id = 2;</code> and you get <code>bob</code>. Now run <code>DELETE FROM users WHERE id = 1;</code> &mdash; the result set updates to show only <code>bob</code>, but that change lives only in memory: reopen <code>demo.db</code> from disk and <code>alice</code> is still there, which is the clearest way to see that the tool never writes back to your file.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Load Target Database:</strong> Drag and drop any <code>.db</code>, <code>.sqlite</code>, <code>.sqlite3</code>, or <code>.sqlitedb</code> file onto the dropzone, or click the area to launch your system's native file picker.
-        </li>
-        <li>
-          <strong>Automated Header Verification &amp; Hashing:</strong> The parser immediately verifies the 16-byte magic identification header (<code>SQLite format 3\0</code>) and uses the hardware-accelerated W3C Web Crypto API to compute an SHA-256 fingerprint of the entire binary buffer.
-        </li>
-        <li>
-          <strong>In-Memory Virtual Machine Boot:</strong> The WebAssembly engine compiles the file into an in-memory database image. The left-hand panel lists all user tables and views, complete with an interactive real-time filter.
-        </li>
-        <li>
-          <strong>Inspect Tables &amp; Execute SQL:</strong> Click any table name in the sidebar to view the first 100 records. Type arbitrary SQL queries into the query editor (such as complex <code>JOIN</code> operations, <code>WHERE</code> clauses, or aggregations) and click "Execute SQL".
-        </li>
-        <li>
-          <strong>Schema Inspection &amp; CSV Export:</strong> Click "Inspect Schema" to review table columns, primary keys, and data types via SQLite's internal <code>PRAGMA table_info()</code>, or export sanitized, injection-defended query results to a standard RFC-4180 CSV file for external documentation.
-        </li>
+        <li><strong>Open a database</strong> &mdash; drag a <code>.db</code>/<code>.sqlite</code>/<code>.sqlite3</code> file onto the dropzone, or click to browse.</li>
+        <li><strong>Browse</strong> &mdash; pick a table from the list to see its rows, or view the schema.</li>
+        <li><strong>Query</strong> &mdash; type SQL in the editor and run it; results appear in the table below.</li>
+        <li><strong>Export</strong> &mdash; save a result set as CSV, or close the database and open another.</li>
       </ol>
 
-      <h2>When to Use This Tool: Investigative Threat Modeling &amp; Use Cases</h2>
-      <p>
-        Client-side SQLite inspection addresses critical workflows across defensive cybersecurity, incident investigation, and software engineering:
-      </p>
+      <h2>Where This Is Useful</h2>
       <ul>
-        <li>
-          <strong>Browser History &amp; Session Triage:</strong> Triage compromised workstation profiles by extracting navigation histories, download records, and autofill caches from Google Chrome's <code>History</code> database, Edge's <code>Web Data</code>, or Firefox's <code>places.sqlite</code> without contaminating system timestamps.
-        </li>
-        <li>
-          <strong>Mobile Application Forensics:</strong> Analyze unpacked Android APK and iOS application sandboxes. Inspect app-specific SQLite databases to recover local session tokens, cached API responses, and user chat databases during authorized security audits.
-        </li>
-        <li>
-          <strong>Malware Persistence Auditing:</strong> Inspect local Windows system databases—including Cortana caches, Notification Center SQLite databases (<code>wpndatabase.db</code>), and Windows Search index stores—to detect persistence mechanisms established by advanced persistent threat (APT) groups.
-        </li>
-        <li>
-          <strong>Air-Gapped &amp; Classified Network Investigation:</strong> Perform immediate database queries inside classified or SCIF environments where external internet access is prohibited and installing native binaries (like DB Browser for SQLite) violates strict system change-management policies.
-        </li>
-        <li>
-          <strong>Developer Database Prototyping:</strong> Quickly verify schema migrations, inspect SQLite dumps from automated test suites, and test analytical SQL queries without launching a terminal or spinning up database containers.
-        </li>
+        <li><strong>A quick look at app data:</strong> inspect a browser history file, a messaging app's store, or any application's SQLite database without a desktop tool.</li>
+        <li><strong>Sensitive databases stay local:</strong> an app database can hold personal data, so opening it in your own browser avoids uploading it to a web service.</li>
+        <li><strong>Ad-hoc querying:</strong> run a real SQL query over a <code>.db</code> you were handed, and export the answer, with nothing to install.</li>
+        <li><strong>Learning and testing:</strong> because changes are in-memory only, it is a safe place to try SQL against a copy of a real database.</li>
       </ul>
-
-      <h2>Deep Dive: Architecture of the SQLite Binary File Format</h2>
-      <p>
-        To perform competent forensic analysis, an investigator must understand how raw bytes on disk translate into logical tables. An SQLite 3 database file is not an arbitrary stream of records: it is structured as an array of fixed-size <strong>Pages</strong>, indexed from 1 to $N$. Page sizes are always a power of two between 512 and 65,536 bytes (with 4,096 bytes being the modern default).
-      </p>
-
-      <pre><code>+--------------------------------------------------------------------------+
-| Page 1: Database Header (100 Bytes) + Master Schema Table                |
-|  * 0x00 - 0x0F: Magic String "SQLite format 3\0"                          |
-|  * 0x10 - 0x11: Page Size (e.g., 0x1000 = 4096 bytes)                    |
-|  * 0x18 - 0x1B: File Change Counter (Increments on write)                |
-|  * 0x20 - 0x23: First Freelist Trunk Page Pointer                         |
-|  * 0x24 - 0x27: Total Freelist Pages Count                               |
-|  * 0x2C - 0x2F: Schema Cookie (Increments on DDL changes)                 |
-|  * 0x38 - 0x3B: Text Encoding (1 = UTF-8, 2 = UTF-16le, 3 = UTF-16be)    |
-|  * 0x44 - 0x63: Reserved for expansion (Must be zero)                    |
-+--------------------------------------------------------------------------+
-| Page 2 to Page N: B-Tree Pages (Interior Pages, Leaf Pages, Overflow)    |
-|  * Page Header (8 or 12 bytes): Page Type, Cell Count, Content Offset    |
-|  * Cell Pointer Array (Array of 2-byte offsets to payload cells)         |
-|  * Unallocated Free Space (Grows inward from Cell Pointers)              |
-|  * Cell Content Area (Grows backward from bottom of the page)            |
-+--------------------------------------------------------------------------+</code></pre>
-
-      <h3>1. The 100-Byte File Header</h3>
-      <p>
-        The first 100 bytes of Page 1 form the global database header. Crucial forensic fields include:
-      </p>
-      <ul>
-        <li><strong>Magic Header String (Offset 0x00, 16 bytes):</strong> Must match exactly <code>SQLite format 3\0</code> (ASCII bytes <code>53 51 4C 69 74 65 20 66 6F 72 6D 61 74 20 33 00</code>).</li>
-        <li><strong>Page Size (Offset 0x10, 2 bytes):</strong> Defines the size of every page in the file. A value of <code>1</code> represents 65,536 bytes.</li>
-        <li><strong>File Change Counter (Offset 0x18, 4 bytes):</strong> A 32-bit integer incremented each time a transaction commits. Comparing this counter between disk images taken at different times reveals whether writes occurred.</li>
-        <li><strong>Freelist Trunk &amp; Count (Offsets 0x20 &amp; 0x24, 8 bytes):</strong> Points to the head of the linked list of pages containing deleted, reusable database pages—the primary hunting ground for carving carved forensic records.</li>
-        <li><strong>Database Text Encoding (Offset 0x38, 4 bytes):</strong> Declares whether strings are encoded in UTF-8 (1), UTF-16 Little Endian (2), or UTF-16 Big Endian (3).</li>
-      </ul>
-
-      <h3>2. B-Tree Pages: Interior vs. Leaf Nodes</h3>
-      <p>
-        SQLite organizes all table records and indices into <strong>B-Trees</strong>. A B-Tree page begins with an 8-byte header (for leaf pages) or a 12-byte header (for interior pages). The first byte declares the page type:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Flag Byte</th>
-              <th>Page Architecture</th>
-              <th>Payload Content</th>
-              <th>Forensic Significance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0x0D</code> (13)</td>
-              <td><strong>Table B-Tree Leaf Page</strong></td>
-              <td>Full Table Row Data (Payloads + RowIDs)</td>
-              <td>Contains actual table records, column values, and unallocated deleted row cells.</td>
-            </tr>
-            <tr>
-              <td><code>0x05</code> (5)</td>
-              <td><strong>Table B-Tree Interior Page</strong></td>
-              <td>Child Page Pointers + Integer Keys</td>
-              <td>Navigation node. Contains pointers to lower-level leaf pages; holds no raw column text.</td>
-            </tr>
-            <tr>
-              <td><code>0x0A</code> (10)</td>
-              <td><strong>Index B-Tree Leaf Page</strong></td>
-              <td>Index Keys + RowIDs</td>
-              <td>Contains sorted index entries. Extremely useful for carving historical data even if tables were dropped.</td>
-            </tr>
-            <tr>
-              <td><code>0x02</code> (2)</td>
-              <td><strong>Index B-Tree Interior Page</strong></td>
-              <td>Child Page Pointers + Index Keys</td>
-              <td>Navigational tree index routing nodes.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>3. Cell Pointer Arrays and Memory Allocation</h3>
-      <p>
-        Within each Table Leaf Page (<code>0x0D</code>), records are stored as <strong>Cells</strong>. SQLite uses a dual-growth memory layout:
-      </p>
-      <ul>
-        <li>The <strong>Cell Pointer Array</strong> starts immediately after the page header and grows <em>downward</em> toward the end of the page. Each pointer is a 2-byte integer specifying the offset of a cell.</li>
-        <li>The <strong>Cell Content Area</strong> begins at the physical end of the page and grows <em>upward</em> toward the top.</li>
-        <li>The unallocated space between the end of the cell pointer array and the start of the cell content area is the <strong>Free Space</strong>.</li>
-      </ul>
-
-      <h2>Variable-Length Integers (Varints) and the Record Format</h2>
-      <p>
-        To minimize file size, SQLite extensively utilizes <strong>Variable-Length Integers (Varints)</strong>. A varint encodes 64-bit integers using 1 to 9 bytes: the most significant bit (MSB) of each byte indicates whether another byte follows (MSB = 1), while the lower 7 bits carry data. The 9th byte carries a full 8 bits.
-      </p>
-      <p>
-        Every data row in an SQLite table is stored in the <strong>Record Format</strong>, consisting of a header and a body:
-      </p>
-      <blockquote>
-        $$\text{Record} = \text{Record Header Length (Varint)} + [\text{Serial Type 1}, \text{Serial Type 2}, \dots] + [\text{Value 1}, \text{Value 2}, \dots]$$
-      </blockquote>
-      <p>
-        The <strong>Serial Type</strong> codes tell the parser exactly how to interpret the subsequent data bytes:
-      </p>
-      <ul>
-        <li><code>0</code>: NULL value (0 bytes in body).</li>
-        <li><code>1</code>: 8-bit two's complement integer (1 byte).</li>
-        <li><code>2</code>: 16-bit integer (2 bytes, big-endian).</li>
-        <li><code>3</code>: 24-bit integer (3 bytes, big-endian).</li>
-        <li><code>4</code>: 32-bit integer (4 bytes, big-endian).</li>
-        <li><code>7</code>: 64-bit IEEE 754 floating-point number (8 bytes).</li>
-        <li><code>N &ge; 12 and Even</code>: Binary BLOB of length $(N - 12) / 2$.</li>
-        <li><code>N &ge; 13 and Odd</code>: Text string of length $(N - 13) / 2$ in the database text encoding.</li>
-      </ul>
-
-      <h2>Worked Forensic Examples: Real-World Database Dissection</h2>
-      <p>
-        To understand how SQLite data analysis operates in forensic investigations, consider two practical walkthroughs: carving deleted records and auditing Google Chrome web navigation histories.
-      </p>
-
-      <h3>Scenario A: Carving Deleted Records from Freelist Space</h3>
-      <p>
-        A suspect deletes several incriminating chat messages from a local SQLite communication database. When the suspect executes <code>DELETE FROM messages WHERE id = 42;</code>:
-      </p>
-      <ol>
-        <li>The SQLite B-Tree engine unlinks the cell corresponding to RowID 42 from the Cell Pointer Array on Page 4.</li>
-        <li>The 2-byte pointer is removed from the array, and the <code>cell_count</code> field in the page header is decremented.</li>
-        <li>The byte range occupied by the message cell in the Cell Content Area is prepended to the page's internal <strong>Freeblock Chain</strong>, or if large enough, the entire page is moved to the global <strong>Freelist</strong>.</li>
-        <li><strong>Crucial Forensic Reality:</strong> The raw text string containing the message is <em>not wiped or overwritten</em>. It remains entirely intact in the page's unallocated gap until new records overwrite it or the user runs a manual <code>VACUUM</code> operation.</li>
-      </ol>
-      <p>
-        By inspecting raw byte dumps of the database with the BitDark viewer's WebAssembly sandbox, an analyst can query <code>PRAGMA freelist_count;</code> to discover unallocated pages and extract historical strings before they are scrubbed.
-      </p>
-
-      <h3>Scenario B: Analyzing Chrome Browser History (`History` Database)</h3>
-      <p>
-        Google Chrome stores user browsing activity inside an SQLite 3 database located at:
-      </p>
-      <pre><code>Windows:  %LOCALAPPDATA%\Google\Chrome\User Data\Default\History
-macOS:    ~/Library/Application Support/Google/Chrome/Default/History
-Linux:    ~/.config/google-chrome/Default/History</code></pre>
-      <p>
-        Opening this file in the BitDark SQLite Viewer exposes the central <code>urls</code> and <code>visits</code> tables. Google Chrome represents timestamps as <strong>WebKit Timestamps</strong> (microseconds elapsed since January 1, 1601 UTC). To translate these timestamps into human-readable ISO-8601 strings, execute this forensic SQL query:
-      </p>
-      <pre><code>SELECT 
-  id, 
-  url, 
-  title, 
-  visit_count, 
-  typed_count, 
-  datetime(last_visit_time / 1000000 - 11644473600, 'unixepoch', 'localtime') AS visit_time_local
-FROM urls
-ORDER BY last_visit_time DESC
-LIMIT 50;</code></pre>
-      <p>
-        <strong>Forensic Findings:</strong>
-      </p>
-      <ul>
-        <li><code>typed_count &gt; 0</code>: Demonstrates affirmative user intent (the user manually typed the domain into the address bar rather than clicking a passive hyperlink or ad redirect).</li>
-        <li><code>visit_count</code>: Establishes pattern of life and frequency of access.</li>
-        <li><code>datetime(...)</code>: Correctly normalizes the Windows/WebKit 1601 epoch offset ($11,644,473,600$ seconds) into a standardized local timestamp.</li>
-      </ul>
-
-      <h2>Comparative Analysis: SQLite vs. Alternative Embedded Storage Formats</h2>
-      <p>
-        Understanding how SQLite compares to other storage mechanisms encountered during incident triage is essential:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Storage Engine</th>
-              <th>Data Model</th>
-              <th>Transaction Model</th>
-              <th>Forensic Data Carving Ease</th>
-              <th>Typical Artifact Locations</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>SQLite 3</strong></td>
-              <td>Relational (Tables, SQL, B-Trees)</td>
-              <td>ACID (Rollback Journal or WAL)</td>
-              <td><strong>High</strong> (Unallocated cell gaps, freelist pages)</td>
-              <td>Browsers, mobile apps, Windows index, macOS caches</td>
-            </tr>
-            <tr>
-              <td><strong>LevelDB / RocksDB</strong></td>
-              <td>Key-Value (Log-Structured Merge Tree)</td>
-              <td>Atomic Batches, Write-Ahead Logs</td>
-              <td><strong>Medium-High</strong> (Immutable SSTable fragments survive)</td>
-              <td>Chromium IndexedDB, blockchain nodes, Slack desktop</td>
-            </tr>
-            <tr>
-              <td><strong>Berkeley DB (BDB)</strong></td>
-              <td>Key-Value / Hash / B-Tree</td>
-              <td>Configurable ACID</td>
-              <td><strong>Medium</strong> (Complex page sub-allocations)</td>
-              <td>Legacy Linux authentication, RPM package databases</td>
-            </tr>
-            <tr>
-              <td><strong>Flat JSON / CSV</strong></td>
-              <td>Hierarchical / Tabular Text</td>
-              <td>None (Full-file overwrites)</td>
-              <td><strong>Low</strong> (Overwritten during file writes unless carved from disk)</td>
-              <td>Developer configurations, simple application logs</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Write-Ahead Logging (WAL) and Journal Mechanics</h2>
-      <p>
-        Historically, SQLite utilized <strong>Rollback Journals</strong> (<code>database.db-journal</code>) to ensure transaction atomicity. Before modifying a page, the engine wrote the original, untouched copy to the journal file. If power failed mid-write, the original page was restored.
-      </p>
-      <p>
-        Since version 3.7.0, modern applications overwhelmingly utilize <strong>Write-Ahead Logging (WAL)</strong> mode. In WAL mode:
-      </p>
-      <ul>
-        <li>The main database file (<code>.db</code>) remains completely untouched during writes.</li>
-        <li>New transactions are appended sequentially to a separate sidecar file: <code>database.db-wal</code>.</li>
-        <li>A companion shared-memory index file, <code>database.db-shm</code>, maps active WAL frames for rapid in-memory searching.</li>
-        <li>Periodically, SQLite executes a <strong>Checkpoint</strong>, copying all committed frames from the <code>-wal</code> file back into the primary <code>.db</code> file.</li>
-      </ul>
-      <blockquote>
-        <strong>Forensic Warning:</strong> If an investigator extracts only the primary <code>.db</code> file from a running suspect machine while omitting the companion <code>-wal</code> and <code>-shm</code> files, the most recent database records (including critical recent messages or browsing history) will be completely missing from the analysis! Always capture all three files together.
-      </blockquote>
-
-      <h2>Common Forensic Pitfalls and Anti-Analysis Evasion</h2>
-      <p>
-        When evaluating SQLite database files, watch out for these standard forensic traps and evasion tactics:
-      </p>
-
-      <h3>1. The `PRAGMA secure_delete` Trap</h3>
-      <p>
-        By default, SQLite leaves deleted row content inside unallocated freeblocks. However, applications configured with high privacy requirements (such as privacy-focused browsers or secure messaging apps) frequently enable <code>PRAGMA secure_delete = ON;</code>. When active, SQLite aggressively overwrites deleted cells with zero bytes (<code>0x00</code>) the instant a record is removed, rendering traditional string carving completely ineffective.
-      </p>
-
-      <h3>2. The Destructive Impact of `VACUUM`</h3>
-      <p>
-        Running the SQL command <code>VACUUM;</code> rebuilds the entire database file from scratch into a temporary file, packing surviving B-Tree pages tightly and discarding all freelist pages, freeblocks, and historical gap space. Threat actors routinely script <code>VACUUM;</code> commands into their cleanup routines to destroy evidentiary records.
-      </p>
-
-      <h3>3. Timestamp Manipulation &amp; Epoch Confusion</h3>
-      <p>
-        SQLite has no native date/time data type. Instead, developers store timestamps as:
-      </p>
-      <ul>
-        <li><strong>Unix Epoch (Seconds):</strong> Standard 10-digit integers (e.g., <code>1731000000</code>).</li>
-        <li><strong>Unix Epoch (Milliseconds):</strong> Standard 13-digit integers (e.g., <code>1731000000000</code>).</li>
-        <li><strong>WebKit / Windows FileTime:</strong> 64-bit microsecond counts since 1601.</li>
-        <li><strong>Mac Absolute Time (CoreData):</strong> Seconds elapsed since January 1, 2001 (subtract $978,307,200$ seconds to normalize to Unix epoch).</li>
-        <li><strong>Julian Day Numbers:</strong> Floating-point numbers representing fractional days since 4713 BC.</li>
-      </ul>
-      <p>
-        Misidentifying the epoch leads to wild timestamp calculation errors during forensic timeline reconstruction.
-      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between sql.js and native SQLite?</div>
+          <div class="faq-question">Is my database uploaded anywhere?</div>
           <div class="faq-answer">
-            sql.js is the official C source code of SQLite compiled directly into WebAssembly (Wasm) using Emscripten. It contains the identical, complete SQLite SQL parser, virtual machine, and B-Tree execution engine as the native C library, but executes entirely inside the browser's sandboxed virtual memory without requiring system-level binary installation.
+            No. Your database file is read into memory in your browser and never sent to a server. The one thing fetched over the network is the sql.js engine itself (its script and WebAssembly), loaded from a public CDN the first time the page runs; after that, opening and querying your file needs no network.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the viewer cap table results at 250 rows?</div>
+          <div class="faq-question">Can running a query change my original file?</div>
           <div class="faq-answer">
-            Rendering tens of thousands of DOM table elements simultaneously inside a web browser causes severe UI thread freezing and high memory consumption, particularly on mobile devices. The BitDark viewer caps live visual rendering at 250 rows for optimal responsiveness, while the "Export CSV" feature streams the complete, uncapped dataset directly to a downloadable file.
+            No. The tool works on an in-memory copy of the file. Even an <code>UPDATE</code>, <code>INSERT</code>, <code>DROP</code> or <code>CREATE</code> only changes that copy in the browser's memory; the file on your disk is not touched. Close or reload the page and the in-memory changes are gone.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does CSV formula injection defense protect exported data?</div>
+          <div class="faq-question">Why does it say the file is not a valid SQLite database?</div>
           <div class="faq-answer">
-            When database rows contain text beginning with calculation characters (such as <code>=</code>, <code>+</code>, <code>-</code>, or <code>@</code>), spreadsheet applications like Microsoft Excel or LibreOffice Calc may execute them as active formulas when opened, potentially triggering malicious commands. The BitDark CSV exporter automatically prepends a single quote (<code>'</code>) to any cell starting with formula symbols to neutralize execution risk.
+            Every SQLite 3 file starts with the 16-byte header <code>SQLite format 3\0</code>. If that is missing, the file is something else: a plain <code>.sql</code> text dump (open it as text, or import it), an encrypted database such as SQLCipher (sql.js cannot open it without the key), or a corrupted file. The tool checks this header before trying to open the database.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I inspect password-protected or encrypted SQLite databases?</div>
+          <div class="faq-question">Can it recover deleted rows?</div>
           <div class="faq-answer">
-            Standard SQLite does not include native encryption. Encrypted databases (such as SQLCipher or SQLiteCrypt) encrypt database pages with AES-256 before writing to disk, altering the magic header bytes. Encrypted databases cannot be parsed directly by standard SQLite engines without first providing the decryption key and initializing the corresponding cryptographic extension.
+            No. This viewer runs normal SQL through sql.js, so it sees only live rows the database engine returns. Deleted rows can linger in a database's free space until overwritten, but reading them requires a carving tool that scans the raw pages; that is outside what this tool does.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What happens if a database file has corrupted or truncated pages?</div>
+          <div class="faq-question">Do I need the -wal and -shm files too?</div>
           <div class="faq-answer">
-            If the 100-byte file header is intact, the WebAssembly engine will attempt to instantiate the database. However, queries attempting to traverse damaged B-Tree pointers or unreadable cell arrays will return SQLite error messages (e.g., <code>database disk image is malformed</code>). The BitDark interface catches these exceptions and displays the diagnostic error code safely.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can I execute DDL queries like CREATE TABLE or ALTER TABLE in this tool?</div>
-          <div class="faq-answer">
-            Yes. The WebAssembly engine fully supports standard SQLite DDL commands. When you execute <code>CREATE TABLE</code>, <code>DROP TABLE</code>, or <code>ALTER TABLE</code>, the in-memory schema updates immediately, and the left-hand table list refreshes automatically. However, remember that all modifications exist only in ephemeral browser RAM and do not alter your source file on disk.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How are BLOB (binary large object) values displayed in query results?</div>
-          <div class="faq-answer">
-            When a query returns binary data (such as image thumbnails, serialized protocol buffers, or cryptographic keys stored in <code>BLOB</code> columns), the viewer formats the <code>Uint8Array</code> bytes as a hexadecimal string prefixed with <code>0x</code> (e.g., <code>0x89504E47...</code>), preventing binary corruption or garbled display in the UI.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark log my database queries, schemas, or file contents?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security architecture. All file ingestion, hashing, query compilation, and CSV generation execute entirely inside your local device's memory. Zero bytes leave your browser.
+            For a database in WAL mode, recent changes can live in a companion <code>-wal</code> file rather than in the main <code>.db</code>. This tool opens only the single <code>.db</code> file you give it, so if you open a <code>.db</code> whose recent writes are still in its <code>-wal</code>, you may see a slightly out-of-date picture. Checkpoint the database, or use a tool that reads the <code>.db</code> and <code>-wal</code> together, when that matters.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Forensics, Cryptography &amp; Binary Analysis Utilities</h3>
+        <h3>Related Forensics &amp; Data Utilities</h3>
         <div class="related-grid">
-          <a href="/tools/forensics/strings/" class="related-card">
-            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
-            <div class="related-card-desc">Extract printable ASCII and dual-pass UTF-16LE Unicode strings from database dumps, memory, and binaries.</div>
+          <a href="/tools/forensics/registry-viewer/" class="related-card">
+            <div class="related-card-title"><span>[&#128451;&#65039;]</span> Registry Hive Viewer</div>
+            <div class="related-card-desc">Open a Windows Registry hive or .reg export, browse keys and values, export JSON/CSV.</div>
           </a>
           <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
-            <div class="related-card-title"><span>[⚙️]</span> PE &amp; ELF Binary Viewer</div>
-            <div class="related-card-desc">Inspect Windows Portable Executables (.exe, .dll) and Linux ELF binary headers and sections client-side.</div>
+            <div class="related-card-title"><span>[&#9881;&#65039;]</span> PE &amp; ELF Header Viewer</div>
+            <div class="related-card-desc">Read Windows PE and Linux ELF headers and section tables statically, in your browser.</div>
           </a>
           <a href="/tools/forensics/magic-bytes/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
-            <div class="related-card-desc">Inspect binary file headers, hex magic signatures, and detect extension spoofing entirely in browser RAM.</div>
+            <div class="related-card-title"><span>[&#128270;]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Identify a file from its header bytes and catch extension spoofing, in your browser.</div>
           </a>
-          <a href="/tools/forensics/zip-slip-scanner/" class="related-card">
-            <div class="related-card-title"><span>[📦]</span> Zip Slip Vulnerability Scanner</div>
-            <div class="related-card-desc">Audit archive files for path traversal exploits and malicious directory escape sequences offline.</div>
+          <a href="/tools/encoding/yaml-json/" class="related-card">
+            <div class="related-card-title"><span>[{}]</span> YAML &harr; JSON Converter</div>
+            <div class="related-card-desc">Convert YAML and JSON both ways in your browser, with anchors and merge keys expanded.</div>
           </a>
-          <a href="/tools/privacy/steganography/" class="related-card">
-            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
-            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#&#65039;&#8419;]</span> Multi-Hash Generator</div>
+            <div class="related-card-desc">Compute several file hashes at once, including SHA-256 and MD5, in local browser memory.</div>
           </a>
-          <a href="/tools/ai/c2pa-inspector/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
-            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers in volatile RAM.</div>
+          <a href="/tools/encoding/hex-dumper/" class="related-card">
+            <div class="related-card-title"><span>[0x]</span> Hex Dumper</div>
+            <div class="related-card-desc">View the raw bytes, offsets and ASCII of any file, with basic header hints.</div>
           </a>
         </div>
       </section>
@@ -1352,7 +1050,6 @@ LIMIT 50;</code></pre>
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1371,7 +1068,7 @@ LIMIT 50;</code></pre>
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
