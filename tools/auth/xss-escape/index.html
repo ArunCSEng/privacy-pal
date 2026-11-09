@@ -6,8 +6,8 @@
   
   <title>Contextual XSS Sanitizer & Encoder — Free Offline AppSec Tool | BitDark</title>
   <meta name="title" content="Contextual XSS Sanitizer & Encoder — Free Offline AppSec Tool | BitDark" />
-  <meta name="description" content="Simulate, escape, and sanitize untrusted user input across HTML body, HTML attribute, JavaScript string, URI component, and CSS contexts offline in local browser memory. Zero network egress." />
-  <meta name="keywords" content="contextual xss encoder, xss sanitizer online, cross-site scripting escaping, html entity encoder, javascript string escape, uri percent encoder, css value escape, appsec testing tool, client side xss defense, prevent xss injection" />
+  <meta name="description" content="Encode untrusted input for five XSS contexts — HTML body, HTML attribute, JavaScript string, URI component and CSS value — using OWASP output encoding. Runs in your browser." />
+  <meta name="keywords" content="xss encoder, contextual output encoding, html entity encode, javascript string escape, encodeuricomponent, css escape, owasp xss prevention, dompurify" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/xss-escape/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/xss-escape/" />
   <meta property="og:title" content="Contextual XSS Sanitizer & Encoder — Free Offline AppSec Tool | BitDark" />
-  <meta property="og:description" content="Simulate, escape, and sanitize untrusted user input across HTML body, attribute, JavaScript literal, URI component, and CSS contexts entirely inside browser RAM." />
+  <meta property="og:description" content="See the correct OWASP output encoding for a value in five XSS contexts, with notes on when encoding isn't enough and when to sanitize instead. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/xss-escape/" />
   <meta name="twitter:title" content="Contextual XSS Sanitizer & Encoder | BitDark" />
-  <meta name="twitter:description" content="Evaluate multi-context dynamic string sanitization locally in browser memory. 100% Client-Side with zero network egress." />
+  <meta name="twitter:description" content="Encode input for five XSS contexts (HTML, attribute, JS, URI, CSS) in your browser, the OWASP way." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Contextual XSS Sanitizer & Encoder",
         "url": "https://bitdark.net/tools/auth/xss-escape/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side AppSec utility to simulate, escape, and convert untrusted dynamic payloads across HTML Body, Attribute, JavaScript String Literal, URI Component, and CSS style contexts in volatile browser RAM."
+        "description": "Browser-based contextual XSS encoder that outputs OWASP-style encoding for HTML body, HTML attribute, JavaScript string, URI component and CSS value contexts."
       },
       {
         "@type": "TechArticle",
-        "headline": "Contextual XSS Sanitization, Parser Tokenization Phases, and Multi-Context Escaping Architecture",
+        "headline": "Contextual XSS Encoding: Choosing the Right Output Encoder for Each Sink",
         "url": "https://bitdark.net/tools/auth/xss-escape/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-05-12",
-        "dateModified": "2026-11-04",
-        "description": "Exhaustive technical treatise on Cross-Site Scripting (XSS) prevention, browser tokenization state machines, HTML/JS/CSS context switches, character escaping specifications, and defense-in-depth sanitization."
+        "dateModified": "2026-11-09",
+        "description": "Why XSS encoding is context-specific, what each of the five outputs does, a reproducible worked example, the difference between encoding and sanitizing, and where encoding alone isn't enough."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why is HTML entity encoding insufficient for securing JavaScript blocks or event handlers?",
+            "name": "Why are there five outputs instead of one?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The browser tokenizes documents in sequential phases. When inside a script block or inline JavaScript context, the HTML parser hands control entirely over to the JavaScript interpreter without performing HTML entity decoding. Consequently, entities like &quot; remain literal or cause syntax errors, while dynamic values injected inside script strings can terminate quotes using raw backslashes or closing \u003C\/script\u003E tags."
+              "text": "Because the safe encoding depends on where the value is inserted. The characters that break out of HTML text are different from those that break out of a JavaScript string, a URL or a CSS value. Pick the output that matches the exact spot the data goes into."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between contextual output escaping and HTML sanitization?",
+            "name": "What's the difference between encoding and sanitizing?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Contextual output escaping converts syntactically sensitive control characters (such as <, >, \", ', and &) into inert literal representations suited for a specific document context so the browser treats them strictly as data, never code. HTML sanitization (such as DOMPurify) inspects rich markup, parses an Abstract Syntax Tree (AST), and strips dangerous elements (&lt;script&gt;, &lt;iframe&gt;, &lt;object&gt;) and malicious event attributes while preserving safe HTML formatting."
+              "text": "Encoding turns a string into inert data for one context, so markup is shown as text. Sanitizing parses user-supplied HTML and removes only the dangerous parts while keeping safe tags. If you want to render user HTML, use a sanitizer like DOMPurify; if you want to display untrusted text, encode it."
             }
           },
           {
             "@type": "Question",
-            "name": "How does unquoted attribute escaping differ from quoted attribute escaping?",
+            "name": "Does encoding a URL parameter make a link safe?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In quoted attributes (&lt;input value=&quot;...&quot;&gt;), an attacker must break out using the matching delimiter quote. In unquoted attributes (&lt;input value=...&gt;), an attacker can break out using simple whitespace characters (space, tab, newline) or characters like =, >, and `. Therefore, strict attribute escaping converts all non-alphanumeric characters into uppercase hexadecimal entity notation (&#xHH;) to neutralize both quote and whitespace breakouts."
+              "text": "It makes one parameter safe to embed, but it doesn't stop a javascript: or data: URL if the whole link is attacker-controlled. Validate the scheme too and allow only http and https for links you build from untrusted input."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is URI component encoding critical for href and src attributes?",
+            "name": "Do I still need this if my framework auto-escapes?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Dynamic data placed inside URI targets (&lt;a href=&quot;...&quot;&gt;) can introduce arbitrary script execution through pseudo-protocols like javascript: or data:text/html. RFC 3986 percent-encoding sanitizes path and query arguments, but developers must first validate and enforce an explicit whitelist of safe schemes (such as https:// or mailto:) before rendering user-supplied URLs."
+              "text": "Usually not for ordinary output — React, Angular and server templates encode for the right context automatically. You need manual encoding mainly where you bypass that, such as dangerouslySetInnerHTML, inline script, or URLs assembled by hand."
             }
           },
           {
             "@type": "Question",
-            "name": "Are test payloads or sensitive strings uploaded to BitDark servers?",
+            "name": "Is anything I paste sent to a server?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped, zero-network-egress security model. All input parsing, regular expression replacement, and contextual string translations execute exclusively inside local browser memory via JavaScript. Zero network requests or telemetry packets are transmitted."
+              "text": "No. All five encoders run locally in your browser, so you can safely paste real payloads or production values. Nothing is uploaded or logged."
             }
           }
         ]
@@ -697,7 +697,7 @@
 
     <div class="tool-header">
       <h1>Contextual XSS Sanitizer & Encoder</h1>
-      <p>Evaluate and transform potentially malicious strings into safe representations across HTML Body, Attribute, JavaScript, URI, and CSS execution contexts directly inside local browser RAM. Zero network egress or remote telemetry.</p>
+      <p>Encode an untrusted value for the exact spot it lands in a page: HTML body, HTML attribute, JavaScript string, URI component or CSS value. Each output uses OWASP-recommended contextual encoding, and everything runs in your browser.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -789,405 +789,113 @@
       </div>
     </section>
 
-    <!-- Operational Boundaries & Legal Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Contextual escaping is a defense-in-depth practice that must be implemented according to strict syntactic boundaries.</strong> Encoding dynamic content for one context (such as HTML entity encoding) will not protect an application if placed inside an incompatible context (such as raw JavaScript blocks, event handlers, or href URI targets). Always combine contextual output escaping with contextual HTML sanitization (such as DOMPurify) and robust Content Security Policies (CSP).
+        <strong>These are output encoders, not an all-purpose XSS fix.</strong> Pick the output that matches the sink; the wrong one can still be unsafe. Encoding also doesn't neutralise a <code>javascript:</code> URL (validate the scheme) or render user-supplied rich HTML safely (use a sanitizer like DOMPurify). Prefer framework auto-escaping and add a Content-Security-Policy. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Long-Form Authoritative SEO Documentation (2500+ Words) -->
     <article class="article-container">
-      <h2>The Modern Anatomy of Cross-Site Scripting (XSS)</h2>
+      <h2>Why XSS Encoding Is Context-Specific</h2>
       <p>
-        Cross-Site Scripting (XSS) remains one of the most resilient, pervasive, and misunderstood vulnerability classes in computer security. Categorized as CWE-79 and consistently featured in the OWASP Top 10, XSS vulnerabilities emerge whenever an application incorporates untrusted, attacker-controlled data into an output document stream without proper validation, contextual sanitization, or syntactic boundary translation.
-      </p>
-      <p>
-        When an injection succeeds, the web browser cannot determine that the incoming text stream was intended to be passive visual content. Instead, the browser's execution engine parses the payload as executable code within the origin context of the vulnerable web application. This grants the attacker immediate capability to hijack session tokens, harvest private cryptographic keys stored in <code>localStorage</code> or <code>sessionStorage</code>, forge HTTP actions on behalf of authenticated operators via Cross-Site Request Forgery (CSRF), manipulate Document Object Model (DOM) elements, or redirect victims to credential-phishing infrastructure.
-      </p>
-      <p>
-        The threat landscape of modern web applications—characterized by client-heavy Single Page Application (SPA) frameworks (React, Vue, Svelte, Angular), Server-Side Rendering (SSR), serverless edge rendering, and AI-driven conversational interfaces—has compounded the complexity of XSS prevention. In contemporary applications, vulnerabilities fall into four primary archetypes:
-      </p>
-      <ul>
-        <li>
-          <strong>Reflected XSS (Non-Persistent):</strong> The malicious payload arrives inside the immediate HTTP request (typically via URI query parameters, HTTP headers, or form fields) and is immediately reflected in the server's HTTP response. Reflected XSS is common in search bars, error messages, and tracking redirects.
-        </li>
-        <li>
-          <strong>Stored XSS (Persistent):</strong> The attacker stores their payload inside a persistent backend datastore (such as a relational database, NoSQL document store, log aggregation pipeline, or Redis cache). Whenever other users or administrators request the affected resource (such as forum posts, user profiles, or audit logs), the malicious script executes in their browser session.
-        </li>
-        <li>
-          <strong>DOM-Based XSS:</strong> The vulnerability exists entirely within client-side JavaScript code. Dynamic data read from an attacker-manipulated DOM sink source (such as <code>location.search</code>, <code>document.referrer</code>, or <code>window.postMessage</code>) is executed by unsafe JavaScript execution sinks (such as <code>eval()</code>, <code>Function()</code>, <code>setTimeout()</code>, or innerHTML assignments).
-        </li>
-        <li>
-          <strong>Mutation XSS (mXSS):</strong> An insidious variant where innocent-looking markup is transformed into executable script by the browser's HTML parser during DOM reconstruction or serialization cycles. Often triggered when sanitizers parse markup under one set of rules, but the browser parses the finalized DOM under differing namespace or context rules (e.g., transitioning between foreign SVG/MathML content and HTML).
-        </li>
-      </ul>
-
-      <h2>How to Use the BitDark Contextual XSS Sanitizer & Encoder</h2>
-      <p>
-        The BitDark Contextual XSS Sanitizer & Encoder is designed for AppSec engineers, penetration testers, full-stack developers, and security auditors who need to rapidly assess how raw payloads translate across the five primary browser parsing contexts:
-      </p>
-      <ol>
-        <li>
-          <strong>Enter or Paste the Dynamic String:</strong> Type or paste your untrusted input or attack vector into the main text area. You can also click any of the preset payload chips (Script Tag, Attribute Breakout, URI Scheme, JS String Literal, or Context Escape) to immediately load established penetration testing strings.
-        </li>
-        <li>
-          <strong>Automatic In-Memory Context Evaluation:</strong> The tool instantly applies contextual encoding algorithms across five discrete document positions without sending any data over the network.
-        </li>
-        <li>
-          <strong>Inspect Contextual Variations:</strong> Examine how the string is rendered in:
-          <ul>
-            <li><em>HTML Body Context:</em> Converts markup control delimiters (<code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code>, <code>&quot;</code>, <code>&#x27;</code>, <code>&#x2F;</code>) into standard HTML entities.</li>
-            <li><em>HTML Attribute Context:</em> Converts all characters outside <code>[a-zA-Z0-9\-_]</code> into strict uppercase hexadecimal entities (<code>&amp;#xHH;</code>).</li>
-            <li><em>JavaScript String Literal Context:</em> Converts non-alphanumeric characters into four-digit Unicode escape sequences (<code>\uXXXX</code>).</li>
-            <li><em>URI Component Context:</em> Formats input according to RFC 3986 percent-encoding rules (<code>%HH</code>).</li>
-            <li><em>CSS Value Context:</em> Employs lowercase hexadecimal CSS escape notations (<code>\hex </code>) with terminating whitespace delimiters.</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Copy Remediated Snippets:</strong> Click the "Copy" button adjacent to any target context block to place the safe string onto your clipboard for deployment in server-side view templates or client-side rendering functions.
-        </li>
-      </ol>
-
-      <h2>When to Use Contextual Encoding: Threat Modeling & Use Cases</h2>
-      <p>
-        Contextual output escaping is an indispensable defensive engineering practice across numerous software development and verification lifecycles:
-      </p>
-      <ul>
-        <li>
-          <strong>DevSecOps & Secure Code Reviews:</strong> Verifying whether template engines (such as Jinja2, Blade, Handlebars, Mustache, or Thymeleaf) are configured with context-aware auto-escaping or if raw variable interpolations (e.g., <code>{{{variable}}}</code>) introduce critical security regressions.
-        </li>
-        <li>
-          <strong>Penetration Testing & Bug Bounty Verification:</strong> Formulating proof-of-concept exploits to verify whether a discovered input reflects into an execution context without escaping, or testing how an existing Web Application Firewall (WAF) responds to hex-encoded and unicode-escaped payloads.
-        </li>
-        <li>
-          <strong>Custom Framework & Middleware Development:</strong> Engineering custom serializer components, API output transformers, and middleware libraries designed to sanitize data before sending it down to mobile clients, webhooks, or legacy frontends.
-        </li>
-        <li>
-          <strong>AI Prompt Defense & Synthetic Output Sanitization:</strong> Large Language Models (LLMs) generating dynamic code, markdown tables, or customer responses frequently hallucinate raw HTML tags or unescaped JavaScript snippets. Sanitizing LLM outputs across the destination context prevents Indirect Prompt Injection payloads from escalating into stored client-side exploits.
-        </li>
-      </ul>
-
-      <h2>The Polyglot Browser Parser: Tokenization Phases & Context Switches</h2>
-      <p>
-        The fundamental reason naive blacklisting and standard search-and-replace filtering fail to prevent XSS is that <strong>a web browser does not possess a single unified parser</strong>. A modern browser engine (such as Blink in Chromium, Gecko in Firefox, or WebKit in Safari) consists of multiple distinct lexical analyzers and tokenization engines running in coordinated state machines:
+        The same untrusted string is dangerous in different ways depending on where it lands in a page. A value that's safe inside visible HTML text can break out of a quoted attribute, a JavaScript string, a URL or a CSS value if it isn't encoded for that exact spot. There is no single "escape for HTML" that covers them all, which is why this tool shows five separate outputs for one input. You copy the one that matches the sink your data goes into.
       </p>
 
-      <pre><code>+--------------------------------------------------------------------------+
-|                  BROWSER INGESTION & TOKENIZER PHASES                    |
-|                                                                          |
-|  1. HTML Lexer & Tokenizer (HTML5 State Machine)                         |
-|     * Recognizes tags: &lt;div&gt;, &lt;input&gt;, &lt;script&gt;, &lt;style&gt;, &lt;svg&gt;          |
-|     * Decodes HTML Entities ONLY in data, RCDATA, and attribute states   |
-|     * NEVER decodes HTML Entities inside RAWTEXT (&lt;script&gt;, &lt;style&gt;)     |
-|                                                                          |
-|  2. HTML Attribute Value Tokenizer                                       |
-|     * Quoted states (Double: &quot;...&quot;, Single: &#39;...&#39;)                       |
-|     * Unquoted attribute state (Terminates on whitespace, &gt;, =)           |
-|                                                                          |
-|  3. JavaScript Lexer / V8 Execution Engine                               |
-|     * Tokenizes variables, literals, operators                           |
-|     * Evaluates Unicode escapes (\uXXXX) and Hex escapes (\xHH)          |
-|     * Does NOT know or care about HTML entities (&amp;quot; is literal text)  |
-|                                                                          |
-|  4. URI Resolver (RFC 3986 State Machine)                                |
-|     * Parses schemes: https:, javascript:, data:, mailto:                |
-|     * Resolves percent-encoding (%20, %2F) AFTER scheme identification   |
-|                                                                          |
-|  5. CSS Parser & Lexer                                                   |
-|     * Parses rules, properties, expressions, url() functions             |
-|     * Interprets backslash hexadecimal escapes (\HH )                    |
-+--------------------------------------------------------------------------+</code></pre>
-
-      <p>
-        The critical vulnerability surface occurs during <strong>context transitions</strong>. When the HTML parser encounters a <code>&lt;script&gt;</code> tag, it transitions into the RAWTEXT state. In this state, the HTML parser ceases all HTML entity replacement. If a developer uses a standard HTML entity encoder (converting <code>"</code> to <code>&amp;quot;</code>) to protect a string placed inside a script block:
-      </p>
-      <pre><code>&lt;script&gt;
-  // FATAL DEVELOPER ERROR: HTML entity encoding inside script context
-  var userName = &quot;&amp;quot;; alert(1); //&quot;;
-&lt;/script&gt;</code></pre>
-      <p>
-        The JavaScript engine reads <code>&amp;quot;</code> literally as an ampersand, followed by the letters q, u, o, t, and a semicolon—triggering a syntax error or failing to contain the breakout string if quotes were manipulated prior to encoding.
-      </p>
-      <p>
-        Conversely, consider what happens when untrusted user input is injected inside an HTML attribute that accepts a URI:
-      </p>
-      <pre><code>&lt;a href=&quot;USER_INPUT&quot;&gt;Click Here&lt;/a&gt;</code></pre>
-      <p>
-        If the developer simply runs HTML entity encoding on <code>javascript:alert(document.cookie)</code>, the string emerges unchanged because it contains no angle brackets or quotation marks. The browser parses the attribute, decodes the attribute value, identifies the <code>javascript:</code> pseudo-protocol scheme, and executes the payload as soon as the user clicks the link!
-      </p>
-
-      <h2>Deep Dive: Specifications of the 5 Contexts</h2>
-
-      <h3>1. HTML Body Context</h3>
-      <p>
-        The HTML Body context represents standard element content bounded between opening and closing tags (e.g., <code>&lt;div&gt;...&lt;/div&gt;</code>, <code>&lt;p&gt;...&lt;/p&gt;</code>, or <code>&lt;span&gt;...&lt;/span&gt;</code>).
-      </p>
-      <p>
-        To prevent an attacker from opening new elements or introducing HTML comments, six foundational characters must be escaped into their corresponding HTML entity representations:
-      </p>
-      <ul>
-        <li><code>&amp;</code> &rarr; <code>&amp;amp;</code> (Prevents unintended character reference decoding)</li>
-        <li><code>&lt;</code> &rarr; <code>&amp;lt;</code> (Prevents tag open state initialization)</li>
-        <li><code>&gt;</code> &rarr; <code>&amp;gt;</code> (Prevents premature tag closure)</li>
-        <li><code>&quot;</code> &rarr; <code>&amp;quot;</code> (Neutralizes double quotes)</li>
-        <li><code>&#39;</code> &rarr; <code>&amp;#x27;</code> (Neutralizes single quotes/apostrophes)</li>
-        <li><code>&#x2F;</code> &rarr; <code>&amp;#x2F;</code> (Neutralizes forward slashes to prevent closing tag completion)</li>
-      </ul>
-
-      <h3>2. HTML Attribute Context</h3>
-      <p>
-        The Attribute context represents data placed inside tag parameters (e.g., <code>&lt;input value=&quot;...&quot;&gt;</code> or <code>&lt;div data-id=&quot;...&quot;&gt;</code>).
-      </p>
-      <p>
-        Attribute escaping must defend against two distinct threat mechanics:
-      </p>
-      <ul>
-        <li><strong>Quoted Attributes:</strong> In <code>&lt;input value=&quot;PAYLOAD&quot;&gt;</code>, an attacker attempts to supply a matching double quote (<code>&quot;</code>) followed by an event handler like <code>onfocus=&quot;alert(1)&quot; autofocus</code>.</li>
-        <li><strong>Unquoted Attributes:</strong> In <code>&lt;input value=PAYLOAD&gt;</code>, an attacker does not even need quotation marks; any ASCII whitespace character (space, tab, carriage return, form feed) or control characters like <code>=</code>, <code>&gt;</code>, or <code>`</code> will terminate the attribute and allow arbitrary event handlers to be attached.</li>
-      </ul>
-      <p>
-        Therefore, robust attribute escaping does not merely escape quotes; it converts <strong>all non-alphanumeric characters</strong> into uppercase hexadecimal entity references (<code>&amp;#xHH;</code>). For instance, a space character (ASCII 32) is encoded as <code>&amp;#x20;</code>, making attribute breakout syntactically impossible even within unquoted templates.
-      </p>
-
-      <h3>3. JavaScript String Literal Context</h3>
-      <p>
-        The JavaScript context occurs whenever dynamic data is rendered inside a script block or inline event handler (e.g., <code>&lt;script&gt;let v = &#39;...&#39;;&lt;/script&gt;</code>).
-      </p>
-      <p>
-        Standard HTML entities are completely ineffective here. Escaping dynamic values inside JavaScript strings requires converting non-alphanumeric characters into four-digit hexadecimal Unicode escape sequences: <code>\uXXXX</code>.
-      </p>
-      <p>
-        Crucially, JavaScript string escaping must also neutralize the HTML parser's lookahead logic. Under HTML5 specifications, whenever the HTML lexer is consuming a <code>&lt;script&gt;</code> tag, it monitors the incoming byte stream for the sequence <code>&lt;&#x2F;script&gt;</code>. If this sequence appears anywhere—even inside a quoted JavaScript string literal—the HTML parser immediately terminates the script block and transitions back to HTML mode, allowing trailing characters to execute as raw HTML markup. By escaping <code>&lt;</code> as <code>\u003C</code> and <code>&#x2F;</code> as <code>\u002F</code>, this parsing ambiguity is entirely prevented.
-      </p>
-
-      <h3>4. URI Component Context</h3>
-      <p>
-        The URI component context applies to values placed inside URL query strings, path segments, or URL attributes (e.g., <code>&lt;a href=&quot;https://site.com/search?q=...&quot;&gt;</code>).
-      </p>
-      <p>
-        Conforming to RFC 3986, URI component encoding replaces non-ASCII characters and reserved URI punctuation characters with percent-encoded octets (<code>%HH</code>). This ensures that delimiter characters like <code>?</code>, <code>&amp;</code>, <code>=</code>, <code>#</code>, and spaces do not fragment the URL or alter parameter boundaries.
-      </p>
-      <blockquote>
-        <strong>Crucial Security Warning:</strong> URI component escaping protects query parameters, but it CANNOT make a raw scheme safe. If an attacker controls the start of a URL (e.g., <code>&lt;a href=&quot;USER_SUPPLIED_URL&quot;&gt;</code>), encoding the string will not prevent <code>javascript:alert(1)</code> execution unless the application validates that the URL begins with a whitelisted scheme like <code>https://</code> or <code>http://</code>.
-      </blockquote>
-
-      <h3>5. CSS Value Context</h3>
-      <p>
-        The CSS context applies when dynamic data is injected into inline style attributes or <code>&lt;style&gt;</code> blocks (e.g., <code>&lt;div style=&quot;background-color: ...;&quot;&gt;</code>).
-      </p>
-      <p>
-        CSS uses a distinct escaping syntax defined by the W3C CSS specification: a backslash followed by one to six hexadecimal digits, followed by an optional trailing space: <code>\HH </code>. The trailing space is required by CSS parsers to indicate the termination of the hexadecimal sequence.
-      </p>
-      <p>
-        Proper CSS escaping prevents attackers from closing style declarations using semicolons (<code>;</code>), breaking out of style containers, or executing legacy dynamic style features like Microsoft CSS <code>expression(...)</code>, <code>behavior: url(...)</code>, or JavaScript-bearing SVG background masks.
-      </p>
-
-      <h2>Worked Forensic Examples: Real-World Payload Dissections</h2>
-      <p>
-        To illustrate how the BitDark Contextual XSS Sanitizer & Encoder safeguards applications, let us trace four standard attack payloads across different contexts.
-      </p>
-
-      <h3>Example 1: Classic Script Tag Injection</h3>
-      <pre><code>RAW PAYLOAD: &lt;script&gt;alert(document.cookie)&lt;/script&gt;</code></pre>
-      <ul>
-        <li><strong>In HTML Body Context:</strong> Encoded to <code>&amp;lt;script&amp;gt;alert(document.cookie)&amp;lt;&amp;#x2F;script&amp;gt;</code>. When rendered, the browser prints the literal characters <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code> on screen without executing any code.</li>
-        <li><strong>In JavaScript String Context:</strong> Encoded to <code>\u003Cscript\u003Ealert\u0028document\u002Ecookie\u0029\u003C\u002Fscript\u003E</code>. If placed inside <code>let message = '...';</code>, it remains a safe string literal and cannot break out of the script tag.</li>
-      </ul>
-
-      <h3>Example 2: Attribute Breakout & Event Hijacking</h3>
-      <pre><code>RAW PAYLOAD: " onmouseover="alert(1)" style="color:red</code></pre>
-      <ul>
-        <li><strong>In HTML Attribute Context:</strong> Encoded to <code>&amp;#x22;&amp;#x20;onmouseover&amp;#x3D;&amp;#x22;alert&amp;#x28;1&amp;#x29;&amp;#x22;&amp;#x20;style&amp;#x3D;&amp;#x22;color&amp;#x3A;red</code>. If injected into <code>&lt;input value=&quot;...&quot;&gt;</code>, the quote character is rendered as the entity <code>&amp;#x22;</code>. The HTML parser treats the entire payload as the text content of the <code>value</code> attribute rather than introducing new event handlers.</li>
-      </ul>
-
-      <h3>Example 3: JavaScript String Variable Escape</h3>
-      <pre><code>RAW PAYLOAD: '-alert(1)-'</code></pre>
-      <ul>
-        <li><strong>In JavaScript String Context:</strong> Encoded to <code>\u0027\u002Dalert\u00281\u0029\u002D\u0027</code>. When evaluated inside <code>let token = '...';</code>, the single quotes are safely escaped as <code>\u0027</code>, ensuring the string boundary remains uncompromised.</li>
-      </ul>
-
-      <h3>Example 4: Script Termination Context Breakout</h3>
-      <pre><code>RAW PAYLOAD: &lt;/script&gt;&lt;svg onload=alert(1)&gt;</code></pre>
-      <ul>
-        <li><strong>In JavaScript Context:</strong> Encoded to <code>\u003C\u002Fscript\u003E\u003Csvg\u0020onload\u003Dalert\u00281\u0029\u003E</code>. Because the forward slash and angle brackets are converted to Unicode escapes, the HTML parser does not recognize the <code>&lt;/script&gt;</code> closing boundary.</li>
-      </ul>
-
-      <h2>Comprehensive Multi-Context Escaping Matrix</h2>
-      <p>
-        The following architectural matrix details how each browser context processes input, the sensitive characters that must be neutralized, and the correct escaping format to employ:
-      </p>
-
+      <h2>The Five Contexts</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Target Context</th>
-              <th>Enclosing Wrapper</th>
-              <th>Critical Sensitive Characters</th>
-              <th>Safe Escaping Format</th>
-              <th>Browser Parser Active</th>
-              <th>Critical Failure Mode</th>
-            </tr>
+            <tr><th>Context</th><th>Use it when the value goes into…</th><th>What it does</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>HTML Body</strong></td>
-              <td><code>&lt;p&gt;...&lt;/p&gt;</code></td>
-              <td><code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>&#x27;</code>, <code>&#x2F;</code></td>
-              <td>HTML Named / Decimal Entities (<code>&amp;lt;</code>, <code>&amp;gt;</code>)</td>
-              <td>HTML5 Tokenizer (Data State)</td>
-              <td>Injecting raw markup or opening new tags</td>
-            </tr>
-            <tr>
-              <td><strong>HTML Attribute</strong></td>
-              <td><code>&lt;input value=&quot;...&quot;&gt;</code></td>
-              <td>Non-alphanumerics (Quotes, Spaces, <code>=</code>, <code>`</code>)</td>
-              <td>Hex Entity Notation (<code>&amp;#xHH;</code>)</td>
-              <td>HTML Attribute Value State</td>
-              <td>Attribute breakout and event handler injection (<code>onload</code>)</td>
-            </tr>
-            <tr>
-              <td><strong>JavaScript String</strong></td>
-              <td><code>&lt;script&gt;let s = &#39;...&#39;;&lt;/script&gt;</code></td>
-              <td>Quotes (<code>&#39;</code>, <code>&quot;</code>), Backslash (<code>\</code>), <code>&lt;</code>, <code>&#x2F;</code>, Line Breaks</td>
-              <td>Unicode Escapes (<code>\uXXXX</code>)</td>
-              <td>JavaScript Lexer (V8 / SpiderMonkey)</td>
-              <td>String breakout or premature <code>&lt;&#x2F;script&gt;</code> closure</td>
-            </tr>
-            <tr>
-              <td><strong>URI Component</strong></td>
-              <td><code>&lt;a href=&quot;?q=...&quot;&gt;</code></td>
-              <td>Reserved URI delimiters (<code>?</code>, <code>&amp;</code>, <code>#</code>, <code>&#x2F;</code>, Spaces)</td>
-              <td>RFC 3986 Percent Encoding (<code>%HH</code>)</td>
-              <td>URI Resolver State Machine</td>
-              <td>Parameter injection or pseudo-protocol execution</td>
-            </tr>
-            <tr>
-              <td><strong>CSS Property</strong></td>
-              <td><code>&lt;style&gt;color: ...;&lt;/style&gt;</code></td>
-              <td>Non-alphanumerics (<code>;</code>, <code>:</code>, <code>&quot;</code>, <code>&#x27;</code>, <code>(</code>, <code>)</code>)</td>
-              <td>CSS Hex Escaping (<code>\hex </code>)</td>
-              <td>CSS3 Syntax Lexer</td>
-              <td>Style block escape or CSS expression execution</td>
-            </tr>
+            <tr><td><strong>HTML body</strong></td><td>text between tags, e.g. <code>&lt;div&gt;HERE&lt;/div&gt;</code></td><td>Encodes <code>&amp; &lt; &gt; " ' /</code> to entities</td></tr>
+            <tr><td><strong>HTML attribute</strong></td><td>a quoted attribute value</td><td>Encodes every non-alphanumeric character to <code>&amp;#xHH;</code></td></tr>
+            <tr><td><strong>JS string</strong></td><td>inside a quoted JavaScript string literal</td><td>Encodes every non-alphanumeric to <code>\uXXXX</code></td></tr>
+            <tr><td><strong>URI component</strong></td><td>one query-string or path parameter</td><td>Percent-encodes, including <code>! ' ( ) *</code></td></tr>
+            <tr><td><strong>CSS value</strong></td><td>a CSS property value</td><td>Encodes every non-alphanumeric to <code>\HH&nbsp;</code></td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Defense-in-Depth: Combining Escaping, Sanitization, and CSP</h2>
       <p>
-        While contextual escaping is essential when outputting dynamic strings into static templates, real-world security requires a layered <strong>Defense-in-Depth</strong> architecture:
+        The aggressive "encode everything non-alphanumeric" approach for attributes, JavaScript and CSS is deliberate: it's the OWASP recommendation, because it stays safe even in the fiddly cases (unquoted attributes, values that start an expression) without you having to reason about each character.
       </p>
 
-      <h3>1. Contextual Output Escaping vs HTML Sanitization</h3>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        A frequent point of confusion is when to use contextual escaping versus HTML sanitization:
+        Type <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code> into the input. The HTML-body and URI outputs are:
       </p>
+      <pre><code>HTML body:  &amp;lt;script&amp;gt;alert(&amp;#x27;XSS&amp;#x27;)&amp;lt;&amp;#x2F;script&amp;gt;
+URI:        %3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E</code></pre>
+      <p>
+        In the HTML-body form the angle brackets become <code>&amp;lt;</code> and <code>&amp;gt;</code>, so the browser renders the text literally instead of running a script tag. The URI form matches JavaScript's <code>encodeURIComponent</code> with the extra characters <code>! ' ( ) *</code> also percent-encoded, which is the safe form for a single URL parameter.
+      </p>
+
+      <h2>Encoding Is Not Sanitizing</h2>
+      <p>
+        These are output <em>encoders</em>: they make a string safe to insert as inert data into one context. They are the right tool when you're inserting untrusted text and want it shown, not interpreted. They are the <strong>wrong</strong> tool when you actually want to keep some user-supplied HTML (a comment with bold and links, say). Encoding that would display the tags as text; for that you need an HTML <em>sanitizer</em> such as DOMPurify, which parses the markup and strips only the dangerous parts.
+      </p>
+
+      <h2>Where Encoding Alone Isn't Enough</h2>
       <ul>
-        <li><strong>Use Contextual Escaping:</strong> When untrusted user data is intended to be displayed as pure text or string values. Escaping ensures the browser never interprets any portion of the input as code.</li>
-        <li><strong>Use HTML Sanitization (e.g., DOMPurify):</strong> When an application deliberately permits users to supply rich formatting (such as a markdown blog post, comment formatting, or a WYSIWYG editor). Sanitizers parse the input into an in-memory Abstract Syntax Tree (AST), iterate through all elements and attributes, and prune dangerous elements (such as <code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>) and all <code>on*</code> attributes while allowing safe tags like <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>, and <code>&lt;p&gt;</code>.</li>
+        <li><strong>URLs in <code>href</code> or <code>src</code>.</strong> Percent-encoding a parameter doesn't stop a <code>javascript:</code> URL if the whole value is attacker-controlled. Also validate the scheme and allow only <code>http</code>/<code>https</code>.</li>
+        <li><strong>Put the value where the encoder assumes.</strong> The JS-string output is safe inside a quoted string literal, not dropped raw into a <code>&lt;script&gt;</code> block or an inline event handler.</li>
+        <li><strong>Encode once, at output.</strong> Encoding on input, or encoding twice, produces double-encoded text (<code>&amp;amp;lt;</code>) and bugs. Store raw, encode when you render.</li>
+        <li><strong>Prefer your framework's auto-escaping.</strong> React, Angular and server templating encode by default for the right context. Reach for manual encoding mainly where you bypass that (for example <code>dangerouslySetInnerHTML</code> or building a URL by hand).</li>
+        <li><strong>Add a Content-Security-Policy</strong> as defence in depth, so a missed spot is less likely to execute.</li>
       </ul>
 
-      <h3>2. Content Security Policy (CSP Level 3)</h3>
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Paste the untrusted value</strong> or load a sample payload.</li>
+        <li><strong>Identify the sink</strong> — where in the page this value will appear.</li>
+        <li><strong>Copy the matching output</strong> and place it in that context, keeping the surrounding quotes.</li>
+        <li><strong>Don't mix contexts:</strong> a value that is both in a URL and then in an attribute needs the encoders nested in the order the browser decodes them.</li>
+      </ol>
       <p>
-        A robust Content Security Policy (CSP) acts as an authoritative defense-in-depth barrier if an output escaping error ever slips through into production. By configuring the server to send the <code>Content-Security-Policy</code> HTTP header, you instruct the browser to restrict script execution:
+        Everything runs in your browser; nothing you paste is uploaded. Treat the tool as a way to see and copy the correct encoding, alongside framework auto-escaping and a sanitizer for rich HTML — not as a standalone XSS fix.
       </p>
-      <pre><code>Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-r4nd0m12345'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script';</code></pre>
-      <ul>
-        <li><code>default-src 'self'</code>: Restricts external asset loading to the application's origin.</li>
-        <li><code>script-src 'self' 'nonce-...'</code>: Completely bans inline scripts (like <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>) and inline event handlers unless they possess the exact cryptographically random, per-request nonce generated by the server.</li>
-        <li><code>object-src 'none'</code>: Neutralizes plugins like Flash and Java applets.</li>
-        <li><code>base-uri 'none'</code>: Prevents attackers from injecting <code>&lt;base href=&quot;...&quot;&gt;</code> tags to hijack relative script paths.</li>
-      </ul>
-
-      <h3>3. The Trusted Types API</h3>
-      <p>
-        Modern Chromium browsers support the <strong>Trusted Types API</strong>. When enabled via CSP (<code>require-trusted-types-for 'script'</code>), the browser prevents native DOM sinks (like <code>element.innerHTML</code> or <code>document.write</code>) from accepting raw strings. Developers are forced to pass data through audited, pre-configured policy functions that return immutable <code>TrustedHTML</code> or <code>TrustedScript</code> tokens, effectively eliminating entire categories of DOM-based XSS at compile and runtime.
-      </p>
-
-      <h2>Common Developer Mistakes & Remediations</h2>
-      <p>
-        Security audits frequently identify recurring anti-patterns in template rendering logic:
-      </p>
-      <ul>
-        <li>
-          <strong>Relying on HTML Entity Encoding Inside Script Blocks:</strong> As demonstrated, the JavaScript engine does not decode HTML entities. Placing an HTML-encoded string inside a script tag either causes JavaScript errors or fails to stop string terminations. Always use Unicode escaping (<code>\uXXXX</code>) inside script contexts.
-        </li>
-        <li>
-          <strong>Injecting Data Directly into Unquoted Attributes:</strong> Writing <code>&lt;div class={{user_input}}&gt;</code> allows an attacker to inject spaces and spawn new attributes. Always quote all HTML attributes (<code>&lt;div class=&quot;{{user_input}}&quot;&gt;</code>) and escape non-alphanumerics with hexadecimal entities.
-        </li>
-        <li>
-          <strong>Neglecting the URI Scheme:</strong> Applying URI component encoding to an entire URL will break its structure, while failing to validate the scheme allows <code>javascript:</code> links to execute. Always validate the scheme against an explicit whitelist (<code>http:</code>, <code>https:</code>, <code>mailto:</code>) before outputting user-supplied URLs.
-        </li>
-        <li>
-          <strong>Double Decoding Vulnerabilities:</strong> Applying URL decoding or entity decoding multiple times in a backend pipeline can inadvertently resurrect an attack payload that was safely encoded by an upstream service. Ensure that decoding occurs exactly once before validation and encoding occurs at the point of presentation.
-        </li>
-      </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does HTML entity encoding fail inside inline JavaScript blocks?</div>
+          <div class="faq-question">Why are there five outputs instead of one?</div>
           <div class="faq-answer">
-            The browser parses documents in distinct phases. When the HTML parser encounters a <code>&lt;script&gt;</code> tag, it transitions into RAWTEXT mode and hands the character stream directly over to the JavaScript engine. The JavaScript engine does not decode HTML entities. Consequently, characters like <code>&amp;quot;</code> remain literal strings and do not protect against quote breakouts or closing <code>&lt;/script&gt;</code> tags.
+            Because the safe encoding depends on where the value is inserted. The characters that break out of HTML text are different from those that break out of a JavaScript string, a URL or a CSS value. Pick the output that matches the exact spot the data goes into.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between contextual escaping and HTML sanitization?</div>
+          <div class="faq-question">What's the difference between encoding and sanitizing?</div>
           <div class="faq-answer">
-            Contextual escaping converts syntactically sensitive control characters (such as <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>&#39;</code>, and <code>&amp;</code>) into inert representations so the browser treats the input strictly as literal data. HTML sanitization (such as DOMPurify) inspects rich markup, parses an Abstract Syntax Tree (AST), and strips dangerous elements (<code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>) and event handlers while preserving safe visual HTML formatting.
+            Encoding turns a string into inert data for one context, so markup is shown as text. Sanitizing parses user-supplied HTML and removes only the dangerous parts while keeping safe tags. If you want to render user HTML, use a sanitizer like DOMPurify; if you want to display untrusted text, encode it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why must unquoted HTML attributes encode spaces and equals signs?</div>
+          <div class="faq-question">Does encoding a URL parameter make a link safe?</div>
           <div class="faq-answer">
-            Under HTML5 parsing rules, an unquoted attribute value terminates upon encountering any ASCII whitespace character (space, tab, newline) or characters like <code>&gt;</code> and <code>=</code>. An attacker can break out of an unquoted attribute simply by adding a space followed by an event handler like <code>onload=alert(1)</code>. Encoding all non-alphanumerics as hexadecimal entities (<code>&amp;#xHH;</code>) neutralizes this breakout.
+            It makes one parameter safe to embed, but it doesn't stop a javascript: or data: URL if the whole link is attacker-controlled. Validate the scheme too and allow only http and https for links you build from untrusted input.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can contextual encoding protect against the "javascript:" URI pseudo-protocol?</div>
+          <div class="faq-question">Do I still need this if my framework auto-escapes?</div>
           <div class="faq-answer">
-            No. Percent-encoding a full URI will break valid URL characters, while percent-encoding query parameters does not prevent an attacker from supplying <code>javascript:alert(1)</code> as the raw URL scheme in an <code>href</code> attribute. Securing URLs requires validating the scheme against an explicit whitelist (e.g., <code>https:</code>, <code>http:</code>) before rendering.
+            Usually not for ordinary output — React, Angular and server templates encode for the right context automatically. You need manual encoding mainly where you bypass that, such as dangerouslySetInnerHTML, inline script, or URLs assembled by hand.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is Mutation XSS (mXSS) and does contextual escaping prevent it?</div>
+          <div class="faq-question">Is anything I paste sent to a server?</div>
           <div class="faq-answer">
-            Mutation XSS occurs when seemingly benign markup is altered by the browser's DOM parser during deserialization (such as reading <code>innerHTML</code>), often due to quirks between HTML, SVG, and MathML namespaces. Contextual escaping completely prevents mXSS because it ensures that no raw markup ever enters the DOM parser in the first place.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does Content Security Policy (CSP) reinforce output escaping?</div>
-          <div class="faq-answer">
-            CSP acts as an authoritative defense-in-depth safety net. If a developer accidentally forgets to escape a dynamic variable, a strict CSP with cryptographic nonces (<code>script-src 'nonce-...'</code>) will prevent the injected script or inline event handler from executing, neutralizing the exploit before it can harm the user.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark store or log my analyzed input strings or payloads?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped, zero-network-egress security model. All regular expression scanning, context escaping, and string formatting routines execute entirely inside your local browser memory space. No packets are transmitted to any external server.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why are CSS escapes structured with a trailing space (\HH )?</div>
-          <div class="faq-answer">
-            In CSS syntax, hexadecimal escapes consist of a backslash followed by up to 6 hex digits. Because the following character might be a valid hexadecimal digit (0–9, a–f), the CSS specification uses a single whitespace character to indicate where the hex sequence ends. The CSS parser consumes the trailing space as part of the escape token.
+            No. All five encoders run locally in your browser, so you can safely paste real payloads or production values. Nothing is uploaded or logged.
           </div>
         </div>
       </section>
