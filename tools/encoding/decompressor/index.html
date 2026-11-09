@@ -6,8 +6,8 @@
   
   <title>Universal Data & Stream Decompressor — Free Offline Utility | BitDark</title>
   <meta name="title" content="Universal Data & Stream Decompressor — Free Offline Utility | BitDark" />
-  <meta name="description" content="Decompress Gzip, Deflate, Deflate-Raw, Zlib, and unpack Base64 or Hex archives directly in your browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="stream decompressor, gzip decompressor, inflate online, deflate raw unpacker, base64 decompress, client-side decompressor, offline decompression tool, zlib inflate, hex decompressor, bitdark" />
+  <meta name="description" content="Decompress gzip, zlib and raw deflate streams from Base64, hex or a file into text or a hex dump, with header auto-detection. Runs in your browser. Deflate family only." />
+  <meta name="keywords" content="gzip decompressor, zlib inflate, raw deflate, decompression stream, base64 gzip decode, inspect compressed payload, rfc 1951 1952, content-encoding gzip" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/encoding/decompressor/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/encoding/decompressor/" />
   <meta property="og:title" content="Universal Data & Stream Decompressor — Free Offline Utility | BitDark" />
-  <meta property="og:description" content="Inspect, decode, and expand compressed streams and encoded payloads directly in browser memory with zero network egress." />
+  <meta property="og:description" content="Decompress gzip, zlib and raw deflate streams locally from Base64, hex or a file, with auto-detection and text or hex output. Deflate family only." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/encoding/decompressor/" />
   <meta name="twitter:title" content="Universal Data & Stream Decompressor | BitDark" />
-  <meta name="twitter:description" content="Decompress Gzip, Deflate, and Zlib streams directly in browser RAM with zero network telemetry." />
+  <meta name="twitter:description" content="Decompress gzip/zlib/raw-deflate streams in your browser from Base64, hex or a file. Deflate family only; nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Universal Data & Stream Decompressor",
         "url": "https://bitdark.net/tools/encoding/decompressor/",
         "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "High-speed client-side stream decompressor for Gzip, Deflate, Zlib, and raw compressed bitstreams with native browser memory decoding."
+        "description": "Browser-based decompressor using the native DecompressionStream engine to expand gzip, zlib and raw deflate streams from Base64, hex or binary input into text or a hex dump."
       },
       {
         "@type": "TechArticle",
-        "headline": "Lossless Decompression Internals: RFC 1950, RFC 1951, RFC 1952, and Streaming Web APIs",
+        "headline": "Decompressing Gzip, Zlib and Raw Deflate: Headers, Auto-Detection and What's Not Supported",
         "url": "https://bitdark.net/tools/encoding/decompressor/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-06-18",
-        "dateModified": "2026-11-06",
-        "description": "Exhaustive engineering manual detailing Huffman coding, LZ77 sliding window mechanics, Deflate container headers, DecompressionStream Web APIs, and client-side memory safety."
+        "dateModified": "2026-11-09",
+        "description": "What the tool decompresses, how gzip, zlib and raw deflate differ by header, what it does not handle, how it works, a reproducible round-trip example, and that compression is not encryption."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How does browser-native decompression operate without uploading files?",
+            "name": "What's the difference between gzip, zlib and raw deflate?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The utility uses the modern W3C DecompressionStream Web API implemented natively in Chromium, Gecko, and WebKit C++ engines. Binary chunks are piped through in-memory ReadableStream and WritableStream buffers in volatile client RAM, guaranteeing zero network packets leave your workstation."
+              "text": "They share the same deflate compression but wrap it differently. Gzip adds a 1f 8b header and a CRC32 trailer; zlib adds a short header and an Adler-32 checksum; raw deflate has neither. Auto-Detect reads the leading bytes to tell them apart and falls back to raw deflate when there's no header."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between Gzip, Zlib, and Deflate-Raw?",
+            "name": "Why won't my Brotli or Zstandard data decompress?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "All three formats utilize the identical core LZ77 and Huffman Deflate algorithm (RFC 1951). Deflate-Raw contains only the raw compressed bitstream without headers or checksums. Zlib (RFC 1950) wraps the bitstream in a 2-byte header and a 4-byte Adler-32 checksum. Gzip (RFC 1952) encapsulates the data inside a 10-byte header, optional filenames/timestamps, and an 8-byte CRC-32 trailer."
+              "text": "This tool handles only the deflate family (gzip, zlib, raw deflate). Brotli, Zstandard, LZ4, bzip2 and xz are different algorithms it doesn't support, and ZIP or 7z are archive containers that need an extraction tool. If a valid stream fails here, it's probably one of those."
             }
           },
           {
             "@type": "Question",
-            "name": "Can this decompressor unpack Base64 and Hexadecimal encoded strings?",
+            "name": "Which input encoding should I choose?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. The Raw Encoded String tab automatically parses standard Base64, URL-safe Base64, and hexadecimal byte streams before passing the resulting binary Uint8Array into the stream decompression engine."
+              "text": "Match how you received the data. Use Base64 for a Base64 string (standard or URL-safe), Hex for a hex dump, and raw binary when uploading a file or pasting Latin-1 bytes. Picking the wrong encoding means the bytes are misread before decompression even starts."
             }
           },
           {
             "@type": "Question",
-            "name": "What is a decompression bomb (zip bomb) and how is it mitigated?",
+            "name": "Does decompressing protect or expose my data?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A decompression bomb is a tiny compressed payload engineered with recursive or massive repetitive patterns that expands into gigabytes or terabytes of memory upon decompression. This tool runs inside your browser sandbox and enforces strict memory-capped streaming allocations to prevent memory exhaustion crashes."
+              "text": "Neither in a security sense — compression isn't encryption. Anyone can decompress a gzip or deflate stream without a key. Here it also runs entirely in your browser and nothing is uploaded, so it's safe to inspect private payloads, but don't rely on compression to hide anything."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my files, logs, or decoded strings transmitted to BitDark servers?",
+            "name": "The output looks like garbage — what happened?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Never. BitDark operates on an air-gapped zero-network-egress security architecture. All decompression pipelines, binary transformations, and hex view calculations occur exclusively inside your device's local memory heap."
+              "text": "Usually the data decompressed fine but isn't text — switch the output to Hex Dump to inspect the bytes. If decompression itself failed, check that the input encoding matches the data and that the stream really is gzip, zlib or raw deflate rather than another format."
             }
           }
         ]
@@ -809,7 +809,7 @@
 
     <div class="tool-header">
       <h1>Universal Data &amp; Stream Decompressor</h1>
-      <p>Inspect, decode, and expand compressed streams and encoded payloads directly inside your browser memory with zero network latency, telemetry, or server egress.</p>
+      <p>Decompress gzip, zlib (deflate) and raw deflate streams — pasted as Base64 or hex, or uploaded as a file — into text or a hex dump, with header auto-detection. It uses the browser's built-in decompression engine and runs entirely on your device.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -914,357 +914,112 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        All stream expansions, byte manipulations, Adler-32 verifications, and decompression pipelines execute strictly inside client browser memory using volatile WebAssembly and W3C Web Streams runtimes. BitDark maintains no server-side retention, logging, or proxy inspection of processed binaries. Users remain solely responsible for validating input provenance and inspecting potential decompression bomb structures prior to high-ratio payload expansion.
+        <strong>Deflate family only — not a universal archive tool.</strong> It handles gzip, zlib and raw deflate, but not Brotli, Zstandard, LZ4, bzip2, xz, or ZIP/7z/TAR archives. Compression is not encryption: anyone can decompress these streams. Output can be far larger than the input. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>The Architecture of Lossless Data Decompression</h2>
+      <h2>What This Tool Decompresses</h2>
       <p>
-        In modern networked computing, data compression is not an optional optimization—it is the bedrock of digital infrastructure. Every second, petabytes of web assets, API JSON payloads, database log records, and container images travel across global optical backbones encapsulated in compressed binary streams.
+        This takes a compressed stream — pasted as Base64 or hex, or uploaded as a file — and expands it back to readable text or a hex dump. It handles the <strong>deflate family</strong>: gzip, zlib (also called deflate), and raw deflate, and can auto-detect which one you have from its header. It's for inspecting compressed payloads — a gzipped API response, a deflate stream pulled out of a PNG or PDF, a compressed cookie — directly in your browser.
       </p>
+
+      <h2>The Three Formats, and How They Differ</h2>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead>
+            <tr><th>Format</th><th>Header</th><th>Where you meet it</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Gzip</strong> (RFC 1952)</td><td>Starts <code>1f 8b</code>; CRC32 + length trailer</td><td><code>.gz</code> files, HTTP <code>Content-Encoding: gzip</code></td></tr>
+            <tr><td><strong>Zlib / Deflate</strong> (RFC 1950)</td><td>2-byte header (often <code>78 9c</code>); Adler-32 trailer</td><td>PNG and PDF streams, many network protocols</td></tr>
+            <tr><td><strong>Raw Deflate</strong> (RFC 1951)</td><td>No header or trailer — just the compressed bits</td><td>Inside ZIP entries and formats that supply their own framing</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p>
-        At the heart of the vast majority of compressed communication protocols lies the <strong>DEFLATE</strong> algorithm, formally specified in IETF RFC 1951. Designed by Phil Katz in 1991 for the PKZIP format, Deflate achieves remarkable compression ratios by synthesizing two foundational computer science techniques:
+        All three use the same deflate compression at their core; they differ only in the wrapper. That's why "deflate" can be ambiguous — Auto-Detect reads the leading bytes (<code>1f 8b</code> for gzip, a valid zlib header otherwise) and falls back to raw deflate when there's no recognisable header.
       </p>
+
+      <h2>What It Does Not Handle</h2>
+      <p>
+        Despite the broad name, this covers the deflate family only. It does <strong>not</strong> decompress Brotli, Zstandard (zstd), LZ4, bzip2, or xz/LZMA, and it doesn't extract archive containers like ZIP, 7z or TAR — those bundle multiple files and need an archive tool. If a payload won't decompress here and you're sure it's compressed, it's likely one of those other formats.
+      </p>
+
+      <h2>How It Works</h2>
+      <p>
+        Decompression uses the browser's built-in <code>DecompressionStream</code>, the same zlib-based engine the platform uses everywhere, so the output matches what <code>gunzip</code> or a zlib library would produce. Input can be Base64 (standard or URL-safe), hex, or raw binary; output can be shown as UTF-8 text or as a hex dump when the result is binary rather than text.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Load the built-in Gzip sample (or paste any gzip stream as Base64). A gzip stream always begins with the bytes <code>1f 8b</code>, and decompressing it returns the original text with the output size shown. In testing, a 216-byte text compressed to gzip and pasted back as Base64 decompresses to exactly those 216 bytes — whether you select Gzip explicitly or leave it on Auto-Detect, and the same holds for a zlib stream. That round trip, compressed in one place and expanded here to the identical bytes, is the check that the decoder is working to spec.
+      </p>
+
+      <h2>Compression Isn't Encryption</h2>
+      <p>
+        Worth noting: compressed data isn't protected. Anyone can decompress a gzip or deflate stream — there's no key involved — so compression shrinks data, it doesn't hide it. If a payload needs to stay private it must be encrypted, not merely compressed.
+      </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>LZ77 Sliding Window Dictionary Substitution:</strong> Instead of transmitting repeated sequences of characters or bytes, the compressor replaces duplicate phrases with a backward pointer consisting of a <em>length-distance pair</em> (e.g., "go back 42 bytes and copy the next 12 bytes").
-        </li>
-        <li>
-          <strong>Canonical Huffman Prefix Coding:</strong> Frequency-dependent variable-length binary codes are assigned to symbols. Frequently occurring symbols (such as common letters or short distance references) receive short bit representations (e.g., 2 or 3 bits), while rare symbols receive longer bit sequences.
-        </li>
-      </ol>
-      <p>
-        While Deflate standardizes the raw compressed bitstream, distributed software systems encapsulate Deflate streams inside standardized wrapper envelopes to guarantee integrity, identify MIME types, and facilitate random access.
-      </p>
-
-      <h2>How to Use the BitDark Stream Decompressor</h2>
-      <p>
-        Operating the BitDark Stream Decompressor is instantaneous, forensically sound, and strictly private. The interface accommodates both disk-based file archives and raw inline strings:
-      </p>
-      <ol>
-        <li>
-          <strong>Choose Input Method:</strong> Select <strong>Compressed File Upload</strong> to process binary files (such as <code>.gz</code>, <code>.tar.gz</code>, <code>.zlib</code>, or raw firmware dumps). Select <strong>Raw Encoded String</strong> to paste base64, hexadecimal, or binary strings intercepted from network logs or debuggers.
-        </li>
-        <li>
-          <strong>Set Compression Algorithm:</strong> Keep the default <strong>Auto-Detect Header</strong> or manually lock the format to <strong>Deflate / Zlib (RFC 1950)</strong>, <strong>Raw Deflate (RFC 1951)</strong>, or <strong>Gzip (RFC 1952)</strong>.
-        </li>
-        <li>
-          <strong>Select Encoding (For String Inputs):</strong> When working in the text panel, choose between Base64/Base64URL, Hexadecimal (e.g., <code>789c...</code>), or Latin-1 raw binary representations.
-        </li>
-        <li>
-          <strong>Execute Expansion:</strong> Upload your file or click "Decompress String Payload". The browser's native C++ stream engine decodes the binary stream in RAM, displaying the source size, expanded size, and calculated compression ratio.
-        </li>
-        <li>
-          <strong>Inspect and Export:</strong> Toggle between <strong>Text (UTF-8 / ASCII)</strong> for source code and JSON logs, or <strong>Hex Dump Inspection</strong> for compiled binaries. Download the decompressed artifact directly to disk or copy plain text to your clipboard.
-        </li>
+        <li><strong>Choose file or text input</strong>, and set the input encoding (Base64, hex or raw binary) to match your data.</li>
+        <li><strong>Pick the algorithm</strong>, or leave it on Auto-Detect to let the header decide.</li>
+        <li><strong>Decompress</strong>, then view the result as text or a hex dump, with input/output sizes and the compression ratio.</li>
+        <li><strong>Download or copy</strong> the output if you need it elsewhere.</li>
       </ol>
 
-      <h2>When to Use This Tool: Operational Scenarios</h2>
-      <p>
-        Stream decompression is an indispensable diagnostic utility across multiple engineering and cybersecurity disciplines:
-      </p>
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>API &amp; Web Traffic Debugging:</strong> Inspecting raw HTTP responses carrying <code>Content-Encoding: gzip</code> or <code>Content-Encoding: deflate</code> captured in Wireshark, Burp Suite, or Charles Proxy without leaking API keys to external cloud converters.
-        </li>
-        <li>
-          <strong>Digital Forensics &amp; Malware Analysis (DFIR):</strong> Security analysts dissecting obfuscated PowerShell loaders, memory-injected PE headers, or malicious PDF stream objects (<code>/FlateDecode</code>) can expand payloads safely in an isolated browser sandbox.
-        </li>
-        <li>
-          <strong>SAML &amp; Single Sign-On (SSO) Auditing:</strong> Enterprise authentication protocols frequently transport compressed XML authorization tickets within URL query parameters (e.g., SAMLRequest strings encoded via raw Deflate + Base64 + URL-encoding).
-        </li>
-        <li>
-          <strong>Database &amp; Message Queue Recovery:</strong> Dissecting compressed binary blobs extracted from Redis databases, Apache Kafka topics, or PostgreSQL <code>bytea</code> columns without needing custom CLI scripts.
-        </li>
-      </ul>
-
-      <h2>Dissecting RFC 1950, RFC 1951, and RFC 1952</h2>
-      <p>
-        The three major Deflate-derived container formats differ fundamentally in their headers, checksum algorithms, and metadata overhead:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Specification</th>
-              <th>Common Name</th>
-              <th>Header Length</th>
-              <th>Integrity Checksum</th>
-              <th>Magic Bytes / Signature</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>RFC 1951</strong></td>
-              <td>Raw Deflate</td>
-              <td>0 Bytes (None)</td>
-              <td>None</td>
-              <td>No magic bytes (Bitstream begins directly)</td>
-            </tr>
-            <tr>
-              <td><strong>RFC 1950</strong></td>
-              <td>Zlib Wrapper</td>
-              <td>2 Bytes</td>
-              <td>Adler-32 (4 Bytes, Trailing)</td>
-              <td><code>0x78 0x01</code>, <code>0x78 0x9C</code>, <code>0x78 0xDA</code></td>
-            </tr>
-            <tr>
-              <td><strong>RFC 1952</strong></td>
-              <td>Gzip File</td>
-              <td>10+ Bytes</td>
-              <td>CRC-32 (4 Bytes) + ISIZE (4 Bytes)</td>
-              <td><code>0x1F 0x8B</code></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>1. Raw Deflate (RFC 1951)</h3>
-      <p>
-        Raw Deflate strips all framing. The bitstream begins immediately with block header bits indicating whether the current block is the final block (BFINAL) and which encoding mode is utilized (BTYPE: uncompressed, fixed Huffman, or dynamic Huffman). Because raw Deflate contains zero checksum verification or container framing, it is popular in low-latency protocols like WebSocket permessage-deflate and PDF object streams.
-      </p>
-
-      <h3>2. Zlib Format (RFC 1950)</h3>
-      <p>
-        The Zlib wrapper encloses the Deflate bitstream in an ultra-compact two-byte header:
-      </p>
-      <pre><code>Byte 0 (CMF): Compression Method and Flags (Typically 0x78 => Deflate with 32KB window)
-Byte 1 (FLG): Flags (FCHECK checksum bits, FDICT preset dictionary flag, FLEVEL)
-[... Deflate Compressed Bitstream ...]
-Trailing 4 Bytes: Adler-32 Checksum (High-order byte first)</code></pre>
-      <p>
-        The Adler-32 checksum calculates two 16-bit sums ($s_1$ and $s_2$) modulo 65521 over the uncompressed stream. It executes significantly faster than CRC-32 while maintaining high sensitivity to burst corruption.
-      </p>
-
-      <h3>3. Gzip Format (RFC 1952)</h3>
-      <p>
-        Gzip provides a complete filesystem archive container. The mandatory 10-byte header includes:
-      </p>
-      <ul>
-        <li><strong>ID1 &amp; ID2 (Bytes 0–1):</strong> Magic numbers <code>0x1F 0x8B</code>.</li>
-        <li><strong>CM (Byte 2):</strong> Compression method (always <code>8</code> for Deflate).</li>
-        <li><strong>FLG (Byte 3):</strong> Flags specifying optional headers (FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT).</li>
-        <li><strong>MTIME (Bytes 4–7):</strong> Unix epoch modification timestamp.</li>
-        <li><strong>XFL &amp; OS (Bytes 8–9):</strong> Extra flags and originating operating system ID (e.g., Unix, Windows).</li>
-      </ul>
-      <p>
-        The file terminates with an 8-byte trailer containing the 32-bit CRC checksum followed by the 32-bit modulo $2^{32}$ uncompressed input size (ISIZE).
-      </p>
-
-      <h2>Worked Example: Byte-Level Zlib Stream Dissection</h2>
-      <p>
-        Let us trace how the string <code>"Hello World"</code> is transformed and parsed across the Zlib RFC 1950 pipeline.
-      </p>
-
-      <h3>1. Raw Plaintext</h3>
-      <p>
-        Input string: <code>"Hello World"</code> (11 bytes ASCII). Hex representation:
-      </p>
-      <pre><code>48 65 6C 6C 6F 20 57 6F 72 6C 64</code></pre>
-
-      <h3>2. Compressed Hex Payload</h3>
-      <p>
-        When compressed with standard Zlib (default compression level), the resulting output is 23 bytes:
-      </p>
-      <pre><code>78 9C F3 48 CD C9 C9 57 08 CF 2F CA 49 01 00 18 0B 04 1D</code></pre>
-
-      <h3>3. Container Decomposition Table</h3>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Byte Offset</th>
-              <th>Hex Value</th>
-              <th>Field Classification</th>
-              <th>Functional Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0x00</code></td>
-              <td><code>0x78</code></td>
-              <td>CMF (Method &amp; Window)</td>
-              <td>Compression Method 8 (Deflate), Window Size 7 ($2^{7+8} = 32\text{ KB}$).</td>
-            </tr>
-            <tr>
-              <td><code>0x01</code></td>
-              <td><code>0x9C</code></td>
-              <td>FLG (Flags &amp; Check)</td>
-              <td>FCHECK verification bits ensuring $(0x78 \times 256 + 0x9C) \pmod{31} = 0$.</td>
-            </tr>
-            <tr>
-              <td><code>0x02 - 0x0E</code></td>
-              <td><code>F3 48 CD...</code></td>
-              <td>Deflate Stream</td>
-              <td>Raw Huffman-encoded bitstream representing "Hello World".</td>
-            </tr>
-            <tr>
-              <td><code>0x0F - 0x12</code></td>
-              <td><code>18 0B 04 1D</code></td>
-              <td>Adler-32 Checksum</td>
-              <td>Integrity verification word ($s_2 = 0x180B$, $s_1 = 0x041D$) over original plaintext.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p>
-        When parsed by the BitDark engine, the header is validated, the compressed bits are streamed through the C++ decompression engine, the Adler-32 checksum is verified, and the original 11 bytes of UTF-8 text are rendered on screen.
-      </p>
-
-      <h2>Comparison: Deflate vs Gzip vs Brotli vs Zstandard</h2>
-      <p>
-        Modern web and cloud architectures leverage several compression formats depending on the trade-off between throughput and ratio:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Format</th>
-              <th>Standard</th>
-              <th>Compression Algorithm</th>
-              <th>Primary Production Use Case</th>
-              <th>Decompression Speed</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Deflate / Zlib</strong></td>
-              <td>RFC 1950 / 1951</td>
-              <td>LZ77 + Huffman</td>
-              <td>PNG images, PDF streams, Git packfiles, WebSocket</td>
-              <td>Very Fast (~300–500 MB/s per core)</td>
-            </tr>
-            <tr>
-              <td><strong>Gzip</strong></td>
-              <td>RFC 1952</td>
-              <td>LZ77 + Huffman</td>
-              <td>HTTP web asset delivery, log files (syslog, tar.gz)</td>
-              <td>Very Fast (~350–550 MB/s per core)</td>
-            </tr>
-            <tr>
-              <td><strong>Brotli (br)</strong></td>
-              <td>RFC 7932</td>
-              <td>LZ77 + 2nd Order Context + Huffman</td>
-              <td>Modern HTTPS static web assets (CSS, JS, Fonts)</td>
-              <td>Fast (~400 MB/s per core)</td>
-            </tr>
-            <tr>
-              <td><strong>Zstandard (zstd)</strong></td>
-              <td>RFC 8878</td>
-              <td>Finite State Entropy (tANS) + LZ</td>
-              <td>Database storage, Linux kernel modules, Kafka logs</td>
-              <td>Ultra Fast (>1,500 MB/s per core)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Decompression Bombs (Zip Bombs) and Memory Safety</h2>
-      <p>
-        A critical operational hazard in streaming decompression is the <strong>decompression bomb</strong> (also known as a zip bomb).
-      </p>
-      <p>
-        Because Deflate relies on length-distance backward references, an adversary can construct a tiny compressed payload (e.g., 42 Kilobytes) that expands into gigabytes or terabytes of zeroes or uniform data when parsed. In legacy backend architectures, passing an untrusted stream to unconstrained <code>zlib.inflate()</code> will rapidly exhaust host RAM, triggering out-of-memory (OOM) kernel panics or thread crashes.
-      </p>
-      <p>
-        The BitDark client-side utility protects your environment through multiple architectural safeguards:
-      </p>
-      <ul>
-        <li><strong>Browser Sandboxing:</strong> All operations execute inside your browser's isolated tab process. Even under extreme memory allocations, the host operating system remains protected from kernel corruption.</li>
-        <li><strong>Native Stream Backpressure:</strong> By utilizing the W3C <code>DecompressionStream</code> Web API, data chunks are consumed and buffered progressively rather than allocated in an unbounded synchronous burst.</li>
-        <li><strong>UI View Truncation:</strong> Decompressed text streams exceeding 250,000 characters are automatically truncated in the DOM viewer to prevent browser rendering freezes, while preserving the full binary payload for direct file download.</li>
-      </ul>
-
-      <h2>Common Mistakes in Stream Decompression</h2>
-      <p>
-        Engineers troubleshooting compressed payloads frequently encounter frustrating edge-case errors:
-      </p>
-      <ul>
-        <li>
-          <strong>Mismatched Container Envelopes:</strong> Attempting to decompress a raw Deflate payload using a Zlib decompressor fails with an <code>invalid header</code> or <code>incorrect header check</code> error because the parser expects the two-byte <code>0x78</code> prefix.
-        </li>
-        <li>
-          <strong>Padding and Whitespace in Base64 Strings:</strong> Intercepted Base64 strings from network headers often contain URL-safe substitutions (<code>-</code> instead of <code>+</code>, <code>_</code> instead of <code>/</code>) or stripped padding (<code>=</code>). BitDark automatically normalizes Base64 strings before parsing.
-        </li>
-        <li>
-          <strong>Corrupted Checksum Trailers:</strong> Network proxies or logging truncation can drop the final 4 or 8 bytes of an HTTP stream. Standard decompressors reject the entire payload as corrupted. BitDark includes a resilient forensic recovery fallback that strips trailers and recovers the uncorrupted body using raw Deflate.
-        </li>
-        <li>
-          <strong>Encoding Confusion:</strong> Viewing binary output (such as an uncompressed TAR archive or compiled binary) as UTF-8 text produces replacement characters (<code>U+FFFD </code>). Always switch to <strong>Hex Dump Inspection</strong> when analyzing non-textual data.
-        </li>
+        <li><strong>Deflate family only.</strong> No Brotli, zstd, LZ4, bzip2, xz, or archive extraction.</li>
+        <li><strong>Output can be much larger than input.</strong> Compression ratios are high, so a small stream may expand into a very large result — view it as a hex dump if it isn't text.</li>
+        <li><strong>Not decryption.</strong> Compressed data is readable by anyone; use encryption for secrecy.</li>
+        <li><strong>Runs locally.</strong> Decompression happens in your browser — nothing is uploaded — so it's safe for private payloads.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the W3C DecompressionStream API?</div>
+          <div class="faq-question">What's the difference between gzip, zlib and raw deflate?</div>
           <div class="faq-answer">
-            <code>DecompressionStream</code> is a native JavaScript Web API supported in all modern browsers. It provides hardware-accelerated, streaming decompression directly within the browser runtime using native C++ underlying libraries, avoiding the performance penalties of third-party JavaScript emulators.
+            They share the same deflate compression but wrap it differently. Gzip adds a 1f 8b header and a CRC32 trailer; zlib adds a short header and an Adler-32 checksum; raw deflate has neither. Auto-Detect reads the leading bytes to tell them apart and falls back to raw deflate when there's no header.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does Zlib use Adler-32 instead of CRC-32?</div>
+          <div class="faq-question">Why won't my Brotli or Zstandard data decompress?</div>
           <div class="faq-answer">
-            Adler-32 was designed by Mark Adler specifically for the Zlib library. It computes two 16-bit sums simultaneously, which requires significantly fewer CPU instructions and table lookups than CRC-32 on general-purpose processors, while still catching common multi-bit transmission errors.
+            This tool handles only the deflate family (gzip, zlib, raw deflate). Brotli, Zstandard, LZ4, bzip2 and xz are different algorithms it doesn't support, and ZIP or 7z are archive containers that need an extraction tool. If a valid stream fails here, it's probably one of those.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does the "Auto-Detect Header" feature identify the format?</div>
+          <div class="faq-question">Which input encoding should I choose?</div>
           <div class="faq-answer">
-            The detection engine inspects the initial byte sequence of the binary buffer. If the first two bytes match <code>0x1F 0x8B</code>, it parses the stream as Gzip (RFC 1952). If the first byte is <code>0x78</code> and satisfies the modulo 31 check, it selects Zlib (RFC 1950). Otherwise, it falls back to raw Deflate (RFC 1951).
+            Match how you received the data. Use Base64 for a Base64 string (standard or URL-safe), Hex for a hex dump, and raw binary when uploading a file or pasting Latin-1 bytes. Picking the wrong encoding means the bytes are misread before decompression even starts.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I decompress password-protected ZIP or Gzip files?</div>
+          <div class="faq-question">Does decompressing protect or expose my data?</div>
           <div class="faq-answer">
-            No. Standard Gzip and Zlib specifications do not support encryption. Encrypted archives (such as WinZip AES or legacy ZipCrypto) require multi-file container parsing and PBKDF2 key derivation not handled by stream decompressors.
+            Neither in a security sense — compression isn't encryption. Anyone can decompress a gzip or deflate stream without a key. Here it also runs entirely in your browser and nothing is uploaded, so it's safe to inspect private payloads, but don't rely on compression to hide anything.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does my decompressed text look like random symbols?</div>
+          <div class="faq-question">The output looks like garbage — what happened?</div>
           <div class="faq-answer">
-            If the compressed payload contains non-textual binary data (such as an ELF binary, a SQLite database, or an image file), decoding the raw bytes as UTF-8 text results in unprintable characters. Switch the <strong>Output View Format</strong> dropdown to <strong>Hex Dump Inspection</strong> or click <strong>Download Decompressed File</strong>.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Is there a maximum file size limit for decompression?</div>
-          <div class="faq-answer">
-            Because all processing occurs in local volatile RAM, the practical limit is determined by your workstation's available browser memory (typically 1 to 2 Gigabytes per tab in modern 64-bit browsers). Files within standard web diagnostics (1 KB to 200 MB) decompress nearly instantaneously.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark store or inspect my uploaded files?</div>
-          <div class="faq-answer">
-            Never. The BitDark platform operates on an air-gapped zero-network-egress security model. The file or string you provide never leaves your workstation; all decoding and rendering are executed strictly inside your local browser memory space.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What causes an "incorrect header check" error in Deflate?</div>
-          <div class="faq-answer">
-            In RFC 1950 (Zlib), the first two bytes must satisfy the mathematical check: <code>(CMF * 256 + FLG) % 31 === 0</code>. If a raw Deflate stream without headers is fed to a Zlib reader, or if a single header bit is flipped, this check fails immediately.
+            Usually the data decompressed fine but isn't text — switch the output to Hex Dump to inspect the bytes. If decompression itself failed, check that the input encoding matches the data and that the stream really is gzip, zlib or raw deflate rather than another format.
           </div>
         </div>
       </section>
