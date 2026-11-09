@@ -6,8 +6,8 @@
   
   <title>AES-GCM Authenticated Encryption & Decryption Engine — Free Offline Cryptography Tool | BitDark</title>
   <meta name="title" content="AES-GCM Authenticated Encryption & Decryption Engine — Free Offline Cryptography Tool | BitDark" />
-  <meta name="description" content="Encrypt and decrypt messages and payloads offline using AES-GCM (Galois/Counter Mode) authenticated cryptography with 128-bit or 256-bit keys. Complete privacy via native W3C Web Crypto API with zero network egress." />
-  <meta name="keywords" content="aes gcm encryptor, aes 256 gcm decryptor, authenticated encryption, web crypto api aes, local aes gcm tool, galois counter mode, additional authenticated data, ghash tag, nist sp 800-38d, bitdark" />
+  <meta name="description" content="Encrypt and decrypt with AES-GCM authenticated encryption in your browser: 128/256-bit keys, 96-bit IV, AAD and a 128-bit tag. Interoperable with OpenSSL. Nothing is uploaded." />
+  <meta name="keywords" content="aes-gcm tool, authenticated encryption, aead, nonce reuse, 96-bit iv, additional authenticated data, aes-256-gcm, web crypto aes" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/aes-gcm/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/aes-gcm/" />
   <meta property="og:title" content="AES-GCM Authenticated Encryption & Decryption | BitDark" />
-  <meta property="og:description" content="Client-side authenticated AES-GCM cryptographic suite. 128/256-bit key generation, 96-bit nonce derivation, and AAD stamping with zero telemetry." />
+  <meta property="og:description" content="Run standard AES-GCM encrypt/decrypt locally with keys, IV, AAD and tag, plus a clear explanation of the nonce rule. Interoperable with OpenSSL and Node." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/aes-gcm/" />
   <meta name="twitter:title" content="AES-GCM Authenticated Cryptographic Engine | BitDark" />
-  <meta name="twitter:description" content="Execute high-assurance symmetric authenticated encryption and decryption locally in your browser memory. Zero network tracking." />
+  <meta name="twitter:description" content="AES-GCM encrypt/decrypt in your browser — unique nonces, AAD, 128-bit tag. Interoperable with OpenSSL." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "AES-GCM Authenticated Cryptographic Engine",
         "url": "https://bitdark.net/tools/crypto/aes-gcm/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive cryptographic utility to perform AES-128 and AES-256 authenticated encryption and decryption in Galois/Counter Mode (GCM) with Additional Authenticated Data (AAD) support directly in local browser RAM using the native Web Crypto API."
+        "description": "Browser-based AES-GCM engine using Web Crypto to encrypt and decrypt with 128/256-bit keys, a 96-bit IV, optional AAD and a 128-bit authentication tag."
       },
       {
         "@type": "TechArticle",
-        "headline": "AES-GCM Authenticated Encryption Architecture, Galois Field GHASH Integrity, and Cryptographic Nonce Security",
+        "headline": "AES-GCM Authenticated Encryption: Nonces, AAD, Tags and the One Rule That Matters",
         "url": "https://bitdark.net/tools/crypto/aes-gcm/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-10",
-        "dateModified": "2026-11-02",
-        "description": "Exhaustive technical analysis of NIST SP 800-38D Galois/Counter Mode (AES-GCM), covering hardware pipelining, GHASH polynomial authentication over GF(2^128), nonce uniqueness constraints, the mathematics of the Joux forbidden attack, and zero-trust web cryptography."
+        "dateModified": "2026-11-09",
+        "description": "What AES-GCM provides, what each input is for, why a nonce must never repeat under a key, a reproducible OpenSSL-interoperable worked example, and the tool's scope and limits."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What makes AES-GCM an Authenticated Encryption with Associated Data (AEAD) cipher?",
+            "name": "Why must the IV be unique for each message?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AES-GCM combines counter mode (CTR) for stream confidentiality with polynomial universal hashing over a binary Galois field (GF(2^128)) known as GHASH for message authentication. Unlike unauthenticated modes like CBC, GCM calculates a cryptographic authentication tag simultaneously. If even a single bit of the ciphertext or Additional Authenticated Data (AAD) is altered in transit, decryption will immediately fail before exposing corrupt plaintext."
+              "text": "Reusing a key-and-IV pair across two messages leaks the XOR of their plaintexts and the value GCM uses to authenticate, which breaks both confidentiality and integrity. The IV isn't secret, but it must never repeat under the same key. This tool generates a fresh random 96-bit IV each time for that reason."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is reusing an Initialization Vector (IV/Nonce) catastrophic in AES-GCM?",
+            "name": "What's the difference between AAD and plaintext?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Reusing an IV with the same key produces the exact same keystream across both encryptions, permitting XOR-stripping attacks that reveal plaintext relations. More critically, Antoine Joux demonstrated that an IV collision enables solving polynomial equations over GF(2^128) to deduce the internal GHASH subkey H. Recovering H completely destroys authenticity, enabling an adversary to forge arbitrary valid tags for forged messages."
+              "text": "Plaintext is encrypted and authenticated. Associated data (AAD) is authenticated but left in the clear — it's for context like a header, version or message ID that you want bound to the ciphertext so it can't be swapped. Decryption fails if the AAD doesn't match."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the NIST recommended length for an AES-GCM Initialization Vector?",
+            "name": "Is a 128-bit key weaker than 256-bit for GCM?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "NIST SP 800-38D explicitly recommends a 96-bit (12-byte) Initialization Vector. For 96-bit IVs, GCM directly assigns the IV to the high-order bits of the initial counter block J0 and initializes the counter value to 1 without computing a preliminary GHASH pass, maximizing hardware efficiency and minimizing attack surfaces."
+              "text": "Both are standard and considered secure. AES-128-GCM is faster and fine for most uses; AES-256 adds margin against future advances. The key size doesn't change the nonce rule — unique IVs matter regardless."
             }
           },
           {
             "@type": "Question",
-            "name": "What is Additional Authenticated Data (AAD) and how is it used?",
+            "name": "What does an authentication failure on decryption mean?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Additional Authenticated Data (AAD) is plaintext metadata (such as protocol packet headers, sequence numbers, timestamps, or recipient user IDs) that requires tamper-proof integrity verification but does not need confidentiality. GCM folds the AAD bytes into the GHASH polynomial calculation prior to the ciphertext, ensuring that if an attacker alters the AAD, authentication tag verification fails."
+              "text": "The tag didn't verify, so GCM refuses to return any plaintext. The cause is a wrong key, a wrong or mismatched IV, mismatched AAD, or ciphertext that was altered. It's working as intended — tampered or mis-keyed data is rejected rather than silently decrypted."
             }
           },
           {
             "@type": "Question",
-            "name": "Are secret keys, plaintexts, or ciphertexts ever sent over the internet when using BitDark?",
+            "name": "Can I decrypt this output with OpenSSL or another library?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on a strict zero-network-egress security model. All cryptographic transformations execute entirely within your browser's sandboxed memory using the W3C Web Cryptography API (crypto.subtle). Your secret keys, plaintexts, and nonces are processed exclusively in volatile RAM and are never transmitted to any external server."
+              "text": "Yes. The tool uses standard AES-GCM, so its ciphertext and tag interoperate with OpenSSL, Node's crypto, and other correct implementations given the same key, IV and AAD. That's a good way to verify a cross-system integration."
             }
           }
         ]
@@ -742,7 +742,7 @@
 
     <div class="tool-header">
       <h1>AES-GCM Authenticated Cryptographic Engine</h1>
-      <p>Perform high-assurance symmetric encryption and authenticated decryption using AES in Galois/Counter Mode (AES-GCM). Supports 128-bit and 256-bit cryptographic keys, 96-bit random initialization vectors (nonces), and Additional Authenticated Data (AAD) stamping in local volatile RAM.</p>
+      <p>Encrypt and decrypt data with AES-GCM authenticated encryption: choose a 128- or 256-bit key, a fresh 96-bit IV, optional associated data and a 128-bit tag. It uses the browser's Web Crypto API, interoperates with OpenSSL, and runs entirely on your device.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -837,333 +837,111 @@
       </div>
     </div>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Implementation Boundaries:</strong> In Galois/Counter Mode (AES-GCM), <em>never reuse an Initialization Vector (IV/Nonce) with the same secret key</em>. Nonce reuse with an identical key fatally breaks the authenticity guarantees of the GHASH polynomial tag, exposing the internal hash subkey $H$ and permitting forgery attacks (Antoine Joux's "Forbidden Attack") alongside keystream XOR recovery. All cryptographic operations run exclusively inside your local browser runtime via the W3C Web Cryptography API (<code>window.crypto.subtle</code>). Plaintext inputs, derived keys, nonces, and output packages are never transmitted across the network or stored in persistent browser storage.
+        <strong>A learning, testing and interop tool, not key management.</strong> AES-GCM is only secure with a unique IV per message under a key — never reuse a key-and-IV pair. The key is shown on screen and generated per session; real systems use a KDF and a secrets manager. AAD is authenticated but not encrypted. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>Understanding Authenticated Encryption and the AES-GCM Architecture</h2>
+      <h2>What AES-GCM Does</h2>
       <p>
-        For decades, the standard paradigm in applied symmetric cryptography treated data confidentiality and data integrity as distinct, isolated operations. Early practitioners relied on unauthenticated block cipher modes of operation—such as Electronic Codebook (ECB) or Cipher Block Chaining (CBC)—to scramble plaintexts into pseudorandom ciphertext. While CBC successfully concealed statistical data patterns against passive eavesdroppers, it introduced a catastrophic systemic vulnerability: <strong>ciphertexts were malleable</strong>.
-      </p>
-      <p>
-        In an unauthenticated system, an active man-in-the-middle (MitM) adversary who cannot read the encrypted text can still strategically flip bits in the ciphertext. When the victim decrypts the modified block, the targeted bit errors propagate into predictable plaintext alterations, enabling devastating chosen-ciphertext attacks such as padding oracle vulnerabilities (e.g., the POODLE, Lucky Thirteen, and BEAST attacks). When engineers attempted to resolve this by appending an external message authentication code (MAC), such as HMAC-SHA256, subtle developer errors in ordering—such as choosing MAC-then-Encrypt instead of the cryptographically sound Encrypt-then-MAC paradigm—continually resulted in critical vulnerabilities.
-      </p>
-      <p>
-        To eliminate these structural weaknesses, the cryptographic community standardized <strong>Authenticated Encryption with Associated Data (AEAD)</strong>. First standardized by the National Institute of Standards and Technology (NIST) in <strong>Special Publication 800-38D</strong>, <strong>AES-GCM (Galois/Counter Mode)</strong> has become the global gold standard for symmetric encryption. It powers modern Transport Layer Security (TLS 1.2 and TLS 1.3), Google Cloud / AWS envelope encryption, IPsec network tunnels, and zero-knowledge storage engines by providing both confidentiality and mathematically certified integrity verification in a single, hardware-pipelined primitive.
+        AES-GCM is authenticated encryption: it keeps data confidential and, at the same time, produces an authentication tag that detects any change to the ciphertext. Decryption checks that tag before returning anything, so a wrong key, a wrong nonce, altered ciphertext or altered associated data all fail cleanly instead of yielding garbage. This tool runs AES-GCM through the browser's Web Crypto API, so the encryption is the same primitive your platform and OpenSSL use.
       </p>
 
-      <h2>How to Use the BitDark AES-GCM Cryptographic Engine</h2>
-      <p>
-        The BitDark AES-GCM Engine is engineered for instant cryptographic execution, diagnostic analysis, and testing directly inside volatile browser memory. Follow these operational steps to encrypt or decrypt messages:
-      </p>
-      <ol>
-        <li>
-          <strong>Select Key and Tag Bit Lengths:</strong> Choose between <strong>AES-256-GCM</strong> (32-byte key for post-quantum resistance against Grover's algorithm) or <strong>AES-128-GCM</strong> (16-byte key for standard commercial operations). Retain the default <strong>128-bit authentication tag</strong> (16 bytes) as mandated by NIST SP 800-38D for high-assurance applications.
-        </li>
-        <li>
-          <strong>Key Generation or Entry:</strong> Click <strong>"Generate Key"</strong> to draw cryptographically secure pseudo-random entropy from your operating system's kernel hardware RNG via <code>crypto.getRandomValues()</code>. Alternatively, paste an existing hex-encoded symmetric key.
-        </li>
-        <li>
-          <strong>Initialization Vector (IV/Nonce) Setup:</strong> Click <strong>"Generate IV"</strong> to populate a fresh, high-entropy 96-bit (12-byte) nonce. If decrypting an external message, paste the exact IV used during the original encryption pass.
-        </li>
-        <li>
-          <strong>Optional Associated Data (AAD):</strong> If your protocol binds metadata—such as a user ID, sequence counter, protocol version, or IP header—enter it into the AAD field. This data will be authenticated by the Galois field tag without being encrypted in the ciphertext body.
-        </li>
-        <li>
-          <strong>Execute Transformation:</strong>
-          <ul>
-            <li><strong>In Encryption Mode:</strong> Input your secret plaintext and click <strong>"Execute Encryption"</strong>. The engine generates a complete, structured JSON package containing the Base64 ciphertext, raw hex ciphertext, IV, and the GHASH authentication tag.</li>
-            <li><strong>In Decryption Mode:</strong> Paste the Base64/Hex ciphertext or the complete JSON package. Click <strong>"Execute Decryption &amp; Verify Tag"</strong>. If the tag matches perfectly, the decrypted plaintext is rendered. If even one bit has been tampered with or if the key/IV is wrong, the engine rejects the payload immediately.</li>
-          </ul>
-        </li>
-      </ol>
-
-      <h2>When to Use AES-GCM: Operational Scenarios &amp; Threat Models</h2>
-      <p>
-        AES-GCM is ideal across modern cybersecurity, application development, and infrastructure security scenarios:
-      </p>
-      <ul>
-        <li>
-          <strong>Zero-Trust Web &amp; API Security:</strong> Encrypting sensitive payload parameters, JSON Web Tokens (JWTs using <code>A256GCM</code>), or API responses between microservices where intermediate proxies must route traffic without inspecting payload contents.
-        </li>
-        <li>
-          <strong>Client-Side Local Storage Encryption:</strong> Storing user secrets, session tokens, or sensitive state inside <code>localStorage</code> or <code>IndexedDB</code>. By encrypting data with a key derived from a user passphrase using PBKDF2 or Argon2, client credentials remain unreadable even if an XSS script dumps browser storage.
-        </li>
-        <li>
-          <strong>Database Column-Level Cryptography:</strong> Protecting Personally Identifiable Information (PII)—such as social security numbers, banking details, or medical records—at rest in multi-tenant cloud databases. AES-GCM ensures that database administrators or compromised DB replicas cannot tamper with or read the column values.
-        </li>
-        <li>
-          <strong>Tamper-Proof File Integrity &amp; Archival:</strong> Encrypting backup archives or sensitive legal documents. Because GCM incorporates an authentication tag, you receive mathematical certainty that the backup was not corrupted during disk storage or modified by malicious actors.
-        </li>
-        <li>
-          <strong>Secure IoT &amp; Embedded Device Communication:</strong> AES-GCM hardware acceleration (via Intel AES-NI, AMD-V, and ARMv8 Cryptography Extensions) allows constrained microcontrollers and mobile processors to encrypt network traffic with sub-millisecond overhead.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Mathematical &amp; Architectural Anatomy of AES-GCM</h2>
-      <p>
-        The elegance of Galois/Counter Mode lies in its seamless combination of two distinct mathematical constructs: <strong>Counter Mode (CTR)</strong> for symmetric masking and <strong>Galois Universal Hashing (GHASH)</strong> over a finite field for polynomial authentication.
-      </p>
-
-      <h3>1. Confidentiality via Counter Mode (CTR)</h3>
-      <p>
-        Unlike cipher block chaining where the previous block's ciphertext is XORed with the current plaintext, CTR transforms the block cipher into a high-speed stream cipher. The cipher encrypts successive increments of an initial counter block $J_0$:
-      </p>
-      <pre><code>Plaintext Block P[i] XOR AES_K(Counter[i]) = Ciphertext Block C[i]</code></pre>
-      <p>
-        For a standard 96-bit IV, NIST SP 800-38D formats the 128-bit initial counter block $J_0$ by concatenating the 96-bit IV with a 32-bit big-endian representation of the integer 1:
-      </p>
-      <pre><code>J_0 = IV || 0x00000001</code></pre>
-      <p>
-        Encryption of the plaintext begins with counter $J_1 = J_0 + 1 = \text{IV} \parallel 0x00000002$. Each block is processed independently, meaning encryption and decryption are completely parallelizable across modern CPU cores.
-      </p>
-
-      <h3>2. Authenticity via GHASH Polynomials over $GF(2^{128})$</h3>
-      <p>
-        To compute the authentication tag, AES-GCM derives a specialized 128-bit hash subkey $H$ by encrypting a zero block with the master key:
-      </p>
-      <pre><code>H = AES_K(0^{128})</code></pre>
-      <p>
-        The GHASH function takes the Additional Authenticated Data ($A$) and the generated Ciphertext ($C$), pads both to 128-bit block multiples with zeroes, and evaluates them as coefficients of a high-degree polynomial over the Galois field $GF(2^{128})$. The field arithmetic is defined modulo the irreducible polynomial:
-      </p>
-      <pre><code>f(x) = x^{128} + x^7 + x^2 + x + 1</code></pre>
-      <p>
-        The calculation proceeds iteratively using carry-less polynomial multiplication:
-      </p>
-      <pre><code>X_0 = 0
-X_i = (X_{i-1} XOR Block_i) * H  (in GF(2^{128}))</code></pre>
-      <p>
-        Once all blocks of $A$ and $C$ are folded into $X$, a final 128-bit block containing the bit lengths of $A$ and $C$ is appended and multiplied by $H$. Finally, this result is XORed with the AES encryption of the initial counter block $J_0$:
-      </p>
-      <pre><code>Authentication Tag T = GHASH_H(A, C) XOR AES_K(J_0)</code></pre>
-
-      <pre><code>+-------------------------------------------------------------------------------+
-|                        AES-GCM Cryptographic Architecture                     |
-|                                                                               |
-|  [Master Secret Key K] ------------------------+                              |
-|                                                |                              |
-|                                          +-----v-----+                        |
-|                                          | AES_K(0)  |                        |
-|                                          +-----+-----+                        |
-|                                                |                              |
-|                                        [Hash Subkey H]                        |
-|                                                |                              |
-|  [96-bit IV] || 0x00000001 = [J_0] ---> AES_K(J_0) ---------+                 |
-|  [96-bit IV] || 0x00000002 = [J_1] ---> AES_K(J_1) XOR P_1 = C_1             |
-|  [96-bit IV] || 0x00000003 = [J_2] ---> AES_K(J_2) XOR P_2 = C_2             |
-|                                                              |                |
-|  [Additional Auth Data AAD] ---> GHASH Block 1 (x H)         |                |
-|  [Ciphertext Blocks C_1..n] ---> GHASH Block 2 (x H) <-------+                |
-|  [Length Block: len(A)||len(C)]> GHASH Block 3 (x H)                          |
-|                                                |                              |
-|                                                v                              |
-|                                        GHASH_H(A, C)                          |
-|                                                |                              |
-|                                                v                              |
-|                                  [GHASH] XOR [AES_K(J_0)]                     |
-|                                                |                              |
-|                                                v                              |
-|                                  [128-bit Authentication Tag T]               |
-+-------------------------------------------------------------------------------+</code></pre>
-
-      <h2>The Catastrophic Nonce-Reuse Disaster: Joux's "Forbidden Attack"</h2>
-      <p>
-        The most critical security mandate in AES-GCM is absolute nonce separation: <strong>never, under any circumstance, encrypt two distinct plaintexts using the same key and the same initialization vector (nonce)</strong>.
-      </p>
-      <p>
-        When an initialization vector is reused with an identical secret key, two distinct security failures occur:
-      </p>
-      <ol>
-        <li>
-          <strong>Keystream Cancellation (Confidentiality Loss):</strong> Because CTR mode XORs the plaintext with the keystream, XORing two ciphertexts generated with the same key and IV cancels out the keystream entirely:
-          <pre><code>C_1 XOR C_2 = (P_1 XOR Keystream) XOR (P_2 XOR Keystream) = P_1 XOR P_2</code></pre>
-          An attacker possessing $C_1 \oplus C_2$ can use statistical natural language frequency analysis or known-plaintext fragments to recover both $P_1$ and $P_2$ completely.
-        </li>
-        <li>
-          <strong>The "Forbidden Attack" (Complete Authenticity Forgery):</strong> In 2006, cryptographer Antoine Joux demonstrated that an IV collision enables an adversary to recover the internal hash subkey $H$. Because the tag is computed as $T = \text{GHASH}_H(A, C) \oplus \text{AES}_K(J_0)$, subtracting or XORing two tags generated under the same IV eliminates the mask $\text{AES}_K(J_0)$:
-          <pre><code>T_1 XOR T_2 = GHASH_H(A_1, C_1) XOR GHASH_H(A_2, C_2)</code></pre>
-          This yields a non-zero polynomial equation in the single variable $H$ over $GF(2^{128})$. Using standard root-finding algorithms (such as the Berlekamp or Cantor-Zassenhaus algorithms), the attacker can determine a small set of candidate values for $H$ (often a single root). Once $H$ is known, the attacker can forge valid authentication tags for arbitrary forged ciphertexts, completely compromising the security of the communication channel.
-        </li>
-      </ol>
-
-      <h2>Additional Authenticated Data (AAD): Integrity Without Encryption</h2>
-      <p>
-        A frequent point of confusion among engineers is the distinction between ciphertext and <strong>Additional Authenticated Data (AAD)</strong>. In many network protocols and database systems, certain metadata components must remain readable by intermediate gateways, routers, or indexing services:
-      </p>
-      <ul>
-        <li><strong>TCP/IP Routing Headers:</strong> Source IP addresses, destination ports, and protocol flags.</li>
-        <li><strong>Database Primary Keys &amp; Index UUIDs:</strong> Allowing search lookups without exposing encrypted personal records.</li>
-        <li><strong>Protocol Version Negotiation:</strong> Ensuring client and server agree on cryptographic parameters.</li>
-      </ul>
-      <p>
-        If you encrypt these fields, intermediaries cannot route packets. If you leave them unauthenticated, an attacker can modify the destination address, redirecting encrypted corporate records to an adversarial server.
-      </p>
-      <p>
-        AES-GCM solves this through AAD. The AAD is passed directly to the GHASH accumulator, becoming mathematically bound to the authentication tag $T$. If an attacker alters the unencrypted routing header in transit, the GHASH tag calculation on the receiving end fails, and the decryption engine discards the message before processing.
-      </p>
-
-      <h2>Worked Cryptographic Example: NIST SP 800-38D Test Vectors</h2>
-      <p>
-        To verify that the BitDark client-side engine executes NIST-compliant transformations, consider the following formal test vector adapted from the NIST Cryptographic Algorithm Validation Program (CAVP):
-      </p>
-      <pre><code>[Input Parameters]
-Key (AES-256):    feffe9928665731c6d6a8f9467308308feffe9928665731c6d6a8f9467308308
-IV (96-bit):      cafebabefacedbaddecaf888
-Plaintext:        d9313225f88406e5a55909c5aff5269a86a7a9531534f7da2e4c303d8a318a72
-                  1c3c0c95956809532fcf0e2449a6b525b16aedf5aa0de657ba637b391aafd255
-AAD:              feedfacedeadbeeffeedfacedeadbeefabaddad2
-
-[Output Cryptographic Artifacts]
-Ciphertext (Hex): 522dc1f099567d07f47f37a32a84427d643a8cdcbfe5c0c97598a2bd2555d1aa
-                  8cb08e48590dbb3da7b08b10568288861becef4f9c65ddbc29772474a424df27
-Auth Tag (Hex):   5bc94fbc3221a5db94fae95ae7121a47
-Status:           AUTHENTICATION_VERIFIED (NIST SP 800-38D Case 16 Match)</code></pre>
-
-      <h2>Comparative Analysis: AES-GCM vs Modern Symmetric Ciphers</h2>
-      <p>
-        Selecting the appropriate symmetric cipher primitive requires balancing cryptographic strength, performance characteristics, and hardware architectural support:
-      </p>
+      <h2>The Inputs, and What Each One Is For</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Cipher Construction</th>
-              <th>Primitive Type</th>
-              <th>Hardware Acceleration</th>
-              <th>Nonce Misuse Resilience</th>
-              <th>Primary Industry Standards</th>
-            </tr>
+            <tr><th>Field</th><th>Meaning</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>AES-256-GCM</strong></td>
-              <td>AEAD (Block + GHASH)</td>
-              <td><strong>Extremely High</strong> (AES-NI / ARM Crypto)</td>
-              <td><strong>Fragile</strong> (Total failure on reuse)</td>
-              <td>TLS 1.3, IPsec, SSH, AWS KMS, IEEE 802.1AE</td>
-            </tr>
-            <tr>
-              <td><strong>ChaCha20-Poly1305</strong></td>
-              <td>AEAD (Stream + Poly1305)</td>
-              <td><strong>High</strong> (SIMD / AVX2 / NEON)</td>
-              <td><strong>Fragile</strong> (Keystream/Authenticator loss)</td>
-              <td>WireGuard VPN, TLS 1.3 (Mobile), SSH</td>
-            </tr>
-            <tr>
-              <td><strong>AES-GCM-SIV (RFC 8452)</strong></td>
-              <td>Synthetic IV AEAD</td>
-              <td><strong>High</strong> (AES-NI pipelined)</td>
-              <td><strong>Robust</strong> (Deterministic, leak-only)</td>
-              <td>Cloudflare Quiche, High-Security Storage</td>
-            </tr>
-            <tr>
-              <td><strong>AES-256-CBC + HMAC</strong></td>
-              <td>Composed (Block + MAC)</td>
-              <td><strong>Moderate</strong> (Serial cipher chaining)</td>
-              <td><strong>Moderate</strong> (IV reuse leaks prefix only)</td>
-              <td>Legacy TLS 1.0-1.2, OpenVPN, PGP</td>
-            </tr>
-            <tr>
-              <td><strong>AES-CTR (Unauthenticated)</strong></td>
-              <td>Stream Mode</td>
-              <td><strong>Extremely High</strong> (Parallelizable)</td>
-              <td><strong>Critical</strong> (Malleable, zero integrity)</td>
-              <td>Disk Encryption (with XTS), Obsolete Protocols</td>
-            </tr>
+            <tr><td><strong>Key</strong></td><td>128- or 256-bit secret. Both parties need the same key; it's the only secret</td></tr>
+            <tr><td><strong>IV / nonce</strong></td><td>A 96-bit value per message. Not secret, but must be unique for a given key</td></tr>
+            <tr><td><strong>AAD</strong></td><td>Associated data that is authenticated but <em>not</em> encrypted — e.g. a header or message ID</td></tr>
+            <tr><td><strong>Tag</strong></td><td>The 128-bit authentication tag GCM appends; 128-bit is the NIST-recommended length</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Common Cryptographic Pitfalls &amp; Vulnerabilities</h2>
       <p>
-        Even with robust primitives like AES-GCM, improper implementation architecture can introduce critical vulnerabilities:
+        The tool returns the ciphertext (Base64 and hex), the tag, and a combined package. Web Crypto appends the tag to the ciphertext, so the combined value is what you feed back in to decrypt.
       </p>
+
+      <h2>The One Rule That Matters Most: Never Reuse a Nonce</h2>
+      <p>
+        AES-GCM is only secure if each message under a given key uses a unique IV. Reusing the same key-and-IV pair for two different messages is catastrophic: it leaks the XOR of the two plaintexts <em>and</em> exposes the value used to forge authentication tags, breaking both confidentiality and integrity. This is the single most common way GCM deployments fail.
+      </p>
+      <p>
+        That's why this tool generates a fresh random 96-bit IV for every encryption. A random 96-bit nonce is safe as long as you don't exceed roughly 2<sup>32</sup> (about four billion) messages under one key; past that, collision risk grows and you should rotate the key or use a counter-based nonce scheme. The IV is not secret, so you can send it alongside the ciphertext — just never repeat it with the same key.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Encryption is deterministic given the key, IV, AAD and plaintext. With AES-256-GCM, key <code>0011…eeff</code> (the 32-byte pattern), IV <code>000102030405060708090a0b</code>, AAD <code>bitdark-context</code> and plaintext <code>Hello, BitDark AES-GCM</code>, the tool produces:
+      </p>
+      <pre><code>ciphertext+tag (hex):
+5e7dd95a2f65edf4a04f2b9d43be446e2b668a39b849   (ciphertext)
+54335c1f156c244baff755d7fa27854c               (128-bit tag)</code></pre>
+      <p>
+        This is byte-for-byte identical to <code>openssl</code> and Node's <code>crypto</code> AES-256-GCM with the same inputs, which is how to confirm the tool is a standard implementation. It also demonstrates the nonce rule in reverse: because the output is fixed for a fixed key+IV, reusing that pair on a different message would reveal the relationship between the two.
+      </p>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Encrypt:</strong> generate (or paste) a key, let it generate a fresh IV, add optional AAD, enter your plaintext, and execute. Keep the key, IV and tag together to decrypt later.</li>
+        <li><strong>Decrypt:</strong> paste the JSON package, or the Base64/hex ciphertext, and supply the matching key, IV and AAD. A failed tag check reports an authentication error rather than returning wrong plaintext.</li>
+        <li><strong>Change the key size</strong> between 128 and 256 bits; both are standard. Keep the tag at 128 bits unless you have a specific reason not to.</li>
+      </ol>
+
+      <h2>Scope and Limits</h2>
       <ul>
-        <li>
-          <strong>Generating Nonces with Math.random():</strong> JavaScript's <code>Math.random()</code> is a non-cryptographic PRNG. It exhibits short cycles and predictable state seeds. In AES-GCM, an attacker predicting nonces can anticipate keystreams or trigger collisions. Always draw entropy using <code>window.crypto.getRandomValues()</code>.
-        </li>
-        <li>
-          <strong>Non-96-Bit Initialization Vectors:</strong> While NIST allows IVs with lengths other than 96 bits, processing a non-96-bit IV requires hashing the IV with the GHASH function prior to counter initialization. This adds significant computational latency, increases software complexity, and introduces edge-case vulnerabilities. Standardize strictly on 96 bits (12 bytes).
-        </li>
-        <li>
-          <strong>Truncating Authentication Tags:</strong> While the GCM specification permits truncating tags down to 96, 64, or 32 bits for constrained bandwidth, doing so reduces the attacker's work factor exponentially. An adversary forging a packet against a 32-bit tag has a $2^{-32}$ (1 in 4.29 billion) probability of success per attempt. In high-throughput networks, an attacker can flood forged packets until one passes. Retain the full 128-bit tag.
-        </li>
-        <li>
-          <strong>Exposing Plaintext Prior to Tag Verification ("Release of Unverified Plaintext"):</strong> A catastrophic flaw in custom decryption code occurs when an engine streams decrypted plaintext to a client before verifying the trailing authentication tag. If the tag check ultimately fails, the client may have already processed or acted upon tampered data. The W3C Web Crypto API prevents this by returning an atomic rejection promise, discarding all plaintext if the tag is invalid.
-        </li>
-        <li>
-          <strong>Storing Plaintext Cryptographic Keys in Web Storage:</strong> Placing raw symmetric keys inside browser <code>localStorage</code> or cookies leaves them completely exposed to Cross-Site Scripting (XSS) extraction. Use non-extractable CryptoKey handles stored inside <code>IndexedDB</code> or derive keys ephemerally from user passphrases.
-        </li>
+        <li><strong>This is a learning, testing and interop tool.</strong> It's useful for understanding GCM, checking a payload, or confirming two systems agree — not for managing production secrets.</li>
+        <li><strong>It isn't key management.</strong> The key is shown in hex on screen and generated per session. Real systems derive keys with a KDF, store them in a secrets manager or KMS, and rotate them.</li>
+        <li><strong>AAD is authenticated, not hidden.</strong> Don't put secrets in it; use it for context you want bound to the ciphertext.</li>
+        <li><strong>Everything runs locally.</strong> Keys, plaintext and ciphertext stay in your browser — nothing is uploaded — so it's safe to use with real values for testing.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does AES-GCM decryption fail with a generic "OperationError"?</div>
+          <div class="faq-question">Why must the IV be unique for each message?</div>
           <div class="faq-answer">
-            To prevent side-channel timing attacks, the W3C Web Crypto API intentionally obscures the exact cause of a decryption failure. If the key is wrong, if the IV is mismatched, if the Additional Authenticated Data (AAD) differs by even a single comma, or if an attacker flipped a single bit in the ciphertext, the API throws an identical generic <code>OperationError</code>. This ensures an attacker cannot perform padding or tag-oracle cryptanalysis.
+            Reusing a key-and-IV pair across two messages leaks the XOR of their plaintexts and the value GCM uses to authenticate, which breaks both confidentiality and integrity. The IV isn't secret, but it must never repeat under the same key. This tool generates a fresh random 96-bit IV each time for that reason.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between AES-128-GCM and AES-256-GCM?</div>
+          <div class="faq-question">What's the difference between AAD and plaintext?</div>
           <div class="faq-answer">
-            The difference lies in key length and internal rounds. AES-128 uses a 16-byte (128-bit) key across 10 algorithmic rounds, whereas AES-256 uses a 32-byte (256-bit) key across 14 rounds. While AES-128 is computationally unbreakable against classical brute-force, AES-256 provides a safety margin against prospective quantum computers running Grover's search algorithm, which halves effective symmetric key entropy.
+            Plaintext is encrypted and authenticated. Associated data (AAD) is authenticated but left in the clear — it's for context like a header, version or message ID that you want bound to the ciphertext so it can't be swapped. Decryption fails if the AAD doesn't match.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can I encrypt multiple files using the same AES-GCM secret key?</div>
+          <div class="faq-question">Is a 128-bit key weaker than 256-bit for GCM?</div>
           <div class="faq-answer">
-            Yes, provided you generate a globally unique, cryptographically random 96-bit Initialization Vector (IV) for every single encryption operation. Under NIST SP 800-38D, a single 256-bit key can safely encrypt up to $2^{32}$ (approximately 4.29 billion) messages using random 96-bit IVs before the probability of an IV collision exceeds one in a million ($2^{-32}$).
+            Both are standard and considered secure. AES-128-GCM is faster and fine for most uses; AES-256 adds margin against future advances. The key size doesn't change the nonce rule — unique IVs matter regardless.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does AES-GCM compare to ChaCha20-Poly1305?</div>
+          <div class="faq-question">What does an authentication failure on decryption mean?</div>
           <div class="faq-answer">
-            Both are state-of-the-art AEAD primitives. AES-GCM relies on dedicated hardware instructions (AES-NI and CLMUL) present on modern Intel, AMD, and ARM processors, achieving speeds exceeding 4-10 GB/s per core. On hardware lacking hardware acceleration (such as older IoT microcontrollers), AES is susceptible to cache-timing attacks, whereas ChaCha20-Poly1305 executes in constant time using standard arithmetic operations.
+            The tag didn't verify, so GCM refuses to return any plaintext. The cause is a wrong key, a wrong or mismatched IV, mismatched AAD, or ciphertext that was altered. It's working as intended — tampered or mis-keyed data is rejected rather than silently decrypted.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Does this tool transmit keys, IVs, or payloads to BitDark servers?</div>
+          <div class="faq-question">Can I decrypt this output with OpenSSL or another library?</div>
           <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security architecture. All transformations execute via the browser's native <code>window.crypto.subtle</code> API directly within local device RAM. No telemetry, IP logging, or third-party tracking scripts monitor your cryptographic operations.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does the generated ciphertext appear slightly longer than the plaintext?</div>
-          <div class="faq-answer">
-            In standard AES-GCM implementations, the authentication tag (16 bytes / 128 bits) is appended to the end of the ciphertext stream. For example, encrypting a 32-byte plaintext produces 48 bytes of output (32 bytes of ciphertext + 16 bytes of authentication tag). Furthermore, encoding binary buffers into Base64 adds an overhead of approximately 33%.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is AES-GCM-SIV and should I use it instead?</div>
-          <div class="faq-answer">
-            AES-GCM-SIV (Synthetic Initialization Vector, RFC 8452) is a nonce-misuse-resistant variant of GCM. In standard GCM, reusing a nonce exposes the internal authentication key $H$. In GCM-SIV, reusing a nonce leaks only whether the same plaintext was encrypted twice, preventing keystream extraction and tag forgeries. However, GCM-SIV requires two sequential passes over the data, reducing throughput compared to standard GCM.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How should I store or transmit the output package?</div>
-          <div class="faq-answer">
-            To decrypt an AES-GCM message, the recipient requires four elements: the Ciphertext, the Authentication Tag, the Initialization Vector (IV), and the secret key. The IV and Authentication Tag are not secret and are commonly packaged alongside the ciphertext in a JSON structure or serialized as <code>[IV (12 bytes)][Ciphertext][Tag (16 bytes)]</code>. Only the Secret Key must remain confidential.
+            Yes. The tool uses standard AES-GCM, so its ciphertext and tag interoperate with OpenSSL, Node's crypto, and other correct implementations given the same key, IV and AAD. That's a good way to verify a cross-system integration.
           </div>
         </div>
       </section>
