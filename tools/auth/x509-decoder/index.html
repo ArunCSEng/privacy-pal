@@ -6,8 +6,8 @@
   
   <title>X.509 Certificate & CSR Decoder — Free Offline Security Tool | BitDark</title>
   <meta name="title" content="X.509 Certificate & CSR Decoder — Free Offline Security Tool | BitDark" />
-  <meta name="description" content="Decode, inspect, and verify X.509 certificates and PKCS#10 CSRs entirely in browser RAM. Inspect Subject Alternative Names (SAN), public keys, validity dates, ASN.1 TLV structures, and SHA-256 fingerprints with zero network egress." />
-  <meta name="keywords" content="x509 decoder, pem decoder offline, csr decoder, ssl certificate parser, der parser javascript, client side x509, asn1 decoder, pkcs10 parser, subject alternative name viewer, tls cert inspect" />
+  <meta name="description" content="Decode X.509 certificates and PKCS#10 CSRs in your browser: subject, issuer, validity, serial, public key, SANs and SHA-256 fingerprint. Verifiable against OpenSSL. Nothing is uploaded." />
+  <meta name="keywords" content="x509 decoder, certificate decoder, csr decoder, pkcs10, sha-256 fingerprint, subject alternative name, pem der parser, openssl x509" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/auth/x509-decoder/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/auth/x509-decoder/" />
   <meta property="og:title" content="X.509 Certificate & CSR Decoder — Local Memory Parser | BitDark" />
-  <meta property="og:description" content="Decode and analyze SSL/TLS X.509 certificates and CSRs entirely inside local browser memory. 100% private, zero network telemetry." />
+  <meta property="og:description" content="Decode X.509 certificates and CSRs locally: subject, issuer, validity, public key, SANs and SHA-256 fingerprint, with OpenSSL-verifiable output. Nothing is uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/auth/x509-decoder/" />
   <meta name="twitter:title" content="X.509 Certificate & CSR Decoder | BitDark" />
-  <meta name="twitter:description" content="Inspect X.509 ASN.1 DER structures, SAN extensions, and PKCS#10 CSRs locally in browser memory. Zero tracking or cloud transmission." />
+  <meta name="twitter:description" content="Decode X.509 certificates and CSRs in your browser, with OpenSSL-verifiable fields. Nothing is uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "X.509 Certificate & CSR Decoder",
         "url": "https://bitdark.net/tools/auth/x509-decoder/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Defensive client-side PKI utility to decode, unwrap, and inspect X.509 public key certificates, Subject Alternative Name (SAN) extensions, and PKCS#10 CSRs directly in volatile browser memory without network egress."
+        "description": "Browser-based X.509 and PKCS#10 decoder that parses ASN.1 DER locally to show subject, issuer, validity, serial, public key and SANs and compute the SHA-256 fingerprint."
       },
       {
         "@type": "TechArticle",
-        "headline": "X.509 Public Key Infrastructure: ASN.1 DER Encoding, PKCS#10 CSR Handshakes, and Certificate Validation",
+        "headline": "Decoding X.509 Certificates and CSRs: Structure, Fingerprints and What Decoding Doesn't Check",
         "url": "https://bitdark.net/tools/auth/x509-decoder/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-15",
-        "dateModified": "2026-11-03",
-        "description": "Exhaustive technical analysis of RFC 5280 X.509 certificate profiles, Abstract Syntax Notation One (ASN.1) Distinguished Encoding Rules (DER), Type-Length-Value (TLV) parsing, and client-side cryptographic analysis."
+        "dateModified": "2026-11-09",
+        "description": "What the decoder shows, why decoding structure is not verifying trust, an OpenSSL-verifiable worked example, how to read the fields (including SAN vs CN), and the tool's limits."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is an X.509 certificate and how does it secure network communications?",
+            "name": "Does a green \"valid\" result mean the certificate is trusted?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "An X.509 certificate is a digital credential defined under ITU-T Recommendation X.509 and IETF RFC 5280. It mathematically binds a public cryptographic key to an identity (such as a domain name, corporate organization, or email address) using a digital signature executed by a trusted Certificate Authority (CA). This binding enables mutual identity authentication and encrypted session negotiation in TLS/HTTPS."
+              "text": "No. It means the certificate decoded as well-formed and isn't past its expiry date. The tool doesn't verify the signature, build a chain to a trusted CA, or check revocation, so a self-signed or forged certificate shows the same result. Use OpenSSL or a browser to decide trust."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is the Common Name (CN) field considered deprecated in modern TLS certificates?",
+            "name": "Why is the fingerprint different from another tool's?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Historically, the Subject Common Name (CN) held the primary domain name. However, RFC 6125 and modern browser baseline requirements deprecated CN in favor of the Subject Alternative Name (SAN) extension (OID 2.5.29.17). SAN supports multiple fully qualified domain names (FQDNs), wildcard domains, and IP addresses simultaneously, removing syntactic ambiguities."
+              "text": "This tool reports the SHA-256 fingerprint, a hash of the whole DER certificate. Older tools sometimes show a SHA-1 fingerprint, which will differ. The SHA-256 value here matches \"openssl x509 -fingerprint -sha256\"."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the difference between a Certificate Signing Request (CSR) and an issued certificate?",
+            "name": "The hostname is in the Common Name but the certificate seems wrong — why?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A CSR (PKCS#10 / RFC 2986) is an unsigned application generated on an endpoint containing the applicant's public key and identity parameters, signed with the applicant's private key to prove key possession (Proof of Possession). An issued X.509 certificate is the final signed credential produced when a Certificate Authority signs those parameters with the CA's own private key."
+              "text": "Browsers match the hostname against the Subject Alternative Names, not the Common Name. A certificate whose SAN list doesn't include the hostname is rejected even if the CN matches. Check the SAN field in the decoded output."
             }
           },
           {
             "@type": "Question",
-            "name": "Does decoding a certificate reveal its private key?",
+            "name": "Can I decode a CSR as well as a certificate?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. An X.509 certificate and a standard PKCS#10 CSR contain only the public key, identity attributes, validity windows, and digital signatures. They never contain the private key. Private keys must remain strictly confidential on the host system."
+              "text": "Yes. A PKCS#10 certificate signing request is detected from its header and decoded to show the subject and public key. A CSR has no issuer, validity window or serial number yet, because it hasn't been signed by a CA, so those fields read as not applicable."
             }
           },
           {
             "@type": "Question",
-            "name": "Are certificates or CSRs pasted into BitDark uploaded to an external server?",
+            "name": "Is my certificate uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All PEM parsing, Base64 decoding, ASN.1 DER tree walking, and SHA-256 fingerprint calculations run exclusively inside your browser's private volatile RAM via JavaScript TypedArrays and the native W3C Web Crypto API."
+              "text": "No. Parsing and the SHA-256 fingerprint run entirely in your browser with the Web Crypto API; nothing is sent to a server. That makes it safe to inspect internal or private certificates."
             }
           }
         ]
@@ -732,7 +732,7 @@
 
     <div class="tool-header">
       <h1>X.509 Certificate & CSR Decoder</h1>
-      <p>Inspect, parse, and verify ASN.1 structures in SSL/TLS certificates and PKCS#10 Certificate Signing Requests (CSRs) directly in browser memory. Extract Subject Alternative Names (SANs), public key parameters, and validity windows without server transmission.</p>
+      <p>Decode an X.509 certificate or a PKCS#10 CSR in your browser: subject, issuer, validity window, serial number, public key type and size, subject alternative names and the SHA-256 fingerprint. The certificate is parsed locally and never uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -803,349 +803,123 @@
       </div>
     </section>
 
-    <!-- Forensic Boundaries & Legal Disclaimer Card -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        This client-side decoder analyzes structural ASN.1 DER syntax and self-reported parameters within volatile browser memory; it does not perform live Online Certificate Status Protocol (OCSP) stapling, Certificate Revocation List (CRL) queries, or hierarchical root CA path construction across native operating system trust stores. Reliance on this tool for enterprise production validation or compliance audits is at your own risk. Always verify critical keys using authoritative cryptographic engines such as OpenSSL, NSS, or native platform trust managers.
+        <strong>This decodes a certificate's structure; it doesn't verify trust.</strong> It does not check the signature, build a chain to a trusted CA, or query revocation (CRL/OCSP), so a self-signed or forged certificate decodes just the same. A valid-syntax result is not a trust decision. Use <code>openssl verify</code> or a browser for that. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article -->
     <article class="article-container">
-      <h2>Understanding Public Key Infrastructure (PKI) and X.509 Architecture</h2>
+      <h2>What This Tool Decodes</h2>
       <p>
-        The security architecture of the modern Internet rests upon a mathematical and institutional framework established decades ago: <strong>Public Key Infrastructure (PKI)</strong> governed by the <strong>ITU-T X.509 standard</strong> and formalized for the web in <strong>IETF RFC 5280</strong>. Whenever a web browser initiates a Transport Layer Security (TLS) handshake, an enterprise endpoint verifies an mTLS API gateway, or a software engineer commits code signed with an S/MIME key, an X.509 certificate acts as the verifiable digital passport proving cryptographic identity.
+        An X.509 certificate (and a PKCS#10 certificate signing request) is a binary structure encoded in ASN.1 DER, usually wrapped in Base64 as a PEM block between <code>-----BEGIN CERTIFICATE-----</code> lines. This tool parses that structure in your browser and shows the fields inside it: subject, issuer, validity window, serial number, public key type and size, subject alternative names, and the certificate's SHA-256 fingerprint.
       </p>
       <p>
-        At its core, an X.509 certificate solves the fundamental key distribution problem: how can Party A communicate securely with Party B without prior shared secrets, while remaining immune to active adversary impersonation (Man-in-the-Middle attacks)? Rather than relying on peer-to-peer verification, X.509 establishes a hierarchical chain of trust. A trusted entity known as a <strong>Certificate Authority (CA)</strong> inspects an entity's identity, reviews their public key, and affixes a cryptographic digital signature over the entire package. Any client possessing the CA's pre-distributed root certificate can mathematically verify the signature using the CA's public key, proving the certificate has not been tampered with and was issued by an audited authority.
+        Paste a PEM block or drop a <code>.pem</code>, <code>.crt</code>, <code>.cer</code> or <code>.der</code> file. A certificate request is detected from its <code>CERTIFICATE REQUEST</code> header and decoded as a CSR, which contains only the subject and public key, with no issuer or validity yet.
       </p>
 
-      <h2>How to Use the BitDark X.509 & CSR Decoder</h2>
+      <h2>Decode Checks Structure, Not Trust</h2>
       <p>
-        Inspecting certificates and signing requests with the BitDark decoder is designed to be frictionless, forensically sound, and strictly private:
-      </p>
-      <ol>
-        <li>
-          <strong>Select or Upload Your File:</strong> Drag and drop any certificate or signing request file (supporting <code>.pem</code>, <code>.crt</code>, <code>.cer</code>, <code>.csr</code>, <code>.der</code>, or <code>.txt</code>) directly onto the dropzone. Alternatively, click to select a file using your native operating system picker.
-        </li>
-        <li>
-          <strong>Direct Text Insertion:</strong> If working with clipboard strings, paste the raw ASCII armored PEM block (e.g., <code>-----BEGIN CERTIFICATE-----</code> or <code>-----BEGIN CERTIFICATE REQUEST-----</code>) directly into the textarea. You can also click "Load Certificate" or "Load CSR" to populate byte-verified reference templates.
-        </li>
-        <li>
-          <strong>Execute Client-Side Decoding:</strong> Click "Decode Payload". The client-side parser strips non-Base64 armor, decodes the raw bytes into a <code>Uint8Array</code>, computes a SHA-256 fingerprint via the W3C Web Crypto API, and executes a recursive ASN.1 DER parser across all child nodes.
-        </li>
-        <li>
-          <strong>Analyze Parsed Metadata:</strong> Review the generated metadata summary grid for the Subject Common Name, Issuer Organization, Validity Window (NotBefore to NotAfter), Public Key algorithm/key size, and Serial Number. Inspect the viewer box for Subject Alternative Names (SANs) and structured JSON hierarchies.
-        </li>
-        <li>
-          <strong>Export Forensics:</strong> Click "Export Parsed JSON" to download the decoded tree for compliance logs, or "Copy JSON" to paste structured data directly into automation scripts.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Threat Modeling & Operational Scenarios</h2>
-      <p>
-        Local, air-gapped certificate decoding is indispensable across multiple systems engineering, security auditing, and offensive defense workflows:
+        This is the important distinction. The tool reads what a certificate <em>claims</em>; it does not verify that those claims are trustworthy. Specifically, it does <strong>not</strong>:
       </p>
       <ul>
-        <li>
-          <strong>Pre-Deployment CSR Verification:</strong> Before submitting a Certificate Signing Request to a commercial CA or internal corporate vault, DevOps engineers must verify that the embedded Subject Alternative Names (SANs) and organizational units match strict domain naming policies, ensuring no typos delay production provisioning.
-        </li>
-        <li>
-          <strong>Zero-Egress Security Auditing:</strong> Security teams operating in zero-trust, HIPAA, PCI-DSS, or air-gapped national defense environments cannot paste production server certificates into random third-party cloud-based SSL decoders. Online cloud converters log IP addresses, payloads, and timestamps. BitDark guarantees zero network egress—all bytes stay in volatile RAM.
-        </li>
-        <li>
-          <strong>Post-Mortem Outage Diagnostics:</strong> When microservices fail with cryptic <code>x509: certificate has expired or is not yet valid</code> or <code>ERR_CERT_COMMON_NAME_INVALID</code> errors, systems administrators can quickly drag the cluster secret file into the decoder to evaluate expiration boundaries and SAN arrays without needing shell OpenSSL access.
-        </li>
-        <li>
-          <strong>mTLS & Service Mesh Configuration:</strong> Debugging Istio, Linkerd, or Envoy client-side mutual TLS configurations requires verifying whether leaf certificates carry the required Extended Key Usage (EKU) flags (e.g., Client Authentication vs Server Authentication).
-        </li>
-        <li>
-          <strong>Malware & C2 Infrastructure Triage:</strong> Threat analysts dissecting self-signed TLS certificates extracted from Cobalt Strike, Sliver, or custom Command and Control (C2) servers can inspect anomalous issuer parameters, unusual validity durations, and dummy serial numbers to generate threat intelligence signatures.
-        </li>
+        <li><strong>Verify the signature.</strong> It doesn't check that the issuer's key actually signed this certificate.</li>
+        <li><strong>Build or validate a chain.</strong> It doesn't confirm the issuer is a trusted CA or that intermediates link to a root.</li>
+        <li><strong>Check revocation.</strong> It doesn't query CRL or OCSP, so a revoked certificate still decodes cleanly.</li>
       </ul>
-
-      <h2>Deep Dive: ASN.1, DER, and the TLV Architecture</h2>
       <p>
-        To understand how certificates are encoded, one must understand <strong>Abstract Syntax Notation One (ASN.1)</strong>, an international standard formal interface definition language defined in the ITU-T X.680 series. ASN.1 describes abstract data structures independently of machine architectures, byte orders, or compilers.
-      </p>
-      <p>
-        Because ASN.1 is merely an abstract notation, it requires concrete encoding rules to convert structures into binary wire streams. While Basic Encoding Rules (BER) permit multiple ways to encode the same value, X.509 strictly mandates <strong>Distinguished Encoding Rules (DER, ITU-T X.690)</strong>. DER guarantees unique, deterministic binary serialization: for any given cryptographic structure, there is exactly one valid DER byte sequence. This determinism is essential because computing a digital signature over non-deterministic encodings would yield different hashes, breaking signature verification.
+        So the green "Parsed Successfully / Valid Syntax" banner means the bytes decoded as well-formed DER, not that a browser would trust the certificate. A self-signed or even a deliberately forged certificate will decode and display just the same. It does check one thing beyond structure: whether today's date is past the <code>notAfter</code> date, which drives the ACTIVE / EXPIRED label.
       </p>
 
-      <h3>The Type-Length-Value (TLV) Triplet</h3>
+      <h2>A Worked Example You Can Verify</h2>
       <p>
-        DER serializes all data structures into consecutive triplets consisting of a <strong>Tag (Type)</strong>, a <strong>Length</strong>, and a <strong>Value</strong>:
+        The decoded values match the standard OpenSSL commands, which is how to confirm any of them. For a certificate file <code>cert.pem</code>:
+      </p>
+      <pre><code>openssl x509 -in cert.pem -noout -subject -issuer -serial -dates
+openssl x509 -in cert.pem -noout -fingerprint -sha256</code></pre>
+      <p>
+        The serial number this tool shows (colon-separated hex) equals OpenSSL's <code>-serial</code> output, and the fingerprint equals OpenSSL's <code>-fingerprint -sha256</code>, because both take a SHA-256 hash of the full DER-encoded certificate. If the two ever disagree, you're not looking at the same bytes.
       </p>
 
-      <pre><code>+-----------------------+-----------------------+-----------------------------------+
-|      Tag (Type)       |        Length         |               Value               |
-|  (1 or more octets)   |  (1 or more octets)   |         (Variable Octets)         |
-+-----------------------+-----------------------+-----------------------------------+
-| Example: 0x02 (INTEGER) | Example: 0x01 (1 byte)| Example: 0x05 (Integer value 5)   |
-| Example: 0x30 (SEQUENCE)| Example: 0x82 0x04 0x2A | Example: Nested child TLV triplets|
-+-----------------------+-----------------------+-----------------------------------+</code></pre>
-
-      <p>
-        The BitDark decoder implements a recursive parser that processes this byte stream sequentially:
-      </p>
-      <ul>
-        <li>
-          <strong>Tag Octet:</strong> Bits 8–7 indicate the class (Universal, Application, Context-specific, or Private). Bit 6 indicates whether the tag is Primitive (carrying raw scalar values) or Constructed (encapsulating nested TLV triplets, such as <code>0x30</code> for <code>SEQUENCE</code> and <code>0x31</code> for <code>SET</code>). Bits 5–1 encode the tag number (e.g., <code>0x02</code> for INTEGER, <code>0x03</code> for BIT STRING, <code>0x04</code> for OCTET STRING, <code>0x06</code> for OBJECT IDENTIFIER, <code>0x13</code> for PrintableString, <code>0x17</code> for UTCTime).
-        </li>
-        <li>
-          <strong>Length Octets:</strong> In short form (lengths between 0 and 127 bytes), the length is encoded in a single octet with bit 8 set to 0. In long form (lengths $\ge 128$ bytes), bit 8 is set to 1, and the remaining 7 bits dictate how many subsequent octets encode the unsigned integer length. For instance, <code>0x82 0x01 0x40</code> signifies that the next 2 bytes specify a length of 320 bytes ($0x0140$).
-        </li>
-        <li>
-          <strong>Value Octets:</strong> The raw payload bytes representing the actual data. If the tag is constructed, the Value contains child TLV tuples that must be traversed recursively.
-        </li>
-      </ul>
-
-      <h2>The Structure of an RFC 5280 X.509 v3 Certificate</h2>
-      <p>
-        An X.509 version 3 certificate is formalized in ASN.1 syntax as an outer <code>SEQUENCE</code> containing three primary structures:
-      </p>
-      <pre><code>Certificate  ::=  SEQUENCE  {
-     tbsCertificate       TBSCertificate,
-     signatureAlgorithm   AlgorithmIdentifier,
-     signatureValue       BIT STRING  }</code></pre>
-
-      <p>
-        The <strong>TBSCertificate</strong> ("To Be Signed") contains the core security parameters:
-      </p>
-      <ol>
-        <li><strong>Version:</strong> The X.509 version number (Version 3 is encoded as integer 2).</li>
-        <li><strong>Serial Number:</strong> A positive, unique integer assigned by the CA up to 20 octets long.</li>
-        <li><strong>Signature:</strong> The algorithm identifier used by the CA to sign the certificate (e.g., <code>sha256WithRSAEncryption</code> or <code>ecdsa-with-SHA384</code>).</li>
-        <li><strong>Issuer:</strong> The Relative Distinguished Name (RDN) sequence identifying the issuing CA (e.g., <code>C=US, O=Let's Encrypt, CN=R3</code>).</li>
-        <li><strong>Validity:</strong> A sequence containing two time boundaries: <code>notBefore</code> and <code>notAfter</code>. Dates prior to 2050 are encoded as <code>UTCTime</code> (YYMMDDHHMMSSZ); dates after 2049 use <code>GeneralizedTime</code> (YYYYMMDDHHMMSSZ).</li>
-        <li><strong>Subject:</strong> The RDN sequence identifying the entity holding the private key.</li>
-        <li><strong>SubjectPublicKeyInfo:</strong> The public key algorithm OID, parameters, and the raw bit string of the public key (RSA modulus/exponent or EC point).</li>
-        <li><strong>Extensions (v3 only):</strong> A sequence of extensions that define constraints, key usage, and alternative identifiers.</li>
-      </ol>
-
-      <h2>Worked Example: Decoding an X.509 Certificate Byte Stream</h2>
-      <p>
-        Let us trace how the BitDark parser unwraps a real-world certificate payload, starting from its ASCII PEM armor down to its binary DER components.
-      </p>
-
-      <h3>Step 1: PEM Armor Stripping and Base64 Normalization</h3>
-      <p>
-        Certificates are typically distributed in Privacy-Enhanced Mail (PEM) format, which wraps DER binary bytes in 64-character Base64 lines bordered by header and footer boundaries:
-      </p>
-      <pre><code>-----BEGIN CERTIFICATE-----
-MIICljCCAX6gAwIBAgIUAN7p4e0iP40wDQYJKoZIhvcNAQELBQAwDzENMAsGA1UE
-AwwEdGVzdDAeFw0yNDAxMDEwMDAwMDBaFw0yNzAxMDEwMDAwMDBaMA8xDTALBgNV
-BAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9FtiPBvkd
-...
------END CERTIFICATE-----</code></pre>
-
-      <p>
-        The BitDark engine regex-extracts everything between the delimiters, strips whitespace, converts the Base64 stream into a binary string via <code>atob()</code>, and populates a contiguous <code>Uint8Array</code>.
-      </p>
-
-      <h3>Step 2: Inspecting the Root TLV Stream</h3>
-      <p>
-        Inspecting the first few hex bytes reveals the outer envelope:
-      </p>
-      <pre><code>Byte 0x00: 30              --> Tag: SEQUENCE (Constructed)
-Byte 0x01: 82 02 96        --> Length: Long form, 2 length bytes = 0x0296 (662 bytes total)
-Byte 0x04: 30              --> TBSCertificate SEQUENCE begins
-Byte 0x05: 82 02 00        --> TBSCertificate length = 0x0200 (512 bytes)
-Byte 0x08: A0 03           --> Context-specific tag [0] (Explicit Version)
-Byte 0x0A: 02 01 02        --> INTEGER 2 (X.509 Version 3)
-Byte 0x0D: 02 09           --> INTEGER (Serial Number, length 9 bytes)
-Byte 0x0F: 00 CE D0 EE ... --> Serial number octets</code></pre>
-
-      <h3>Step 3: Object Identifiers (OIDs) and Subject Alternative Names (SAN)</h3>
-      <p>
-        When the parser encounters Tag <code>0x06</code> (OBJECT IDENTIFIER), it converts the raw variable-length octets into standard dot-decimal notation. For example, the bytes <code>2A 86 48 86 F7 0D 01 01 0B</code> translate into OID <code>1.2.840.113549.1.1.11</code>, identifying <code>sha256WithRSAEncryption</code>.
-      </p>
-      <p>
-        Crucially, the parser seeks OID <code>2.5.29.17</code>, the <strong>Subject Alternative Name</strong> extension. Inside the SAN octet string, entries are tagged by their context-specific type:
-      </p>
-      <ul>
-        <li><code>Tag 0x82</code>: <strong>dNSName</strong> (e.g., <code>api.bitdark.net</code> or <code>*.bitdark.net</code>).</li>
-        <li><code>Tag 0x87</code>: <strong>iPAddress</strong> (4 bytes for IPv4, 16 bytes for IPv6).</li>
-        <li><code>Tag 0x81</code>: <strong>rfc822Name</strong> (Email addresses).</li>
-        <li><code>Tag 0x86</code>: <strong>uniformResourceIdentifier</strong> (URIs).</li>
-      </ul>
-
-      <h2>Comparison: X.509 PKI vs PGP Web of Trust vs SPKI vs C2PA</h2>
-      <p>
-        X.509 is the dominant model for public key verification, but contrasting it with alternative trust architectures highlights its specific design trade-offs:
-      </p>
+      <h2>Reading the Key Fields</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Trust Model</th>
-              <th>Authority Structure</th>
-              <th>Primary Revocation Model</th>
-              <th>Target Domain</th>
-              <th>Identity Binding</th>
-            </tr>
+            <tr><th>Field</th><th>What it tells you</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>X.509 PKI (RFC 5280)</strong></td>
-              <td>Hierarchical Root CAs</td>
-              <td>OCSP / CRL / Short Lifetimes</td>
-              <td>TLS/HTTPS, Code Signing, mTLS</td>
-              <td>Strict RDNs & SAN DNS/IPs</td>
-            </tr>
-            <tr>
-              <td><strong>PGP / OpenPGP (RFC 4880)</strong></td>
-              <td>Decentralized Web of Trust</td>
-              <td>Revocation Certificates</td>
-              <td>Email (S/MIME alt), File Signing</td>
-              <td>User IDs (Name & Email)</td>
-            </tr>
-            <tr>
-              <td><strong>SPKI / SDSI (RFC 2693)</strong></td>
-              <td>Authorization-Centric Delegations</td>
-              <td>Explicit Re-delegation Expiry</td>
-              <td>Capability-Based Security</td>
-              <td>Public Key Directly (No Name)</td>
-            </tr>
-            <tr>
-              <td><strong>C2PA Provenance (CAI)</strong></td>
-              <td>Hierarchical PKI + Merkle Trees</td>
-              <td>Standard PKI Revocation</td>
-              <td>Digital Media Authenticity</td>
-              <td>Signing Tool / Creator Claims</td>
-            </tr>
+            <tr><td><strong>Subject</strong></td><td>Who the certificate is for. For TLS, the hostname lives in the SAN list, not the Common Name</td></tr>
+            <tr><td><strong>Issuer</strong></td><td>The CA that issued it. On a self-signed certificate, issuer equals subject</td></tr>
+            <tr><td><strong>Validity</strong></td><td>The notBefore–notAfter window; a browser rejects the certificate outside it</td></tr>
+            <tr><td><strong>Public Key</strong></td><td>Algorithm and size, e.g. RSA / 2048-bit or ECDSA (NIST P-256)</td></tr>
+            <tr><td><strong>SANs</strong></td><td>The Subject Alternative Names — the actual hostnames a browser matches against</td></tr>
+            <tr><td><strong>Fingerprint</strong></td><td>SHA-256 over the whole certificate; used for pinning and for matching a known certificate</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Comparison: Certificate Encoding Formats</h2>
       <p>
-        Security practitioners constantly encounter different container extensions. Understanding how they map to binary DER avoids misconfigurations:
+        One modern point: browsers stopped using the Common Name for hostname matching years ago. A certificate without a SAN covering the hostname is treated as invalid even if the CN matches, so the SAN list is the field to check.
       </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Container Format</th>
-              <th>Standard Extension</th>
-              <th>Binary or Text</th>
-              <th>Forensic Characteristics</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>PEM (Privacy Enhanced Mail)</strong></td>
-              <td><code>.pem</code>, <code>.crt</code>, <code>.cer</code></td>
-              <td>ASCII (Base64)</td>
-              <td>Headers like <code>-----BEGIN CERTIFICATE-----</code>. Compatible with standard text editors.</td>
-            </tr>
-            <tr>
-              <td><strong>DER (Distinguished Encoding Rules)</strong></td>
-              <td><code>.der</code></td>
-              <td>Binary</td>
-              <td>Raw ASN.1 TLV stream. Unreadable in text editors; required by Java and Windows keystores.</td>
-            </tr>
-            <tr>
-              <td><strong>PKCS#7 / P7B (RFC 2315)</strong></td>
-              <td><code>.p7b</code>, <code>.p7c</code></td>
-              <td>ASCII or Binary</td>
-              <td>Contains entire certificate chains and CRLs, but never contains private keys.</td>
-            </tr>
-            <tr>
-              <td><strong>PKCS#12 / PFX (RFC 7292)</strong></td>
-              <td><code>.p12</code>, <code>.pfx</code></td>
-              <td>Binary (Encrypted)</td>
-              <td>Archive format bundling public leaf, intermediate chain, and password-protected private keys.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
-      <h2>Common Mistakes, Vulnerabilities, and Forensic Pitfalls</h2>
-      <p>
-        System failures and security breaches frequently trace back to fundamental misunderstandings of X.509 parsing rules:
-      </p>
+      <h2>How to Use the Decoder</h2>
+      <ol>
+        <li><strong>Provide the certificate.</strong> Paste the PEM text, drop a file, or load a sample.</li>
+        <li><strong>Click Decode.</strong> The summary fills in; the raw viewer shows the full parsed JSON, which you can copy or download.</li>
+        <li><strong>Check subject, SANs and validity</strong> for a TLS certificate; check subject and public key for a CSR before sending it to a CA.</li>
+        <li><strong>Confirm anything security-critical</strong> against OpenSSL or your platform's certificate tooling.</li>
+      </ol>
+
+      <h2>Limits to Keep in Mind</h2>
       <ul>
-        <li>
-          <strong>Relying Exclusively on Common Name (CN):</strong> Legacy systems historically verified the Subject CN. Since Chrome 58 and RFC 6125, modern TLS clients ignore CN entirely if Subject Alternative Names (SANs) are present. If a certificate specifies <code>CN=example.com</code> but omits it from the SAN extension, modern browsers reject the connection with <code>NET::ERR_CERT_COMMON_NAME_INVALID</code>.
-        </li>
-        <li>
-          <strong>Missing <code>basicConstraints: CA:TRUE</code> on Intermediates:</strong> When establishing internal enterprise CAs, administrators often issue an issuing CA certificate without setting the <code>basicConstraints</code> extension to <code>critical, CA:TRUE</code>. Client TLS validators immediately abort chain building, refusing to accept leaf certificates signed by that intermediate.
-        </li>
-        <li>
-          <strong>Reusing Private Keys Across CSR Submissions:</strong> Generating a new CSR using an existing private key preserves historical exposure: if that key was ever compromised, past sessions remain vulnerable. Security best practice mandates generating a fresh 2048/4096-bit RSA or NIST P-256/P-384 key pair for every CSR.
-        </li>
-        <li>
-          <strong>Neglecting Path Length Constraints (<code>pathLenConstraint</code>):</strong> Enterprise root CAs that delegate signing authority to subsidiaries without specifying a path length constraint permit those subsidiaries to create sub-CAs indefinitely, multiplying organizational risk.
-        </li>
-        <li>
-          <strong>Clock Skew Failures:</strong> Certificates specify UTC timestamps down to the second. If an endpoint's hardware clock drifts backwards even by a few minutes, valid newly-issued certificates are rejected with "Not Yet Valid" errors.
-        </li>
+        <li><strong>No signature, chain or revocation checking</strong>, as above — use <code>openssl verify</code> or a browser for trust decisions.</li>
+        <li><strong>Key types:</strong> RSA and ECDSA are decoded with their real sizes and curves. An unusual algorithm (for example Ed25519) may not be recognised and can be mislabelled, so verify the key type with OpenSSL if it matters.</li>
+        <li><strong>Expiry only:</strong> the ACTIVE label reflects the notAfter date passing; a not-yet-valid notBefore date isn't separately flagged.</li>
       </ul>
+      <p>
+        Everything runs locally in your browser — the certificate is never uploaded — which makes it safe to inspect internal or private certificates. It's a decoder and a sanity check, not a replacement for proper chain validation.
+      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between Subject and Issuer in an X.509 certificate?</div>
+          <div class="faq-question">Does a green "valid" result mean the certificate is trusted?</div>
           <div class="faq-answer">
-            The <strong>Subject</strong> identifies the entity (organization, server, or person) that owns the public key embedded in the certificate. The <strong>Issuer</strong> identifies the Certificate Authority (CA) that validated the subject's identity and cryptographically signed the certificate. In self-signed root certificates, the Subject and Issuer are identical.
+            No. It means the certificate decoded as well-formed and isn't past its expiry date. The tool doesn't verify the signature, build a chain to a trusted CA, or check revocation, so a self-signed or forged certificate shows the same result. Use OpenSSL or a browser to decide trust.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the BitDark decoder display a SHA-256 fingerprint?</div>
+          <div class="faq-question">Why is the fingerprint different from another tool's?</div>
           <div class="faq-answer">
-            A certificate fingerprint (or thumbprint) is not stored inside the certificate itself; it is the cryptographic hash of the entire binary DER byte sequence. Fingerprints provide a unique identifier used to compare certificates, pin endpoints, or look up entries in Certificate Transparency logs.
+            This tool reports the SHA-256 fingerprint, a hash of the whole DER certificate. Older tools sometimes show a SHA-1 fingerprint, which will differ. The SHA-256 value here matches "openssl x509 -fingerprint -sha256".
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can this tool decode encrypted private key files (.key)?</div>
+          <div class="faq-question">The hostname is in the Common Name but the certificate seems wrong — why?</div>
           <div class="faq-answer">
-            No. This tool is purpose-built to parse public credentials: X.509 public key certificates and PKCS#10 Certificate Signing Requests (CSRs). It does not decrypt private key files (PKCS#1 or PKCS#8), ensuring sensitive private keys are never exposed in browser text fields.
+            Browsers match the hostname against the Subject Alternative Names, not the Common Name. A certificate whose SAN list doesn't include the hostname is rejected even if the CN matches. Check the SAN field in the decoded output.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What are Subject Alternative Names (SANs) and why are they mandatory?</div>
+          <div class="faq-question">Can I decode a CSR as well as a certificate?</div>
           <div class="faq-answer">
-            Subject Alternative Names (SANs, OID 2.5.29.17) allow a single certificate to secure multiple domains, subdomains (wildcards like *.domain.com), and IP addresses. Internet standards (RFC 6125) and browser security policies require SANs for all HTTPS connections, deprecating the single Common Name (CN) field.
+            Yes. A PKCS#10 certificate signing request is detected from its header and decoded to show the subject and public key. A CSR has no issuer, validity window or serial number yet, because it hasn't been signed by a CA, so those fields read as not applicable.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What does "Not Before" and "Not After" mean in certificate validity?</div>
+          <div class="faq-question">Is my certificate uploaded anywhere?</div>
           <div class="faq-answer">
-            These timestamps define the exact operational window during which the certificate is mathematically valid. Before the "Not Before" date, the certificate cannot be accepted. After the "Not After" date, the certificate is expired, and clients will display security warnings unless it is renewed.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is a PKCS#10 Certificate Signing Request (CSR)?</div>
-          <div class="faq-answer">
-            A CSR is an industry-standard message sent from an applicant to a Certificate Authority to apply for a digital certificate. It contains the applicant's public key, desired distinguished name attributes (Common Name, Organization, Country), and optional extension requests, signed by the applicant's private key to prove ownership.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does BitDark run entirely client-side without sending data to servers?</div>
-          <div class="faq-answer">
-            Certificates and CSRs often contain sensitive internal enterprise architecture details, such as private intranet domain names, IP addresses, and organizational hierarchies. Transmitting them to third-party cloud decoders exposes metadata. BitDark's zero-network-egress design ensures your data never leaves browser RAM.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does client-side ASN.1 parsing handle binary DER vs ASCII PEM?</div>
-          <div class="faq-answer">
-            If a text PEM file is provided, the tool strips the ASCII header and footer armor, decodes the base64 string into raw binary bytes, and processes the result. If a raw binary DER file is uploaded, the tool bypasses base64 decoding and immediately passes the raw ArrayBuffer to the ASN.1 parser.
+            No. Parsing and the SHA-256 fingerprint run entirely in your browser with the Web Crypto API; nothing is sent to a server. That makes it safe to inspect internal or private certificates.
           </div>
         </div>
       </section>
