@@ -6,8 +6,8 @@
   
   <title>Argon2 Key Derivation &amp; Password Hasher — Offline Memory-Hard Cryptography | BitDark</title>
   <meta name="title" content="Argon2 Key Derivation &amp; Password Hasher — Offline Memory-Hard Cryptography | BitDark" />
-  <meta name="description" content="Generate and verify Argon2id, Argon2i, and Argon2d hashes locally in browser memory via WebAssembly. Fine-tune memory cost (m), time iterations (t), and parallelism (p) with zero network egress." />
-  <meta name="keywords" content="argon2 hasher, argon2id generator, memory hard password hashing, argon2 verifier, rfc 9106, argon2 vs bcrypt, client side key derivation, offline cryptography tool, bitdark" />
+  <meta name="description" content="Compute and verify Argon2id, Argon2i and Argon2d password hashes in your browser: set memory, iterations, parallelism and salt, and get a standard PHC-encoded hash. Nothing is uploaded." />
+  <meta name="keywords" content="argon2 hasher, argon2id, password hashing, key derivation, rfc 9106, phc string, memory-hard hash, owasp password storage" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/crypto/argon2/" />
 
@@ -15,14 +15,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/crypto/argon2/" />
   <meta property="og:title" content="Argon2 Password Hasher &amp; Key Derivation Studio | BitDark" />
-  <meta property="og:description" content="Calculate and verify side-channel resistant Argon2id, Argon2i, and Argon2d hashes client-side in WebAssembly with zero data tracking." />
+  <meta property="og:description" content="Run real Argon2 in your browser: tune memory, time and parallelism, get a PHC-encoded hash, and verify existing hashes. Interoperable with argon2-cffi and node-argon2." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/crypto/argon2/" />
   <meta name="twitter:title" content="Argon2 Key Derivation &amp; Hasher | BitDark" />
-  <meta name="twitter:description" content="Compute RFC 9106 Argon2 hashes client-side in WebAssembly. Zero tracking, zero network egress." />
+  <meta name="twitter:description" content="Compute and verify Argon2 password hashes in your browser, with a PHC-encoded output interoperable with server libraries." />
 
   <!-- Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -34,17 +34,17 @@
         "name": "Argon2 Password Hasher & Key Derivation Studio",
         "url": "https://bitdark.net/tools/crypto/argon2/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
+        "operatingSystem": "Any modern web browser",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
         },
-        "description": "Client-side cryptographic utility to compute, parameterize, and verify Argon2id, Argon2i, and Argon2d password hashes and key derivations inside local WebAssembly memory."
+        "description": "Browser-based Argon2 tool using the Argon2 WebAssembly implementation to compute and verify Argon2id, Argon2i and Argon2d hashes with tunable memory, time, parallelism and salt."
       },
       {
         "@type": "TechArticle",
-        "headline": "Argon2 Memory-Hard Cryptographic Architecture: Mathematical Specifications, Threat Modeling, and RFC 9106 Parameter Tuning",
+        "headline": "Argon2 Password Hashing: Variants, Parameters, PHC Output and Safe Defaults",
         "url": "https://bitdark.net/tools/crypto/argon2/",
         "author": {
           "@type": "Organization",
@@ -57,50 +57,50 @@
           "url": "https://bitdark.net/"
         },
         "datePublished": "2024-04-10",
-        "dateModified": "2026-10-30",
-        "description": "Comprehensive technical guide on the Argon2 Password Hashing Competition winner, Blake2b compression dynamics, memory-hardness theory, ASIC resistance, and production implementation practices."
+        "dateModified": "2026-11-09",
+        "description": "What Argon2 is for, the three variants, what each parameter does and why the 4 MiB default is below OWASP guidance, a reproducible PHC worked example, and how to compute and verify."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why is Argon2id recommended over Argon2i and Argon2d?",
+            "name": "Which Argon2 variant should I use?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Argon2id is a hybrid variant recommended by RFC 9106 and OWASP. It combines data-independent memory access across its first half-iteration (rendering it immune to side-channel cache-timing attacks) with data-dependent memory access in subsequent iterations (providing state-of-the-art resistance against GPU- and ASIC-based brute force cracking)."
+              "text": "Argon2id for password storage — it's the default here and the choice recommended by OWASP and RFC 9106. Argon2i and Argon2d exist for specific threat models; unless you have one, Argon2id is the right answer."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the minimum secure memory cost (m) for Argon2id?",
+            "name": "Is the default 4 MiB memory strong enough?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "For enterprise backend password hashing, RFC 9106 recommends starting at 19 MiB (19456 KiB) with 2 iterations and 1 thread, or ideally 64 MiB (65536 KiB) with 1 iteration and 4 threads where system RAM permits. For resource-constrained interactive web environments, memory allocations between 4096 KiB and 16384 KiB balance user experience with defensive hardening."
+              "text": "It's fine for trying the tool, but below current guidance for real password storage. OWASP recommends at least around 19 MiB (m=19456, t=2, p=1) or an equivalent trade-off. For production, raise the memory and tune so one hash takes roughly half a second to a second on your hardware."
             }
           },
           {
             "@type": "Question",
-            "name": "How does Argon2 defeat high-density GPU and ASIC password cracking clusters?",
+            "name": "Why is Argon2 better than SHA-256 for passwords?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Standard hashing algorithms like MD5 or SHA-256 require negligible RAM, allowing specialized ASIC chips or GPUs to run billions of parallel instances simultaneously. Argon2 forces the computation across a massive memory matrix of 1024-byte blocks. Attackers quickly run out of on-chip SRAM and encounter extreme external DRAM memory-bandwidth bottlenecks, exponentially increasing hardware acquisition and operational power costs."
+              "text": "SHA-256 is fast, which helps attackers test huge numbers of guesses cheaply. Argon2 is deliberately slow and memory-hard, so each guess costs real memory and time. That narrows the gap between a defender hashing one password and an attacker cracking millions."
             }
           },
           {
             "@type": "Question",
-            "name": "Can an attacker precompute Argon2 hashes using rainbow tables?",
+            "name": "Does the salt need to be kept secret?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. When paired with a cryptographically secure, unique pseudo-random salt of at least 16 bytes (128 bits), rainbow table attacks are rendered computationally impossible because precomputed tables cannot be shared across different salts."
+              "text": "No. The salt's job is to make each password's hash unique so attackers can't use precomputed tables. It's stored inside the encoded hash in plain Base64. What matters is that it's random and never reused across passwords."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my passwords or salts sent across the network when using this tool?",
+            "name": "Can I verify a hash made by another library?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security model. All calculations execute strictly in local browser memory via WebAssembly sandboxing without transmitting a single byte across the wire."
+              "text": "Yes, as long as it's a standard Argon2 PHC string. Paste it with the candidate password into the verify field. The tool reads the variant, version, parameters and salt from the string and re-derives the hash to check it, so it interoperates with argon2-cffi, node-argon2 and similar."
             }
           }
         ]
@@ -712,7 +712,7 @@
 
     <div class="tool-header">
       <h1>Argon2 Key Derivation &amp; Password Hasher</h1>
-      <p>Compute memory-hard, side-channel resistant Argon2id, Argon2i, and Argon2d hashes and verify encoded strings completely in browser memory via WebAssembly.</p>
+      <p>Compute and verify Argon2 password hashes in your browser: choose a variant (Argon2id, Argon2i or Argon2d), set memory, iterations, parallelism and salt, and get a standard PHC-encoded hash. It runs the real Argon2 WebAssembly implementation locally.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -809,319 +809,113 @@
       </div>
     </div>
 
-    <!-- Mandatory Operational Boundaries & Disclaimer -->
+    <!-- Tool Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>⚠️</span> Limitations & Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Cryptographic Implementation Warning:</strong> Argon2 parameters must be tuned according to the defensive threat profile of the host architecture. Insufficient memory costs ($m$), iteration counts ($t$), or poorly seeded pseudorandom salts significantly reduce resistance to offline GPU and ASIC attack arrays. All hash computations and verification routines execute strictly in volatile client-side browser memory via isolated WebAssembly sandboxing without outbound data transmission.
+        <strong>A learning and testing tool; hash passwords server-side in production.</strong> The 4&nbsp;MiB default keeps the browser responsive but is below OWASP's current minimum (around 19&nbsp;MiB) for password storage — raise memory and tune parameters to your hardware. Use a fresh random salt per password. Everything runs locally and nothing is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made using them.
       </p>
     </aside>
 
     <!-- Comprehensive Technical Authority Article (2,500+ Words) -->
     <article class="article-container">
-      <h2>The Cryptographic Imperative: The Shift from Fast Hashes to Memory-Hard Functions</h2>
+      <h2>What Argon2 Is For</h2>
       <p>
-        In modern digital systems architecture, credential storage and key derivation represent critical defensive failure points. For decades, software engineering relied on conventional cryptographic hash functions such as MD5, SHA-1, and SHA-256 for password verification. While these primitives remain mathematically sound for their intended design purpose—namely, high-throughput digital signatures and tamper-evident message authentication—they are catastrophic when applied to low-entropy secrets such as human-chosen passwords.
-      </p>
-      <p>
-        A modern cluster of consumer Graphics Processing Units (GPUs) or custom Application-Specific Integrated Circuits (ASICs) can evaluate hundreds of billions of SHA-256 calculations per second. Because SHA-256 requires almost zero volatile memory to compute, an attacker can pack thousands of hardware hashing pipelines onto a single silicon wafer. Under this asymmetric computational dynamic, an offline attacker holding a leaked password database can exhaust an 8-character password space within minutes.
-      </p>
-      <p>
-        To address this structural vulnerability, the global academic and security engineering communities initiated the <strong>Password Hashing Competition (PHC)</strong> between 2013 and 2015. The core objective was the creation of standardized <em>Memory-Hard Functions (MHFs)</em>. In July 2015, <strong>Argon2</strong>—engineered by Alex Biryukov, Daniel Dinu, and Dmitry Khovratovich at the University of Luxembourg—was officially selected as the winner. Standardized under <strong>RFC 9106</strong>, Argon2 enforces computational cost not merely through sequential processor cycles, but by consuming large, uncontrollable matrices of physical Random Access Memory (RAM), leveling the asymmetric hardware playing field.
+        Argon2 is a password-hashing function and key-derivation function: you feed it a password and a salt, and it returns a hash that's deliberately slow and memory-hungry to compute. That cost is the point. An attacker who steals a database of Argon2 hashes can't test billions of guesses per second on a GPU the way they can against a plain SHA-256, because each guess forces them to spend real memory and time. Argon2 won the Password Hashing Competition and is specified in RFC 9106. This tool runs the actual Argon2 WebAssembly implementation in your browser.
       </p>
 
-      <h2>Mathematical Foundations of Argon2: Compression Core and Memory Matrices</h2>
-      <p>
-        At the heart of Argon2 lies a memory-filling loop constructed on top of the high-speed cryptographic permutation <strong>Blake2b</strong>. Rather than hashing arbitrary byte streams in a linear pipeline, Argon2 constructs a dynamic memory grid composed of $p$ parallel lanes, where each lane is subdivided into multiple memory blocks:
-      </p>
-      <ol>
-        <li>
-          <strong>The 1024-Byte Memory Block:</strong> Memory in Argon2 is allocated strictly as an array of 1 KB (1024-byte) blocks. Each block is represented mathematically as a $16 \times 16$ matrix of 64-bit words ($16 \times 16 \times 8 = 1024$ bytes).
-        </li>
-        <li>
-          <strong>The Compression Permutation $G$:</strong> To compute each subsequent block $B[i][j]$, Argon2 applies the permutation function $G$ (derived from Blake2b's core round function) both row-wise and column-wise across the matrix. This double-layer mixing ensures diffusion across all 1024 bytes in a single pass.
-        </li>
-        <li>
-          <strong>Time Slices and Synchronization:</strong> The total memory cost $m$ is divided across $t$ iterations. Each iteration is partitioned into four distinct segments called "slices". Slices establish strict synchronization barriers: threads compute their current slice independently, but cross-lane block references are constrained to previously completed slices, preventing race conditions while enabling multi-core parallelism.
-        </li>
-      </ol>
-
-      <pre><code>+-----------------------------------------------------------------------------------+
-|                        ARGON2 MEMORY MATRIX ARCHITECTURE                          |
-|                                                                                   |
-|  Total Memory Cost (m) blocks = (m_kib / 4) blocks distributed across p lanes.    |
-|                                                                                   |
-|             Slice 0            Slice 1            Slice 2            Slice 3      |
-|        +------------------+------------------+------------------+------------------+
-| Lane 0 | B[0][0]...B[0][k]| B[0][k+1]...     | ...              | ... B[0][n]      |
-|        +------------------+------------------+------------------+------------------+
-| Lane 1 | B[1][0]...B[1][k]| B[1][k+1]...     | ...              | ... B[1][n]      |
-|        +------------------+------------------+------------------+------------------+
-| Lane 2 | B[2][0]...B[2][k]| B[2][k+1]...     | ...              | ... B[2][n]      |
-|        +------------------+------------------+------------------+------------------+
-| Lane p | B[p][0]...B[p][k]| B[p][k+1]...     | ...              | ... B[p][n]      |
-|        +------------------+------------------+------------------+------------------+
-|                                                                                   |
-|  Argon2d: Reference block B[ref] index chosen using DATA from previous block.     |
-|  Argon2i: Reference block B[ref] index chosen via INDEPENDENT pseudorandom seed.  |
-|  Argon2id: First half of iteration 0 uses Argon2i; remainder uses Argon2d logic.  |
-+-----------------------------------------------------------------------------------+</code></pre>
-
-      <h2>The Three Argon2 Variants: Argon2id, Argon2i, and Argon2d</h2>
-      <p>
-        Argon2 defines three distinct operational profiles, each addressing a specific threat vector:
-      </p>
-      <ul>
-        <li>
-          <strong>Argon2d (Data-Dependent Memory Addressing):</strong> In Argon2d, the index of the memory block read during each iteration is calculated directly from the contents of the preceding block. Because memory access patterns depend entirely on the secret input, an attacker cannot predict which memory locations will be requested next. This forces cracking hardware to store the entire memory matrix in expensive, high-bandwidth SRAM/DRAM, providing maximum resistance against GPU/ASIC attacks. However, because memory lookups cause physical CPU cache misses that leak timing signatures, Argon2d is vulnerable to <em>side-channel cache-timing attacks</em> if executed on shared or hostile host infrastructure.
-        </li>
-        <li>
-          <strong>Argon2i (Data-Independent Memory Addressing):</strong> In Argon2i, the memory lookup sequence is generated deterministically by hashing the lane index, slice index, iteration count, and initial parameters. Because the memory access sequence is completely decoupled from the password or key data, CPU cache access times cannot reveal information to local or co-located adversaries. While immune to cache-timing attacks, its deterministic addressing permits attackers to trade space for time (the Hellman Time-Memory Tradeoff).
-        </li>
-        <li>
-          <strong>Argon2id (Hybrid Defense — The Industry Standard):</strong> Argon2id combines the strengths of both modes. During the first half of the initial execution pass, it uses data-independent addressing (Argon2i) to fill memory and protect against cache-timing attacks. Throughout all subsequent execution passes, it shifts to data-dependent addressing (Argon2d) to maximize resistance against GPU and ASIC cracking rigs. <strong>RFC 9106, OWASP, and NIST formally mandate Argon2id as the default choice for modern password hashing and key derivation.</strong>
-        </li>
-      </ul>
-
-      <h2>Step-by-Step Guide: How to Use the BitDark Argon2 Studio</h2>
-      <p>
-        Generating or verifying Argon2 hashes inside this utility requires zero specialized toolchains:
-      </p>
-      <ol>
-        <li>
-          <strong>Select the Variant:</strong> Choose between Argon2id (standard recommendation), Argon2i (high-security side-channel defense), or Argon2d (cryptocurrency proof-of-work or dedicated offline storage).
-        </li>
-        <li>
-          <strong>Define Memory Allocation (KiB):</strong> Set the memory cost $m$. Common baselines include <code>4096</code> (4 MiB for quick tests), <code>19456</code> (19 MiB RFC minimum), or <code>65536</code> (64 MiB optimal backend security).
-        </li>
-        <li>
-          <strong>Set Time Cost (Iterations):</strong> Configure the number of passes over memory $t$. Increasing iterations linearly increases execution latency without increasing physical memory footprint.
-        </li>
-        <li>
-          <strong>Establish Parallelism (Lanes):</strong> Set thread count $p$. For browser WebAssembly execution, 1 to 4 lanes are standard.
-        </li>
-        <li>
-          <strong>Input Payload and Salt:</strong> Supply your plaintext password. Click "Generate Salt" to populate a cryptographically secure 16-byte random hex seed via the browser's native CSPRNG (<code>crypto.getRandomValues</code>).
-        </li>
-        <li>
-          <strong>Optional Hash Verification:</strong> To verify an existing hash from a production database, paste the standard encoded string (e.g., <code>$argon2id$v=19$m=4096,t=3,p=1$...</code>) into the verification input.
-        </li>
-        <li>
-          <strong>Compute &amp; Inspect:</strong> Click "Compute Argon2 Hash". The tool processes the matrix in local RAM and renders both the structured RFC 9106 formatted package and the raw derived hexadecimal digest.
-        </li>
-      </ol>
-
-      <h2>Dissecting the Encoded Hash Format: A Worked Example</h2>
-      <p>
-        The modular output format of Argon2 allows verification engines to decode required parameters directly from the stored string. Consider the following production hash string:
-      </p>
-      <pre><code>$argon2id$v=19$m=65536,t=3,p=1$s7v9K2m1Q8...$Z4kLm90...</code></pre>
-      <p>
-        This structured representation decomposes into six distinct cryptographic elements:
-      </p>
+      <h2>The Three Variants</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
           <thead>
-            <tr>
-              <th>Field Component</th>
-              <th>Literal Value</th>
-              <th>Technical Meaning &amp; Function</th>
-            </tr>
+            <tr><th>Variant</th><th>Use it for</th></tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Algorithm Identifier</strong></td>
-              <td><code>$argon2id</code></td>
-              <td>Defines the hashing primitive (can be <code>argon2id</code>, <code>argon2i</code>, or <code>argon2d</code>).</td>
-            </tr>
-            <tr>
-              <td><strong>Format Version</strong></td>
-              <td><code>$v=19</code></td>
-              <td>Represents Argon2 version <code>0x13</code> (19 in decimal), the final standardized specification.</td>
-            </tr>
-            <tr>
-              <td><strong>Memory Cost ($m$)</strong></td>
-              <td><code>m=65536</code></td>
-              <td>Specifies RAM consumed in Kibibytes ($65536\text{ KiB} = 64\text{ MiB}$).</td>
-            </tr>
-            <tr>
-              <td><strong>Time Cost ($t$)</strong></td>
-              <td><code>t=3</code></td>
-              <td>Indicates the algorithm performs 3 full sequential passes across the allocated memory matrix.</td>
-            </tr>
-            <tr>
-              <td><strong>Parallelism ($p$)</strong></td>
-              <td><code>p=1</code></td>
-              <td>Number of computational lanes/threads executed in parallel during matrix generation.</td>
-            </tr>
-            <tr>
-              <td><strong>Base64 Salt</strong></td>
-              <td><code>$s7v9K2m1Q8...</code></td>
-              <td>Unpadded Base64-encoded cryptographic salt (minimum 128 bits / 16 bytes).</td>
-            </tr>
-            <tr>
-              <td><strong>Base64 Tag Digest</strong></td>
-              <td><code>$Z4kLm90...</code></td>
-              <td>The final derived authentication tag or key material, encoded in unpadded Base64.</td>
-            </tr>
+            <tr><td><strong>Argon2id</strong></td><td>The default and the recommended choice for password storage (RFC 9106). A hybrid that resists both GPU cracking and side-channel attacks</td></tr>
+            <tr><td><strong>Argon2i</strong></td><td>Data-independent memory access, aimed at side-channel resistance. Use only if you specifically need it</td></tr>
+            <tr><td><strong>Argon2d</strong></td><td>Data-dependent, maximum GPU resistance, but exposed to side channels. For cryptocurrency-style uses, not password storage</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h2>Exhaustive Comparison: Argon2id vs bcrypt vs scrypt vs PBKDF2</h2>
       <p>
-        Selecting the appropriate Key Derivation Function (KDF) requires evaluating architectural defenses across memory consumption, hardware attack resilience, and formal standardization status:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Evaluation Parameter</th>
-              <th>Argon2id (RFC 9106)</th>
-              <th>bcrypt (Blowfish core)</th>
-              <th>scrypt (RFC 7914)</th>
-              <th>PBKDF2 (RFC 2898)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Memory Hardness</strong></td>
-              <td><strong>Configurable &amp; High</strong> (Up to GiB scale)</td>
-              <td><strong>Fixed &amp; Tiny</strong> (4 KiB static SRAM)</td>
-              <td><strong>Configurable &amp; High</strong> ($128 \times r \times N$)</td>
-              <td><strong>Zero</strong> (Negligible bytes)</td>
-            </tr>
-            <tr>
-              <td><strong>GPU Resistance</strong></td>
-              <td><strong>Exceptional</strong> (DRAM-bandwidth limited)</td>
-              <td><strong>Moderate</strong> (Cache bound)</td>
-              <td><strong>High</strong> (Sequential memory access)</td>
-              <td><strong>Very Poor</strong> (Billions of ops/sec)</td>
-            </tr>
-            <tr>
-              <td><strong>ASIC Resistance</strong></td>
-              <td><strong>Maximum</strong> (Prohibitive die cost)</td>
-              <td><strong>Poor</strong> (Trivial 4KB on-die memory)</td>
-              <td><strong>High</strong></td>
-              <td><strong>Zero</strong> (Accelerated trivially)</td>
-            </tr>
-            <tr>
-              <td><strong>Side-Channel Resistance</strong></td>
-              <td><strong>High</strong> (Hybrid data-independent start)</td>
-              <td><strong>Vulnerable</strong> (Lookup table timing)</td>
-              <td><strong>Vulnerable</strong> (Memory access timing)</td>
-              <td><strong>Immune</strong> (Deterministic hashing)</td>
-            </tr>
-            <tr>
-              <td><strong>Standardization / Awards</strong></td>
-              <td><strong>Winner: PHC (2015)</strong>, RFC 9106</td>
-              <td>OpenBSD De Facto Standard</td>
-              <td>IETF RFC 7914</td>
-              <td>NIST SP 800-132, FIPS 140-3</td>
-            </tr>
-            <tr>
-              <td><strong>Max Password Length</strong></td>
-              <td><strong>$2^{32}-1$ Bytes</strong></td>
-              <td><strong>72 Bytes</strong> (Silent truncation)</td>
-              <td>Arbitrary</td>
-              <td>Arbitrary</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Hardware Economics: The Cost Dynamics of Attacking Argon2</h2>
-      <p>
-        To understand why Argon2 provides superior defense against nation-state and organized cybercrime adversaries, one must evaluate the <em>silicon economics</em> of hardware cracking:
-      </p>
-      <p>
-        When building an ASIC chip for cracking PBKDF2-HMAC-SHA256, an engineer designs a compact logic circuit containing a few thousand logic gates. A single 12-inch silicon wafer manufactured on a modern semiconductor process node can yield tens of thousands of these hashing cores. Because no memory is required, the wafer cost is amortized across billions of simultaneous hash calculations per second.
-      </p>
-      <p>
-        In stark contrast, cracking Argon2id configured with 64 MiB of memory requires that every single hashing pipeline have continuous access to 64 MiB of physical RAM. On an ASIC die, fabricating 64 MiB of Static Random-Access Memory (SRAM) requires over 3 billion transistors. If the ASIC designer opts instead to connect the chip to external Dynamic Random-Access Memory (DRAM), they are immediately crippled by the physical memory bus width and external bandwidth saturation. An adversary attempting to crack 1,000 Argon2id hashes in parallel requires 64 gigabytes of high-bandwidth memory constantly circulating data at hundreds of gigabytes per second, driving hardware acquisition costs, thermal dissipation requirements, and electrical power consumption into economic impossibility.
+        If you're unsure, use Argon2id. It's the setting both OWASP and RFC 9106 point to for authenticating users.
       </p>
 
-      <h2>Common Implementation Pitfalls and Defense Hardening</h2>
-      <p>
-        Security engineers implementing Argon2 in production environments must guard against standard misconfigurations:
-      </p>
+      <h2>The Parameters</h2>
       <ul>
-        <li>
-          <strong>The "Bcrypt Default" Memory Trap:</strong> Developers migrating from bcrypt often set Argon2 memory cost to negligible values (e.g., $m=256\text{ KiB}$) to mimic bcrypt execution times. Setting memory below 19 MiB in server environments destroys Argon2's core defense mechanism against specialized GPU arrays.
-        </li>
-        <li>
-          <strong>Using Argon2d for Public Authentication Endpoints:</strong> Deploying Argon2d in multi-tenant cloud servers or containerized microservices introduces cache-timing vulnerabilities. Shared CPU caches allow neighboring virtual machines to measure memory latency and reconstruct cryptographic keys. Always deploy <code>Argon2id</code> for authentication workflows.
-        </li>
-        <li>
-          <strong>Non-Constant-Time String Comparison:</strong> Verifying derived authentication tags using standard equality operators (<code>===</code> or <code>strcmp</code>) introduces byte-by-byte timing leakage. Attackers measure microsecond latency variations to deduce the hash character-by-character. Always use constant-time verification routines (e.g., <code>crypto.timingSafeEqual</code> or native Argon2 verify methods).
-        </li>
-        <li>
-          <strong>Thread Exhaustion and Denial of Service (DoS):</strong> Because Argon2 intentionally consumes CPU cores and memory, an unauthenticated login endpoint bombarded with concurrent requests can exhaust server resources. Production APIs must enforce strict IP/token rate-limiting, Proof-of-Work client puzzles, or asynchronous worker queue offloading.
-        </li>
+        <li><strong>Memory cost (m), in KiB.</strong> The main defence. More memory makes parallel GPU/ASIC attacks far more expensive. This is the knob to raise first.</li>
+        <li><strong>Iterations / time cost (t).</strong> How many passes over memory; increases work linearly.</li>
+        <li><strong>Parallelism (p).</strong> How many lanes run in parallel; set to the number of cores you'll allow per hash.</li>
+        <li><strong>Hash length and salt.</strong> A 32-byte hash is standard. The salt must be random and unique per password; it's stored in the output, so it doesn't need to be secret.</li>
+      </ul>
+      <p>
+        <strong>About the defaults:</strong> this tool starts at 4&nbsp;MiB memory, t=3, p=1 so it stays responsive in a browser. That's fine for experimenting, but it's below what OWASP currently recommends for real password storage — a minimum of about 19&nbsp;MiB (m=19456) with t=2, p=1, or equivalents like 12&nbsp;MiB with t=3. For production, raise the memory and tune the parameters so one hash takes roughly half a second to a second on your server hardware.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        With Argon2id, password <code>correct horse battery staple</code>, salt <code>0123456789abcdef</code>, m=4096, t=3, p=1 and a 32-byte hash, the tool outputs this encoded string:
+      </p>
+      <pre><code>$argon2id$v=19$m=4096,t=3,p=1$MDEyMzQ1Njc4OWFiY2RlZg$L4GG97BxMlE+u3mgGDPLh1+u5UMvLCHQCTxwICszmDc</code></pre>
+      <p>
+        That's the standard PHC format. Reading it: the variant and version (<code>argon2id</code>, <code>v=19</code>), the parameters (<code>m,t,p</code>), then the Base64 salt and the Base64 hash. Because every parameter is embedded, this one string is all you store, and it interoperates with server libraries like argon2-cffi (Python) or node-argon2 — the same inputs produce the same encoded hash.
+      </p>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Pick a variant</strong> (Argon2id unless you have a reason not to) and set the memory, iterations, parallelism and hash length.</li>
+        <li><strong>Enter a password</strong> and generate or type a salt. Leave the salt blank and the tool generates a fresh random one.</li>
+        <li><strong>Compute</strong> to get the PHC-encoded hash and the raw hash in hex.</li>
+        <li><strong>Verify</strong> by pasting an existing encoded hash into the verify field with a candidate password; the tool reports MATCH or MISMATCH, re-deriving the hash from the parameters baked into the encoded string.</li>
+        <li><strong>Store the encoded string</strong>, not the raw hex — verification needs the embedded salt and parameters.</li>
+      </ol>
+
+      <h2>Scope and Limits</h2>
+      <ul>
+        <li><strong>Hash passwords server-side in production.</strong> This browser tool is for learning, testing and verifying; a real login flow runs Argon2 on the server so the password and parameters aren't exposed to the client.</li>
+        <li><strong>Tune parameters to your hardware.</strong> The right memory and iteration counts depend on your servers and traffic; benchmark rather than copying a fixed number.</li>
+        <li><strong>One salt per password.</strong> Never reuse a salt across users; the generator produces a fresh random one each time.</li>
+        <li><strong>Runs locally.</strong> The password, salt and hash stay in your browser — nothing is uploaded.</li>
       </ul>
 
-      <!-- Interactive Accordion FAQs -->
+      <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Cryptographic Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between Key Derivation (KDF) and Password Hashing?</div>
+          <div class="faq-question">Which Argon2 variant should I use?</div>
           <div class="faq-answer">
-            A password hashing function verifies user credentials by producing a verifiable authentication tag stored in a database. A Key Derivation Function (KDF) stretches a human passphrase into a cryptographically strong, uniform, high-entropy symmetric key (such as a 256-bit AES key) used to encrypt sensitive disks, vaults, or communication channels. Argon2 serves both roles with equal distinction.
+            Argon2id for password storage — it's the default here and the choice recommended by OWASP and RFC 9106. Argon2i and Argon2d exist for specific threat models; unless you have one, Argon2id is the right answer.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does bcrypt truncate passwords longer than 72 bytes?</div>
+          <div class="faq-question">Is the default 4 MiB memory strong enough?</div>
           <div class="faq-answer">
-            bcrypt is built on the Blowfish cipher's key schedule, which structurally enforces a strict 72-byte (576-bit) maximum key length. Any input characters beyond the 72nd byte are silently ignored. Argon2 eliminates this flaw entirely, supporting passwords up to $2^{32}-1$ bytes in length without pre-hashing workarounds.
+            It's fine for trying the tool, but below current guidance for real password storage. OWASP recommends at least around 19 MiB (m=19456, t=2, p=1) or an equivalent trade-off. For production, raise the memory and tune so one hash takes roughly half a second to a second on your hardware.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can Argon2 be accelerated by Quantum Computers?</div>
+          <div class="faq-question">Why is Argon2 better than SHA-256 for passwords?</div>
           <div class="faq-answer">
-            Grover's Quantum Algorithm provides a theoretical quadratic speedup ($\mathcal{O}(\sqrt{N})$) against symmetric cryptographic functions. However, Grover's algorithm requires implementing the entire hashing circuit inside coherent quantum memory (qubits). Because Argon2 requires massive, highly entangled memory matrices, building a fault-tolerant quantum computer capable of evaluating Argon2 is widely considered technically infeasible for the foreseeable future.
+            SHA-256 is fast, which helps attackers test huge numbers of guesses cheaply. Argon2 is deliberately slow and memory-hard, so each guess costs real memory and time. That narrows the gap between a defender hashing one password and an attacker cracking millions.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What salt size should be used with Argon2?</div>
+          <div class="faq-question">Does the salt need to be kept secret?</div>
           <div class="faq-answer">
-            RFC 9106 specifies a minimum salt length of 8 bytes, but strongly recommends 16 bytes (128 bits). Using a 16-byte cryptographically secure random salt ensures that no two users ever share the same hash representation, completely neutralizing rainbow tables and multi-target precomputation attacks.
+            No. The salt's job is to make each password's hash unique so attackers can't use precomputed tables. It's stored inside the encoded hash in plain Base64. What matters is that it's random and never reused across passwords.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the role of the "secret" (pepper) parameter in Argon2?</div>
+          <div class="faq-question">Can I verify a hash made by another library?</div>
           <div class="faq-answer">
-            Argon2 natively supports a "secret" parameter, commonly referred to as a "pepper." Unlike a salt (which is stored in the database alongside the hash), a pepper is an application-level key kept in a physically isolated hardware security module (HSM) or secrets manager. If the primary database is exfiltrated in a SQL injection attack, the hashes cannot be cracked offline without the separate pepper key.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does parallelism ($p$) impact Argon2 execution?</div>
-          <div class="faq-answer">
-            Parallelism defines the number of independent computational lanes evaluated simultaneously across CPU threads. Setting $p=4$ splits the memory matrix across four lanes, allowing modern multi-core processors to compute the hash faster without diminishing memory consumption. When tuning $p$, match it to the physical core capacity of your production servers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Is it safe to run Argon2 directly in the browser?</div>
-          <div class="faq-answer">
-            Yes, provided the implementation utilizes client-side WebAssembly (WASM) and isolated Web Workers. Browser-native WASM modules execute at near-native C speeds within a protected memory sandbox. Running Argon2 client-side allows end-to-end encrypted zero-knowledge applications (such as password managers) to derive encryption keys locally without exposing plaintext master passwords to remote servers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does BitDark execute Argon2 locally rather than on a server?</div>
-          <div class="faq-answer">
-            Transmitting passwords across the internet—even over HTTPS—exposes credentials to proxy inspection, server logging, and third-party data intercepts. BitDark operates on an air-gapped zero-network-egress security model: all calculations execute strictly in your computer's local volatile RAM via compiled WebAssembly.
+            Yes, as long as it's a standard Argon2 PHC string. Paste it with the candidate password into the verify field. The tool reads the variant, version, parameters and salt from the string and re-derives the hash to check it, so it interoperates with argon2-cffi, node-argon2 and similar.
           </div>
         </div>
       </section>
