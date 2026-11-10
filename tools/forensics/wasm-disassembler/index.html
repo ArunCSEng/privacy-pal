@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>WebAssembly Disassembler & Bytecode Inspector — Free Offline Reverse Engineering Tool | BitDark</title>
-  <meta name="title" content="WebAssembly Disassembler & Bytecode Inspector — Free Offline Reverse Engineering Tool | BitDark" />
-  <meta name="description" content="Disassemble WebAssembly binaries (.wasm) to WebAssembly Text (WAT), inspect section headers, audit imports and exports, and analyze bytecode instructions locally in browser RAM. 100% offline, zero network egress." />
-  <meta name="keywords" content="wasm disassembler, webassembly decompiler, wat viewer, wasm bytecode inspector, reverse engineering wasm, offline wasm binary analyzer, leb128 decoder, wasm opcode viewer, cryptojacking detector, webassembly security audit, client side binary analysis" />
+  <title>WebAssembly Disassembler — Free In-Browser .wasm to WAT Viewer | BitDark</title>
+  <meta name="title" content="WebAssembly Disassembler — Free In-Browser .wasm to WAT Viewer | BitDark" />
+  <meta name="description" content="Disassemble a .wasm binary to WebAssembly Text (WAT) in your browser: section map, imports and exports, per-function instructions, SHA-256 and JSON export. Nothing uploaded." />
+  <meta name="keywords" content="wasm disassembler, webassembly to wat, wat viewer, wasm bytecode inspector, leb128, wasm sections, inspect wasm imports exports, offline wasm analyzer" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/forensics/wasm-disassembler/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/forensics/wasm-disassembler/" />
-  <meta property="og:title" content="WebAssembly Disassembler & Bytecode Inspector — Free Offline Reverse Engineering Tool | BitDark" />
-  <meta property="og:description" content="Disassemble binary headers, inspect section structures, audit imports/exports, and extract instructions directly in browser memory. 100% Client-Side with zero network egress." />
+  <meta property="og:title" content="WebAssembly Disassembler — In-Browser .wasm to WAT Viewer | BitDark" />
+  <meta property="og:description" content="Turn a .wasm binary into readable WAT in your browser, with a section map and import/export list. Runs locally; nothing uploaded." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/forensics/wasm-disassembler/" />
-  <meta name="twitter:title" content="WebAssembly Disassembler & Bytecode Inspector | BitDark" />
-  <meta name="twitter:description" content="Inspect, parse sections, disassemble bytecodes, and audit WebAssembly binaries (.wasm) locally in your browser memory. Zero tracking, zero network egress." />
+  <meta name="twitter:title" content="WebAssembly Disassembler | BitDark" />
+  <meta name="twitter:description" content="Disassemble a .wasm binary to WAT in your browser: sections, imports/exports, instructions. Nothing uploaded." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,100 +31,64 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "WebAssembly Disassembler & Bytecode Inspector",
+        "name": "WebAssembly Disassembler",
         "url": "https://bitdark.net/tools/forensics/wasm-disassembler/",
-        "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive client-side WebAssembly binary reverse engineering tool to decode, inspect, disassemble, and audit WASM bytecodes, section tables, LEB128 integers, and imports/exports directly in volatile browser memory."
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based WebAssembly disassembler that validates a .wasm module, maps its sections, lists imports and exports, and renders the functions as WebAssembly Text (WAT) with decoded opcodes, plus a SHA-256 hash and JSON export, running locally."
       },
       {
         "@type": "TechArticle",
-        "headline": "WebAssembly Binary Internals: Disassembly, LEB128 Integer Encodings, Stack Machine Mechanics, and Forensic Auditing",
+        "headline": "Disassembling a .wasm Binary to WAT: Magic Header, Sections, LEB128, and Reading the Instructions",
         "url": "https://bitdark.net/tools/forensics/wasm-disassembler/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "datePublished": "2024-05-18",
-        "dateModified": "2026-11-06",
-        "description": "Exhaustive technical treatise on WebAssembly binary format specifications, LEB128 variable-length integer parsing, section table layouts, stack machine opcodes, forensic malware reverse engineering, and in-memory static analysis."
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "datePublished": "2024-04-14",
+        "dateModified": "2026-11-10",
+        "description": "What a WebAssembly binary contains, how this browser tool validates and walks its sections, decodes LEB128 integers and opcodes into WAT, lists imports and exports, and why it is a disassembler rather than a decompiler."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "What is the difference between a WebAssembly binary (.wasm) and WebAssembly Text (.wat)?",
+            "name": "What is the difference between .wasm and WAT?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A WebAssembly binary (.wasm) is a compact, pre-compiled binary format designed for high-speed network transmission and rapid machine decoding by JavaScript runtimes and standalone WASI runtimes. WebAssembly Text (.wat) is the official human-readable S-expression equivalent representation that allows security researchers, developers, and forensic analysts to read, edit, and reason about the stack operations, control flow branches, and instruction sets."
+              "text": "A .wasm file is the compact binary WebAssembly module a browser runs. WAT (WebAssembly Text) is its human-readable, S-expression text form \u2014 the same module written out so a person can read it. This tool disassembles the binary into WAT so you can see the module's structure, imports, exports and instructions."
             }
           },
           {
             "@type": "Question",
-            "name": "How does LEB128 encoding work in WebAssembly binaries?",
+            "name": "Is this a decompiler? Will it give me the original source?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Little Endian Base 128 (LEB128) is a variable-length integer encoding format that stores arbitrary-precision integers in a compact byte stream. Each byte provides 7 bits of data, with the most significant bit (bit 7) functioning as a continuation flag. If the high bit is 1, another byte follows; if 0, it represents the terminal byte. Unsigned (ULEB128) and signed (SLEB128) representations minimize the file size of integers, type indexes, memory limits, and branch targets."
+              "text": "No. It is a disassembler: it turns the binary opcodes into readable WAT instructions, not back into the C, C++ or Rust the module was compiled from. For higher-level, C-like output you would use a decompiler such as WABT's wasm-decompile or a tool like Ghidra; WAT shows you the real instructions, which is often enough to understand what a module does."
             }
           },
           {
             "@type": "Question",
-            "name": "Can WebAssembly binaries be used to conceal malicious code or cryptojackers?",
+            "name": "Why do functions show names like $func_42 instead of real names?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes. Threat actors exploit the binary opacity of compiled WebAssembly modules to bypass traditional antivirus scanners and browser content filters that only inspect plain-text JavaScript. Malicious actors compile Monero cryptominers (such as CoinHive forks), credential scrapers, port scanners, and evasion stubs into WebAssembly, taking advantage of CPU multithreading and SIMD vector instructions while avoiding heuristic JavaScript detection."
+              "text": "Function names live in an optional custom name section that compilers include only with debug flags. Production builds usually strip it, so the disassembler has no names to show and falls back to the function's index, like $func_42. Imports and exports still carry their real names, because those are required for the module to link."
             }
           },
           {
             "@type": "Question",
-            "name": "Does the BitDark Wasm Disassembler upload my binaries to an external server?",
+            "name": "What does it mean when the module validates?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The BitDark Wasm Disassembler operates entirely on a zero-network-egress, client-side security architecture. All file parsing, ArrayBuffer traversals, LEB128 decoding, SHA-256 computation, and WAT disassembly execute exclusively within your browser's local sandbox memory. No telemetry or binary blobs are ever dispatched across the network."
+              "text": "The tool runs the browser's own WebAssembly.validate() on the bytes. A pass means the module is structurally well-formed by the WebAssembly specification \u2014 its types, sections and control flow are consistent. It is a structural check, not a safety judgement: a valid module can still do something harmful, and an invalid one is simply malformed or truncated."
             }
           },
           {
             "@type": "Question",
-            "name": "What are the 13 standard WebAssembly binary sections and what do they contain?",
+            "name": "Is my file uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The 13 standard sections are: Custom (0), Type (1, function signatures), Import (2, external functions/memory), Function (3, type index mappings), Table (4, indirect call tables), Memory (5, linear memory limits), Global (6, module-level variables), Export (7, public entrypoints), Start (8, auto-execution function index), Element (9, table initializers), Code (10, function bodies and bytecode instructions), Data (11, linear memory segments), and DataCount (12, number of data segments)."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What is the significance of the 4-byte magic header \\0asm?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Every valid WebAssembly binary module must begin with the strict 4-byte hexadecimal sequence 0x00 0x61 0x73 0x6D (ASCII string \\0asm), followed by a 4-byte little-endian version number (0x01 0x00 0x00 0x00 for Version 1). If these 8 bytes are missing or corrupt, browser engines immediately reject the module as non-conformant."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How does WebAssembly maintain memory safety when executing untrusted C/Rust code?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "WebAssembly runs inside a strictly isolated, hardware-fault-isolated virtual machine. It accesses memory through an unsegmented, bounds-checked linear memory array (an ArrayBuffer in browsers). Code execution is separate from data memory, meaning native buffer overflows cannot overwrite return instruction pointers on the host call stack, preventing classical code injection attacks."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Why do some disassembled Wasm functions display generic names like func_0 instead of original source names?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Compilers routinely strip debug symbols and the custom Name Section (Section ID 0) during production builds to optimize file transfer sizes. Because the binary format references functions purely by their numerical index in the type and function tables, human-readable function names are omitted unless the binary was explicitly built with debug symbols preserved."
+              "text": "No. The .wasm is read into memory in your browser, and the validation, parsing, disassembly, SHA-256 hash and exports all run there. Nothing you open is sent to a server; the page makes no network request for your file."
             }
           }
         ]
@@ -250,7 +214,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -759,7 +723,7 @@
 
     <div class="tool-header">
       <h1>WebAssembly Disassembler &amp; Bytecode Inspector</h1>
-      <p>Disassemble binary headers, inspect section structures, audit imports/exports, and extract instructions directly in browser memory. 100% private, client-side reverse engineering with zero network telemetry.</p>
+      <p>Disassemble a <code>.wasm</code> binary to readable WebAssembly Text (WAT) in your browser: see the section map, imports and exports, and the per-function instructions, with a SHA-256 hash and JSON export. Everything runs locally and nothing you open is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -814,561 +778,136 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>bitdark.net is not responsible</strong> for how this tool is used, the interpretation of the disassembled code, or any damages, legal liabilities, or security incidents arising from analyzing, reverse engineering, or executing third-party binaries. This disassembler operates entirely in the client-side sandbox for educational, defensive, and diagnostic forensic research. Users bear full responsibility for complying with applicable local intellectual property laws, licensing agreements, and terms of service.
+        <strong>This disassembles a module; it does not run it or decide whether it is safe.</strong> It validates the binary, maps its sections, lists imports and exports, and renders the functions as WAT &mdash; readable instructions, not reconstructed source code. It is a disassembler, not a decompiler: it will not give you back the original C or Rust, and when a module's optional name section has been stripped, functions appear as <code>$func_N</code> by index. A module that validates is well-formed, which is not the same as safe. Everything runs in your browser and nothing you open is uploaded, so you can read an untrusted module without executing it &mdash; but handle the file itself with normal care. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article (3000+ Words) -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Anatomy of WebAssembly: Binary Opacity, Execution Environments, and the Need for Forensic Inspection</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        Since its standardization by the World Wide Web Consortium (W3C) in 2017, <strong>WebAssembly (Wasm)</strong> has redefined client-side computing performance. Engineered as a portable, low-level binary code format, Wasm allows developers to compile performant systems languages—including C, C++, Rust, Go, Zig, and Swift—into compact byte streams that execute inside modern web browsers at near-native execution velocity.
-      </p>
-      <p>
-        For decades, the web platform's security model was predicated on the interpretative nature of JavaScript. Web Application Firewalls (WAFs), browser endpoint detection systems, content security policies (CSP), and defensive security extensions relied on static text scanning and regular expression matching to intercept cross-site scripting (XSS), suspicious eval calls, and malicious network beacons.
-      </p>
-      <p>
-        The introduction of compiled binary blobs in browser contexts severed this visibility. A <code>.wasm</code> module is not human-readable text; it is an opaque, densely packed binary file consisting of Little Endian Base 128 (LEB128) variable-length integers, structural section headers, and low-level stack-machine opcodes. Because conventional network inspection appliances treat <code>.wasm</code> files as generic binary octet streams, threat actors rapidly recognized WebAssembly as an ideal vector for operational evasion.
-      </p>
-      <p>
-        In defensive cybersecurity and digital incident response, WebAssembly reverse engineering is no longer an optional specialty—it is a critical capability. Malicious actors compile complex obfuscation engines, Monero cryptominers (such as CoinHive derivatives), evasion stubs, memory-scraping routines, and payload-decryptor shellcode into WebAssembly modules. Without local, client-side forensic inspection tools, security analysts are blind to the operations executing inside their endpoints.
+        WebAssembly (Wasm) lets browsers run compiled code at near-native speed. A <code>.wasm</code> module is a compact binary, not readable text, so to understand one you disassemble it into <strong>WAT</strong> (WebAssembly Text) &mdash; the same module written out in a human-readable form. This tool does that in your browser: drop in a <code>.wasm</code> and it validates it, shows a map of its sections, lists what it imports and exports, and renders the functions as WAT instructions, with a SHA-256 hash and a JSON view. It reads the file only &mdash; nothing runs, and nothing is uploaded &mdash; so it is a safe way to look inside an untrusted module.
       </p>
 
-      <h2>How to Use the BitDark Wasm Disassembler &amp; Bytecode Inspector</h2>
+      <h2>The Binary, Briefly</h2>
       <p>
-        The BitDark WebAssembly Disassembler provides high-speed, byte-exact binary decoding natively in your web browser without transmitting binary artifacts to cloud infrastructure:
-      </p>
-      <ol>
-        <li>
-          <strong>Load Your WebAssembly Module:</strong> Drag and drop your compiled <code>.wasm</code> file onto the interactive upload surface, or click the dropzone to browse your local filesystem.
-        </li>
-        <li>
-          <strong>Automatic In-Memory Cryptographic Ingestion:</strong> The browser loads the file directly into a sandboxed <code>ArrayBuffer</code>. The native W3C Web Cryptography API computes an immutable SHA-256 cryptographic checksum across the binary, while the browser's native WebAssembly compiler verifies structural conformance.
-        </li>
-        <li>
-          <strong>Inspect Header &amp; Section Metadata:</strong> The top metadata grid instantly displays the file size, hash digest, binary magic identifier (confirming the mandatory <code>\0asm</code> preamble and version integer), total section count, and total decoded function bodies.
-        </li>
-        <li>
-          <strong>Navigate Across Analysis Views:</strong>
-          <ul>
-            <li><strong>Linear WAT Disassembly:</strong> Inspect the complete, decompiled WebAssembly Text representation, showing function type signatures (<code>param</code> and <code>result</code>), declared local variables, stack-machine instructions, memory loads/stores, and control branches.</li>
-            <li><strong>Section Breakdown:</strong> Review a structured, byte-level memory map enumerating every section ID, section name, hex starting offset, and allocation size.</li>
-            <li><strong>Structured JSON Analysis:</strong> Review machine-readable diagnostic trees documenting import modules, exported interfaces, and function signature indices for threat intelligence ingestion.</li>
-          </ul>
-        </li>
-        <li>
-          <strong>Export Forensic Artifacts:</strong> Download the complete <code>.wat</code> text representation or export the comprehensive audit dataset as a structured JSON file for your DFIR case file or technical documentation.
-        </li>
-      </ol>
-
-      <h2>When to Use This Tool: Operational Scenarios &amp; Threat Modeling</h2>
-      <p>
-        Static binary disassembly of WebAssembly modules serves vital functions across diverse security, software engineering, and audit disciplines:
-      </p>
-      <ul>
-        <li>
-          <strong>Malicious Cryptojacking Detection:</strong> Threat actors compromise high-traffic web applications to silently load in-browser Monero cryptominers. By disassembling the Wasm binary, analysts can identify tight hashing loops, cryptographic rotation constants (e.g., Keccak/SHA-3 round constants), and SIMD vector operations that characterize cryptomining algorithms.
-        </li>
-        <li>
-          <strong>Supply-Chain &amp; NPM/Crate Dependency Auditing:</strong> Modern web bundlers (Webpack, Vite) frequently incorporate pre-compiled <code>.wasm</code> binaries from third-party open-source packages. Inspecting imports and exports reveals whether a package attempts unauthorized DOM interaction, exfiltration via WebSockets, or hidden telemetry reporting.
-        </li>
-        <li>
-          <strong>Browser Exploit &amp; Sandbox Triage:</strong> Advanced persistent threat (APT) groups have utilized Wasm linear memory bugs to trigger out-of-bounds heap corruptions within browser rendering engines. Disassembling function payloads exposes suspicious memory growth routines (<code>memory.grow</code>) and deliberate integer overflow patterns.
-        </li>
-        <li>
-          <strong>Smart Contract Verification:</strong> Modern decentralized computing networks (including CosmWasm, Polkadot Substrate, and NEAR Protocol) utilize WebAssembly as their execution bytecode. Disassembling smart contract binaries allows security auditors to verify token minting logic, authorization gates, and reentrancy protections before deployment.
-        </li>
-        <li>
-          <strong>Air-Gapped Forensic Analysis:</strong> Organizations handling proprietary intellectual property, classified firmware, or confidential reverse-engineering cases cannot upload files to public cloud decompilers. BitDark provides zero-network-egress execution, guaranteeing absolute client confidentiality.
-        </li>
-      </ul>
-
-      <h2>Binary Format Specification: Headers, Sections, and LEB128 Variable-Length Encoding</h2>
-      <p>
-        The official WebAssembly Core Specification dictates a deterministic, byte-aligned binary structure. Understanding how the byte stream is partitioned is essential for reverse engineers.
+        Every module begins with the 8-byte preamble: the magic bytes <code>00 61 73 6D</code> (<code>\0asm</code>) and a 4-byte version. After that comes a sequence of <strong>sections</strong>, each a one-byte ID and a length, covering types, imports, functions, tables, memory, globals, exports, the code (the function bodies), data, and a few more &mdash; thirteen in all, including the custom section that can hold the debug name table. The tool reads the preamble, confirms the magic, and walks the sections in order.
       </p>
 
-      <h3>1. The 8-Byte Preamble</h3>
+      <h2>LEB128 and Opcodes</h2>
       <p>
-        Every valid WebAssembly module begins with an invariant 8-byte preamble:
-      </p>
-      <pre><code>Byte Offset:   0x00  0x01  0x02  0x03    0x04  0x05  0x06  0x07
-Binary Hex:    0x00  0x61  0x73  0x6D    0x01  0x00  0x00  0x00
-Meaning:      \0     a     s     m      [Version 1 (Little-Endian)]</code></pre>
-      <p>
-        If the first four bytes deviate from <code>0x00 0x61 0x73 0x6D</code>, or if the 32-bit little-endian version integer is not <code>0x00000001</code>, compliant execution runtimes immediately reject the asset with a <code>CompileError</code>.
+        Wasm stores its integers &mdash; section lengths, counts, indices, constants &mdash; as <strong>LEB128</strong>, a variable-length encoding that uses seven bits of each byte for data and the top bit to signal whether another byte follows, so small numbers take fewer bytes. The tool decodes unsigned, signed and 64-bit LEB128 as the format requires. Inside the code section each function body is a stream of <strong>opcodes</strong> &mdash; stack-machine instructions such as <code>local.get</code>, <code>i32.add</code>, <code>call</code> and <code>br_if</code> &mdash; and the tool maps those bytes to their mnemonics to produce the WAT listing.
       </p>
 
-      <h3>2. The Mechanics of Little Endian Base 128 (LEB128)</h3>
+      <h2>Imports, Exports and Names</h2>
       <p>
-        To minimize payload size over the wire, WebAssembly encodes all integers—including section lengths, vector counts, function indices, and integer constants—using <strong>Little Endian Base 128 (LEB128)</strong>. Rather than allocating fixed 32-bit (4-byte) or 64-bit (8-byte) slots for small values, LEB128 packs numbers dynamically into 7-bit chunks.
-      </p>
-      <p>
-        In LEB128 encoding:
-      </p>
-      <ul>
-        <li>The <strong>7 least significant bits</strong> (Bits 0 through 6) of each byte represent the numeric data payload.</li>
-        <li>The <strong>most significant bit</strong> (Bit 7, the continuation bit) indicates whether subsequent bytes follow. If Bit 7 is <code>1</code>, the decoder must read the next byte; if Bit 7 is <code>0</code>, this byte terminates the integer sequence.</li>
-      </ul>
-
-      <pre><code>Structure of an LEB128 Encoded Byte:
-Bit:         7      6    5    4    3    2    1    0
-Purpose:  [FLAG]  [------- 7 Bits of Data Payload -------]
-          0 = Terminal byte
-          1 = More bytes follow in the stream</code></pre>
-
-      <p>
-        For example, let us trace how the integer value <code>624,485</code> is encoded into Unsigned LEB128 (ULEB128):
-      </p>
-      <ol>
-        <li>Represent <code>624,485</code> in binary: <code>10011000011101100101</code> (20 bits).</li>
-        <li>Split into 7-bit groups from right to left:
-          <ul>
-            <li>Group 1 (lowest 7 bits): <code>1100101</code> ($101$)</li>
-            <li>Group 2 (middle 7 bits): <code>0001110</code> ($14$)</li>
-            <li>Group 3 (highest 6 bits): <code>010011</code> ($38$)</li>
-          </ul>
-        </li>
-        <li>Set the continuation bit on all groups except the final one:
-          <ul>
-            <li>Group 1: <code>1</code> (continuation) + <code>1100101</code> = <code>0xE5</code></li>
-            <li>Group 2: <code>1</code> (continuation) + <code>0001110</code> = <code>0x8E</code></li>
-            <li>Group 3: <code>0</code> (terminal) + <code>0100110</code> = <code>0x26</code></li>
-          </ul>
-        </li>
-        <li>Resulting binary sequence on disk: <code>0xE5 0x8E 0x26</code> (3 bytes instead of 4).</li>
-      </ol>
-      <p>
-        In Signed LEB128 (SLEB128), negative numbers are accommodated via two's complement sign extension based on the 6th bit of the terminating byte.
+        The import and export sections are often the most telling part of a module, and they always carry real names because the host needs them to link. The imports show what the module asks of its environment &mdash; memory, functions, host calls &mdash; and the exports show what it exposes. Internal function names are a different matter: they live in an optional custom <code>name</code> section that production builds usually strip, so disassembled functions commonly appear as <code>$func_0</code>, <code>$func_1</code> and so on, numbered by index rather than named.
       </p>
 
-      <h3>3. The 13 Standard Section Types</h3>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        Following the preamble, the module contains a linear sequence of typed sections. Each section begins with a 1-byte section ID, followed by an unsigned LEB128 integer denoting the section's total byte length:
+        Compile a tiny module to try it. Save this as <code>add.wat</code> and assemble it with WABT's <code>wat2wasm</code>:
       </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Section Name</th>
-              <th>Description &amp; Payload Contents</th>
-              <th>Forensic Significance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>0</code></td>
-              <td><strong>Custom</strong></td>
-              <td>Arbitrary data, including source maps, DWARF symbols, and the <code>name</code> section.</td>
-              <td>High value: contains original function/variable names if unstripped.</td>
-            </tr>
-            <tr>
-              <td><code>1</code></td>
-              <td><strong>Type</strong></td>
-              <td>Declares all unique function parameter and result signatures.</td>
-              <td>Reveals API interfaces, argument patterns, and type models.</td>
-            </tr>
-            <tr>
-              <td><code>2</code></td>
-              <td><strong>Import</strong></td>
-              <td>External functions, tables, memories, and globals imported from the host.</td>
-              <td>Critical: reveals external environment interaction (DOM, WebSockets, JS runtime).</td>
-            </tr>
-            <tr>
-              <td><code>3</code></td>
-              <td><strong>Function</strong></td>
-              <td>Vector of type indices assigning signatures to internal function bodies.</td>
-              <td>Maps function instances to their declared prototypes.</td>
-            </tr>
-            <tr>
-              <td><code>4</code></td>
-              <td><strong>Table</strong></td>
-              <td>Defines tables of opaque references (typically function pointers).</td>
-              <td>Used by <code>call_indirect</code> for virtual tables and function pointers.</td>
-            </tr>
-            <tr>
-              <td><code>5</code></td>
-              <td><strong>Memory</strong></td>
-              <td>Declares linear memory allocations in 64KB page units (initial and max limits).</td>
-              <td>Indicates memory footprint and expansion capability.</td>
-            </tr>
-            <tr>
-              <td><code>6</code></td>
-              <td><strong>Global</strong></td>
-              <td>Module-level global variables (mutable or immutable).</td>
-              <td>Stores global state, heap pointers, and thread synchronization flags.</td>
-            </tr>
-            <tr>
-              <td><code>7</code></td>
-              <td><strong>Export</strong></td>
-              <td>Functions, memories, and tables exposed to the host environment.</td>
-              <td>Primary attack surface: entrypoints invocable from JavaScript.</td>
-            </tr>
-            <tr>
-              <td><code>8</code></td>
-              <td><strong>Start</strong></td>
-              <td>Specifies a single function index executed automatically upon module initialization.</td>
-              <td>High suspicion: auto-executing initialization routines or logic bombs.</td>
-            </tr>
-            <tr>
-              <td><code>9</code></td>
-              <td><strong>Element</strong></td>
-              <td>Initializes table contents with function references.</td>
-              <td>Populates indirect call dispatch vectors.</td>
-            </tr>
-            <tr>
-              <td><code>10</code></td>
-              <td><strong>Code</strong></td>
-              <td>Houses local variable vectors and stack opcodes for all internal function bodies.</td>
-              <td>The core execution payload: all machine logic resides here.</td>
-            </tr>
-            <tr>
-              <td><code>11</code></td>
-              <td><strong>Data</strong></td>
-              <td>Initializes linear memory segments with raw static byte vectors.</td>
-              <td>Contains static strings, embedded encryption keys, and lookup tables.</td>
-            </tr>
-            <tr>
-              <td><code>12</code></td>
-              <td><strong>DataCount</strong></td>
-              <td>Declares the number of data segments (introduced for bulk memory operations).</td>
-              <td>Validates sequential segment processing in multithreaded runtimes.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>The WebAssembly Virtual Machine: Stack Architecture and Opcode Execution</h2>
-      <p>
-        Unlike register-based CPU architectures (such as x86-64 or ARM64), WebAssembly operates as a <strong>structured stack machine</strong>. In a stack machine, instructions push operands onto an implicit evaluation stack and pop results off.
-      </p>
-
-      <h3>1. Value Types</h3>
-      <p>
-        The Core 1.0/2.0 specifications support four foundational numeric types and specialized vector/reference primitives:
-      </p>
-      <ul>
-        <li><code>i32</code> (<code>0x7F</code>): 32-bit signed or unsigned integer.</li>
-        <li><code>i64</code> (<code>0x7E</code>): 64-bit signed or unsigned integer.</li>
-        <li><code>f32</code> (<code>0x7D</code>): 32-bit IEEE 754 single-precision floating-point.</li>
-        <li><code>f64</code> (<code>0x7C</code>): 64-bit IEEE 754 double-precision floating-point.</li>
-        <li><code>v128</code> (<code>0x7B</code>): 128-bit vector for Single Instruction Multiple Data (SIMD) operations.</li>
-        <li><code>funcref</code> (<code>0x70</code>) / <code>externref</code> (<code>0x6F</code>): Type-safe opaque object references.</li>
-      </ul>
-
-      <h3>2. Structured Control Flow</h3>
-      <p>
-        A revolutionary attribute of WebAssembly is the total elimination of arbitrary jumps (unstructured <code>goto</code>). WebAssembly guarantees verifiable, acyclic control flow through structured hierarchical blocks:
-      </p>
-      <ul>
-        <li><code>block</code> (<code>0x02</code>): Begins a sequential instruction block. Branching forward to a block exits it.</li>
-        <li><code>loop</code> (<code>0x03</code>): Begins an iterative block. Branching to a loop jumps backward to the beginning of the loop.</li>
-        <li><code>if</code> (<code>0x04</code>) / <code>else</code> (<code>0x05</code>): Conditional execution based on the top <code>i32</code> value on the stack.</li>
-        <li><code>br</code> (<code>0x0C</code>): Unconditional branch to a relative block nesting depth.</li>
-        <li><code>br_if</code> (<code>0x0D</code>): Conditional branch to a relative depth if the top stack value is non-zero.</li>
-        <li><code>br_table</code> (<code>0x0E</code>): Jump table implementing high-performance switch-case dispatching.</li>
-        <li><code>end</code> (<code>0x0B</code>): Terminates any block, loop, conditional, or function body.</li>
-      </ul>
-
-      <h3>3. Linear Memory Operations</h3>
-      <p>
-        WebAssembly interacts with storage through a flat, continuous byte array termed <strong>Linear Memory</strong>. Memory is allocated in uniform pages of 64 Kilobytes ($65,536$ bytes). Load and store instructions (such as <code>i32.load</code>, <code>i64.store</code>, <code>f32.load</code>) accept two LEB128 immediate arguments: an <strong>alignment exponent</strong> and a static <strong>offset</strong>. The effective memory address is calculated dynamically as:
-      </p>
-      <blockquote>
-        $$\text{Effective Address} = \text{Stack Base Address} + \text{Static Immediate Offset}$$
-      </blockquote>
-      <p>
-        If the effective address plus the operand byte length exceeds the current allocated page bounds, the WebAssembly engine immediately halts execution with an uncatchable runtime trap, guaranteeing memory safety.
-      </p>
-
-      <h2>Worked Forensic Example: Reverse Engineering an In-Browser Cryptominer</h2>
-      <p>
-        To understand the forensic utility of the BitDark Disassembler, let us trace an investigation of an unauthorized cryptominer discovered embedded in a compromised e-commerce checkout page.
-      </p>
-
-      <h3>1. Initial Ingestion and Module Fingerprint</h3>
-      <p>
-        The analyst extracts the suspicious binary <code>analytics_core.wasm</code> (94 KB) and drops it into the disassembler:
-      </p>
-      <ul>
-        <li><strong>SHA-256:</strong> <code>4a2c7e0b19d8f3e5b871c04589d12a3ef6781290bbce89104523178df90a12cd</code></li>
-        <li><strong>Header Validation:</strong> Valid <code>\0asm</code>, Version 1.</li>
-        <li><strong>Section Inventory:</strong> 10 sections identified; Custom (Name) section is absent (stripped).</li>
-      </ul>
-
-      <h3>2. Inspecting the Import Section (Section ID 2)</h3>
-      <p>
-        Reviewing the imports reveals the external capabilities the module requests from the host browser:
-      </p>
-      <pre><code>(import "env" "memory" (memory 2 256))
-(import "env" "now" (func $env_now (param) (result f64)))
-(import "env" "postHashResult" (func $env_post (param i32 i32)))</code></pre>
-      <p>
-        <strong>Forensic Analysis:</strong> The module imports an external memory buffer with an initial allocation of 2 pages (128 KB) up to a ceiling of 256 pages (16 MB). It also imports a timing function (<code>now</code>) and a data transmission function (<code>postHashResult</code>). This immediately raises red flags: analytics scripts rarely require high-precision timing paired with bulk binary data submission.
-      </p>
-
-      <h3>3. Dissecting the Computational Code Section (Section ID 10)</h3>
-      <p>
-        Switching to the <strong>Linear WAT Disassembly</strong> tab, the analyst examines the largest function in the binary, <code>func_7</code>:
-      </p>
-      <pre><code>(func $func_7 (param i32 i32) (result i32)
-  (local i32 i32 i32 i32)
-  local.get 0
-  local.set 2
-  loop
-    local.get 2
-    i32.load offset=0
-    local.get 3
-    i32.xor
-    local.set 4
-    local.get 4
-    i32.const 5
-    i32.rotl
-    local.get 4
-    i32.const 7
-    i32.rotr
-    i32.xor
-    local.set 3
-    local.get 2
-    i32.const 4
-    i32.add
-    local.set 2
-    local.get 2
+      <pre><code>(module
+  (func (export "add") (param i32 i32) (result i32)
+    local.get 0
     local.get 1
-    i32.lt_u
-    br_if 0
-  end
-  local.get 3
-  return
-)</code></pre>
-
-      <h3>4. Bytecode Behavioral Deduction</h3>
+    i32.add))</code></pre>
+      <pre><code>wat2wasm add.wat -o add.wasm</code></pre>
       <p>
-        Examining the instruction sequence yields definitive proof of cryptographic hashing:
+        Drop <code>add.wasm</code> in and the summary shows the magic <code>\0asm</code> and version 1, the module validates, and the WAT tab shows one function exporting <code>add</code> with the body <code>local.get 0 / local.get 1 / i32.add / end</code> &mdash; matching the source you compiled. The Sections tab lists the Type, Function, Export and Code sections with their offsets and sizes, and the SHA-256 in the summary matches <code>sha256sum add.wasm</code>.
       </p>
+
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li><code>loop ... br_if 0</code>: Implements a high-frequency, non-blocking counting loop.</li>
-        <li><code>i32.load offset=0</code>: Sequentially streams 4-byte chunks from linear memory.</li>
-        <li><code>i32.rotl 5</code> and <code>i32.rotr 7</code>: Executes bitwise left and right rotations with constant integer shifts. This mathematical pattern is the signature hallmark of cryptographic mixing functions (specifically the Keccak and Blake-256 transformations utilized in Monero CryptoNight mining algorithms).</li>
-        <li><code>i32.xor</code>: Continuously bitwise-XORs the state accumulator against memory values.</li>
+        <li><strong>Open a module</strong> &mdash; drag a <code>.wasm</code> onto the dropzone, or click to browse.</li>
+        <li><strong>Read the summary</strong> &mdash; file, SHA-256, magic and version, whether it validates, and section/function counts.</li>
+        <li><strong>Switch tabs</strong> &mdash; WAT for the disassembly, Sections for the byte-level map, JSON for a structured view.</li>
+        <li><strong>Export</strong> &mdash; download the WAT or the JSON, or reset to open another module.</li>
       </ol>
-      <p>
-        <strong>Conclusion:</strong> The module is not performing analytics; it is an optimized cryptocurrency mining engine executing in the background of victim sessions.
-      </p>
 
-      <h2>Architectural Comparison: WebAssembly vs. Native x86/x64 vs. Java JVM vs. EVM</h2>
-      <p>
-        To conceptualize where WebAssembly resides in the software reverse engineering hierarchy, consider this comparison against alternative compilation targets:
-      </p>
-
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Architecture Metric</th>
-              <th>WebAssembly (Wasm)</th>
-              <th>Native Executables (PE / ELF)</th>
-              <th>Java Virtual Machine (JVM)</th>
-              <th>Ethereum Virtual Machine (EVM)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Virtual Machine Type</strong></td>
-              <td>Structured Stack Machine</td>
-              <td>Register Machine (Hardware CPU)</td>
-              <td>Stack Machine</td>
-              <td>Quasi-Turing Stack Machine</td>
-            </tr>
-            <tr>
-              <td><strong>Memory Addressing</strong></td>
-              <td>Bounds-Checked Linear Memory</td>
-              <td>Segmented Virtual Memory Space</td>
-              <td>Managed Object Heap / References</td>
-              <td>Volatile Memory &amp; Persistent Storage</td>
-            </tr>
-            <tr>
-              <td><strong>Arbitrary Control Flow</strong></td>
-              <td><strong>Forbidden</strong> (Structured blocks only)</td>
-              <td>Unrestricted (Arbitrary <code>jmp</code>/<code>call</code>)</td>
-              <td>Permitted (Bytecode <code>goto</code>)</td>
-              <td>Permitted (Explicit <code>JUMP</code>/<code>JUMPI</code>)</td>
-            </tr>
-            <tr>
-              <td><strong>Integer Encoding</strong></td>
-              <td>Variable-Length LEB128</td>
-              <td>Fixed 8/16/32/64-Bit Little-Endian</td>
-              <td>Fixed Big-Endian Words</td>
-              <td>Fixed 256-Bit Big-Endian Words</td>
-            </tr>
-            <tr>
-              <td><strong>Native System Calls</strong></td>
-              <td>None (Sandboxed imports only)</td>
-              <td>Direct Kernel Syscalls (<code>syscall</code>)</td>
-              <td>Java Native Interface (JNI)</td>
-              <td>Blockchain Host Opcodes</td>
-            </tr>
-            <tr>
-              <td><strong>Decompilation Fidelity</strong></td>
-              <td>High (Clean WAT S-expressions)</td>
-              <td>Low (Requires complex decompiler heuristics)</td>
-              <td>Very High (Direct Java source mapping)</td>
-              <td>Medium (Requires decompiler decompaction)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>Anti-Analysis, Obfuscation, and Reverse Engineering Evasion in Wasm</h2>
-      <p>
-        As security tools improve, threat actors and proprietary commercial software vendors utilize specialized obfuscation techniques to complicate WebAssembly reverse engineering:
-      </p>
-
-      <h3>1. Stripping the Custom Name Section (Symbol Eradication)</h3>
-      <p>
-        Compilers like Emscripten and <code>wasm-pack</code> preserve function and variable names in the <strong>Name Section (Section ID 0, customName: "name")</strong> when debug flags (<code>-g</code>) are enabled. Production compilation pipelines automatically strip this section. When stripped, meaningful function names like <code>decryptPayload()</code> or <code>validateLicenseKey()</code> become generic indices like <code>$func_42</code>.
-      </p>
-
-      <h3>2. Control Flow Flattening</h3>
-      <p>
-        Because WebAssembly enforces structured control flow, malware authors cannot use arbitrary spaghetti jumps. Instead, they apply <strong>Control Flow Flattening</strong>. The compiler decomposes linear function blocks into isolated cases inside a massive <code>br_table</code> (switch statement) enclosed within an outer <code>loop</code>. A state variable controls which block executes next:
-      </p>
-      <pre><code>loop
-  local.get $state
-  br_table 0 1 2 3 $default_case
-end</code></pre>
-      <p>
-        This destroys the visual hierarchy of the code, transforming readable sequential algorithms into complex state machines that confuse automated static analyzers.
-      </p>
-
-      <h3>3. Linear Memory Encryption (Data Virtualization)</h3>
-      <p>
-        Static strings, API endpoints, and command-and-control URLs are conventionally stored in the Data Section (Section ID 11) and loaded into linear memory at initialization. To thwart string extraction tools, sophisticated malware XOR-encrypts or AES-encrypts the Data Section. The Wasm module decrypts individual strings into volatile memory only at the microsecond of invocation, immediately zeroing the memory buffer afterward.
-      </p>
-
-      <h3>4. Dynamic Indirect Call Obfuscation</h3>
-      <p>
-        Rather than issuing direct calls (<code>call $func_target</code>), obfuscators route execution through the Table Section using <code>call_indirect</code>. The target function index is dynamically computed using mathematical hashing algorithms, preventing static call-graph generators from reconstructing cross-functional dependencies.
-      </p>
-
-      <h2>Common Mistakes and Forensic Misconceptions</h2>
-      <p>
-        Security practitioners auditing WebAssembly modules frequently encounter several analytical pitfalls:
-      </p>
+      <h2>Where This Is Useful</h2>
       <ul>
-        <li>
-          <strong>Assuming Wasm Cannot Perform Dangerous Operations:</strong> While WebAssembly is isolated from direct OS system calls, it possesses full authority over whatever host functions are supplied in its Import Section. If the host JavaScript environment provides handles to <code>fetch()</code>, <code>document.cookie</code>, or WebSockets, the Wasm binary can execute data theft, session hijacking, or port scanning with full impunity.
-        </li>
-        <li>
-          <strong>Equating WAT Disassembly with High-Level Source Code:</strong> Disassembling a binary to WAT produces exact, verifiable representation of the machine instructions, but does not reconstruct high-level language constructs (such as C++ classes, Rust lifetimes, or Go goroutines). Analysts must trace stack manipulations to deduce semantic architecture.
-        </li>
-        <li>
-          <strong>Overlooking the Memory Initialization Data:</strong> The Data Section (ID 11) is frequently neglected during code audits. Suspicious domain names, cryptographic salt values, and hardcoded shellcode headers frequently reside entirely within static data offsets rather than executable code instructions.
-        </li>
-        <li>
-          <strong>Ignoring WebAssembly Engine Validation:</strong> A binary may look valid on surface inspection, but fail engine validation (<code>WebAssembly.validate()</code>) due to stack type mismatches or unaligned memory access. BitDark verifies module validation directly against your browser's native engine to flag non-conforming or corrupted binaries instantly.
-        </li>
+        <li><strong>Seeing what a module does:</strong> the import/export list and the WAT often reveal a module's purpose &mdash; what host functions it calls, what it exposes &mdash; without running it.</li>
+        <li><strong>A safe look at an untrusted module:</strong> because nothing executes, you can inspect a suspicious <code>.wasm</code> and read its instructions before deciding whether to trust it.</li>
+        <li><strong>Learning the format:</strong> comparing a small source module to its disassembly is a direct way to learn how sections, LEB128 and opcodes fit together.</li>
+        <li><strong>Recording a hash:</strong> the SHA-256 is a stable fingerprint to note or compare.</li>
       </ul>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between WebAssembly binary (.wasm) and WebAssembly Text (.wat)?</div>
+          <div class="faq-question">What is the difference between .wasm and WAT?</div>
           <div class="faq-answer">
-            A WebAssembly binary (.wasm) is the low-level binary encoding designed to be executed efficiently by machine runtimes. WebAssembly Text (.wat) is the official human-readable S-expression format that represents the binary's functions, types, and opcodes in plain text for debugging and auditing.
+            A <code>.wasm</code> file is the compact binary WebAssembly module a browser runs. WAT (WebAssembly Text) is its human-readable, S-expression text form &mdash; the same module written out so a person can read it. This tool disassembles the binary into WAT so you can see the module's structure, imports, exports and instructions.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does LEB128 encoding reduce file sizes in WebAssembly?</div>
+          <div class="faq-question">Is this a decompiler? Will it give me the original source?</div>
           <div class="faq-answer">
-            Little Endian Base 128 (LEB128) packs arbitrary-sized integers into variable byte sequences using 7 bits per byte for payload data and 1 bit as a continuation flag. Small integers that would otherwise consume 32 or 64 bits require only 1 or 2 bytes, drastically minimizing network transfer latency.
+            No. It is a disassembler: it turns the binary opcodes into readable WAT instructions, not back into the C, C++ or Rust the module was compiled from. For higher-level, C-like output you would use a decompiler such as WABT's <code>wasm-decompile</code> or a tool like Ghidra; WAT shows you the real instructions, which is often enough to understand what a module does.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can a WebAssembly module execute without JavaScript?</div>
+          <div class="faq-question">Why do functions show names like $func_42 instead of real names?</div>
           <div class="faq-answer">
-            In browser environments, WebAssembly modules require JavaScript to fetch, compile, instantiate, and pass host imports. However, in standalone non-browser runtimes (such as Wasmtime, Wasmer, or Node.js with WASI), WebAssembly can run independently as a native command-line utility.
+            Function names live in an optional custom <code>name</code> section that compilers include only with debug flags. Production builds usually strip it, so the disassembler has no names to show and falls back to the function's index, like <code>$func_42</code>. Imports and exports still carry their real names, because those are required for the module to link.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does the linear disassembly truncate very long functions?</div>
+          <div class="faq-question">What does it mean when the module validates?</div>
           <div class="faq-answer">
-            To prevent browser rendering thread freezes when processing massive autogenerated binaries (e.g., compiled game engines exceeding 50,000 instructions per function), the in-memory viewer places a safe cap of 500 instructions per individual function body preview. The complete uncapped dataset is preserved when you export via "Download .wat".
+            The tool runs the browser's own <code>WebAssembly.validate()</code> on the bytes. A pass means the module is structurally well-formed by the WebAssembly specification &mdash; its types, sections and control flow are consistent. It is a structural check, not a safety judgement: a valid module can still do something harmful, and an invalid one is simply malformed or truncated.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What does "Passes Engine Validation" mean in the status banner?</div>
+          <div class="faq-question">Is my file uploaded anywhere?</div>
           <div class="faq-answer">
-            It indicates that the loaded binary passed your browser's native WebAssembly.validate() check. This confirms that all section offsets, stack operand types, branch labels, and memory declarations strictly conform to the W3C WebAssembly Core Specification.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How can I identify a Monero cryptominer inside a Wasm binary?</div>
-          <div class="faq-answer">
-            Look for functions with intensive iterative loops (loop / br_if), heavy bitwise rotation instructions (i32.rotl / i32.rotr), multi-byte memory loads across linear memory, and imports linked to high-precision timers (performance.now) and continuous WebSocket communication.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark log or store my uploaded .wasm files?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All file slicing, TypedArray decoding, SHA-256 calculation, and WAT generation execute exclusively inside your browser's private JavaScript memory space. Zero bytes are transmitted to any server.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What tools can convert the exported .wat file back into a high-level language?</div>
-          <div class="faq-answer">
-            You can utilize open-source decompilation frameworks such as the WebAssembly Binary Toolkit (WABT's wasm-decompile), Ghidra with WebAssembly extensions, or IDA Pro with Wasm loaders to generate C-like pseudocode abstractions from the disassembled WAT file.
+            No. The <code>.wasm</code> is read into memory in your browser, and the validation, parsing, disassembly, SHA-256 hash and exports all run there. Nothing you open is sent to a server; the page makes no network request for your file.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Forensics, Reverse Engineering &amp; Binary Inspection Utilities</h3>
+        <h3>Related Forensics &amp; Analysis Utilities</h3>
         <div class="related-grid">
-          <a href="/tools/forensics/strings/" class="related-card">
-            <div class="related-card-title"><span>[📜]</span> Binary Strings Extractor</div>
-            <div class="related-card-desc">Extract printable ASCII and wide UTF-16LE Unicode strings from executables, memory dumps, and firmware.</div>
+          <a href="/tools/forensics/pe-elf-viewer/" class="related-card">
+            <div class="related-card-title"><span>[&#9881;&#65039;]</span> PE &amp; ELF Header Viewer</div>
+            <div class="related-card-desc">Read Windows PE and Linux ELF headers and section tables statically, in your browser.</div>
           </a>
           <a href="/tools/forensics/magic-bytes/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> Magic Bytes Analyzer</div>
-            <div class="related-card-desc">Inspect binary file headers, hex magic bytes, and detect dangerous extension spoofing entirely in browser RAM.</div>
+            <div class="related-card-title"><span>[&#128270;]</span> Magic Bytes Analyzer</div>
+            <div class="related-card-desc">Identify a file from its header bytes and catch extension spoofing, in your browser.</div>
           </a>
-          <a href="/tools/privacy/steganography/" class="related-card">
-            <div class="related-card-title"><span>[🖼️]</span> Canvas Steganography</div>
-            <div class="related-card-desc">Conceal and recover covert text messages within image pixel Least Significant Bits (LSB) entirely offline.</div>
+          <a href="/tools/forensics/strings/" class="related-card">
+            <div class="related-card-title"><span>[&#128269;]</span> Binary Strings Extractor</div>
+            <div class="related-card-desc">Pull readable ASCII and UTF-16LE strings out of a binary locally.</div>
           </a>
-          <a href="/tools/ai/c2pa-inspector/" class="related-card">
-            <div class="related-card-title"><span>[🔬]</span> C2PA Manifest Reader</div>
-            <div class="related-card-desc">Inspect, extract, and evaluate JUMBF provenance manifests and AI generation markers client-side.</div>
+          <a href="/tools/encoding/hex-dumper/" class="related-card">
+            <div class="related-card-title"><span>[0x]</span> Hex Dumper</div>
+            <div class="related-card-desc">View the raw bytes, offsets and ASCII of any file, with basic header hints.</div>
           </a>
-          <a href="/tools/crypto/aes-gcm/" class="related-card">
-            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
-            <div class="related-card-desc">Authenticated client-side 256-bit encryption for securing confidential payloads with zero tracking.</div>
+          <a href="/tools/encoding/base-suite/" class="related-card">
+            <div class="related-card-title"><span>[&#128290;]</span> Base Encoding Suite</div>
+            <div class="related-card-desc">Encode and decode Base16, Base32, Base58 and Base64 buffers in your browser.</div>
           </a>
-          <a href="/tools/auth/jwt-debugger/" class="related-card">
-            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
-            <div class="related-card-desc">Decode, inspect, and verify JSON Web Tokens client-side without leaking confidential bearer tokens.</div>
+          <a href="/tools/crypto/multi-hash/" class="related-card">
+            <div class="related-card-title"><span>[#&#65039;&#8419;]</span> Multi-Hash Generator</div>
+            <div class="related-card-desc">Compute several file hashes at once, including SHA-256 and MD5, in local browser memory.</div>
           </a>
         </div>
       </section>
@@ -1380,7 +919,6 @@ end</code></pre>
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1399,7 +937,7 @@ end</code></pre>
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
