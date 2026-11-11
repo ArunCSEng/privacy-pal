@@ -973,6 +973,16 @@
         It is built for a quick look and for triage, not to replace a full registry-forensics tool. What it does well is let you browse a hive's structure and pull out values without installing anything or sending the file anywhere.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a hive or export</strong> &mdash; drag in a binary hive such as <code>NTUSER.DAT</code>, <code>SYSTEM</code>, <code>SOFTWARE</code> or <code>Amcache.hve</code>, or a <code>.reg</code> text export from regedit. The format is detected from the contents, so the filename does not matter.</li>
+        <li><strong>Browse the tree</strong> &mdash; keys appear on the left; select one and its values are listed on the right with their <em>Value Name</em>, <em>Type</em> and <em>Data</em>.</li>
+        <li><strong>Jump to what matters</strong> &mdash; the filter buttons go straight to the areas most often checked first: <strong>Run / Startup</strong> for persistence, <strong>User Activity</strong> for UserAssist and RecentDocs, <strong>USB / Storage</strong> for connected-device history, and <strong>Network</strong> for interface and DNS settings. <strong>All</strong> returns to the full tree.</li>
+        <li><strong>Search across everything</strong> &mdash; the search box matches key paths, value names and value data at once, which is the fastest way to find a specific string anywhere in the hive.</li>
+        <li><strong>Export your findings</strong> &mdash; <strong>Export Registry JSON</strong> or <strong>Export CSV</strong> saves what was parsed; <strong>Clear Analysis</strong> empties the workspace.</li>
+      </ol>
+      <p>Active hives are locked by Windows, so work from a copy taken from a disk image, a Volume Shadow Copy, or <code>reg.exe save</code>.</p>
       <h2>How a Hive Is Structured</h2>
       <p>
         A REGF hive begins with a 4-byte signature, <code>regf</code>, and a header that includes the hive's last-written time as a Windows <strong>FILETIME</strong> &mdash; a 64-bit count of 100-nanosecond intervals since 1 January 1601 UTC, which the tool converts to a readable date. The actual data starts at offset <code>0x1000</code> and is organised into bins and cells. The cells that matter for browsing are the <strong>named keys</strong> (<code>nk</code>), the <strong>values</strong> (<code>vk</code>), and the index cells (<code>lf</code>, <code>lh</code>, <code>ri</code>, <code>li</code>) that link a key to its subkeys. Starting from the root key, the tool follows those indexes down the tree, reading each key's name and its list of values.
@@ -1007,14 +1017,6 @@
       <p>
         You do not need a full hive to try it. In regedit, export a small key to a <code>.reg</code> file &mdash; for example right-click <code>HKEY_CURRENT_USER\Software</code> and choose Export &mdash; then drop that file here. You will see the exported keys appear in the tree on the left; selecting one lists its values with their types and data on the right, and the summary shows the file's SHA-256 and the key/value counts. To try a real binary hive, copy your own <code>NTUSER.DAT</code> from a backup or disk image (it is locked while you are logged in) and open that; the tool reports it as a REGF hive, shows the header's last-written time, and walks the tree.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a file</strong> &mdash; drag a hive or <code>.reg</code> export onto the dropzone, or click to browse.</li>
-        <li><strong>Browse the tree</strong> &mdash; keys appear on the left; click one to see its values on the right.</li>
-        <li><strong>Narrow it down</strong> &mdash; type in the search box, or use a triage filter to jump to startup, user-activity, USB or network keys.</li>
-        <li><strong>Export</strong> &mdash; save everything parsed as JSON or CSV, or clear and open another file.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
