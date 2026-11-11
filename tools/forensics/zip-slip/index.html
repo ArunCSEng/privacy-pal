@@ -827,6 +827,16 @@
         This scanner lets you check an archive's entry names <strong>before</strong> you extract it. Drop in a <code>.zip</code> (or a JAR, WAR, APK or Office file &mdash; all ZIP archives), and it reads the archive's index and lists every entry, flagging any whose path looks like it would escape the extraction folder. It reads the file in your browser and uploads nothing, so it is safe to use on archives you do not yet trust.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open an archive</strong> &mdash; drag in a <code>.zip</code>, or any of the ZIP-based formats: <code>.jar</code>, <code>.war</code>, <code>.apk</code>, or an Office file such as <code>.docx</code> or <code>.xlsx</code>. Only the Central Directory is read, so nothing is decompressed or written to disk.</li>
+        <li><strong>Check the threat count first</strong> &mdash; a non-zero count means at least one entry's stored path would escape the folder you extract into. That is the answer you came for, before running <code>unzip</code>.</li>
+        <li><strong>Review the entry table</strong> &mdash; each row shows the <em>Entry Path in Archive</em> exactly as stored, a <em>Security Status</em>, and <em>Classification / Risk Details</em> naming which pattern triggered: a <code>../</code> traversal, an absolute path, a backslash, an encoded sequence, or an NTFS stream colon.</li>
+        <li><strong>Judge the flagged paths yourself</strong> &mdash; look at the stored path rather than the filename alone. A path that resolves outside the destination is the problem, regardless of how harmless the final filename looks.</li>
+        <li><strong>Keep a record</strong> &mdash; <strong>Export Forensic Report</strong> saves the full entry list with the findings, and <strong>Clear &amp; New Scan</strong> resets for the next archive.</li>
+      </ol>
+      <p>If you must extract a flagged archive, do it in a throwaway container or VM, and use an extractor that resolves each path and refuses anything landing outside the target directory.</p>
       <h2>How It Reads the Archive</h2>
       <p>
         A ZIP file keeps its index &mdash; the <strong>Central Directory</strong> &mdash; near the end, pointed to by an End of Central Directory (EOCD) record. The tool scans backwards for the EOCD signature (<code>50 4B 05 06</code>) and verifies it points at a real Central Directory before trusting it, which avoids being fooled by that byte pattern appearing inside file data. It also recognises <strong>ZIP64</strong> (the <code>50 4B 06 07</code> locator and <code>50 4B 06 06</code> record) so large archives with 64-bit offsets are read correctly. It then walks each Central Directory entry (<code>50 4B 01 02</code>) and reads the stored file name &mdash; without decompressing anything.
@@ -872,14 +882,6 @@ def safe_extract(zip_path, dest):
                 raise ValueError(f"Blocked traversal entry: {name}")
             z.extract(name, dest)</code></pre>
       <p>Most current libraries do this for you, but custom extraction code frequently does not &mdash; which is where this scanner helps.</p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open an archive</strong> &mdash; drag a ZIP, JAR, WAR, APK or Office file onto the dropzone, or click to browse.</li>
-        <li><strong>Review the entries</strong> &mdash; each stored path, with any risk flag, plus the archive's SHA-256 and entry count.</li>
-        <li><strong>Check the count</strong> &mdash; a non-zero threat count means at least one entry would escape the extraction folder.</li>
-        <li><strong>Export</strong> &mdash; save a JSON report, or reset to scan another archive.</li>
-      </ol>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
