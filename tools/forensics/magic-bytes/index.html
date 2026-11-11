@@ -224,7 +224,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -839,6 +839,16 @@
         You can also export a JSON report of the findings. Everything happens locally; the page never sends your file anywhere.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Add a file</strong> &mdash; drag it onto the dropzone or click to browse. Good candidates are an unexpected email attachment, a download whose icon looks wrong, or anything with a double extension such as <code>invoice.pdf.exe</code>.</li>
+        <li><strong>Read the verdict banner first</strong> &mdash; it states whether the header matches the extension. A high-risk masquerade means an executable header is wearing a document or image extension, which is the case worth stopping for.</li>
+        <li><strong>Check the identification details</strong> &mdash; the detected format, the file size, the SHA-256 hash and the leading bytes are listed together, so you can record the hash in a ticket or compare it against a known value.</li>
+        <li><strong>Look at the hex dump</strong> &mdash; the first 128 bytes are shown as hex and ASCII with the matched signature highlighted, so you can see exactly which bytes drove the identification rather than taking the label on trust.</li>
+        <li><strong>Keep or continue</strong> &mdash; <strong>Export Forensics Report (JSON)</strong> saves the findings, and <strong>Analyze Another File</strong> clears the workspace for the next one.</li>
+      </ol>
+      <p>An unrecognised result is not a warning. Plain-text formats and anything outside the built-in signature list have no magic bytes to match, so they report as unknown rather than as a problem.</p>
       <h2>A Worked Example You Can Reproduce</h2>
       <p>
         Take any small Windows <code>.exe</code> and rename it to <code>Q4_Internal_Audit_Statement.pdf</code>, then drop it in. A real PDF would start with <code>25 50 44 46</code> (<code>%PDF</code>); this file instead starts like a PE executable:
@@ -849,14 +859,6 @@
       <p>
         The tool identifies the header as <code>Windows / DOS Executable (PE / MZ)</code>, sees that the name ends in <code>.pdf</code>, and because that pairs an executable header with a document extension, reports <strong>CRITICAL SPOOF DETECTED: Executable Masked as .pdf</strong>. A little further into a real PE you will usually find the ASCII text <em>This program cannot be run in DOS mode</em> in the hex dump, which is the DOS stub every PE carries. Rename the same file back to <code>.exe</code> and the verdict changes to a verified match &mdash; the bytes never changed, only the name did.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Add a file</strong> &mdash; drag it onto the dropzone or click to browse. A suspicious attachment or an unknown download is a good candidate.</li>
-        <li><strong>Read the verdict</strong> &mdash; the banner shows whether the header matches the extension, and the grid shows the identified type, size, SHA-256 and the leading bytes.</li>
-        <li><strong>Check the hex dump</strong> &mdash; the first 128 bytes in hex and ASCII, with the matched signature highlighted so you can see exactly which bytes were identified.</li>
-        <li><strong>Export if needed</strong> &mdash; save a JSON report, or click "Analyze Another File" to start over.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
