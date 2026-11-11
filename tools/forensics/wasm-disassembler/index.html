@@ -796,6 +796,16 @@
         WebAssembly (Wasm) lets browsers run compiled code at near-native speed. A <code>.wasm</code> module is a compact binary, not readable text, so to understand one you disassemble it into <strong>WAT</strong> (WebAssembly Text) &mdash; the same module written out in a human-readable form. This tool does that in your browser: drop in a <code>.wasm</code> and it validates it, shows a map of its sections, lists what it imports and exports, and renders the functions as WAT instructions, with a SHA-256 hash and a JSON view. It reads the file only &mdash; nothing runs, and nothing is uploaded &mdash; so it is a safe way to look inside an untrusted module.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a module</strong> &mdash; drag in a <code>.wasm</code> binary. Nothing is executed, only parsed, so an untrusted module is safe to read here.</li>
+        <li><strong>Check the summary</strong> &mdash; it confirms the magic bytes and version, reports whether the module passes the browser's own validation, and gives the section and function counts plus a SHA-256 of the file.</li>
+        <li><strong>Read the disassembly</strong> &mdash; <strong>Linear WAT Disassembly</strong> renders the module as WebAssembly Text with the opcodes decoded. Start with the imports and exports: they carry real names even in a stripped build, and they usually tell you what the module talks to and what it offers.</li>
+        <li><strong>Switch views as needed</strong> &mdash; <strong>Section Breakdown</strong> maps each section to its byte offset and size, which is the view for understanding layout; <strong>Structured JSON Analysis</strong> gives the same information in a form you can process elsewhere.</li>
+        <li><strong>Export</strong> &mdash; <strong>Download .wat</strong> saves the disassembly for use with other WebAssembly tooling, and <strong>Export JSON</strong> saves the structured analysis. <strong>Clear</strong> resets.</li>
+      </ol>
+      <p>Functions shown as <code>$func_0</code>, <code>$func_1</code> and so on simply mean the optional name section was stripped at build time, which is normal for production modules.</p>
       <h2>The Binary, Briefly</h2>
       <p>
         Every module begins with the 8-byte preamble: the magic bytes <code>00 61 73 6D</code> (<code>\0asm</code>) and a 4-byte version. After that comes a sequence of <strong>sections</strong>, each a one-byte ID and a length, covering types, imports, functions, tables, memory, globals, exports, the code (the function bodies), data, and a few more &mdash; thirteen in all, including the custom section that can hold the debug name table. The tool reads the preamble, confirms the magic, and walks the sections in order.
@@ -824,14 +834,6 @@
       <p>
         Drop <code>add.wasm</code> in and the summary shows the magic <code>\0asm</code> and version 1, the module validates, and the WAT tab shows one function exporting <code>add</code> with the body <code>local.get 0 / local.get 1 / i32.add / end</code> &mdash; matching the source you compiled. The Sections tab lists the Type, Function, Export and Code sections with their offsets and sizes, and the SHA-256 in the summary matches <code>sha256sum add.wasm</code>.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a module</strong> &mdash; drag a <code>.wasm</code> onto the dropzone, or click to browse.</li>
-        <li><strong>Read the summary</strong> &mdash; file, SHA-256, magic and version, whether it validates, and section/function counts.</li>
-        <li><strong>Switch tabs</strong> &mdash; WAT for the disassembly, Sections for the byte-level map, JSON for a structured view.</li>
-        <li><strong>Export</strong> &mdash; download the WAT or the JSON, or reset to open another module.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
