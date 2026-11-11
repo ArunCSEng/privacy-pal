@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark</title>
-  <meta name="title" content="MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark" />
-  <meta name="description" content="Calculate Maximum Transmission Unit (MTU), Maximum Segment Size (MSS), and tunnel encapsulation overhead across IPv4, IPv6, WireGuard, IPsec, GRE, VXLAN, and VLANs." />
-  <meta name="keywords" content="mtu calculator, mss calculator, wireguard mtu overhead, ipsec esp overhead, gre tunnel mtu, vxlan overhead, pppoe mtu 1492, tcp mss clamping, pmtud black hole, jumbo frames" />
+  <title>MTU &amp; TCP MSS Overhead Calculator — Free Offline Tool | BitDark</title>
+  <meta name="title" content="MTU &amp; TCP MSS Overhead Calculator — Free Offline Tool | BitDark" />
+  <meta name="description" content="Work out the TCP MSS left after IP, TCP, VLAN, PPPoE, VXLAN and WireGuard overhead, with a layer-by-layer breakdown. Runs in your browser; nothing is sent." />
+  <meta name="keywords" content="mtu calculator, tcp mss calculator, mss clamping, pppoe 1492, vxlan overhead, wireguard mtu, path mtu discovery, vlan tag overhead, tunnel mtu" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/network/mtu-overhead/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/network/mtu-overhead/" />
-  <meta property="og:title" content="MTU &amp; MSS Overhead Calculator — Free Offline Network Tool | BitDark" />
-  <meta property="og:description" content="Calculate effective payload limits, header encapsulation penalties, and optimal TCP MSS clamping boundaries across IPv4, IPv6, WireGuard, IPsec, GRE, and VXLAN." />
+  <meta property="og:title" content="MTU &amp; TCP MSS Overhead Calculator — Offline Tool | BitDark" />
+  <meta property="og:description" content="Calculate the TCP MSS left after tunnel and encapsulation overhead, layer by layer. Runs in your browser." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/network/mtu-overhead/" />
-  <meta name="twitter:title" content="MTU &amp; MSS Overhead Calculator | BitDark" />
-  <meta name="twitter:description" content="Compute MTU, TCP MSS, and tunnel encapsulation overhead locally in your browser. 100% Client-Side with zero network egress." />
+  <meta name="twitter:title" content="MTU &amp; TCP MSS Overhead Calculator | BitDark" />
+  <meta name="twitter:description" content="Calculate TCP MSS after VLAN, PPPoE, VXLAN or WireGuard overhead, layer by layer. Nothing is sent." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,34 +31,22 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "MTU & MSS Overhead Calculator",
+        "name": "MTU &amp; TCP MSS Overhead Calculator",
         "url": "https://bitdark.net/tools/network/mtu-overhead/",
         "applicationCategory": "NetworkingApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive client-side networking calculator to compute effective MTU, TCP MSS clamping values, UDP datagram limits, and protocol overhead across IPv4, IPv6, VLAN, PPPoE, WireGuard, IPsec ESP, GRE, VXLAN, and GENEVE encapsulation."
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based calculator that subtracts each protocol header \u2014 outer and inner IP, TCP options, VLAN or QinQ tags, PPPoE, VXLAN and WireGuard \u2014 from a base MTU to give the resulting TCP MSS, with a running layer-by-layer breakdown."
       },
       {
         "@type": "TechArticle",
-        "headline": "Network Encapsulation Overhead, Path MTU Discovery (PMTUD) Black Holes, and TCP MSS Clamping Architecture",
+        "headline": "MTU, MSS and Tunnel Overhead: Where Every Byte Goes, and Why Tunnels Break Large Transfers",
         "url": "https://bitdark.net/tools/network/mtu-overhead/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "datePublished": "2024-05-20",
-        "dateModified": "2026-11-04",
-        "description": "Comprehensive engineering analysis of Maximum Transmission Unit (MTU), Maximum Segment Size (MSS), Path MTU Discovery (PMTUD), ICMP Type 3 Code 4 filtering, and multi-layered encapsulation overhead."
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "datePublished": "2024-04-20",
+        "dateModified": "2026-11-12",
+        "description": "How MTU and MSS relate, what each encapsulation layer costs in bytes, why a tunnel that pings fine can still stall bulk transfers, how MSS clamping fixes it, and a worked example you can check by hand."
       },
       {
         "@type": "FAQPage",
@@ -68,39 +56,39 @@
             "name": "What is the difference between MTU and MSS?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Maximum Transmission Unit (MTU) defines the maximum size in bytes of an entire network layer packet (including IP header, transport header, and payload) that can be transmitted over a physical link without fragmentation. Maximum Segment Size (MSS) specifies the largest amount of pure application data a TCP endpoint can receive in a single unfragmented segment, excluding IP and TCP headers."
+              "text": "MTU is the largest frame a link will carry, headers included \u2014 1500 bytes on standard Ethernet. MSS is how much TCP payload fits inside that once the IP and TCP headers are subtracted. On plain IPv4 Ethernet that is 1500 minus 20 for IP and 20 for TCP, giving the familiar 1460."
             }
           },
           {
             "@type": "Question",
-            "name": "What causes a Path MTU Discovery (PMTUD) black hole?",
+            "name": "Why does my VPN break large transfers but ping fine?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "A PMTUD black hole occurs when a packet with the Don't Fragment (DF) bit set exceeds an intermediate link's MTU, and the intermediate router drops the packet and generates an ICMP Type 3 Code 4 ('Fragmentation Needed and DF Set') error message, but intermediate firewalls or middleboxes block the incoming ICMP message. Because the sender never receives the notification, it repeatedly retransmits large frames, stalling the TCP connection indefinitely."
+              "text": "Small packets fit; large ones do not. A tunnel adds its own headers, so a full-size packet that was fine on the local link becomes too big once encapsulated. If the ICMP messages that would report this are filtered, the sender never learns and simply retransmits forever \u2014 the classic MTU black hole, where handshakes succeed and bulk transfers stall."
             }
           },
           {
             "@type": "Question",
-            "name": "How does TCP MSS Clamping resolve MTU mismatches?",
+            "name": "What is path MTU discovery, and why does it fail?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "TCP MSS clamping is an edge-router mechanism that intercepts initial TCP SYN and SYN-ACK handshakes and rewrites the Maximum Segment Size option field to fit within the bottleneck link MTU minus header sizes. By artificially capping the negotiated MSS, endpoints never transmit packets larger than the intermediate tunnel path can bear, avoiding both fragmentation and PMTUD black holes."
+              "text": "A sender marks packets as Do Not Fragment and relies on routers returning an ICMP fragmentation-needed message to learn the smallest MTU on the path. Many networks block that ICMP type, so the message never arrives and the sender keeps sending oversized packets. Clamping MSS at the tunnel edge avoids depending on it."
             }
           },
           {
             "@type": "Question",
-            "name": "Why is the recommended WireGuard MTU over standard Ethernet 1420 bytes?",
+            "name": "Why is PPPoE 8 bytes?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Standard WireGuard encapsulates tunnel traffic inside UDP. Over IPv6, the outer IPv6 header consumes 40 bytes, UDP consumes 8 bytes, and WireGuard transport data overhead consumes 32 bytes (total 80 bytes overhead). Deducting 80 bytes from a 1500-byte physical Ethernet MTU yields exactly 1420 bytes. Configuring an MTU of 1420 ensures safe transit across both IPv4 (60B overhead) and IPv6 (80B overhead) underlay links."
+              "text": "PPPoE adds a 6-byte session header plus a 2-byte PPP protocol field, so 8 bytes in total, which is why many DSL and fibre links run at 1492 rather than 1500. The calculator includes it as a toggle because it is the single most common reason a connection is not a round 1500."
             }
           },
           {
             "@type": "Question",
-            "name": "Does this MTU overhead calculation transmit any network telemetry or topology data?",
+            "name": "Does this tool measure my actual path MTU?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The BitDark MTU Overhead Calculator operates on a strict zero-network-egress design. All protocol encapsulation arithmetic, running payload allocations, and clamping boundary models run purely in client-side JavaScript within your local browser sandbox."
+              "text": "No. It is a calculator: it works out what the MSS should be for the headers you select. Measuring a real path means sending probes, for example ping with the don't-fragment flag at decreasing sizes. Use the calculated figure as the expected answer, then confirm it against the live path."
             }
           }
         ]
@@ -224,7 +212,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -794,7 +782,7 @@
 
     <div class="tool-header">
       <h1>MTU &amp; TCP MSS Overhead Calculator</h1>
-      <p>Compute effective payload limits, header encapsulation penalties, and optimal TCP MSS clamping boundaries across IPv4, IPv6, VPNs, overlay networks, and VLAN tags.</p>
+      <p>Work out how much TCP payload survives your encapsulation: set a base MTU, add the IP, TCP, VLAN, PPPoE, VXLAN or WireGuard layers in play, and see each one’s cost and the MSS left at the end. It runs in your browser and nothing you enter is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -937,443 +925,137 @@
       </div>
     </section>
 
-    <!-- Authoritative Operational Boundaries & Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Operational Boundaries &amp; Forensic Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Disclaimer: bitdark.net is not responsible</strong> for any direct, indirect, incidental, or consequential damages resulting from the use or misuse of this diagnostic tool, packet blackholing, network fragmentation overhead, throughput collapse, Path MTU Discovery (PMTUD) outages, or routing policy failures. Header calculations reflect canonical RFC and standard implementation specifications. Real-world enterprise environments may incur variable padding requirements (e.g., block cipher CBC alignment in IPsec ESP or variable TLV fields in GENEVE). Network engineers must verify actual MTU and MSS clamping configurations against operational edge routers and middleboxes.
+        <strong>This is arithmetic, not a measurement.</strong> It subtracts the headers you select from the base MTU you enter and shows the resulting MSS. It cannot see your actual path, so it does not know whether an intermediate link is smaller than you think, whether a provider adds encapsulation you have not accounted for, or whether ICMP is being filtered somewhere in between. Treat the result as the figure you expect, then confirm it against the live path with a don't-fragment ping sweep before changing production configuration. Everything runs in your browser and nothing you enter is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>Understanding MTU, MSS, and Encapsulation Penalties</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        In modern packet-switched computer networks, throughput efficiency, low latency, and connection reliability depend directly on the harmonious alignment of data payload boundaries. At the physical and data link layers, the <strong>Maximum Transmission Unit (MTU)</strong> defines the largest single protocol data unit (PDU) that a given network interface can transmit without requiring fragmentation. 
-      </p>
-      <p>
-        For decades, the de facto global standard across physical Ethernet has been fixed at <strong>1500 bytes</strong> (RFC 894). While 1500 bytes accommodates standard IPv4 and TCP transmission with negligible framing waste, today's telecommunications backbones, software-defined data centers (SDDCs), and hybrid multi-cloud mesh networks rarely transmit raw, unencapsulated IP packets. Instead, modern packets are wrapped in multiple nested layers of tunnels: VLAN tags (IEEE 802.1Q), broadband PPPoE encapsulation, overlay virtualization headers (VXLAN, GENEVE), and encrypted cryptographic tunnels (WireGuard, IPsec ESP).
-      </p>
-      <p>
-        Every single encapsulation header prepended to or wrapped around a packet consumes precious bytes from the original 1500-byte budget. If an endpoint server attempts to transmit a full 1500-byte IP frame over a link where tunnel headers add 40, 56, or 80 bytes of overhead, the total frame size exceeds the link's physical capacity. When this occurs, one of two performance-destroying failure modes emerges: <strong>IP packet fragmentation</strong> or <strong>catastrophic Path MTU Discovery (PMTUD) blackholing</strong>.
+        Every byte of header is a byte of payload you do not get. Start at a 1500-byte Ethernet MTU, add a VLAN tag, wrap it in a VPN, and the space left for actual TCP data shrinks each time &mdash; which is why tunnelled links so often misbehave in ways that look mysterious. This calculator makes the arithmetic explicit: pick your base MTU and the encapsulation layers in play, and it shows what each one costs and what MSS is left at the end.
       </p>
 
-      <h2>How to Use the BitDark MTU &amp; MSS Overhead Calculator</h2>
-      <p>
-        This calculator computes precise byte allocations, protocol overhead taxes, and optimal MSS clamping values entirely inside your browser's local thread:
-      </p>
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Define Base Physical MTU:</strong> Enter the physical link MTU of the underlying transport medium. Standard Ethernet is <code>1500</code> bytes; broadband PPPoE WANs are typically <code>1492</code> bytes; cloud hypervisor VPCs (such as AWS EC2 or Google Cloud VPC) support jumbo frames up to <code>9001</code> or <code>8896</code> bytes.
-        </li>
-        <li>
-          <strong>Select Outer and Inner IP Versions:</strong> Specify the outer underlay IP layer (IPv4 with a 20-byte header, or IPv6 with a 40-byte header) and the inner overlay IP layer used by encapsulated tunnel traffic.
-        </li>
-        <li>
-          <strong>Configure Transport Layer TCP Options:</strong> Choose standard TCP (20 bytes) or account for common TCP options such as Selective Acknowledgment (SACK) and RFC 7323 High-Performance Timestamps (typically 32 bytes total).
-        </li>
-        <li>
-          <strong>Toggle Encapsulation Protocols:</strong> Select all active tunneling, security, and tagging protocols on the wire—such as PPPoE, 802.1Q VLAN, 802.1ad QinQ, WireGuard, GRE, IPsec ESP, VXLAN, or GENEVE.
-        </li>
-        <li>
-          <strong>Inspect Optimal Metrics &amp; Apply Clamping:</strong> Review the calculated Effective Tunnel MTU, Optimal TCP MSS, Total Header Overhead, and Maximum UDP Payload. Use these numbers directly in your firewall clamping rules (e.g., <code>iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss &lt;value&gt;</code>) or router interface configs.
-        </li>
+        <li><strong>Start from a preset</strong> &mdash; <strong>Standard Ethernet</strong>, <strong>WireGuard / IPv4</strong>, <strong>PPPoE Fiber</strong> and <strong>Cloud VPC / VXLAN</strong> each load a realistic combination of settings. Picking the closest one and adjusting is faster than building a scenario from scratch, and <strong>Reset Defaults</strong> returns to plain Ethernet.</li>
+        <li><strong>Set the base MTU</strong> &mdash; <em>Base Physical MTU</em> defaults to 1500 for standard Ethernet. Use 9000 if you are on jumbo frames, or whatever your provider specifies.</li>
+        <li><strong>Choose the IP versions</strong> &mdash; <em>Outer IP Version</em> is the header on the wire, costing 20 bytes for IPv4 or 40 for IPv6. <em>Inner Tunnel IP Version</em> only applies when you are encapsulating; leave it matched to the outer layer if you are not.</li>
+        <li><strong>Tick the encapsulation in play</strong> &mdash; PPPoE (8 bytes), an 802.1Q VLAN tag (4), QinQ (8), WireGuard, VXLAN and so on. Add every layer the traffic actually traverses, since they stack.</li>
+        <li><strong>Set TCP options</strong> &mdash; a bare TCP header is 20 bytes, but with timestamps and SACK it is typically 32, and 40 is the maximum. Most modern stacks negotiate timestamps, so 32 is often the realistic figure rather than 20.</li>
+        <li><strong>Read the breakdown table</strong> &mdash; each row names a <em>Protocol Layer / Header Component</em>, its <em>Overhead Size</em>, and the <em>Running Remaining Payload</em> after it, so you can see exactly where the budget goes rather than just the final number.</li>
       </ol>
+      <p>If the resulting MSS is lower than you expected, work up the table to find the layer that cost the most &mdash; it is usually an encapsulation you forgot was in the path.</p>
 
-      <h2>When to Use This Tool: Operational Scenarios</h2>
+      <h2>MTU and MSS Are Not the Same Number</h2>
       <p>
-        Network engineers, systems administrators, and DevOps architects must compute exact MTU and MSS constraints in several critical operational contexts:
-      </p>
-      <ul>
-        <li>
-          <strong>Site-to-Site &amp; Road-Warrior VPN Provisioning:</strong> Designing WireGuard, IPsec IKEv2, or OpenVPN deployments connecting remote offices to corporate headquarters. Misconfigured MTUs cause SSH connections to hang on large terminal outputs and web pages to stall during TLS handshakes.
-        </li>
-        <li>
-          <strong>Broadband WAN &amp; Fiber Edge Routing:</strong> Configuring customer premises equipment (CPE) over PPPoE connections where DSL/FTTH framing steals 8 bytes, reducing the base MTU from 1500 to 1492 and TCP MSS to 1452.
-        </li>
-        <li>
-          <strong>Cloud VPC Overlay &amp; Container CNI Fabrics:</strong> Deploying Kubernetes clusters using Calico, Flannel, or Cilium over VXLAN or Geneve encapsulation. If the pod network interface inherits the physical node's 1500 MTU without deducting the 50-byte VXLAN penalty, pod-to-pod traffic fragments or stalls.
-        </li>
-        <li>
-          <strong>Data Center Interconnects (DCI) &amp; QinQ Tagging:</strong> Service providers delivering Carrier Ethernet or Metro Ethernet services stacking multiple 802.1Q and 802.1ad tags across customer traffic.
-        </li>
-        <li>
-          <strong>Diagnosing Asymmetric Path MTU Black Holes:</strong> Troubleshooting network paths where small packets (ping, DNS queries) succeed without issue, but bulk transfers (HTTPS downloads, database syncs, SCP copies) freeze indefinitely.
-        </li>
-      </ul>
-
-      <h2>The Mathematical Architecture of MTU, MSS, and UDP Payloads</h2>
-      <p>
-        To understand how packet dimensions are calculated, consider the fundamental relationship between the Open Systems Interconnection (OSI) layers:
+        <strong>MTU</strong> is the largest frame a link will carry, headers included. <strong>MSS</strong> is the TCP payload that fits inside it once the IP and TCP headers are gone. On ordinary IPv4 Ethernet: 1500 &minus; 20 (IP) &minus; 20 (TCP) = <strong>1460</strong>, the number you see constantly in packet captures. Switch the outer layer to IPv6 and the IP header doubles to 40 bytes, so the same link gives 1440. Nothing has gone wrong; the headers simply got bigger.
       </p>
 
-      <pre><code>+---------------------------------------------------------------------------------+
-| Ethernet Frame (1518 Bytes Total on Wire, excluding 4B FCS / 8B Preamble)       |
-|  [ Ethernet Layer 2 Header: 14 Bytes ] [ Optional 802.1Q VLAN Tag: 4 Bytes ]   |
-|                                                                                 |
-|  +-- Maximum Transmission Unit (MTU = 1500 Bytes Base Payload) ---------------+  |
-|  |                                                                            |  |
-|  |  +-- Network Layer (IP Header) -----------------------------------------+  |  |
-|  |  |  * IPv4: 20 Bytes (up to 60 Bytes with Options)                     |  |  |
-|  |  |  * IPv6: 40 Bytes Fixed Base Header (RFC 8200)                      |  |  |
-|  |  +---------------------------------------------------------------------+  |  |
-|  |                                                                            |  |
-|  |  +-- Transport Layer (TCP Header) --------------------------------------+  |  |
-|  |  |  * Standard Base TCP Header: 20 Bytes                                |  |  |
-|  |  |  * Common Options (Timestamps + SACK Permitted): +12 Bytes (32B)     |  |  |
-|  |  +---------------------------------------------------------------------+  |  |
-|  |                                                                            |  |
-|  |  +-- Maximum Segment Size (TCP MSS = MTU - IP_Header - TCP_Header) -----+  |  |
-|  |  |  * Standard IPv4 TCP MSS: 1500 - 20 - 20 = 1460 Bytes               |  |  |
-|  |  |  * Standard IPv6 TCP MSS: 1500 - 40 - 20 = 1440 Bytes               |  |  |
-|  |  |  * Pure Application Data Payload (TLS Records, HTTP/2 Data, etc.)   |  |  |
-|  |  +---------------------------------------------------------------------+  |  |
-|  +----------------------------------------------------------------------------+  |
-+---------------------------------------------------------------------------------+</code></pre>
-
-      <h3>1. Standard TCP MSS Formula</h3>
-      <p>
-        The Maximum Segment Size (MSS) announced in the TCP SYN option field represents the maximum pure transport payload a host can receive. For an unencapsulated connection:
-      </p>
-      <blockquote>
-        $$\text{MSS}_{\text{TCP}} = \text{MTU}_{\text{Base}} - \text{Header}_{\text{IP}} - \text{Header}_{\text{TCP}}$$
-      </blockquote>
-      <p>
-        On standard Ethernet (1500 bytes MTU):
-      </p>
-      <ul>
-        <li><strong>IPv4 Standard:</strong> $1500 - 20 - 20 = \mathbf{1460\text{ bytes}}$.</li>
-        <li><strong>IPv6 Standard:</strong> $1500 - 40 - 20 = \mathbf{1440\text{ bytes}}$.</li>
-        <li><strong>IPv4 with TCP Timestamps:</strong> $1500 - 20 - 32 = \mathbf{1448\text{ bytes}}$.</li>
-        <li><strong>IPv6 with TCP Timestamps:</strong> $1500 - 40 - 32 = \mathbf{1428\text{ bytes}}$.</li>
-      </ul>
-
-      <h3>2. UDP Maximum Datagram Payload</h3>
-      <p>
-        User Datagram Protocol (UDP) does not negotiate an MSS during connection setup; it relies on a fixed 8-byte header. The maximum unfragmented UDP data payload is:
-      </p>
-      <blockquote>
-        $$\text{Payload}_{\text{UDP}} = \text{MTU}_{\text{Effective}} - \text{Header}_{\text{IP}} - 8$$
-      </blockquote>
-      <p>
-        Over standard IPv4 Ethernet, the maximum unfragmented UDP payload is $1500 - 20 - 8 = \mathbf{1472\text{ bytes}}$. Over IPv6, it is $1500 - 40 - 8 = \mathbf{1452\text{ bytes}}$. Protocols like DNS (EDNS0), QUIC (HTTP/3), and WireGuard must ensure their datagrams fit strictly within these thresholds to prevent middlebox fragmentation drops.
-      </p>
-
-      <h2>Encapsulation Protocol Deep-Dive &amp; Overhead Breakdown</h2>
-      <p>
-        When overlay tunnels wrap packets inside additional layers, each protocol exacts a specific byte-level tax:
-      </p>
-
-      <h3>1. WireGuard VPN (RFC Draft / Jason Donenfeld)</h3>
-      <p>
-        WireGuard operates strictly over UDP. A WireGuard encapsulated packet consists of:
-      </p>
-      <ul>
-        <li>Outer IP Header: 20 bytes (IPv4) or 40 bytes (IPv6).</li>
-        <li>Outer UDP Header: 8 bytes.</li>
-        <li>WireGuard Type 4 Data Message Header: 32 bytes (comprising 4B message type, 4B receiver index, 8B counter, and 16B Poly1305 authentication tag).</li>
-      </ul>
-      <p>
-        Total WireGuard overhead over IPv4 is $20 + 8 + 32 = \mathbf{60\text{ bytes}}$, resulting in an optimal MTU of $1500 - 60 = \mathbf{1440\text{ bytes}}$. Over an IPv6 underlay, total overhead is $40 + 8 + 32 = \mathbf{80\text{ bytes}}$, producing an optimal MTU of $1500 - 80 = \mathbf{1420\text{ bytes}}$. To ensure seamless roaming between IPv4 and IPv6 cellular and fiber links, the WireGuard project standardizes its universal default MTU at <strong>1420 bytes</strong>.
-      </p>
-
-      <h3>2. IPsec ESP in Tunnel Mode (RFC 4303)</h3>
-      <p>
-        Encapsulating Security Payload (ESP) provides confidentiality and authentication. In Tunnel Mode (used for site-to-site VPNs):
-      </p>
-      <ul>
-        <li>Outer IP Header: 20 bytes (IPv4) or 40 bytes (IPv6).</li>
-        <li>NAT-Traversal UDP Header (RFC 3948, if active): 8 bytes.</li>
-        <li>ESP Header: 8 bytes (4B Security Parameters Index [SPI] + 4B Sequence Number).</li>
-        <li>Initialization Vector (IV): 8 bytes (for modern AES-GCM ciphers).</li>
-        <li>Integrity Check Value (ICV / Auth Tag): 16 bytes.</li>
-        <li>ESP Trailer: 2 bytes (Pad Length + Next Header).</li>
-        <li>Alignment Padding: 0 to 15 bytes (AES-GCM operates on 4-byte boundaries, requiring 0–3 bytes padding; legacy AES-CBC requires 16-byte block alignment).</li>
-      </ul>
-      <p>
-        Under AES-GCM-128/256 with NAT-T over IPv4, total IPsec overhead ranges between <strong>56 and 72 bytes</strong>. Network engineers typically subtract <strong>70 to 80 bytes</strong> to ensure safe clearance.
-      </p>
-
-      <h3>3. VXLAN (RFC 7348) &amp; Cloud Overlay Fabrics</h3>
-      <p>
-        Virtual Extensible LAN (VXLAN) encapsulates complete Layer 2 Ethernet frames inside Layer 4 UDP datagrams to enable multi-tenant overlay networks:
-      </p>
-      <ul>
-        <li>Outer IP Header: 20 bytes (IPv4).</li>
-        <li>Outer UDP Header: 8 bytes (destination port 4789).</li>
-        <li>VXLAN Header: 8 bytes (including 24-bit VNI).</li>
-        <li>Inner Ethernet Header: 14 bytes (destination MAC, source MAC, EtherType).</li>
-      </ul>
-      <p>
-        Total VXLAN overhead is exactly $\mathbf{50\text{ bytes}}$. If a cloud data center maintains a physical link MTU of 1500 bytes, guest virtual machines can only transmit packets with an MTU of $1500 - 50 = \mathbf{1450\text{ bytes}}$. This is why modern cloud hypervisors (AWS, Azure, GCP) mandate physical network underlays with jumbo frames (1600+ bytes) so that guest VMs can use standard 1500-byte MTUs without encapsulation penalties.
-      </p>
-
-      <h2>Comparison: Protocol Encapsulation Overhead Reference</h2>
-      <p>
-        The table below summarizes standard encapsulation penalties across contemporary enterprise networking protocols:
-      </p>
+      <h2>What Each Layer Costs</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Protocol / Encapsulation</th>
-              <th>Layer</th>
-              <th>Header Overhead</th>
-              <th>Optimal MTU (on 1500 Underlay)</th>
-              <th>Optimal TCP MSS (IPv4 / IPv6)</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Layer</th><th>Overhead</th><th>Why</th></tr></thead>
           <tbody>
-            <tr>
-              <td><strong>Standard Ethernet (Clean)</strong></td>
-              <td>L2 / L3</td>
-              <td>0 B (Base Link)</td>
-              <td>1500 B</td>
-              <td>1460 B / 1440 B</td>
-            </tr>
-            <tr>
-              <td><strong>802.1Q Single VLAN Tag</strong></td>
-              <td>L2</td>
-              <td>4 B</td>
-              <td>1496 B (if unadjusted)</td>
-              <td>1456 B / 1436 B</td>
-            </tr>
-            <tr>
-              <td><strong>802.1ad QinQ Provider Tags</strong></td>
-              <td>L2</td>
-              <td>8 B</td>
-              <td>1492 B (if unadjusted)</td>
-              <td>1452 B / 1432 B</td>
-            </tr>
-            <tr>
-              <td><strong>PPPoE Broadband (RFC 2516)</strong></td>
-              <td>L2.5</td>
-              <td>8 B</td>
-              <td>1492 B</td>
-              <td>1452 B / 1432 B</td>
-            </tr>
-            <tr>
-              <td><strong>WireGuard (IPv4 Underlay)</strong></td>
-              <td>L3/L4 Tunnel</td>
-              <td>60 B (20B IP + 8B UDP + 32B WG)</td>
-              <td>1440 B</td>
-              <td>1400 B / 1380 B</td>
-            </tr>
-            <tr>
-              <td><strong>WireGuard (IPv6 Underlay)</strong></td>
-              <td>L3/L4 Tunnel</td>
-              <td>80 B (40B IP + 8B UDP + 32B WG)</td>
-              <td>1420 B</td>
-              <td>1380 B / 1360 B</td>
-            </tr>
-            <tr>
-              <td><strong>GRE Tunnel (RFC 2784)</strong></td>
-              <td>L3 Tunnel</td>
-              <td>24 B (20B Outer IP + 4B GRE)</td>
-              <td>1476 B</td>
-              <td>1436 B / 1416 B</td>
-            </tr>
-            <tr>
-              <td><strong>IPsec ESP (AES-GCM + NAT-T)</strong></td>
-              <td>L3/L4 Security</td>
-              <td>~56 to 64 B</td>
-              <td>1436 to 1444 B</td>
-              <td>1396 to 1404 B</td>
-            </tr>
-            <tr>
-              <td><strong>VXLAN Overlay (RFC 7348)</strong></td>
-              <td>L2-over-L4</td>
-              <td>50 B (20B IP + 8B UDP + 8B VX + 14B MAC)</td>
-              <td>1450 B</td>
-              <td>1410 B / 1390 B</td>
-            </tr>
-            <tr>
-              <td><strong>GENEVE Overlay (RFC 8926)</strong></td>
-              <td>L2-over-L4</td>
-              <td>50 to 66 B (Base + TLV Options)</td>
-              <td>1434 to 1450 B</td>
-              <td>1394 to 1410 B</td>
-            </tr>
+            <tr><td>IPv4 header</td><td>20 bytes</td><td>Minimum, without options.</td></tr>
+            <tr><td>IPv6 header</td><td>40 bytes</td><td>Fixed size; extension headers add more.</td></tr>
+            <tr><td>TCP header</td><td>20&ndash;40 bytes</td><td>20 bare; about 32 once timestamps and SACK are negotiated.</td></tr>
+            <tr><td>802.1Q VLAN</td><td>4 bytes</td><td>A single tag; QinQ stacks two for 8.</td></tr>
+            <tr><td>PPPoE</td><td>8 bytes</td><td>6-byte session header plus 2-byte PPP protocol field &mdash; the reason for 1492.</td></tr>
+            <tr><td>VXLAN</td><td>50 bytes</td><td>Outer Ethernet, IP, UDP and the VXLAN header together.</td></tr>
+            <tr><td>WireGuard</td><td>~60 bytes</td><td>UDP plus a 32-byte WireGuard header over the outer IP.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h2>Path MTU Discovery (PMTUD) and the Black Hole Dilemma</h2>
+      <h2>Why Tunnels Break Large Transfers</h2>
       <p>
-        In an ideal network, endpoints dynamically discover the minimum MTU along an entire routing path using <strong>Path MTU Discovery (PMTUD, RFC 1191 for IPv4, RFC 8201 for IPv6)</strong>:
-      </p>
-      <ol>
-        <li>The sender transmits an IP packet with the <strong>Don't Fragment (DF)</strong> bit set in the IPv4 flags header.</li>
-        <li>If the packet encounters an intermediate router whose egress interface has an MTU smaller than the packet size, the router cannot fragment it.</li>
-        <li>The router drops the oversized packet and generates an <strong>ICMP Type 3, Code 4</strong> packet (<em>"Destination Unreachable: Fragmentation Needed and DF Set"</em>), specifying the exact Next-Hop MTU of the bottleneck link.</li>
-        <li>The sender receives the ICMP notification, reduces its Path MTU cache for that destination, and retransmits the data within the smaller boundary.</li>
-      </ol>
-
-      <h3>The Firewall Black Hole Failure</h3>
-      <p>
-        In the real world, PMTUD frequently fails because misconfigured firewalls, hosting providers, or enterprise security middleboxes aggressively drop all inbound ICMP traffic under the misguided belief that blocking ICMP enhances security.
+        The symptom is distinctive: ping works, SSH connects, a web page starts loading and then hangs. That is an <strong>MTU black hole</strong>. Small packets fit inside the reduced tunnel MTU, so anything interactive succeeds. A full-size packet does not, and the router that cannot forward it is supposed to return an ICMP <em>fragmentation needed</em> message so the sender backs off &mdash; this is path MTU discovery. Plenty of networks filter that ICMP type as a blanket security measure, so the message never arrives. The sender assumes the packet was lost, retransmits the same oversized packet, and the transfer stalls indefinitely.
       </p>
       <p>
-        When an intermediate router drops an oversized packet and returns an ICMP Type 3 Code 4 notification, the sender's edge firewall silences the alert. The sending server never learns why its packet was discarded. It assumes the packet was lost to transient congestion, keeps its Path MTU estimate at 1500 bytes, and repeatedly retransmits the identical oversized segment. 
+        The reliable fix is not to rely on discovery at all. <strong>MSS clamping</strong> at the tunnel edge rewrites the MSS value during the TCP handshake, so both ends agree on a segment size that fits before any data flows. That is what the number this calculator gives you is for.
+      </p>
+
+      <h2>A Worked Example You Can Reproduce</h2>
+      <p>
+        Take a WireGuard tunnel over IPv4 Ethernet. Start at 1500. The outer IPv4 header takes 20, leaving 1480. UDP takes 8, leaving 1472. The WireGuard header takes 32, leaving <strong>1440</strong> &mdash; that is the tunnel's MTU. Inside it, the inner IPv4 header takes another 20 and the TCP header 20 more, so the MSS is <strong>1400</strong>. Set TCP options to 32 bytes instead of 20 and it drops to 1388.
       </p>
       <p>
-        The result is a <strong>PMTUD Black Hole</strong>: small control packets (SYN, ACK, short HTTP requests) transit the link effortlessly, but the moment a web server returns a full TLS certificate chain or bulk file download, the connection hangs indefinitely until the client times out.
+        Now add a VLAN tag to the underlay: 4 bytes come off the top and every figure moves down by four, giving an MSS of 1396. Each number is reachable by subtraction, so you can check the tool against a sheet of paper &mdash; which is worth doing once, because it makes the running total column much easier to read afterwards.
       </p>
-
-      <h2>The TCP MSS Clamping Solution: Router Configurations</h2>
-      <p>
-        Because network engineers cannot control intermediate third-party firewalls across the public Internet, the industry-standard mitigation is <strong>TCP MSS Clamping</strong>. Edge routers inspect passing TCP SYN and SYN-ACK packets, read the Maximum Segment Size option field, and dynamically rewrite it downward to match the local tunnel MTU minus header space.
-      </p>
-      <p>
-        Here is how to implement TCP MSS clamping across standard enterprise platforms:
-      </p>
-
-      <h3>1. Linux (iptables &amp; nftables)</h3>
-      <pre><code># Linux iptables: Clamp MSS to PMTU automatically on tunnel interface (e.g., wg0)
-iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \
-  -o wg0 -j TCPMSS --clamp-mss-to-pmtu
-
-# Explicit clamping to a calculated 1380-byte MSS:
-iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \
-  -j TCPMSS --set-mss 1380
-
-# Modern Linux nftables syntax:
-nft add rule ip filter forward tcp flags syn / syn,rst \
-  tcp option maxseg size set rt mtu</code></pre>
-
-      <h3>2. Cisco IOS / IOS-XE</h3>
-      <pre><code>! Cisco IOS: Configure MTU and TCP MSS clamping on a tunnel interface
-interface Tunnel0
- ip address 10.100.0.1 255.255.255.0
- tunnel source GigabitEthernet0/0/1
- tunnel destination 203.0.113.5
- ip mtu 1440
- ip tcp adjust-mss 1400
-! For IPv6 traffic:
- ipv6 tcp adjust-mss 1380</code></pre>
-
-      <h3>3. MikroTik RouterOS</h3>
-      <pre><code># MikroTik RouterOS v7: Clamping rule for WireGuard / PPPoE
-/ip firewall mangle
-add chain=forward action=change-mss new-mss=1400 passthrough=yes \
-  protocol=tcp tcp-flags=syn out-interface=wireguard-vpn log=no
-
-/ipv6 firewall mangle
-add chain=forward action=change-mss new-mss=1380 passthrough=yes \
-  protocol=tcp tcp-flags=syn out-interface=wireguard-vpn log=no</code></pre>
-
-      <h2>Common Mistakes in MTU &amp; MSS Architecture</h2>
-      <p>
-        Network engineers and cloud architects frequently encounter several subtle pitfalls when configuring MTU parameters:
-      </p>
-      <ul>
-        <li>
-          <strong>Forgetting IPv6's Larger Header:</strong> IPv6 headers are fixed at 40 bytes—exactly double the 20-byte base header of IPv4. Setting a router's MSS clamp to <code>1460</code> bytes works for IPv4, but causes immediate fragmentation or blackholing for IPv6 traffic, which requires a maximum MSS of <code>1440</code> bytes on standard 1500 MTU links.
-        </li>
-        <li>
-          <strong>Ignoring TCP Options Overhead:</strong> While base TCP is 20 bytes, modern high-throughput operating systems (Linux, macOS, Windows) enable TCP Timestamps (RFC 7323) and SACK (RFC 2018) by default, consuming 12 additional bytes of options. If an edge link leaves zero safety margin, packets containing TCP options can exceed the MTU.
-        </li>
-        <li>
-          <strong>Assuming Jumbo Frames Transit the Public Internet:</strong> Enabling <code>9000</code>-byte jumbo frames inside a local storage area network (SAN) or cloud VPC dramatically boosts throughput. However, jumbo frames cannot traverse the public Internet, where physical switches drop packets exceeding 1500 bytes.
-        </li>
-        <li>
-          <strong>Clamping Both Directions Inconsistently:</strong> MSS clamping must apply to both SYN and SYN-ACK packets across forward and reverse routing paths. If an asymmetrical route bypasses the clamping router in one direction, one endpoint will continue transmitting oversized segments.
-        </li>
-      </ul>
-
-      <!-- Interactive FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between MTU and MRU?</div>
+          <div class="faq-question">What is the difference between MTU and MSS?</div>
           <div class="faq-answer">
-            MTU (Maximum Transmission Unit) defines the maximum packet size an interface can transmit. MRU (Maximum Receive Unit) defines the maximum packet size an interface can accept. In symmetrical Ethernet networks, MTU and MRU are identical (1500 bytes). In asymmetric protocols like PPPoE or PPP, a client can request an MRU larger than its MTU during Link Control Protocol (LCP) negotiation.
+            MTU is the largest frame a link will carry, headers included &mdash; 1500 bytes on standard Ethernet. MSS is how much TCP payload fits inside that once the IP and TCP headers are subtracted. On plain IPv4 Ethernet that is 1500 minus 20 for IP and 20 for TCP, giving the familiar 1460.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does SSH hang after authentication when MTU is misconfigured?</div>
+          <div class="faq-question">Why does my VPN break large transfers but ping fine?</div>
           <div class="faq-answer">
-            The initial SSH handshake, password exchange, and authentication consist of small packets well below 1000 bytes, which transit smoothly. Once logged in, running commands like <code>ls -la</code> or <code>cat</code> returns large bursts of terminal text that fill an entire 1500-byte frame. If an intermediate tunnel has a smaller MTU and blocks ICMP, these large packets are dropped, causing the terminal session to freeze indefinitely.
+            Small packets fit; large ones do not. A tunnel adds its own headers, so a full-size packet that was fine on the local link becomes too big once encapsulated. If the ICMP messages that would report this are filtered, the sender never learns and simply retransmits forever &mdash; the classic MTU black hole, where handshakes succeed and bulk transfers stall.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can IPv6 packets be fragmented by intermediate routers?</div>
+          <div class="faq-question">What is path MTU discovery, and why does it fail?</div>
           <div class="faq-answer">
-            No. Unlike IPv4, where intermediate routers can fragment packets unless the Don't Fragment (DF) bit is set, IPv6 completely forbids router-level fragmentation. In IPv6, fragmentation can only be performed by the originating host using an IPv6 Fragment Extension Header. If a packet is too large, the intermediate router must drop it and return an ICMPv6 Packet Too Big (Type 2, Code 0) message.
+            A sender marks packets as Do Not Fragment and relies on routers returning an ICMP fragmentation-needed message to learn the smallest MTU on the path. Many networks block that ICMP type, so the message never arrives and the sender keeps sending oversized packets. Clamping MSS at the tunnel edge avoids depending on it.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is RFC 4821 Packetization Layer Path MTU Discovery (PLPMTUD)?</div>
+          <div class="faq-question">Why is PPPoE 8 bytes?</div>
           <div class="faq-answer">
-            RFC 4821 defines an alternative discovery method that does not rely on ICMP error messages. Instead, the transport layer (TCP) dynamically probes path capacity by transmitting isolated large segments. If the segment is acknowledged, the sender knows the path supports that MTU; if it times out repeatedly, the sender systematically reduces the segment size. Linux enables PLPMTUD via the <code>net.ipv4.tcp_mtu_probing</code> sysctl knob.
+            PPPoE adds a 6-byte session header plus a 2-byte PPP protocol field, so 8 bytes in total, which is why many DSL and fibre links run at 1492 rather than 1500. The calculator includes it as a toggle because it is the single most common reason a connection is not a round 1500.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why is standard PPPoE MTU set to 1492 instead of 1500?</div>
+          <div class="faq-question">Does this tool measure my actual path MTU?</div>
           <div class="faq-answer">
-            PPPoE (Point-to-Point Protocol over Ethernet, RFC 2516) encapsulates PPP frames inside standard Ethernet frames. The PPPoE header consumes 6 bytes and the PPP Protocol ID consumes 2 bytes, totaling 8 bytes of Layer 2.5 overhead. Subtracting 8 bytes from standard 1500-byte Ethernet yields an MTU of 1492 bytes. Some modern ISPs support "Baby Jumbo Frames" (1508 bytes MTU on the DSLAM/OLT) to restore full 1500-byte IP payloads.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What is the performance penalty of IP packet fragmentation?</div>
-          <div class="faq-answer">
-            Fragmentation severely harms network performance. If even a single fragment is dropped due to packet loss, the entire original datagram must be retransmitted. Furthermore, fragments lack Layer 4 transport headers, preventing intermediate firewalls and NAT gateways from inspecting port numbers. Finally, reassembling fragmented packets consumes substantial CPU cycles and buffer memory on receiving hosts.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">How does QUIC (HTTP/3) handle MTU constraints?</div>
-          <div class="faq-answer">
-            QUIC operates over UDP and mandates a minimum initial packet size of 1200 bytes (RFC 9000) to prevent amplification attacks. QUIC includes built-in Datagram Packetization Layer PMTU Discovery (DPLPMTUD, RFC 8899) at the application layer, using probing packets with padding to discover the path MTU without depending on ICMP error messages.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What does "clamp-mss-to-pmtu" mean in firewall rules?</div>
-          <div class="faq-answer">
-            The <code>--clamp-mss-to-pmtu</code> option instructs the firewall to dynamically calculate the appropriate MSS based on the outgoing interface's current MTU setting. For example, if an interface has an MTU of 1420 over IPv4, the firewall will automatically clamp passing SYN packets to <code>1420 - 40 = 1380</code> bytes without requiring a hardcoded numerical parameter.
+            No. It is a calculator: it works out what the MSS should be for the headers you select. Measuring a real path means sending probes, for example ping with the don't-fragment flag at decreasing sizes. Use the calculated figure as the expected answer, then confirm it against the live path.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Network Engineering &amp; Security Tools</h3>
+        <h3>Related Tools &amp; Utilities</h3>
         <div class="related-grid">
           <a href="/tools/network/cidr-calculator/" class="related-card">
-            <div class="related-card-title"><span>[🌐]</span> Subnet &amp; CIDR Calculator</div>
-            <div class="related-card-desc">Calculate host boundaries, wildcard masks, usable IPs, and binary netmasks across IPv4 and IPv6 subnets.</div>
-          </a>
-          <a href="/tools/network/cidr-overlap/" class="related-card">
-            <div class="related-card-title"><span>[⚡]</span> CIDR Overlap Resolver</div>
-            <div class="related-card-desc">Audit routing tables, cloud VPC blocks, and Kubernetes clusters for intersecting address spaces and route collisions.</div>
-          </a>
-          <a href="/tools/network/dns-wire-format/" class="related-card">
-            <div class="related-card-title"><span>[📦]</span> DNS Wire-Format Decoder</div>
-            <div class="related-card-desc">Dissect binary DNS queries, response packets, EDNS0 buffer limits, and TTL flags client-side.</div>
-          </a>
-          <a href="/tools/network/email-headers/" class="related-card">
-            <div class="related-card-title"><span>[✉️]</span> Email Header Tracer</div>
-            <div class="related-card-desc">Trace delivery relays, inspect SPF/DKIM verification results, and dissect RFC 5322 MIME headers offline.</div>
-          </a>
-          <a href="/tools/network/dmarc-generator/" class="related-card">
-            <div class="related-card-title"><span>[🛡️]</span> DMARC Record Builder</div>
-            <div class="related-card-desc">Generate and validate hardened DMARC TXT records with policy enforcement and aggregate reporting tags.</div>
+            <div class="related-card-title"><span>[/24]</span> CIDR / Subnet Calculator</div>
+            <div class="related-card-desc">Compute network, broadcast, mask and usable host range for a CIDR block.</div>
           </a>
           <a href="/tools/network/ip-converter/" class="related-card">
-            <div class="related-card-title"><span>[🔢]</span> IP Format Obfuscator</div>
-            <div class="related-card-desc">Convert IP addresses between Dword, Octal, Hex, and canonical notation to audit WAF security filters.</div>
+            <div class="related-card-title"><span>[&#8644;]</span> IP Address Converter</div>
+            <div class="related-card-desc">Convert an IP between decimal, integer, hex, binary and IPv6 forms.</div>
+          </a>
+          <a href="/tools/forensics/pcap-visualizer/" class="related-card">
+            <div class="related-card-title"><span>[&#128225;]</span> PCAP Viewer</div>
+            <div class="related-card-desc">Open a libpcap capture and dissect Ethernet, IP, TCP/UDP in your browser.</div>
+          </a>
+          <a href="/tools/network/dns-wire-format/" class="related-card">
+            <div class="related-card-title"><span>[&#9906;]</span> DNS Wire Format Tool</div>
+            <div class="related-card-desc">Build a DNS query or decode a packet from hex, client-side.</div>
+          </a>
+          <a href="/tools/network/asn-visualizer/" class="related-card">
+            <div class="related-card-title"><span>[&#8594;]</span> BGP AS-Path Visualizer</div>
+            <div class="related-card-desc">Draw pasted AS-paths, count prepends and detect loops.</div>
+          </a>
+          <a href="/tools/network/cidr-overlap/" class="related-card">
+            <div class="related-card-title"><span>[&#8745;]</span> CIDR Overlap Checker</div>
+            <div class="related-card-desc">Find overlapping, nested and duplicate CIDR blocks in a list.</div>
           </a>
         </div>
       </section>
@@ -1385,7 +1067,6 @@ add chain=forward action=change-mss new-mss=1380 passthrough=yes \
     </div>
   </main>
 
-  <!-- Complete Standard Master Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1404,7 +1085,7 @@ add chain=forward action=change-mss new-mss=1380 passthrough=yes \
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
