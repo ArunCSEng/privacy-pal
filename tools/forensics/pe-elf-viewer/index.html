@@ -841,6 +841,16 @@
       </p>
       <p>Nothing you open leaves your browser; the file is read into memory locally and every step runs there.</p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a binary</strong> &mdash; drag a Windows PE (<code>.exe</code>, <code>.dll</code>, <code>.sys</code>, <code>.ocx</code>) or a Linux/Unix ELF file onto the dropzone. Nothing is executed, so an untrusted sample is safe to inspect here.</li>
+        <li><strong>Confirm what it is</strong> &mdash; the summary reports the detected format and architecture, the entry point and the file's SHA-256. If you are on Linux, <code>sha256sum</code> on the same file should match exactly.</li>
+        <li><strong>Read the header table</strong> &mdash; each row pairs a <em>Property</em> with its <em>Value</em> and an <em>Interpretation</em>, so a raw machine code or subsystem number is explained rather than left as a number to look up.</li>
+        <li><strong>Study the section table</strong> &mdash; this is where the useful signals are. Compare <em>Virtual Size</em> against <em>Raw Data Size</em>: a section reserving far more memory than it occupies on disk is a classic packer footprint. Then check <em>Flags / Permissions</em> for anything both writable and executable, which is unusual in ordinary code.</li>
+        <li><strong>Keep the result</strong> &mdash; <strong>Export Analysis JSON</strong> saves everything parsed; <strong>Clear Analysis</strong> resets for the next file.</li>
+      </ol>
+      <p>Those two signals are prompts to investigate further, not verdicts &mdash; plenty of legitimate binaries are packed, and this tool does not unpack or disassemble.</p>
       <h2>The PE Header, Briefly</h2>
       <p>
         A PE file opens with a small DOS stub beginning with the bytes <code>MZ</code> (<code>4D 5A</code>); at offset <code>0x3C</code> a pointer gives the location of the <code>PE\0\0</code> signature. After it comes the COFF header (machine type, section count, timestamp) and the optional header, which despite its name holds the important run-time fields: the magic that distinguishes PE32 from PE32+ (64-bit), the address of entry point as an RVA, the preferred image base, and the subsystem. This tool reads each of those and names the machine architecture and subsystem rather than leaving you a raw number.
@@ -877,14 +887,6 @@
       <p>
         You will see the format reported as <code>ELF64</code>, the architecture as <code>AMD x86-64</code> on a typical 64-bit machine, the file type as <code>ET_DYN</code> (modern distributions build position-independent executables), and the entry-point virtual address. The section table lists the familiar names &mdash; <code>.text</code> marked executable, <code>.data</code> writable, <code>.rodata</code> read-only &mdash; and the summary gives the file's SHA-256, which you can compare against <code>sha256sum /bin/ls</code> in a terminal to confirm the tool is reading the same bytes. On Windows, dropping <code>C:\Windows\System32\notepad.exe</code> shows the equivalent PE32+ view.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a binary</strong> &mdash; drag a PE or ELF file onto the dropzone, or click to browse.</li>
-        <li><strong>Read the summary</strong> &mdash; file and size, SHA-256, detected format and architecture, and the entry point.</li>
-        <li><strong>Review the tables</strong> &mdash; the header parameters and the section table with sizes and permissions.</li>
-        <li><strong>Export</strong> &mdash; save the parsed result as JSON, or clear and open another file.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
