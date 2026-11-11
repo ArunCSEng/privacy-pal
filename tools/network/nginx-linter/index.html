@@ -4,25 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark</title>
-  <meta name="title" content="Nginx Configuration Linter &amp; Security Auditor — Free Offline Tool | BitDark" />
-  <meta name="description" content="Audit, parse, and lint Nginx server blocks and reverse proxy configs offline in browser memory. Catch alias traversal bugs, proxy_pass trailing slash traps, missing semicolons, and TLS vulnerabilities." />
-  <meta name="keywords" content="nginx linter online, nginx config validator, nginx syntax checker offline, nginx security audit, proxy_pass trailing slash rewrite, alias traversal vulnerability, nginx hardening guide, zero telemetry network tools" />
+  <title>Nginx Config Linter &amp; Security Auditor — Free Offline Tool | BitDark</title>
+  <meta name="title" content="Nginx Config Linter &amp; Security Auditor — Free Offline Tool | BitDark" />
+  <meta name="description" content="Paste an nginx.conf or server block and scan it for weak TLS, missing security headers, exposed server tokens, autoindex and proxy issues. Runs locally; nothing is sent." />
+  <meta name="keywords" content="nginx linter, nginx security audit, nginx.conf checker, server_tokens off, hsts header nginx, nginx tls config, autoindex off, nginx hardening" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://bitdark.net/tools/network/nginx-linter/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://bitdark.net/tools/network/nginx-linter/" />
-  <meta property="og:title" content="Nginx Configuration Linter &amp; Security Auditor | BitDark" />
-  <meta property="og:description" content="Audit Nginx server blocks offline for syntax crashes, off-by-slash alias path traversal, proxy_pass URI rewrites, and SSL/TLS cipher flaws." />
+  <meta property="og:title" content="Nginx Config Linter &amp; Security Auditor — Offline Tool | BitDark" />
+  <meta property="og:description" content="Scan an Nginx config for weak TLS, missing headers and risky proxy settings, in your browser. Nothing is sent." />
   <meta property="og:image" content="https://bitdark.net/assets/preview-banner.png" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://bitdark.net/tools/network/nginx-linter/" />
-  <meta name="twitter:title" content="Nginx Configuration Linter &amp; Security Auditor | BitDark" />
-  <meta name="twitter:description" content="Client-side Nginx config parser and hardening inspector. 100% private in-memory execution with zero network telemetry." />
+  <meta name="twitter:title" content="Nginx Configuration Linter | BitDark" />
+  <meta name="twitter:description" content="Scan an Nginx config for weak TLS, missing security headers and risky settings. Nothing is sent." />
 
   <!-- JSON-LD Structured Data: WebApplication, TechArticle, and FAQPage -->
   <script type="application/ld+json">
@@ -31,76 +31,64 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "Nginx Configuration Linter & Security Auditor",
+        "name": "Nginx Configuration Linter",
         "url": "https://bitdark.net/tools/network/nginx-linter/",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "All modern browsers (Offline-ready)",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        },
-        "description": "Defensive client-side Nginx configuration parser and static security auditor. Validates curly brace scopes, directive termination, off-by-slash alias directory traversal vulnerabilities, proxy_pass URI forwarding behaviors, and cryptographic TLS parameters directly in browser memory."
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any modern web browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Browser-based static linter that scans pasted Nginx configuration text for known weak settings &mdash; outdated TLS protocols, missing security headers, exposed server tokens, directory listing, permissive CORS and risky proxy blocks &mdash; reporting each with a line number, severity and remediation."
       },
       {
         "@type": "TechArticle",
-        "headline": "Hardening Reverse Proxies: Static Analysis of Nginx Configurations, URI Normalization Pitfalls, and Edge Ingress Defenses",
+        "headline": "Auditing an Nginx Configuration: TLS, Security Headers, Information Disclosure and Proxy Pitfalls",
         "url": "https://bitdark.net/tools/network/nginx-linter/",
-        "author": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "BitDark.NET",
-          "url": "https://bitdark.net/"
-        },
-        "datePublished": "2024-05-18",
-        "dateModified": "2026-11-04",
-        "description": "Exhaustive architectural reference on Nginx configuration auditing, AST tokenization, alias off-by-slash path traversal mechanics, proxy_pass trailing slash routing anomalies, HTTP request smuggling mitigations, and modern TLS 1.3 hardening."
+        "author": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
+        "datePublished": "2024-04-20",
+        "dateModified": "2026-11-12",
+        "description": "What makes an Nginx configuration weak, the specific directives this linter flags and why each matters, a reproducible before-and-after example, and why a text scan is one layer rather than a full audit."
       },
       {
         "@type": "FAQPage",
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Why is the alias directive off-by-slash path traversal vulnerability so dangerous?",
+            "name": "What does this linter check for?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "When a location directive without a trailing slash (e.g., location /assets) points to an alias directive that includes a trailing slash (e.g., alias /var/www/static/;), Nginx performs a direct string replacement without checking directory boundaries. A client requesting /assets../app/config.json will cause Nginx to replace /assets with /var/www/static/, resulting in /var/www/static/../app/config.json. This exposes files outside the designated web root."
+              "text": "It scans the configuration text for well-known weak settings: outdated TLS protocols, missing security headers such as HSTS and X-Content-Type-Options, server tokens left exposed, directory listing enabled via autoindex, overly broad CORS, proxy blocks missing forwarded headers, and patterns that can lead to path traversal or request smuggling. Each finding comes with a severity and a suggested fix."
             }
           },
           {
             "@type": "Question",
-            "name": "How does a trailing slash on proxy_pass fundamentally change URI routing?",
+            "name": "Is it a real Nginx parser?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "If proxy_pass specifies a URI path (such as http://backend/ or http://backend/api/), Nginx strips the matched location prefix from the incoming request and appends the remainder to the upstream URI. Conversely, if proxy_pass specifies no URI path at all (e.g., http://backend; without a slash), Nginx forwards the complete, unmanipulated client request URI directly to the upstream server."
+              "text": "No, it is a text scan. That makes it fast and able to work on a fragment of a file or a single server block, but it means it matches patterns rather than understanding directive inheritance. A setting inherited from an outer block it cannot see, or one written unusually, may be missed, and something inside a comment can be flagged."
             }
           },
           {
             "@type": "Question",
-            "name": "Does this client-side linter replace the native nginx -t command?",
+            "name": "Why does it warn about server_tokens?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The command 'nginx -t' executes within the actual host runtime where it can load third-party C/Lua dynamic modules, verify filesystem permissions, confirm SSL certificate key-pairs, and resolve DNS upstreams. The BitDark linter provides rapid, client-side static security analysis and heuristic logic checks before deploying configs to production systems."
+              "text": "By default Nginx advertises its exact version in response headers and error pages. That tells an attacker precisely which known vulnerabilities to try. Setting server_tokens off removes the version string. It is not a fix on its own &mdash; keeping Nginx patched matters far more &mdash; but there is no reason to publish the number."
             }
           },
           {
             "@type": "Question",
-            "name": "Why should server_tokens off; always be explicitly declared?",
+            "name": "Does a clean result mean my server is secure?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "By default, Nginx emits its exact version number in the HTTP Server response header and on standard error pages (e.g., 404, 502). Threat actors harvest these version strings during automated reconnaissance to match unpatched instances against public Common Vulnerabilities and Exposures (CVEs). Disabling server_tokens conceals this telemetry."
+              "text": "No. It only checks the settings in its rule list, on the text you pasted. It cannot see your TLS certificate chain, your upstream applications, your firewall, or the Nginx version actually running. Treat a clean result as one quick check, and confirm the live behaviour against the running server."
             }
           },
           {
             "@type": "Question",
-            "name": "Does this tool send my internal network IP addresses or hostnames to an external server?",
+            "name": "Is my configuration uploaded anywhere?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. The BitDark Nginx Linter executes 100% locally within your browser sandbox using JavaScript text tokenizers and regular expressions. No configuration text, internal hostnames, upstream blocks, or IP addresses ever leave your device."
+              "text": "No. The text you paste is scanned in your browser and nothing is sent to a server. The page makes no network request for your input, so you can check production configurations &mdash; which often contain internal hostnames and upstream addresses &mdash; without exposing them."
             }
           }
         ]
@@ -224,7 +212,7 @@
     .tool-header p { 
       color: var(--atom-text); 
       font-size: 1.05rem; 
-      max-width: 950px;
+      max-width: 1200px;
       line-height: 1.6;
     }
 
@@ -727,7 +715,7 @@
 
     <div class="tool-header">
       <h1>Nginx Configuration Linter &amp; Security Auditor</h1>
-      <p>Audit Nginx configuration files locally for syntax issues, structural brace balance, missing directive semicolons, dangerous alias path traversals, proxy_pass forwarding traps, and deprecated TLS ciphers.</p>
+      <p>Paste an <code>nginx.conf</code>, a virtual host or a single server block and scan it for weak TLS, missing security headers, exposed version tokens, directory listing and risky proxy settings — each with a line number and a fix. It runs in your browser and nothing you paste is uploaded.</p>
     </div>
 
     <!-- AdSense Safe Placement Slot #1 (Zero CLS: Hidden until script loads & fills) -->
@@ -797,425 +785,156 @@
       </div>
     </section>
 
-    <!-- Operational Boundaries & Legal Disclaimer -->
+
+    <!-- Limitations & Disclaimer -->
     <aside class="disclaimer-card">
       <div class="disclaimer-header">
-        <span>⚠️</span> Forensic Boundaries &amp; Legal Disclaimer
+        <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>BitDark.net is not responsible for any direct, indirect, incidental, or consequential damages, misattributions, legal liabilities, or forensic errors arising from the use or interpretation of data provided by this tool. Client-side heuristic scanners cannot replace hardware trust chains or formal chain-of-custody verification.</strong>
-      </p>
-      <p style="margin-top: 10px;">
-        <strong>Static client-side linting is a pre-deployment aid, not a substitute for host-level verification.</strong> This auditor conducts abstract regex tokenization and structural pattern matching entirely inside browser memory. It cannot evaluate operating-system filesystem permissions, SELinux policies, dynamic Lua/C modules, internal DNS resolution states, or upstream socket health. Always run <code>nginx -t -c /path/to/nginx.conf</code> inside an isolated staging container before initiating hot-reloads on live production ingress clusters.
+        <strong>This is a static text scan, not a server audit.</strong> It matches your pasted configuration against a fixed list of known weak settings and reports each with a line number, severity and fix. Because it pattern-matches rather than parsing Nginx's directive tree, it cannot follow inheritance from blocks you did not paste, may miss a setting written unusually, and can flag one inside a comment. It also cannot see your certificate chain, your upstream applications, your firewall, or which Nginx version is actually running. A clean result means nothing in its rule list matched &mdash; not that the server is secure. Verify against the running configuration with <code>nginx -T</code> and test the live behaviour. Everything runs in your browser and nothing you paste is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
-    <!-- Comprehensive Technical Authority Article (3,000+ Words) -->
+    <!-- Technical Article -->
     <article class="article-container">
-      <h2>The Critical Role of Nginx in Modern Edge Infrastructure</h2>
+      <h2>What This Tool Does</h2>
       <p>
-        Nginx powers more than a third of the world's most heavily trafficked websites, acting as the primary gateway, TLS termination barrier, and reverse proxy for enterprise clouds, microservices meshes, and content distribution networks (CDNs). Because it sits directly on the boundary between public adversaries and internal private topologies, even a single typographic slip or misunderstood directive in an <code>nginx.conf</code> file can expose internal databases, enable arbitrary file reading, leak administrative endpoints, or completely take down mission-critical services during hot-reloads.
-      </p>
-      <p>
-        Unlike software languages that rely on strict compilers and types, Nginx configuration syntax is a declarative, domain-specific state machine based on hierarchical directive blocks (<code>main</code>, <code>events</code>, <code>http</code>, <code>server</code>, <code>location</code>, <code>upstream</code>). Its parser processes configurations sequentially, inheriting parent scopes in non-intuitive manners and executing URI normalizations that vary dramatically based on the presence or absence of a single trailing slash.
-      </p>
-      <p>
-        Traditional server testing relies on <code>nginx -t</code>. While <code>nginx -t</code> is essential for verifying binary syntax and ensuring referenced files exist on disk, it operates entirely as a structural check—it will happily report "syntax is ok and test is successful" for configurations containing severe path traversal vulnerabilities, insecure cipher suites, cross-origin information leaks, and dangerous HTTP request routing behaviors. The BitDark Nginx Configuration Linter and Security Auditor fills this defensive gap by conducting deep client-side static security analysis directly inside your browser.
+        Most Nginx configurations grow by accretion: a block copied from a blog post years ago, a TLS line nobody has revisited since, a proxy section added in a hurry. The defaults are not always safe, and the weak settings are easy to miss because the server works perfectly well with them. This linter reads the configuration text you paste and points out the settings worth changing, with a line number and a concrete fix for each. It runs entirely in your browser, so pasting a real production file sends nothing anywhere.
       </p>
 
-      <h2>How to Use the BitDark Nginx Linter</h2>
-      <p>
-        Auditing reverse proxy setups with BitDark is instant, private, and fully offline:
-      </p>
+      <h2>How to Use the Tool</h2>
       <ol>
-        <li>
-          <strong>Input Your Configuration:</strong> Paste your entire <code>nginx.conf</code>, a single site-enabled virtual host file, or an isolated <code>server {}</code> or <code>location {}</code> block into the main editor area.
-        </li>
-        <li>
-          <strong>Explore Reference Configurations:</strong> If testing functionality, click <strong>Load Vulnerable Sample</strong> to observe common real-world security flaws, or <strong>Load Hardened Sample</strong> to examine an enterprise-grade, TLS 1.3-enabled boilerplate.
-        </li>
-        <li>
-          <strong>Initiate In-Memory Static Analysis:</strong> Click <strong>Lint &amp; Audit Config</strong>. The client-side lexical engine evaluates brace balancing, line termination, off-by-slash alias patterns, URI forwarding schemas, and cryptographic protocol definitions.
-        </li>
-        <li>
-          <strong>Inspect Diagnostic Metrics &amp; Table:</strong> Review the status banner, summary metric grid (Total Errors, Security Warnings, Hardening Notices, Brace Balance), and the itemized findings table indicating exact line numbers, severity categories, and prescriptive remediations.
-        </li>
+        <li><strong>Paste your configuration</strong> &mdash; a full <code>nginx.conf</code>, a single virtual host, or a block from <code>sites-enabled</code>. It is a text scan, so a fragment works; you do not need a complete valid file.</li>
+        <li><strong>Or compare the two samples</strong> &mdash; <strong>Load Vulnerable Sample</strong> loads a configuration with the common mistakes in it, and <strong>Load Hardened Sample</strong> loads the corrected equivalent. Linting each in turn is the quickest way to see exactly which lines the rules react to and what the fixed version looks like.</li>
+        <li><strong>Click Lint &amp; Audit Config</strong> &mdash; the whole text is checked against every rule at once.</li>
+        <li><strong>Work through the findings by severity</strong> &mdash; each row gives the <em>Severity</em>, the <em>Line</em> number so you can find it in your editor, the <em>Issue Category</em>, and <em>Diagnostic Details &amp; Remediation</em> explaining both the risk and the change to make. Fix the high-severity rows first: weak TLS and a missing HSTS header affect every request the server handles.</li>
+        <li><strong>Re-lint after editing</strong> &mdash; paste the corrected configuration back and run it again until only findings you have consciously accepted remain. <strong>Clear Workspace</strong> resets everything.</li>
       </ol>
+      <p>If a finding looks wrong, check whether the directive is inherited from a block you did not paste &mdash; the scan only sees the text in front of it.</p>
 
-      <h2>When to Use This Tool: Operational Scenarios &amp; Threat Modeling</h2>
-      <p>
-        Integrating proactive Nginx configuration reviews protects architectures across distinct stages of the software engineering and DevSecOps lifecycle:
-      </p>
-      <ul>
-        <li>
-          <strong>Pre-Commit &amp; Pull Request Reviews:</strong> Developers updating ingress routing rules or routing microservices can quickly lint snippets before pushing changes to version control, preventing broken deployments in CI/CD pipelines.
-        </li>
-        <li>
-          <strong>Security Auditing &amp; Penetration Testing:</strong> Defensive blue teams and penetration testers reviewing infrastructure-as-code (IaC) repositories (Ansible playbooks, Terraform templates, Docker entrypoints) can identify low-hanging ingress traversal and version exposure vectors.
-        </li>
-        <li>
-          <strong>Zero-Trust Air-Gapped Environments:</strong> Sysadmins configuring high-security military, healthcare, or financial on-premise clusters can audit configuration files on air-gapped workstations without external network telemetry.
-        </li>
-        <li>
-          <strong>Microservice Edge Migration:</strong> Teams transitioning from monolithic Apache or IIS architectures to Nginx reverse proxies can detect unintended URI rewriting side-effects before exposing services to production traffic.
-        </li>
-      </ul>
-
-      <h2>Deep Dive: The Off-by-Slash Alias Path Traversal Vulnerability</h2>
-      <p>
-        Among the most pervasive and subtle vulnerabilities found in Nginx deployments is the <strong>Off-by-Slash Alias Traversal</strong> flaw (frequently designated in threat literature as Orange Tsai's Nginx alias traversal pattern).
-      </p>
-
-      <h3>1. The Mechanics of the Flaw</h3>
-      <p>
-        The Nginx <code>alias</code> directive instructs the web server to replace the matching <code>location</code> path prefix with the specified file system path. Consider the following seemingly innocent virtual host declaration:
-      </p>
-
-      <pre><code># VULNERABLE CONFIGURATION
-location /static {
-    alias /var/www/app/static/;
-}</code></pre>
-
-      <p>
-        Notice that the location prefix <code>/static</code> <strong>does not terminate with a trailing slash</strong>, whereas the target filesystem path <code>/var/www/app/static/</code> <strong>does end with a trailing slash</strong>.
-      </p>
-      <p>
-        When an external HTTP client requests <code>GET /static/images/logo.png</code>, Nginx strips the matched prefix <code>/static</code> and appends the remainder (<code>/images/logo.png</code>) to the alias path, yielding <code>/var/www/app/static/images/logo.png</code>. Everything appears to work normally.
-      </p>
-      <p>
-        However, because the location match is a simple string prefix match rather than an enforced directory boundary, an adversary can submit the following crafted request:
-      </p>
-      <pre><code>GET /static../private/database.sqlite HTTP/1.1
-Host: example.com</code></pre>
-
-      <p>
-        Nginx matches the incoming path against <code>/static</code>. It replaces <code>/static</code> with <code>/var/www/app/static/</code>. The remaining characters in the request are <code>../private/database.sqlite</code>. When concatenated, the filesystem path resolves to:
-      </p>
-      <pre><code>/var/www/app/static/../private/database.sqlite  ===>  /var/www/app/private/database.sqlite</code></pre>
-      <p>
-        The attacker has completely escaped the designated public directory, reading internal application secrets, environment configuration files, or proprietary source code without triggering OS-level directory traversal firewalls.
-      </p>
-
-      <h3>2. The Correct Remediation</h3>
-      <p>
-        To prevent path traversal, the location path and the alias path must maintain strict trailing slash symmetry:
-      </p>
-      <pre><code># HARDENED REMEDIATION
-location /static/ {
-    alias /var/www/app/static/;
-}</code></pre>
-      <p>
-        With both slashes present, any request containing <code>/static../</code> fails to match the location prefix, causing Nginx to return a 404 Not Found error and neutralizing the directory escape attempt.
-      </p>
-
-      <h2>The Proxy_Pass Trailing Slash Mismatch Dilemma</h2>
-      <p>
-        The <code>proxy_pass</code> directive is the foundational pillar of Nginx's reverse proxy capability. However, its URI manipulation behavior is notoriously confusing because the presence or absence of a single trailing slash on the destination upstream URL alters how Nginx rewrites the downstream HTTP request.
-      </p>
-
-      <h3>Scenario A: Proxy_Pass WITH a Trailing Slash (URI Rewriting Active)</h3>
-      <pre><code>location /api/ {
-    proxy_pass http://internal_service:8080/;
-}</code></pre>
-      <p>
-        Because the target URL contains an explicit URI path (the single slash <code>/</code>), Nginx normalizes the request by <strong>stripping the matched location prefix</strong> (<code>/api/</code>) before appending the remainder of the URI to the upstream address.
-      </p>
-      <ul>
-        <li>Client Request: <code>GET /api/v1/users HTTP/1.1</code></li>
-        <li>Upstream Forwarded Request: <code>GET /v1/users HTTP/1.1</code></li>
-      </ul>
-
-      <h3>Scenario B: Proxy_Pass WITHOUT a Trailing Slash (Raw URI Forwarding)</h3>
-      <pre><code>location /api/ {
-    proxy_pass http://internal_service:8080;
-}</code></pre>
-      <p>
-        Because no URI path is specified after the host and port, Nginx performs <strong>no URI normalization or prefix stripping</strong>. It forwards the client's original, unaltered request URI directly to the backend service.
-      </p>
-      <ul>
-        <li>Client Request: <code>GET /api/v1/users HTTP/1.1</code></li>
-        <li>Upstream Forwarded Request: <code>GET /api/v1/users HTTP/1.1</code></li>
-      </ul>
-
-      <h3>Scenario C: Dangerous Asymmetric Slashes</h3>
-      <p>
-        Configuring <code>location /api</code> (without a slash) alongside <code>proxy_pass http://internal:8080/</code> (with a slash) introduces major routing bugs. If a client accesses <code>/api_endpoint</code>, Nginx replaces <code>/api</code> with <code>/</code>, forwarding <code>/_endpoint</code> to the upstream backend—breaking API contracts and potentially opening access to administrative routes.
-      </p>
-
-      <h2>Syntax Architecture: Semicolons and Recursive Brace Scopes</h2>
-      <p>
-        At the lexical parser level, Nginx treats configurations as streams of tokens separated by whitespace. Blocks begin with an opening curly brace <code>{</code> and terminate with a closing curly brace <code>}</code>. Every standalone directive inside a block <strong>must terminate with a semicolon (<code>;</code>)</strong>.
-      </p>
-      <p>
-        When an administrator accidentally omits a semicolon:
-      </p>
-      <pre><code># MALFORMED DIRECTIVES
-server {
-    listen 80
-    server_name example.com;
-}</code></pre>
-      <p>
-        Nginx does not interpret the line break as a delimiter. Instead, it reads <code>listen 80 server_name example.com;</code> as a single directive with multiple parameters. Because the <code>listen</code> directive does not accept <code>server_name</code> as an argument, Nginx crashes during reload with an invalid parameter error.
-      </p>
-      <p>
-        Similarly, mismatched curly braces disrupt the lexical parser's state machine. If an extra closing brace is present, parsing terminates prematurely; if an opening brace is never closed, directives intended for an isolated virtual host bleed globally across all tenant configurations. The BitDark linter enforces real-time brace balance tracking and missing-semicolon detection to catch these syntax bugs before they reach staging servers.
-      </p>
-
-      <h2>Reverse Proxy Comparison: Nginx vs Competitors</h2>
-      <p>
-        Comparing Nginx's security architecture and configuration philosophy with other contemporary edge proxies highlights why automated static linting is crucial:
-      </p>
-
+      <h2>What It Flags, and Why It Matters</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
-          <thead>
-            <tr>
-              <th>Reverse Proxy</th>
-              <th>Configuration Format</th>
-              <th>Reload Mechanics</th>
-              <th>Default Security Posture</th>
-              <th>Trailing Slash Traps</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Setting</th><th>Why it matters</th></tr></thead>
           <tbody>
-            <tr>
-              <td><strong>Nginx</strong></td>
-              <td>Custom Declarative Blocks</td>
-              <td>Master-worker SIGHUP graceful reload</td>
-              <td>Permissive (Version leaked, TLS 1.0/1.1 on legacy)</td>
-              <td><strong>High</strong> (alias off-by-slash, proxy_pass rewrites)</td>
-            </tr>
-            <tr>
-              <td><strong>HAProxy</strong></td>
-              <td>Sectional text (frontend/backend)</td>
-              <td>Hitless reload with socket handoff</td>
-              <td>Strict (Aggressive connection validation)</td>
-              <td>Low (Explicit path manipulation rules)</td>
-            </tr>
-            <tr>
-              <td><strong>Caddy</strong></td>
-              <td>Caddyfile / JSON Schema</td>
-              <td>Atomic Zero-downtime API reloads</td>
-              <td><strong>Very High</strong> (Auto-HTTPS, HSTS, TLS 1.3 by default)</td>
-              <td>Low (Path matching is strict prefix by default)</td>
-            </tr>
-            <tr>
-              <td><strong>Traefik</strong></td>
-              <td>YAML / TOML / Docker Labels</td>
-              <td>Dynamic discovery (No manual reload needed)</td>
-              <td>High (Automated Let's Encrypt, container-aware)</td>
-              <td>Low (Router rules strictly typed)</td>
-            </tr>
-            <tr>
-              <td><strong>Envoy</strong></td>
-              <td>YAML / JSON / gRPC xDS API</td>
-              <td>Dynamic hot-restart via discovery services</td>
-              <td>Strict (Explicit route matchers and filters)</td>
-              <td>Low (Regex and path specifiers are explicit)</td>
-            </tr>
+            <tr><td>Old TLS protocols</td><td>TLSv1 and TLSv1.1 are deprecated and have known weaknesses. Modern configurations should offer TLSv1.2 and TLSv1.3 only.</td></tr>
+            <tr><td>Missing <code>Strict-Transport-Security</code></td><td>Without HSTS, a browser's first request can still be downgraded to plain HTTP and intercepted.</td></tr>
+            <tr><td>Missing <code>X-Content-Type-Options</code></td><td>Lets browsers MIME-sniff a response into something executable, turning an upload into a script.</td></tr>
+            <tr><td><code>server_tokens on</code></td><td>Publishes your exact Nginx version in headers and error pages, handing an attacker a shortlist of exploits to try.</td></tr>
+            <tr><td><code>autoindex on</code></td><td>Turns any directory without an index file into a browsable listing, exposing files you never linked.</td></tr>
+            <tr><td>Permissive CORS</td><td>An <code>Access-Control-Allow-Origin</code> of <code>*</code> on an authenticated endpoint lets any site read the response.</td></tr>
+            <tr><td>Proxy blocks missing forwarded headers</td><td>Without <code>X-Forwarded-For</code> and <code>X-Forwarded-Proto</code>, the backend sees every request as coming from the proxy over plain HTTP, breaking rate limiting, logging and redirect logic.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h2>Line-by-Line Worked Configuration Examples</h2>
+      <h2>What the Linter Checks</h2>
       <p>
-        Let us trace the transformation of a high-risk, vulnerable virtual host file into an enterprise-hardened configuration audited by the BitDark engine.
+        The rule set is small and deliberately so: ten checks across three severities, each one a mistake that appears in real configurations rather than a style preference.
+      </p>
+      <div class="tech-table-wrapper">
+        <table class="tech-table">
+          <thead><tr><th>Severity</th><th>Check</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Error</td><td>Syntax error (missing semicolon)</td><td>nginx refuses to start, or starts on an older config you think you replaced.</td></tr>
+            <tr><td>Error</td><td>Unbalanced block braces</td><td>Directives silently land in the wrong context, so a rule you wrote never applies.</td></tr>
+            <tr><td>Error</td><td>Obsolete and broken SSL version</td><td>Enabling SSLv2 or SSLv3 exposes clients to attacks that have been practical for over a decade.</td></tr>
+            <tr><td>Warning</td><td>Insecure alias path traversal</td><td>The single most dangerous nginx misconfiguration; covered in detail below.</td></tr>
+            <tr><td>Warning</td><td>Proxy URI forwarding pitfall</td><td>A trailing slash on <code>proxy_pass</code> changes which path the backend receives.</td></tr>
+            <tr><td>Warning</td><td>Deprecated TLS version</td><td>TLS 1.0 and 1.1 are retired and fail most compliance baselines.</td></tr>
+            <tr><td>Warning</td><td>Insecure cipher suite</td><td>Weak or export-grade ciphers undo the benefit of an otherwise current TLS stack.</td></tr>
+            <tr><td>Notice</td><td>Directory listing enabled</td><td><code>autoindex on</code> publishes a browsable index of whatever is in that directory.</td></tr>
+            <tr><td>Notice</td><td>Information disclosure</td><td>Version banners tell a scanner precisely which advisories to try.</td></tr>
+            <tr><td>Notice</td><td>Missing hardening headers</td><td>Absent response headers leave browser-side protections switched off.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Two of these cause the incidents. The <code>alias</code> traversal and the <code>proxy_pass</code> trailing slash are both cases where the configuration is syntactically perfect and semantically wrong, so nothing complains and the behaviour is simply not what the author intended. The rest are the kind of thing a review catches; those two are not, which is why they are worth checking mechanically every time.
       </p>
 
-      <h3>1. The Insecure Configuration (High Vulnerability Score)</h3>
-      <pre><code># INSECURE SERVER BLOCK
-server {
-    listen 80;
-    server_name vulnerable.internal;
-
-    # Flaw 1: Version header leakage (server_tokens on by default)
-    
-    # Flaw 2: Alias Traversal Vulnerability
-    location /uploads {
-        alias /var/data/storage/;
-    }
-
-    # Flaw 3: Insecure proxy forwarding without URI consistency
-    location /backend/ {
-        proxy_pass http://10.0.0.5:8000;
-    }
-
-    # Flaw 4: Missing closing semicolon
-    location /metrics {
-        proxy_pass http://127.0.0.1:9100
-    }
-
-    # Flaw 5: Deprecated, broken TLS protocols and ciphers
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers ALL:!aNULL:!ADH:RC4+RSA:+HIGH:+MEDIUM;
-}</code></pre>
-
-      <h3>2. The Remediated, Production-Ready Configuration (Zero Warnings)</h3>
-      <pre><code># HARDENED PRODUCTION CONFIGURATION
-# Redirect HTTP traffic to HTTPS securely
-server {
-    listen 80;
-    listen [::]:80;
-    server_name example.com www.example.com;
-    return 301 https://$host$request_uri;
-}
-
-# Hardened HTTPS Server Block
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name example.com;
-
-    # 1. Obscure Nginx version in HTTP headers and error pages
-    server_tokens off;
-
-    # 2. Modern Cryptographic TLS 1.2 & TLS 1.3 Architecture
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    ssl_session_timeout 1d;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_tickets off;
-
-    # 3. Defensive Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; object-src 'none';" always;
-    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
-
-    # 4. Corrected Trailing Slash on Alias Directives
-    location /uploads/ {
-        alias /var/data/storage/;
-        autoindex off;
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
-    }
-
-    # 5. Consistent Reverse Proxy Forwarding with Upstream Headers
-    location /backend/ {
-        proxy_pass http://internal_upstream/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-    }
-}</code></pre>
-
-      <h2>Common Mistakes and Edge Ingress Vulnerabilities</h2>
+      <h2>A Worked Example You Can Reproduce</h2>
       <p>
-        System architects and security engineers frequently encounter specific pitfalls when operating Nginx at scale:
+        Load the vulnerable sample and audit it. You will get a set of findings including deprecated TLS protocols, a missing HSTS header, <code>server_tokens</code> left on and directory listing enabled &mdash; each pinned to the line that caused it. Now load the hardened sample and audit again: the same structure, but the findings clear because the TLS line names only modern protocols, the security headers are present, and the information-disclosure settings are switched off.
       </p>
+      <p>
+        Reading the two side by side is more instructive than the rule list, because the difference between them is small. A handful of lines separates a configuration that leaks its version and allows downgrade attacks from one that does not, and none of those lines affect whether the site works.
+      </p>
+
+      <h2>Where a Text Scan Stops</h2>
       <ul>
-        <li>
-          <strong>Forgetting <code>proxy_set_header Host $host;</code>:</strong> By default, Nginx overrides the client's original <code>Host</code> header with the upstream host name defined in <code>proxy_pass</code>. This breaks virtual hosting on backend servers and causes OAuth redirect URI mismatches.
-        </li>
-        <li>
-          <strong>Enabling <code>autoindex on;</code> in Public Directories:</strong> Directory listing should never be enabled on production assets. An exposed <code>autoindex on;</code> directive allows automated crawlers to enumerate private backup files (<code>.bak</code>, <code>.env</code>, <code>.git</code>) stored in web directories.
-        </li>
-        <li>
-          <strong>Misconfigured HTTP/2 Rapid Reset Mitigations:</strong> Without strict rate limiting directives like <code>limit_req_zone</code> and appropriate <code>keepalive_requests</code> limits, high-volume HTTP/2 multiplexing resets can exhaust edge worker CPU resources.
-        </li>
-        <li>
-          <strong>Insecure SSL Protocols:</strong> Retaining <code>TLSv1</code> or <code>TLSv1.1</code> violates PCI-DSS compliance and leaves connections vulnerable to protocol-downgrade attacks. Restrict cipher configurations strictly to TLS 1.2 and TLS 1.3.
-        </li>
-        <li>
-          <strong>Unvalidated Regex Location Matching:</strong> Placing case-insensitive regular expression locations (<code>location ~* \.php$</code>) above prefix locations overrides the prefix blocks, causing static requests to be routed to application interpreters unintentionally.
-        </li>
+        <li><strong>Inheritance is invisible.</strong> Nginx directives cascade from <code>http</code> to <code>server</code> to <code>location</code>. If you paste only a location block, a setting defined higher up is not visible to the scan.</li>
+        <li><strong>It does not test the live server.</strong> A header can be set in the config and still be stripped or overwritten further along the chain. Confirm with an actual request.</li>
+        <li><strong>It does not know your application.</strong> Permissive CORS may be entirely correct for a public read-only API and dangerous on an authenticated one. The linter flags the pattern; the judgement is yours.</li>
+        <li><strong>The rule list is finite.</strong> Nothing matching does not mean nothing is wrong, only that none of these specific patterns were present.</li>
       </ul>
-
-      <!-- Interactive Accordion FAQ Section -->
       <section class="faq-block">
-        <h2>Frequently Asked Technical Questions</h2>
+        <h2>Frequently Asked Questions</h2>
 
         <div class="faq-item">
-          <div class="faq-question">Why does BitDark report a warning for alias directives without a trailing slash?</div>
+          <div class="faq-question">What does this linter check for?</div>
           <div class="faq-answer">
-            An <code>alias</code> directive paired with a <code>location</code> block lacking a trailing slash (e.g. <code>location /files</code> and <code>alias /var/data/;</code>) allows an attacker to append <code>../</code> to the URL, tricking Nginx into performing path traversal and leaking files outside the intended folder.
+            It scans the configuration text for well-known weak settings: outdated TLS protocols, missing security headers such as HSTS and X-Content-Type-Options, server tokens left exposed, directory listing enabled via autoindex, overly broad CORS, proxy blocks missing forwarded headers, and patterns that can lead to path traversal or request smuggling. Each finding comes with a severity and a suggested fix.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">What is the difference between root and alias directives in Nginx?</div>
+          <div class="faq-question">Is it a real Nginx parser?</div>
           <div class="faq-answer">
-            The <code>root</code> directive appends the entire incoming request URI to the specified path (e.g., <code>location /api/ { root /var/www; }</code> looks for files in <code>/var/www/api/</code>). The <code>alias</code> directive replaces the matched location prefix entirely (e.g., <code>location /api/ { alias /var/www/; }</code> maps directly to <code>/var/www/</code>).
+            No, it is a text scan. That makes it fast and able to work on a fragment of a file or a single server block, but it means it matches patterns rather than understanding directive inheritance. A setting inherited from an outer block it cannot see, or one written unusually, may be missed, and something inside a comment can be flagged.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Why does missing a semicolon cause Nginx to report a problem on the following line?</div>
+          <div class="faq-question">Why does it warn about server_tokens?</div>
           <div class="faq-answer">
-            Nginx treats newlines as whitespace. If a directive lacks a terminating semicolon, the parser combines it with the directive on the subsequent line as a single multi-argument command. The parser only fails when it encounters the next directive name, leading it to report a syntax error on the subsequent line.
+            By default Nginx advertises its exact version in response headers and error pages. That tells an attacker precisely which known vulnerabilities to try. Setting server_tokens off removes the version string. It is not a fix on its own &mdash; keeping Nginx patched matters far more &mdash; but there is no reason to publish the number.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">How does server_tokens off; improve operational security?</div>
+          <div class="faq-question">Does a clean result mean my server is secure?</div>
           <div class="faq-answer">
-            By default, Nginx emits its exact version string (e.g. <code>Server: nginx/1.18.0</code>) in HTTP response headers and on default error pages. Disabling <code>server_tokens</code> removes this version number, preventing automated vulnerability scanners from immediately mapping your infrastructure to specific unpatched CVEs.
+            No. It only checks the settings in its rule list, on the text you pasted. It cannot see your TLS certificate chain, your upstream applications, your firewall, or the Nginx version actually running. Treat a clean result as one quick check, and confirm the live behaviour against the running server.
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Can this in-browser linter check dynamic modules like OpenResty or ModSecurity?</div>
+          <div class="faq-question">Is my configuration uploaded anywhere?</div>
           <div class="faq-answer">
-            The BitDark linter evaluates core Nginx directives, standard HTTP/HTTPS blocks, stream modules, and reverse proxy primitives. Third-party vendor directives (such as custom Lua blocks or ModSecurity rules) are parsed gracefully, but dynamic runtime execution requires validation within your actual binary container.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Why is ssl_prefer_server_ciphers off recommended for modern TLS 1.3?</div>
-          <div class="faq-answer">
-            In TLS 1.3, the cipher suite selection is negotiated automatically by the protocol and does not use server preference ordering. For TLS 1.2, modern clients (such as mobile devices with hardware AES accelerators) can pick the most battery- and computationally-efficient AEAD cipher without being forced into slower cipher choices by legacy server configurations.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">Does BitDark save or transmit the Nginx configs I paste into the tool?</div>
-          <div class="faq-answer">
-            Never. The BitDark platform operates on a strict zero-telemetry, client-side execution model. All parsing, regular expression matching, and heuristic audits execute locally in your browser's private JavaScript memory. No data is ever transmitted to our servers.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-question">What does "Unbalanced Block Braces" indicate?</div>
-          <div class="faq-answer">
-            This indicates that the number of opening curly braces <code>{</code> does not match the number of closing curly braces <code>}</code>. Every directive block must have an identical number of open and close delimiters. An imbalance prevents Nginx from determining directive hierarchy and causes a fatal crash during server startup or reload.
+            No. The text you paste is scanned in your browser and nothing is sent to a server. The page makes no network request for your input, so you can check production configurations &mdash; which often contain internal hostnames and upstream addresses &mdash; without exposing them.
           </div>
         </div>
       </section>
 
       <!-- Internal SEO Linking Grid -->
       <section class="related-tools-section">
-        <h3>Related Network Infrastructure &amp; Security Tools</h3>
+        <h3>Related Tools &amp; Utilities</h3>
         <div class="related-grid">
-          <a href="/tools/network/spf-deconstructor/" class="related-card">
-            <div class="related-card-title"><span>[📧]</span> SPF Record Deconstructor</div>
-            <div class="related-card-desc">Parse DNS SPF TXT records, evaluate DNS lookup limits, validate CIDR ranges, and resolve DNS routing pitfalls.</div>
-          </a>
-          <a href="/tools/network/dmarc-generator/" class="related-card">
-            <div class="related-card-title"><span>[🛡️]</span> DMARC Policy Generator</div>
-            <div class="related-card-desc">Construct, validate, and audit DMARC email authentication records with strict alignment and reporting policies.</div>
-          </a>
-          <a href="/tools/network/dns-wire-format/" class="related-card">
-            <div class="related-card-title"><span>[🌐]</span> DNS Wire Format Hexer</div>
-            <div class="related-card-desc">Decode and inspect raw binary DNS queries and responses for DNS-over-HTTPS (DoH) and DNS-over-TLS (DoT).</div>
-          </a>
-          <a href="/tools/network/mtu-overhead/" class="related-card">
-            <div class="related-card-title"><span>[📏]</span> MTU &amp; MSS Overhead Calculator</div>
-            <div class="related-card-desc">Calculate packet fragmentation thresholds and MSS sizing across WireGuard, IPsec, VXLAN, GRE, and QinQ tunnels.</div>
+          <a href="/tools/network/docker-auditor/" class="related-card">
+            <div class="related-card-title"><span>[&#128230;]</span> Docker Compose Auditor</div>
+            <div class="related-card-desc">Scan a Compose file for privileged mode, socket mounts and host namespaces.</div>
           </a>
           <a href="/tools/auth/security-headers/" class="related-card">
-            <div class="related-card-title"><span>[🔒]</span> HTTP Header Security Auditor</div>
-            <div class="related-card-desc">Audit edge HTTP response headers for HSTS, CSP, X-Frame-Options, Permissions-Policy, and CORS flaws.</div>
+            <div class="related-card-title"><span>[&#128737;&#65039;]</span> Security Headers Analyzer</div>
+            <div class="related-card-desc">Check HTTP security headers and what each one protects against.</div>
           </a>
-          <a href="/tools/auth/tls-ciphers/" class="related-card">
-            <div class="related-card-title"><span>[🔑]</span> TLS Cipher Suite Evaluator</div>
-            <div class="related-card-desc">Inspect SSL/TLS cipher suites for forward secrecy, AEAD strength, and deprecations across modern crypto standards.</div>
+          <a href="/tools/auth/csp-evaluator/" class="related-card">
+            <div class="related-card-title"><span>[&#128683;]</span> CSP Evaluator</div>
+            <div class="related-card-desc">Inspect a Content-Security-Policy for weak or bypassable directives.</div>
+          </a>
+          <a href="/tools/network/dmarc-generator/" class="related-card">
+            <div class="related-card-title"><span>[&#9993;]</span> DMARC Record Generator</div>
+            <div class="related-card-desc">Build a valid DMARC DNS TXT record with each tag explained.</div>
+          </a>
+          <a href="/tools/network/mtu-overhead/" class="related-card">
+            <div class="related-card-title"><span>[&#8646;]</span> MTU &amp; MSS Calculator</div>
+            <div class="related-card-desc">Work out the TCP MSS left after tunnel and encapsulation overhead.</div>
+          </a>
+          <a href="/tools/encoding/yaml-json/" class="related-card">
+            <div class="related-card-title"><span>[{}]</span> YAML &harr; JSON Converter</div>
+            <div class="related-card-desc">Convert YAML and JSON both ways, with anchors and merge keys expanded.</div>
           </a>
         </div>
       </section>
@@ -1227,7 +946,6 @@ server {
     </div>
   </main>
 
-  <!-- Complete Standard Footer -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
@@ -1246,7 +964,7 @@ server {
     </div>
   </footer>
 
-  <script>
+    <script>
     // 1. Zero-CLS AdSense Auto-Reveal Observer
     function setupAdSlotObserver() {
       const adSlots = document.querySelectorAll('.ad-container-slot');
