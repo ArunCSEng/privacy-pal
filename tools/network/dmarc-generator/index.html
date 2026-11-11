@@ -918,6 +918,16 @@
         DMARC (Domain-based Message Authentication, Reporting and Conformance) is the DNS record that ties SPF and DKIM together: it tells receiving mail servers what to do when a message claiming to be from your domain fails authentication, and it asks them to send you reports about the mail they see. This tool builds that record for you. Choose a policy and options in the form and it assembles a valid DMARC TXT record, explains what each tag does, and lets you copy it &mdash; all in your browser, with nothing sent anywhere.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Enter your domain</strong> &mdash; put the organisational domain in <em>Domain Name</em>, without a <code>_dmarc</code> prefix; the tool shows you where to publish the result.</li>
+        <li><strong>Choose the policy</strong> &mdash; <em>Primary Policy (p=)</em> offers <em>none &mdash; Monitoring Only</em>, <em>quarantine</em> and <em>reject</em>, each labelled with the receiver action it requests. Start at <strong>none</strong> unless you have already confirmed your senders align.</li>
+        <li><strong>Or apply a preset</strong> &mdash; <strong>Soft Enforce (quarantine)</strong> and <strong>Strict Enforce (reject)</strong> set a whole enforcing configuration in one click; <strong>Reset Defaults</strong> returns to a safe monitoring baseline.</li>
+        <li><strong>Add reporting and tune alignment</strong> &mdash; put a <code>mailto:</code> address in <em>Aggregate Reports (rua=)</em>; that is the one that matters. <em>Forensic Reports (ruf=)</em> is optional. <em>DKIM Alignment (adkim=)</em> and <em>SPF Alignment (aspf=)</em> each offer relaxed or strict, and <em>Policy Percentage (pct=)</em> lets you ramp enforcement gradually.</li>
+        <li><strong>Copy and publish</strong> &mdash; <strong>Copy DMARC TXT Record</strong> puts the finished string on your clipboard. Publish it as a TXT record at <code>_dmarc.&lt;your-domain&gt;</code>.</li>
+      </ol>
+      <p>The table beneath the record explains every tag it emitted, so you can check each one before publishing rather than trusting the output blind.</p>
       <h2>DMARC on Top of SPF and DKIM</h2>
       <p>
         SPF lists which servers may send mail for your domain; DKIM adds a cryptographic signature a receiver can verify. On their own, neither says what a receiver should do on failure, and neither checks that the authenticated domain matches the address a human sees. DMARC adds both: a <strong>policy</strong> for failing, unaligned mail, and <strong>alignment</strong>, which requires the SPF- or DKIM-validated domain to match your visible <code>From</code> domain. A message passes DMARC when it is authenticated and aligned by SPF or DKIM.
@@ -952,14 +962,6 @@
       <p>
         You would publish this as a TXT record at <code>_dmarc.example.com</code>. It enforces nothing yet &mdash; <code>p=none</code> only monitors &mdash; but the <code>rua</code> address starts collecting aggregate reports so you can see every source sending as your domain. Once those reports show your legitimate senders passing and aligning, change <code>p</code> to <code>quarantine</code> and then <code>reject</code>, optionally using <code>pct</code> to ramp up. Each tag the tool adds is listed with a short description so you can see exactly what you are publishing.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Enter your domain and policy</strong> &mdash; start with <code>p=none</code> for monitoring.</li>
-        <li><strong>Add reporting</strong> &mdash; an aggregate (<code>rua</code>) address at least; failure (<code>ruf</code>) is optional.</li>
-        <li><strong>Set alignment and options</strong> &mdash; relaxed or strict, plus <code>sp</code>, <code>pct</code>, <code>fo</code> and <code>ri</code> if you need them.</li>
-        <li><strong>Copy the record</strong> &mdash; and publish it as a TXT record at <code>_dmarc.&lt;your-domain&gt;</code>.</li>
-      </ol>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
@@ -1005,9 +1007,9 @@
       <section class="related-tools-section">
         <h3>Related Email, Security &amp; Network Utilities</h3>
         <div class="related-grid">
-          <a href="/tools/network/dns-lookup/" class="related-card">
-            <div class="related-card-title"><span>[&#9906;]</span> DNS Record Lookup</div>
-            <div class="related-card-desc">Query A, MX, TXT and other DNS records for a domain, including SPF and DMARC.</div>
+          <a href="/tools/network/dns-wire-format/" class="related-card">
+            <div class="related-card-title"><span>[&#9906;]</span> DNS Wire Format Parser</div>
+            <div class="related-card-desc">Decode a DNS packet from hex: header, flags, labels and records, client-side.</div>
           </a>
           <a href="/tools/network/cidr-calculator/" class="related-card">
             <div class="related-card-title"><span>[/24]</span> CIDR / Subnet Calculator</div>
