@@ -849,6 +849,16 @@
         Every removal is written to an audit log, and the result is shown three ways: the cleaned source, a SHA-256 hash of it, and a preview rendered through an <code>&lt;img&gt;</code> tag &mdash; the browser's own restricted mode, so nothing in the file runs while you look at it. You can download the cleaned SVG.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open an SVG</strong> &mdash; drag in the file you want to clean, or paste its markup. A user-uploaded or downloaded SVG you intend to inline into a page is exactly the case this is for.</li>
+        <li><strong>Read the audit log first</strong> &mdash; this is the most useful output. It lists every element, event handler and URI that was removed, so you learn what the file was actually carrying rather than just getting a cleaned result. A threat count of zero means nothing matched the rules.</li>
+        <li><strong>Check the preview</strong> &mdash; the cleaned image is rendered through an <code>&lt;img&gt;</code> tag, which is the browser's restricted mode, so nothing in the file can run while you look at it. Confirm the artwork still looks right after sanitising.</li>
+        <li><strong>Compare the source</strong> &mdash; the cleaned markup is shown alongside a SHA-256 of the result, so you can diff it against your original if you need to justify the change.</li>
+        <li><strong>Take the file</strong> &mdash; <strong>Download Sanitized SVG</strong> saves the cleaned version; <strong>Reset Analysis</strong> clears the workspace.</li>
+      </ol>
+      <p>For anything you will serve to other users, treat this as a first pass and keep a maintained allowlist sanitiser plus a strict Content-Security-Policy in the pipeline behind it.</p>
       <h2>Why Structure, Not Regex</h2>
       <p>
         Searching for <code>&lt;script&gt;</code> with a regular expression is easy to evade: mixed case, split tokens, CDATA sections, entity encodings and namespace aliases all defeat simple text matching. Parsing into a DOM and inspecting real elements and attributes is far more reliable, which is the approach here. The one text-level step is removing <code>DOCTYPE</code>/<code>ENTITY</code> before parsing, which is a deliberate pre-pass to take entity-expansion tricks off the table.
@@ -865,14 +875,6 @@
       <p>
         Drop it in and the audit log reports three removals: the <code>&lt;script&gt;</code> element stripped, the <code>onload</code> handler stripped from <code>&lt;svg&gt;</code>, and the <code>javascript:</code> URI stripped from the <code>&lt;a&gt;</code>. The cleaned output is a plain <code>&lt;svg&gt;</code> with the harmless <code>&lt;text&gt;</code> left intact, the preview renders it safely, and the threat count reads 3. Change the payloads and watch the log update &mdash; it is a good way to see which constructs the tool recognises.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open an SVG</strong> &mdash; drag it onto the dropzone, or click to browse.</li>
-        <li><strong>Read the audit log</strong> &mdash; it lists every element, handler and URI removed, with a threat count.</li>
-        <li><strong>Check the preview and source</strong> &mdash; the safe preview and the cleaned markup, with a SHA-256 of the result.</li>
-        <li><strong>Download</strong> the cleaned SVG, or reset to clean another.</li>
-      </ol>
 
       <h2>Limits Worth Knowing</h2>
       <ul>
