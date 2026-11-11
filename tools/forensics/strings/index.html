@@ -973,6 +973,16 @@
         A compiled program is mostly non-text machine code, but scattered through it is readable text: URLs and server names, file paths, error and log messages, library and function names, version strings. Pulling those out &mdash; the classic Unix <code>strings</code> command &mdash; is one of the fastest ways to get a sense of an unknown binary without running it. This tool does that in your browser: drop in a file and it lists the printable sequences it finds, with the byte offset of each, and lets you filter them. It reads the file locally and uploads nothing, so it is safe to use on samples you would not want to send to an online service.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a file</strong> &mdash; drag in an executable, library, firmware image, archive or memory dump. Nothing is run, so an untrusted sample is safe to scan.</li>
+        <li><strong>Set the encoding mode</strong> &mdash; <em>ASCII &amp; Unicode (UTF-16LE Dual-Pass)</em> is the default and finds the most. Narrow it to <em>ASCII Only</em> or <em>Unicode Only</em> when you are chasing a specific kind of string; on Windows binaries the UTF-16LE pass is usually where the interesting text lives.</li>
+        <li><strong>Tune the minimum length</strong> &mdash; the default of 4 is the traditional setting. Raise it to 6 or 8 on a noisy binary to cut fragments, or lower it when you are hunting a short token.</li>
+        <li><strong>Filter the results</strong> &mdash; the preset buttons pull out <strong>URLs / Endpoints</strong>, <strong>IP Addresses (v4/v6)</strong>, <strong>File / Reg Paths</strong> and <strong>Emails</strong>; <strong>All</strong> restores the full list. The search box also accepts a regular expression, so <code>https?://</code> or <code>cmd\.exe</code> work directly.</li>
+        <li><strong>Take the output</strong> &mdash; set <em>Offset Display</em> to hex or decimal if you want to locate a string in a hex editor, then use <strong>Download Filtered TXT</strong> or <strong>Copy to Clipboard</strong>.</li>
+      </ol>
+      <p>Very large files cap at 250,000 strings and the SHA-256 is skipped above 100&nbsp;MB, so raise the minimum length if you hit the limit.</p>
       <h2>ASCII and UTF-16LE</h2>
       <p>
         The tool scans for two kinds of text. <strong>ASCII</strong> here means single-byte printable characters (<code>0x20</code>&ndash;<code>0x7E</code>, plus tab) in a row. <strong>UTF-16LE</strong> is the wide encoding common in Windows binaries, where each character is two bytes &mdash; the character followed by a <code>0x00</code>. A plain ASCII scan skips UTF-16LE text entirely, so the tool runs a separate UTF-16LE pass, and because such a string can begin on an even or an odd byte, it checks <strong>both alignments</strong> so neither is missed. You can choose ASCII only, UTF-16LE only, or both. It does not decode UTF-8 or other multi-byte encodings, so text in those shows only its ASCII-range runs.
@@ -987,14 +997,6 @@
       <p>
         On any system, point the tool at a program you already have &mdash; a system utility, or any <code>.exe</code> or ELF binary. You will see readable text such as linked library names, format strings and error messages, each with its offset. To compare against the command line, run <code>strings -n 6 /bin/ls</code> (or <code>strings yourfile.exe</code> on Windows) and you will see the same ASCII runs the tool lists at minimum length 6. On a Windows binary, switch encoding to include UTF-16LE and the dual-alignment pass will surface wide strings &mdash; dialog text, resource names &mdash; that an ASCII-only scan leaves out. The SHA-256 in the summary matches <code>sha256sum</code> on the same file, confirming the tool read the exact bytes.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a file</strong> &mdash; drag a binary onto the dropzone, or click to browse.</li>
-        <li><strong>Set encoding and length</strong> &mdash; ASCII, UTF-16LE or both, and the minimum string length.</li>
-        <li><strong>Filter</strong> &mdash; use a preset (URLs, IPs, paths, emails) or type a search term or regex; switch offsets between hex and decimal.</li>
-        <li><strong>Take the results</strong> &mdash; copy them or download a text file, or reset to open another binary.</li>
-      </ol>
 
       <h2>What Strings Can and Cannot Tell You</h2>
       <ul>
