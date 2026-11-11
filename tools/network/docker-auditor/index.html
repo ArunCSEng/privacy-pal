@@ -768,6 +768,16 @@
         A Docker container is only as safe as how it is run. A few settings in a Compose file or a <code>docker run</code> command can hand a container the keys to the host &mdash; and they are easy to leave in by accident, copied from a tutorial or a quick fix. This tool scans the text you paste for those settings and lists what it finds, with a severity and a suggested fix for each. It runs entirely in your browser; nothing you paste is sent anywhere, so it is safe to check real production files.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Paste your configuration</strong> &mdash; drop a <code>docker-compose.yml</code>, a fragment of one, or a <code>docker run</code> command into <em>Docker Compose Configuration</em>. It is a text scan, so a partial snippet works fine.</li>
+        <li><strong>Or compare the two samples</strong> &mdash; <strong>Load Vulnerable Sample</strong> loads a deliberately insecure service and <strong>Load Hardened Sample</strong> loads its fixed equivalent. Auditing each in turn shows exactly which lines the rules react to.</li>
+        <li><strong>Click Audit Security Configuration</strong> &mdash; the text is checked against every rule at once.</li>
+        <li><strong>Work through the findings</strong> &mdash; each row gives a <em>Severity</em>, the <em>Security Vector</em> it belongs to, the <em>Detected Finding &amp; Impact</em> explaining why it matters, and concrete <em>Remediation Guidance</em>. Fix the critical rows first: privileged mode and a mounted Docker socket both mean container escape is straightforward.</li>
+        <li><strong>Re-audit after editing</strong> &mdash; paste the corrected config back in and run it again until only acceptable findings remain. <strong>Clear Workspace</strong> resets everything.</li>
+      </ol>
+      <p>Remember the scan only knows its own rule list, so an empty result means nothing matched &mdash; not that the container is safe.</p>
       <h2>What It Flags, and Why</h2>
       <div class="tech-table-wrapper">
         <table class="tech-table">
@@ -804,14 +814,6 @@
       <p>
         The tool flags five issues: <strong>privileged mode</strong> and the <strong>Docker socket mount</strong> (both critical), <strong>host network mode</strong> and the <strong>inline API key</strong> (high), and the <strong>floating <code>:latest</code> tag</strong> (low). Each comes with a fix &mdash; drop <code>privileged</code> and add only the capabilities you need, remove the socket mount, use a bridge network, move the key to a secret, and pin the image. Remove those lines and re-run, and the findings clear, which is a good way to see exactly which pattern triggered each one.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Paste your config</strong> &mdash; a Compose file, a Dockerfile snippet, or a <code>docker run</code> command; or load the sample.</li>
-        <li><strong>Audit</strong> &mdash; the tool scans the text against its rules.</li>
-        <li><strong>Review the findings</strong> &mdash; each with a severity, the impact, and a remediation.</li>
-        <li><strong>Fix and re-run</strong> &mdash; adjust the config and audit again until it is clean.</li>
-      </ol>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
@@ -861,7 +863,7 @@
             <div class="related-card-title"><span>[&#9993;]</span> DMARC Record Generator</div>
             <div class="related-card-desc">Build a valid DMARC DNS TXT record with each tag explained, in your browser.</div>
           </a>
-          <a href="/tools/forensics/secret-scanner/" class="related-card">
+          <a href="/tools/auth/secret-scanner/" class="related-card">
             <div class="related-card-title"><span>[&#128273;]</span> Secret Scanner</div>
             <div class="related-card-desc">Scan text and config for exposed API keys, tokens and private keys, locally.</div>
           </a>
