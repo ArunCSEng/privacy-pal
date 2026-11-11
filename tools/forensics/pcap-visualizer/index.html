@@ -1038,6 +1038,16 @@
         Nothing you open leaves your browser &mdash; the file is read into memory locally and every step runs there.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a capture</strong> &mdash; drag a <code>.pcap</code> or <code>.cap</code> onto the dropzone, or click to browse. If you need one to try, <code>tcpdump -i any -c 20 -w test.pcap</code> produces a small file quickly.</li>
+        <li><strong>Scan the packet table</strong> &mdash; each row gives <em>No.</em>, <em>Time (s)</em> relative to the first packet, <em>Source</em> and <em>Destination</em>, the <em>Protocol</em>, the <em>Length</em> and a <em>Summary Info</em> line.</li>
+        <li><strong>Narrow it down</strong> &mdash; the protocol dropdown filters to <em>TCP</em>, <em>UDP</em>, <em>ICMP / ICMPv6</em>, <em>ARP</em> or <em>Other</em>, and the search box filters by IP, MAC, port or any text in the summary. Combine the two to isolate one conversation.</li>
+        <li><strong>Inspect a packet</strong> &mdash; click a row to expand its decoded layers alongside a hex-and-ASCII dump of the frame, which is where you confirm what the summary claims.</li>
+        <li><strong>Page and export</strong> &mdash; large captures load 100 packets at a time, so use <strong>&larr; Prev</strong> and <strong>Next &rarr;</strong> to move through them. <strong>Export JSON</strong> saves the parsed packets; <strong>Clear</strong> starts over.</li>
+      </ol>
+      <p>If the file is refused, check it is classic libpcap rather than PCAPNG &mdash; Wireshark can re-save it with <em>File &gt; Export Specified Packets</em> in pcap format.</p>
       <h2>How a Classic PCAP File Is Laid Out</h2>
       <p>
         The format is deliberately simple. A file begins with a 24-byte <strong>global header</strong>: a 4-byte magic number, the version, and a link-layer type. The magic number also encodes byte order and timestamp precision &mdash; <code>A1 B2 C3 D4</code> is big-endian microseconds, <code>D4 C3 B2 A1</code> the little-endian form, and two further values (<code>A1 B2 3C 4D</code> and its swap) mark nanosecond timestamps. This tool reads all four and sets its decoding accordingly.
@@ -1080,14 +1090,6 @@ ping -c 2 192.168.1.1</code></pre>
       <p>
         Open <code>ping.pcap</code> here and you will see the echo requests and replies in the table, each marked <code>ICMP</code>, with source and destination IPs and an info column reading "Echo (ping) Request" or "Echo (ping) Reply". Select a row and the layer view breaks it into Ethernet, IPv4 and ICMP, while the hex pane shows the raw frame with the familiar ping payload bytes on the right. The duration and total-bytes figures in the summary come straight from the record headers, so they match what Wireshark reports for the same file.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a capture</strong> &mdash; drag a <code>.pcap</code> onto the dropzone or click to browse.</li>
-        <li><strong>Scan the table</strong> &mdash; packets are listed with time, source, destination, protocol, length and a summary; use the protocol dropdown or the text box to narrow by address, port or keyword.</li>
-        <li><strong>Inspect a packet</strong> &mdash; click a row to see its decoded layers and a hex-and-ASCII dump of the frame.</li>
-        <li><strong>Export</strong> &mdash; save the parsed packets as JSON, or reset to open another file. Large captures are paged 100 packets at a time to stay responsive.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
