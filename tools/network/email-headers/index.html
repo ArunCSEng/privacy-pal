@@ -878,6 +878,16 @@
         Every email carries a log of its own journey in its headers. Paste the raw headers here and this tool lays that journey out: each server that handled the message, in the order it actually travelled, with how long each step took, the protocol and TLS used, and the authentication results the receiving server recorded. It is the quickest way to answer "where did this actually come from, and did it pass SPF and DKIM?" &mdash; and because it runs entirely in your browser, you can paste real messages without sending their contents anywhere.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Get the raw headers</strong> &mdash; in Gmail open the message menu and choose <em>Show original</em>; in Outlook open message properties and copy the internet headers; or open an <code>.eml</code> file in a text editor. You want the whole block from the top of the message down to the first blank line.</li>
+        <li><strong>Paste them in</strong> &mdash; into <em>Raw MIME Email Headers</em>. Folded headers that wrap across several indented lines are fine; the parser unfolds them for you.</li>
+        <li><strong>Or load the sample</strong> &mdash; <strong>Load Sample Header</strong> fills in a complete multi-hop message with authentication results, useful for seeing the layout before you paste a real one.</li>
+        <li><strong>Click Analyze Headers</strong> &mdash; then read the hop table top to bottom: it is in chronological order, so the first row is closest to the sender. Each row shows the <em>Sending Host</em> and its IP, the <em>Receiving Host</em>, the <em>Protocol / Cipher</em> used, the <em>Timestamp (UTC)</em> and the <em>Delay</em> since the previous hop.</li>
+        <li><strong>Find your trust boundary</strong> &mdash; locate the first hop handled by a server you operate. Rows above it are trustworthy; rows below it are the sender's claims.</li>
+      </ol>
+      <p>A large delay usually means greylisting or a queue, and a timestamp that goes backwards is shown as clock skew rather than a negative number.</p>
       <h2>The Received Chain Reads Bottom-Up</h2>
       <p>
         Each mail server that touches a message <em>prepends</em> a <code>Received</code> header. The result is that raw headers are in reverse chronological order: the <strong>top</strong> <code>Received</code> is the last server (usually your own mail provider), and the <strong>bottom</strong> one is closest to the original sender. This tool reverses them for you, so the first row in the table is the origin and the last row is final delivery. Each line typically records which host the message came <code>from</code> (with its IP in brackets), which server received it <code>by</code>, the protocol used <code>with</code>, and a timestamp.
@@ -905,14 +915,6 @@
       <p>
         Load the built-in sample and look at two things. First, the hop table: the rows run from the sender's internal node, through the relay gateway, to the final mail server &mdash; the reverse of the order in the raw text &mdash; each with its delay from the previous hop, so a slow queue or greylisting shows up as a jump. Second, the authentication panel: the sample's <code>Authentication-Results</code> line reports <code>dkim=pass</code>, <code>spf=pass</code> and <code>dmarc=pass</code>, and the tool pulls out the signing selector and the authorised IP from that same header. Edit the sample's <code>spf=pass</code> to <code>spf=fail</code>, re-analyse, and the verdict changes &mdash; confirming it is reading the recorded result rather than deciding one.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Get the raw headers</strong> &mdash; in Gmail, "Show original"; in Outlook, message properties; or open an <code>.eml</code> file.</li>
-        <li><strong>Paste them in</strong> &mdash; the whole header block, or load the sample to see the format.</li>
-        <li><strong>Read the hop table</strong> &mdash; chronological order, with delays, hosts, IPs and TLS details.</li>
-        <li><strong>Check authentication</strong> &mdash; the recorded SPF, DKIM and DMARC verdicts, then decide where your trust boundary sits.</li>
-      </ol>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
