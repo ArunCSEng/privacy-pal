@@ -1006,6 +1006,17 @@
         A TAR archive bundles files and their metadata into one stream. Opening one with <code>tar -xf</code> writes its contents to disk &mdash; which is exactly what you do not want to do blindly with an untrusted archive, because a malicious entry can try to write outside the folder you extracted into. This tool lets you look first: drop in a <code>.tar</code> (or gzip-compressed <code>.tar.gz</code>) and it lists every entry, shows each header's fields, verifies the checksums, and flags entries that look dangerous &mdash; all by reading the headers, without extracting anything. It runs in your browser and uploads nothing.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open an archive</strong> &mdash; drag in an uncompressed <code>.tar</code> or a gzip-compressed <code>.tar.gz</code> or <code>.tgz</code>. Gzip is decompressed in the browser; bzip2, xz and zstd are not handled, so convert those to a plain <code>.tar</code> first.</li>
+        <li><strong>Check the risk count before anything else</strong> &mdash; that is the reason to inspect rather than extract. A non-zero count means at least one entry would write outside the folder you extract into.</li>
+        <li><strong>Read the entry table</strong> &mdash; each row shows the <em>Type</em>, <em>File Path</em>, <em>Size</em>, <em>Mode</em>, <em>Owner (UID/GID)</em>, <em>MTime (UTC)</em> and an <em>Integrity</em> column carrying the header checksum result. Flagged paths are highlighted.</li>
+        <li><strong>Narrow a large archive</strong> &mdash; the filter box matches on filename, owner, type or anomaly, so you can list just the flagged entries in an archive with thousands of files.</li>
+        <li><strong>Inspect or extract one entry</strong> &mdash; click a row to open its full header detail with a preview of its contents, and use <strong>Download Entry File</strong> to pull out that single file without unpacking the archive.</li>
+        <li><strong>Keep a record</strong> &mdash; <strong>Export Manifest JSON</strong> saves the full entry list; <strong>Clear Workspace</strong> resets.</li>
+      </ol>
+      <p>Pulling one file out individually is the safe way to retrieve something from an archive you do not trust enough to run <code>tar -xf</code> on.</p>
       <h2>How TAR Is Laid Out</h2>
       <p>
         Unlike ZIP, TAR has no index at the end; it is a plain sequence. Each entry is a single <strong>512-byte header block</strong> &mdash; holding the file name, size, mode, owner, modification time, a type flag and a checksum, with numeric fields stored as ASCII octal &mdash; followed by the file's data padded up to the next 512-byte boundary, then the next header. The archive ends with <strong>two all-zero blocks</strong>. The tool walks this sequence block by block, reads each header, and skips over each entry's data to find the next one.
@@ -1037,14 +1048,6 @@ tar -cf evil.tar --transform 's#demo/#../../../tmp/#' demo/payload</code></pre>
       <p>
         Open <code>evil.tar</code> here and the entry's stored path shows as <code>../../../tmp/payload</code>, flagged with a <strong>Path Traversal Risk</strong>, and the risk count is non-zero &mdash; a warning you would not get until too late if you had simply run <code>tar -xf</code>. A normal archive of the same files, created without the transform, lists the same entries with no flags. Either way the SHA-256 in the summary matches <code>sha256sum</code> on the file.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open an archive</strong> &mdash; drag a <code>.tar</code> or <code>.tar.gz</code> onto the dropzone, or click to browse.</li>
-        <li><strong>Review the entries</strong> &mdash; name, size, mode, type and any risk flags, with the archive's format and SHA-256 in the summary.</li>
-        <li><strong>Inspect an entry</strong> &mdash; open one for its full header fields and a preview of its contents.</li>
-        <li><strong>Search or export</strong> &mdash; filter the list, or download an individual entry's bytes.</li>
-      </ol>
 
       <h2>Limits Worth Knowing</h2>
       <ul>
