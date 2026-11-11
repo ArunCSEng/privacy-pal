@@ -936,6 +936,16 @@
         It runs on <a href="https://sql.js.org/" rel="noopener" target="_blank" style="color:var(--atom-cyan);">sql.js</a> &mdash; the real SQLite engine compiled to WebAssembly &mdash; so the SQL it runs is genuine SQLite. The engine loads from a CDN the first time the page opens; your database itself is read locally and never sent anywhere.
       </p>
 
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Open a database</strong> &mdash; drag in a <code>.db</code>, <code>.sqlite</code>, <code>.sqlite3</code> or <code>.sqlitedb</code> file. It is loaded into an in-memory copy, so your file on disk is never modified no matter what you run.</li>
+        <li><strong>Find the table you want</strong> &mdash; the table list is on the left, and the <em>Filter tables</em> box narrows it quickly in a database with dozens of them. Selecting a table shows its rows.</li>
+        <li><strong>Check the structure</strong> &mdash; <strong>Inspect Schema</strong> shows how each table is defined, including column types and keys, which is worth a look before writing a query against unfamiliar data.</li>
+        <li><strong>Run your own SQL</strong> &mdash; type a statement in the editor and click <strong>Execute SQL</strong>. It is real SQLite, so joins, aggregates and <code>PRAGMA</code> statements all work; start with something like <code>SELECT * FROM table_name LIMIT 100;</code> to see the shape of the data.</li>
+        <li><strong>Export or finish</strong> &mdash; <strong>Export CSV</strong> saves the current result set, and <strong>Close DB</strong> discards the in-memory copy.</li>
+      </ol>
+      <p>Because edits only touch the copy in memory, you can safely test an <code>UPDATE</code> or <code>DELETE</code> here &mdash; reopen the file afterwards and the original data is still there.</p>
       <h2>How It Works, Safely</h2>
       <p>
         When you open a file, the tool first checks the 16-byte header every SQLite 3 file begins with (<code>SQLite format 3\0</code>); if it is absent, the file is not a SQLite binary and the tool says so. It then loads the whole file into an <strong>in-memory copy</strong> inside the WebAssembly engine and lists the tables and views from <code>sqlite_master</code>. Every query you run &mdash; including ones that change data &mdash; acts on that in-memory copy only. The file on your disk stays exactly as it was, so you can experiment freely; reloading the page simply discards the working copy.
@@ -955,14 +965,6 @@ INSERT INTO users(name) VALUES ('alice'), ('bob');"</code></pre>
       <p>
         Open <code>demo.db</code> here and the <code>users</code> table appears in the list; selecting it shows the two rows. Run <code>SELECT name FROM users WHERE id = 2;</code> and you get <code>bob</code>. Now run <code>DELETE FROM users WHERE id = 1;</code> &mdash; the result set updates to show only <code>bob</code>, but that change lives only in memory: reopen <code>demo.db</code> from disk and <code>alice</code> is still there, which is the clearest way to see that the tool never writes back to your file.
       </p>
-
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Open a database</strong> &mdash; drag a <code>.db</code>/<code>.sqlite</code>/<code>.sqlite3</code> file onto the dropzone, or click to browse.</li>
-        <li><strong>Browse</strong> &mdash; pick a table from the list to see its rows, or view the schema.</li>
-        <li><strong>Query</strong> &mdash; type SQL in the editor and run it; results appear in the table below.</li>
-        <li><strong>Export</strong> &mdash; save a result set as CSV, or close the database and open another.</li>
-      </ol>
 
       <h2>Where This Is Useful</h2>
       <ul>
