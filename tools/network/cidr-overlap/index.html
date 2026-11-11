@@ -46,7 +46,7 @@
         "publisher": { "@type": "Organization", "name": "BitDark.NET", "url": "https://bitdark.net/" },
         "datePublished": "2024-03-20",
         "dateModified": "2026-11-10",
-        "description": "How overlapping subnets cause routing and VPC-peering conflicts, how this tool converts each CIDR to a numeric address range and compares every pair for intersection, the kinds of overlap it reports, and a reproducible example."
+        "description": "How overlapping subnets cause routing and VPC-peering conflicts, how this tool converts each CIDR to a numeric address range and compares every pair, why valid CIDR blocks can only be nested or disjoint, how adjacency differs from overlap, and how to resolve a conflict."
       },
       {
         "@type": "FAQPage",
@@ -73,6 +73,14 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "It converts each CIDR to the numeric range of addresses it covers \u2014 a first and last value \u2014 and two blocks overlap when the first of each is less than or equal to the last of the other. Using numeric ranges makes the check exact for both IPv4 and IPv6, with IPv6 handled as 128-bit big integers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can two CIDR blocks overlap only partially?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, and this surprises people. Because every CIDR block is an aligned, power-of-two sized range, two valid blocks are always either completely separate or one sits entirely inside the other \u2014 a half-and-half overlap is impossible. So in practice every conflict this tool reports is either a duplicate or a containment."
             }
           },
           {
@@ -747,7 +755,7 @@
         <span>&#9888;&#65039;</span> Limitations &amp; Disclaimer
       </div>
       <p>
-        <strong>This compares the ranges you paste; it does not see your network.</strong> It parses each CIDR into a numeric address range and reports where ranges intersect &mdash; identical, containment or partial &mdash; for IPv4 and IPv6. It does not read your routing tables, cloud VPCs or IPAM, and it does not know which block is authoritative or intended; it only tells you which of the blocks you entered conflict. Before provisioning, verify assignments against your cloud provider's rules, BGP filters and IPAM. Everything runs in your browser and nothing you enter is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them.
+        <strong>This compares the ranges you paste; it does not see your network.</strong> It parses each CIDR into a numeric address range and reports where ranges intersect, for IPv4 and IPv6. It does not read your routing tables, cloud VPCs or IPAM, and it does not know which block is authoritative or intended; it only tells you which of the blocks you entered conflict. Before provisioning, verify assignments against your cloud provider's rules, BGP filters and IPAM. Everything runs in your browser and nothing you enter is uploaded. Results are provided as-is; BitDark.net is not liable for decisions made from them.
       </p>
     </aside>
 
@@ -755,47 +763,74 @@
     <article class="article-container">
       <h2>What This Tool Does</h2>
       <p>
-        When you plan addressing across several networks &mdash; subnets in a routing table, VPCs you want to peer, ranges handed to different teams &mdash; two blocks must not cover the same addresses unless you mean them to. An accidental <strong>overlap</strong> makes routing ambiguous and blocks cloud peering. This tool takes a list of CIDR blocks, compares every pair, and reports the ones that overlap, so you can catch a conflict before it reaches production. Paste the list, and it checks them in your browser; nothing you enter is sent anywhere.
+        When you plan addressing across several networks &mdash; subnets in a routing table, VPCs you want to peer, ranges handed to different teams &mdash; two blocks must not cover the same addresses unless you mean them to. An accidental <strong>overlap</strong> makes routing ambiguous and blocks cloud peering. Paste a list of CIDR blocks and this tool compares every pair and reports the ones that conflict, so you can catch the problem while it is still a line in a spreadsheet. It runs in your browser; nothing you enter is sent anywhere.
       </p>
 
-      <h2>How Overlap Is Decided</h2>
+
+      <h2>How to Use the Tool</h2>
+      <ol>
+        <li><strong>Paste your blocks</strong> &mdash; one CIDR per line in <em>CIDR Prefixes to Audit</em>. IPv4 and IPv6 can be mixed in the same list; they are only ever compared within their own family.</li>
+        <li><strong>Or load the sample</strong> &mdash; <strong>Load Sample Conflict</strong> drops in a list that already contains a containment and a duplicate, so you can see both result types before using your own data.</li>
+        <li><strong>Click Analyze Collisions</strong> &mdash; every pair in the list is compared, so a list of twenty blocks is 190 comparisons done at once.</li>
+        <li><strong>Read the results table</strong> &mdash; <em>Primary Subnet (A)</em> and <em>Conflicting Subnet (B)</em> name the two blocks that clash, <em>Conflict Type</em> says whether it is a duplicate or a containment, and <em>Details &amp; Topology</em> shows how the ranges sit relative to each other.</li>
+        <li><strong>Fix and re-run</strong> &mdash; delete a duplicate or renumber a block, then analyze again until the list reports nothing. <strong>Clear Workspace</strong> starts over.</li>
+      </ol>
+      <p>Blocks that merely sit next to each other are reported clean, which is correct &mdash; adjacency is not overlap, as the integer ranges above show.</p>
+      <h2>Overlap Is Just Interval Arithmetic</h2>
       <p>
-        Every CIDR block covers a contiguous range of addresses, from its network address to its last address. The tool converts each block you enter into that numeric <strong>range</strong> &mdash; a first and a last value &mdash; and then two blocks overlap exactly when each one's first address is less than or equal to the other's last. This interval test is precise and works the same for IPv4 and IPv6, with IPv6 handled as 128-bit big integers. It is the same reasoning a router or an IPAM system uses, reduced to its essence.
+        Every CIDR block covers a contiguous run of addresses, and an address is really just a number. So the tool converts each block into a numeric <strong>range</strong> &mdash; a first and a last value &mdash; and compares those. Two blocks share at least one address exactly when each one starts at or before the other one ends.
       </p>
-
-      <h2>Kinds of Overlap It Reports</h2>
+      <p>Spelling that out with real numbers makes it obvious. As 32-bit integers:</p>
       <div class="tech-table-wrapper">
         <table class="tech-table">
-          <thead><tr><th>Type</th><th>Meaning</th></tr></thead>
+          <thead><tr><th>Block</th><th>First address</th><th>Last address</th><th>Size</th></tr></thead>
           <tbody>
-            <tr><td><strong>Identical</strong></td><td>Two entries cover exactly the same range &mdash; usually a duplicate.</td></tr>
-            <tr><td><strong>Containment</strong></td><td>One block fully contains the other, like <code>10.0.0.0/16</code> around <code>10.0.5.0/24</code>.</td></tr>
-            <tr><td><strong>Partial</strong></td><td>The ranges intersect without one containing the other.</td></tr>
+            <tr><td><code>10.0.0.0/16</code></td><td><code>167772160</code></td><td><code>167837695</code></td><td>65,536</td></tr>
+            <tr><td><code>10.0.5.0/24</code></td><td><code>167773440</code></td><td><code>167773695</code></td><td>256</td></tr>
+            <tr><td><code>10.1.0.0/16</code></td><td><code>167837696</code></td><td><code>167903231</code></td><td>65,536</td></tr>
           </tbody>
         </table>
       </div>
-      <p>Each conflicting pair is listed with the type, so you can see not just that there is a clash but what kind it is.</p>
+      <p>
+        The <code>/24</code> starts at 167773440 and ends at 167773695, both comfortably inside the first <code>/16</code>'s 167772160&ndash;167837695 &mdash; so they overlap. Treating addresses as integers is also what makes IPv6 work the same way; those values are simply much larger, so the tool handles them as big integers rather than ordinary numbers.
+      </p>
+
+      <h2>Adjacent Is Not Overlapping</h2>
+      <p>
+        Look at the third row again. <code>10.0.0.0/16</code> ends at <strong>167837695</strong> and <code>10.1.0.0/16</code> begins at <strong>167837696</strong> &mdash; exactly one address later. They sit flush against each other and share nothing, so they do not conflict. This is the single most common false alarm when people check ranges by eye: <code>10.0.0.0/24</code> and <code>10.0.1.0/24</code> look like they must collide because the text is so similar, but there is no shared address between them. The tool compares numbers rather than appearances, so it never makes that mistake.
+      </p>
+
+      <h2>Why a "Half" Overlap Cannot Happen</h2>
+      <p>
+        Here is a property worth knowing, because it tells you what to expect from any conflict report. A CIDR block is not an arbitrary range: its size is always a power of two <em>and</em> it is aligned to a multiple of that size. That alignment has a strong consequence &mdash; <strong>two valid CIDR blocks are always either completely separate, or one lies entirely inside the other.</strong> They can never half-overlap the way two arbitrary ranges like 10&ndash;20 and 15&ndash;25 can.
+      </p>
+      <p>
+        You can convince yourself with the numbers above: the <code>/24</code> fits wholly within the <code>/16</code>, and the second <code>/16</code> sits wholly outside it. Trying to construct a counterexample fails every time; the alignment rule forbids it. The practical upshot is that every conflict you see here will be either a <strong>duplicate</strong> (identical ranges) or a <strong>containment</strong> (one inside the other), and "containment" is the normal shape of a real-world mistake &mdash; someone carves a <code>/24</code> out of a space another team already holds as a <code>/16</code>.
+      </p>
+
+      <h2>Where Overlaps Actually Bite</h2>
+      <ul>
+        <li><strong>Cloud peering.</strong> Two VPCs or VNets with overlapping CIDRs generally cannot be peered at all. The provider refuses the connection outright, and because the ranges were chosen months earlier, the fix is usually an expensive renumbering.</li>
+        <li><strong>VPN and transit links.</strong> If a remote site uses a range that your local network also uses, traffic for those addresses never leaves the local side &mdash; the route matches locally and the tunnel is simply never used.</li>
+        <li><strong>Ambiguous routing.</strong> When two entries both match a destination, longest-prefix match decides, not your intent. A forgotten <code>/24</code> inside a <code>/16</code> silently steals traffic for its 256 addresses.</li>
+        <li><strong>Firewall and ACL drift.</strong> Overlapping definitions make rules order-dependent, so a permissive entry can quietly shadow a restrictive one.</li>
+      </ul>
 
       <h2>A Worked Example You Can Reproduce</h2>
-      <p>
-        Paste this list and run the check:
-      </p>
+      <p>Paste this list and run the check:</p>
       <pre><code>10.0.0.0/16
 10.0.5.0/24
 10.1.0.0/16
 192.168.0.0/24
 192.168.0.0/24</code></pre>
       <p>
-        The tool reports two conflicts. <code>10.0.0.0/16</code> and <code>10.0.5.0/24</code> are a <strong>containment</strong> overlap &mdash; the <code>/24</code> sits inside the <code>/16</code>. The two <code>192.168.0.0/24</code> lines are an <strong>identical</strong> overlap (a duplicate). The <code>10.1.0.0/16</code> block does not conflict with anything: it is adjacent to <code>10.0.0.0/16</code> but shares no address. You can confirm the containment with Python: <code>ipaddress.ip_network('10.0.5.0/24').subnet_of(ipaddress.ip_network('10.0.0.0/16'))</code> returns <code>True</code>.
+        Two conflicts come back. <code>10.0.0.0/16</code> and <code>10.0.5.0/24</code> are a <strong>containment</strong> &mdash; the ranges above show the <code>/24</code> sitting inside the <code>/16</code>. The repeated <code>192.168.0.0/24</code> is an <strong>identical</strong> pair, which is the kind of duplicate that creeps into a list after a copy-paste. <code>10.1.0.0/16</code> is reported clean: it is adjacent to the first <code>/16</code>, not overlapping. Add <code>2001:db8::/32</code> and <code>2001:db8:1::/48</code> and you will get a third conflict, since the <code>/48</code> sits inside the <code>/32</code> &mdash; the same containment logic, applied to 128-bit addresses.
       </p>
 
-      <h2>How to Use the Tool</h2>
-      <ol>
-        <li><strong>Paste your blocks</strong> &mdash; one CIDR per line, IPv4 or IPv6; or load the sample.</li>
-        <li><strong>Run the check</strong> &mdash; the tool compares every pair and lists the conflicts.</li>
-        <li><strong>Read the results</strong> &mdash; each conflicting pair with its overlap type (identical, containment or partial).</li>
-        <li><strong>Fix and re-check</strong> &mdash; adjust a prefix or renumber a block and run it again until the list is clean.</li>
-      </ol>
+      <h2>Resolving a Conflict</h2>
+      <p>
+        Once you know which pair clashes, there are only a few honest fixes. If the entry is a duplicate, delete it. If a smaller block sits inside a larger one and that was deliberate &mdash; a subnet carved from a parent range &mdash; keep it, but record it as a child rather than a peer so it is not double-allocated. If it was not deliberate, renumber the newer block into free space, or split the parent so the two no longer share addresses. Re-run the check after each change; a list that reports nothing is one you can hand to whoever provisions it.
+      </p>
 
       <!-- Interactive FAQ Section -->
       <section class="faq-block">
@@ -823,6 +858,13 @@
         </div>
 
         <div class="faq-item">
+          <div class="faq-question">Can two CIDR blocks overlap only partially?</div>
+          <div class="faq-answer">
+            No, and this surprises people. Because every CIDR block is an aligned, power-of-two sized range, two valid blocks are always either completely separate or one sits entirely inside the other &mdash; a half-and-half overlap is impossible. So in practice every conflict this tool reports is either a duplicate or a containment.
+          </div>
+        </div>
+
+        <div class="faq-item">
           <div class="faq-question">Can it check IPv4 and IPv6 together?</div>
           <div class="faq-answer">
             It parses both, but an IPv4 block and an IPv6 block never overlap &mdash; they are separate address spaces. Overlaps are only reported within the same family, so you can paste a mixed list and the tool compares IPv4 against IPv4 and IPv6 against IPv6.
@@ -845,6 +887,10 @@
             <div class="related-card-title"><span>[/24]</span> CIDR / Subnet Calculator</div>
             <div class="related-card-desc">Compute network, broadcast, mask, wildcard and usable host range for a CIDR block.</div>
           </a>
+          <a href="/tools/network/ip-converter/" class="related-card">
+            <div class="related-card-title"><span>[&#8644;]</span> IP Address Converter</div>
+            <div class="related-card-desc">Convert an IP between decimal, integer, hex, binary and IPv6 forms, client-side.</div>
+          </a>
           <a href="/tools/network/asn-visualizer/" class="related-card">
             <div class="related-card-title"><span>[&#8594;]</span> BGP AS-Path Visualizer</div>
             <div class="related-card-desc">Draw pasted BGP AS-paths, count prepends and detect loops, in your browser.</div>
@@ -856,10 +902,6 @@
           <a href="/tools/encoding/base-suite/" class="related-card">
             <div class="related-card-title"><span>[&#128290;]</span> Base Encoding Suite</div>
             <div class="related-card-desc">Encode and decode Base16, Base32, Base58 and Base64 buffers in your browser.</div>
-          </a>
-          <a href="/tools/forensics/magic-bytes/" class="related-card">
-            <div class="related-card-title"><span>[&#128270;]</span> Magic Bytes Analyzer</div>
-            <div class="related-card-desc">Identify a file from its header bytes and catch extension spoofing, in your browser.</div>
           </a>
           <a href="/tools/crypto/multi-hash/" class="related-card">
             <div class="related-card-title"><span>[#&#65039;&#8419;]</span> Multi-Hash Generator</div>
